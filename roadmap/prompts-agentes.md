@@ -18,7 +18,7 @@ Si no hay urgencias, identifica la siguiente tarea pendiente según §1 de SEGUI
 
 Antes de cualquier decisión técnica no trivial, consulta roadmap/DECISIONES_TECNICAS.md en el área que vas a tocar, para no contradecir decisiones previas.
 
-Ejecuta la tarea siguiendo ESTRICTAMENTE el protocolo de la sección 0 (modo AUTONOMÍA TOTAL: commit a main, sincronización de la skill a ~/.claude/skills/teleprompter/, migraciones de estado.json autoejecutables tras guardar su archivo). Respeta la verificación pre-commit completa (mypy → ruff → pytest → python scripts/verificar_salidas.py --fixture) y el health check post-instalación (ejecutar verificar_salidas.py --fixture desde la copia instalada y comprobar salida OK con código 0) con reversión inmediata ante fallo.
+Ejecuta la tarea siguiendo ESTRICTAMENTE el protocolo de la sección 0 (modo AUTONOMÍA TOTAL: commit a develop —nunca a master, que es del dueño—, sincronización de la skill a ~/.claude/skills/teleprompter/, migraciones de estado.json autoejecutables tras guardar su archivo). Respeta la verificación pre-commit completa (mypy → ruff → pytest → python scripts/verificar_salidas.py --fixture) y el health check post-instalación (ejecutar verificar_salidas.py --fixture desde la copia instalada y comprobar salida OK con código 0) con reversión inmediata ante fallo.
 
 Recuerda las reglas duras de §0.2 antes de dar una tarea por hecha: cobertura total del guión (nada se descarta en silencio), original de toda reescritura recuperable, las ediciones manuales del dueño en guion-escenas.md son autoritativas, nunca sobrescribir un archivo del dueño sin .bak, el reproductor es UN único .html sin dependencias ni CDN (validador de auto-contención obligatorio), runtime solo con la biblioteca estándar de Python 3, cero red en ejecución, todo default configurable y documentado en SKILL.md, y todo en español.
 
@@ -51,7 +51,7 @@ En tu ciclo:
 
 Respeta los límites de autonomía (§0.3): no cambias la convención de marcado acordada ni la identidad visual 480, no introduces dependencias, CDN ni acceso de red, no eliminas funcionalidad ni propones operaciones destructivas, no distribuyes la skill fuera del equipo. Si una propuesta depende de una de esas decisiones, déjala como pregunta abierta en §6 de SEGUIMIENTO.md.
 
-Recuerda SIEMPRE finalizar haciendo merge en main para que las propuestas estén 100 % disponibles para los agentes de desarrollo. Si creas una rama para el trabajo, puedes eliminarla tras mergear si ya no la necesitas.
+Recuerda SIEMPRE finalizar dejando tu trabajo en develop para que las propuestas estén 100 % disponibles para los agentes de desarrollo. NO toques master: esa rama la mergea el dueño a mano. Si creas una rama para el trabajo, puedes eliminarla tras integrarla en develop si ya no la necesitas.
 ```
 
 ---
@@ -78,14 +78,14 @@ Presta atención especial a los invariantes de este proyecto, que son su razón 
 
 Presta atención también a la COHERENCIA entre lo decidido y lo ejecutado: contrasta roadmap/DECISIONES_TECNICAS.md y las reglas innegociables (§0.2 de HOJA_DE_RUTA.md) contra lo realmente implementado, y revisa las desviaciones (§7 de SEGUIMIENTO.md). Actúa como un supervisor externo que revisa que todo mantiene un curso lógico, profesional, coherente y seguro, y que no hay errores o desvíos que el equipo no haya visto por estar demasiado metido en el proyecto.
 
-Revisa la documentación del proyecto, no la modifiques (salvo auditoriacontinua.md, el único que estás autorizado a modificar). Deja la actualización mergeada en main; no dejes ramas abiertas para esto: una vez actualizado y mergeado puedes eliminar la rama si creaste una para la tarea.
+Revisa la documentación del proyecto, no la modifiques (salvo auditoriacontinua.md, el único que estás autorizado a modificar). Deja la actualización en develop; no toques master. No dejes ramas abiertas para esto: una vez actualizado e integrado puedes eliminar la rama si creaste una para la tarea.
 ```
 
 ---
 
 ## Orden de puesta en marcha
 1. **Auditor** (opcional al arrancar; el repositorio está vacío, así que su primera pasada útil llega tras T-03): genera el estado de partida y el registro de hallazgos en `auditoriacontinua.md`.
-2. **Product Manager**: revisa visión y principios en `ROADMAP_PRODUCTO.md`, incorpora feedback y hallazgos, define las primeras R-XX cuando el backlog T-XX esté avanzado, y mergea a `main`.
+2. **Product Manager**: revisa visión y principios en `ROADMAP_PRODUCTO.md`, incorpora feedback y hallazgos, define las primeras R-XX cuando el backlog T-XX esté avanzado, y deja el trabajo en `develop`.
 3. **Programador**: T-00 (verificación inicial e inicialización del repositorio) → continúa en orden secuencial.
 
 > Nota de arranque: el backlog inicial (T-00 a T-33) cubre el producto completo descrito en los

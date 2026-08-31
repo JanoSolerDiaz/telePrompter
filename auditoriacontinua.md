@@ -15,13 +15,13 @@
 
 | #ID | Fecha | Área | Severidad | Estado | Resumen | Tarea / origen |
 |-----|-------|------|-----------|--------|---------|----------------|
-| #1 | 2026-08-31 | Proceso / git | alta | ABIERTO | El protocolo fija `main` como rama de trabajo, pero el repo real está en `develop`, tiene `master` (no `main`) y un remoto `origin` en GitHub. Un agente que siga el protocolo al pie de la letra empujaría a una rama que no existe. | §0.1 y §0.2 de la hoja de ruta · decisión del dueño |
-| #2 | 2026-08-31 | Infraestructura | alta | ABIERTO | `.gitignore` excluye `assets/` y `fixtures/` completos. Quedan fuera del control de versiones los logotipos 480, los tres guiones de calibración y —en cuanto existan— las plantillas del reproductor (T-18) y el `guion-ejemplo.md` del health check (T-32). La CI de T-04 no podría reproducir la verificación. | T-04, T-18, T-32 |
-| #3 | 2026-08-31 | Producto / marca | alta | ABIERTO | **Poppins no está instalada en esta máquina** (0 archivos); Figtree sí (16) y Montserrat tampoco. Con la decisión vigente, el PDF caería hasta el último respaldo (Calibri) mientras el PPTX sale en Figtree: peor resultado que cualquiera de las dos opciones puras. | T-28, T-29 · §6.6 |
-| #4 | 2026-08-31 | Calidad | media | ABIERTO | La 4ª verificación (`verificar_salidas.py --fixture`) es obligatoria desde T-00, pero su fixture no existe hasta T-32 y el generador HTML no existe hasta T-18: la red de seguridad está incompleta durante casi todo el backlog si no se define un talón que degrade con sentido. | T-00, T-04, T-32 |
+| #1 | 2026-08-31 | Proceso / git | alta | **RESUELTO** | El protocolo fijaba `main`, rama inexistente en el repo real. **Cerrado el mismo día:** el dueño confirmó `develop` como rama de trabajo y `master` como suya para el merge manual; hoja de ruta v1.2 (§0.1 y §0.2) y los tres prompts de agente actualizados. Verificado: ya no queda ninguna referencia a `main` en el protocolo ni en los prompts. | §0.1 · §6.7 |
+| #2 | 2026-08-31 | Infraestructura | alta | **RESUELTO** | `.gitignore` excluye `assets/` y `fixtures/` completos. Quedan fuera del control de versiones los logotipos 480, los tres guiones de calibración y —en cuanto existan— las plantillas del reproductor (T-18) y el `guion-ejemplo.md` del health check (T-32). **Cerrado por P-01:** `.gitignore` acotado a artefactos generados; `assets/` y `fixtures/` versionados y presentes en el commit `e8b9663`. | P-01 · T-04 |
+| #3 | 2026-08-31 | Producto / marca | alta | **RESUELTO** | Poppins no estaba instalada, lo que vaciaba de efecto la decisión tipográfica. **Cerrado:** el dueño la instaló el mismo día. Reverificado: 5 archivos (Bold, SemiBold, Medium, Regular, Light), cobertura completa de la escala de la guía de marca. | T-28 · §6.8 |
+| #4 | 2026-08-31 | Calidad | media | **RESUELTO** | La 4ª verificación (`verificar_salidas.py --fixture`) es obligatoria desde T-00, pero su fixture no existe hasta T-32 y el generador HTML no existe hasta T-18: la red de seguridad quedaba incompleta durante casi todo el backlog. **Cerrado en T-00:** `verificar_salidas.py` declara cada etapa NO APLICABLE nombrando la tarea que la implementará, y se activará sola según avance el backlog. | T-00 |
 | #5 | 2026-08-31 | Producto | media | ABIERTO | T-26 asume que `localStorage` persiste al abrir el reproductor desde `file://`. No está verificado en el navegador de grabación; el `try/catch` evita el error pero no salva la promesa de «retomar entre sesiones». | T-26 |
 | #6 | 2026-08-31 | Coherencia | baja | ABIERTO | Nomenclatura arrastrada del nombre anterior: la carpeta de salida es `<nombre-guion>-tarjetas/` con el proyecto ya llamado `teleprompter`. Además `assets/` mezcla dos cosas distintas (logotipos de marca y, en el futuro, plantillas del reproductor). | T-07, T-18, T-28 |
-| #7 | 2026-08-31 | Trazabilidad | baja | ABIERTO | El paso de la hoja de ruta v1.0 a v1.1 —documento declarado inmutable— está anotado en su propia cabecera pero no en `DECISIONES_TECNICAS.md` ni en §7 de SEGUIMIENTO. Los tres logs siguen vacíos con el proyecto ya commiteado. | §0.4 · `DECISIONES_TECNICAS.md` |
+| #7 | 2026-08-31 | Trazabilidad | baja | **RESUELTO** | Los tres logs estaban vacíos con el proyecto ya commiteado. **Cerrado:** la sesión de T-00 dejó 7 decisiones en `DECISIONES_TECNICAS.md`, su entrada en `HISTORIAL_SESIONES.md` y tres desviaciones en §7 (dos ya cerradas al resolverse §6.7). El cambio a v1.2 sí está registrado en los tres sitios. | §0.4 |
 | #8 | 2026-08-31 | Documentación | baja | ABIERTO | `DEVELOPERS.md` se referencia en §0.4 y en T-32 pero todavía no existe. Esperable a esta altura; se registra para que no se pierda. | T-32 |
 
 ---
@@ -31,6 +31,31 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-08-31 (segunda pasada) — reevaluación tras la sesión de T-00
+
+Pasada corta de reevaluación, como manda el procedimiento: contrastar los hallazgos `ABIERTO`
+contra el estado real y cerrar los que ya no existen. **Cinco de los ocho quedan RESUELTOS el
+mismo día, incluidos los tres de severidad alta.**
+
+- **#1 y #3 los cerró el dueño**, que era lo correcto: ninguno era decisión del agente. La rama
+  pasa a `develop` con `master` reservada para su merge manual, y Poppins está instalada con los
+  cinco pesos que la escala de marca necesita. Ambas resoluciones están donde deben —protocolo y
+  `DECISIONES_TECNICAS.md`—, no solo en una conversación.
+- **#2 y #4 los cerró el programador** en la misma sesión: `.gitignore` acotado vía P-01 y la
+  cuarta red convertida en algo que dice la verdad en vez de pasar en vacío.
+- **#7 se cierra por acumulación:** los tres logs han dejado de estar vacíos.
+
+**Lo que sigue abierto y por qué no preocupa todavía.** #5 (persistencia en `file://`) y #6
+(nomenclatura y separación de `assets/`) están enrutados a R-01 y R-06 y no pueden verificarse
+hasta que exista reproductor. #8 (`DEVELOPERS.md`) es entregable de T-32.
+
+**Observación de proceso, sin severidad.** La hoja de ruta, declarada inmutable, se ha modificado
+tres veces (v1.0 → v1.2). Las tres son legítimas —dos correcciones de inicialización previas a la
+primera sesión y un cambio de protocolo del dueño, que es el único autorizado— y las tres están
+justificadas en su cabecera. Pero el margen se ha agotado: con T-00 ya commiteada, cualquier
+cambio posterior de ese documento debería considerarse una anomalía y no una corrección. Se
+vigilará en la próxima pasada.
 
 ### Auditoría 2026-08-31 — estado de partida (antes de la primera sesión del programador)
 

@@ -10,6 +10,10 @@
 > los tres guiones reales aportados en `fixtures/reales/`; guía de marca y logotipos 480 recogidos
 > en `references/marca-480.md` y `assets/`, con Poppins fijada y el ratio del logotipo corregido.
 > A partir de aquí, inmutable.)
+>
+> Versión: 1.2 — 2026-08-31 (**cambio de protocolo autorizado por el dueño**, único supuesto en
+> que este documento se toca: la rama de trabajo pasa de `main` a `develop`, y `master` queda
+> reservada para el merge manual del dueño. Afecta a §0.1 y a §0.2.)
 > Proyecto: teleprompter — instalación local en `~/.claude/skills/teleprompter/`
 > Repo: <pendiente> (git local, sin remoto)
 > Modo de operación: AUTONOMÍA TOTAL (ver §0.1).
@@ -31,7 +35,7 @@
 **MODO ACTUAL: AUTONOMÍA TOTAL.**
 
 **AUTONOMÍA TOTAL** (vigente antes del primer curso grabado con la skill — prima la agilidad):
-- Trabaja directamente en `main` y haz commit. El "despliegue" de este proyecto es la **instalación local de la skill**: sincronizar el paquete a `C:\Users\JanoSolerDíaz\.claude\skills\teleprompter\`. Es intencionado y está permitido.
+- Trabaja directamente en `develop` y haz commit. **Nunca commitees ni mergees en `master`: esa rama es del dueño, que hace el merge manualmente cuando le parece.** El "despliegue" de este proyecto es la **instalación local de la skill**: sincronizar el paquete a `C:\Users\JanoSolerDíaz\.claude\skills\teleprompter\`. Es intencionado y está permitido.
 - "Migraciones" = cambios del esquema de `estado.json` (el estado del proyecto de guión). Guarda SIEMPRE el archivo de migración (`scripts/migraciones/NNN_<nombre>.py`, idempotente) ANTES de ejecutarla y ejecuta exactamente ese archivo. Toda migración debe poder aplicarse sobre proyectos de guión ya existentes sin perder validaciones ni ediciones del dueño.
 - Único requisito antes de cada commit/instalación: la verificación local completa debe pasar:
   ```
@@ -61,7 +65,8 @@
 - Validación de entradas en toda función pública y en todo punto de entrada de la CLI: ruta inexistente, `.md` vacío, codificación no UTF-8, guión sin encabezados, escena sin locución, tamaño desmesurado. Errores accionables en español, nunca trazas crudas.
 - Logger centralizado — nunca dejar `print()` de depuración en el código; la salida al usuario pasa por el módulo de presentación y los diagnósticos por el logger.
 - Secretos: no commitear jamás claves ni ficheros de entorno. No imprimir secretos en logs ni en ningún documento. No rotar ni modificar claves existentes sin instrucción del dueño.
-- Commits atómicos por tarea con prefijo del ID (p. ej. `T-03: <descripción>`).
+- Commits atómicos por tarea con prefijo del ID (p. ej. `T-03: <descripción>`), siempre en `develop`. `master` es territorio del dueño: ni commits, ni merges, ni rebases.
+- Push al remoto: no se hace sin autorización explícita del dueño para esa sesión. El commit local es suficiente; publicar es una acción hacia fuera, y aquí no equivale a desplegar (el despliegue es la instalación local de la skill).
 - Textos de UI y mensajes en español. Todo el proyecto (documentación, código de cara al usuario, salidas) en español.
 - PROHIBIDO degradar seguridad por agilidad (escribir fuera de la carpeta de salida, sobrescribir sin `.bak`, silenciar validaciones, ejecutar contenido del guión de entrada).
 - **Salida autocontenida (regla dura):** el reproductor generado es UN ÚNICO archivo `.html` sin dependencias ni CDN. Prohibido que la salida contenga `http://`, `https://`, `//cdn`, `src=` externo, `@import`, `<link rel="stylesheet">` remoto, fuentes remotas o cualquier `fetch`/`XMLHttpRequest`. Un test automático lo comprueba y su fallo bloquea el commit.
@@ -127,7 +132,7 @@ El registro está repartido en varios documentos dentro de `roadmap/`. **Un dato
 
 ### T-00 — Verificación inicial del estado
 **Prioridad:** ALTA · **Migración:** No
-Inicializa el repositorio (`git init`, rama `main`, `.gitignore`) y el esqueleto del paquete: `SKILL.md` (borrador), `scripts/`, `tests/`, `fixtures/`, `assets/`, `references/`, `requirements-dev.txt`, `pyproject.toml`. Confirma que Python 3.14 responde y que el esqueleto se ejecuta sin error. **Usa el plugin `skill-creator` como andamio** (instalado el 2026-08-31): `skill-creator@claude-plugins-official`. Conserva los tres guiones reales que ya están en `fixtures/reales/` — son la referencia de calibración de T-08 a T-12 y no se tocan.
+Inicializa el repositorio (`git init` si hiciera falta, rama `develop`, `.gitignore`) y el esqueleto del paquete: `SKILL.md` (borrador), `scripts/`, `tests/`, `fixtures/`, `assets/`, `references/`, `requirements-dev.txt`, `pyproject.toml`. Confirma que Python 3.14 responde y que el esqueleto se ejecuta sin error. **Usa el plugin `skill-creator` como andamio** (instalado el 2026-08-31): `skill-creator@claude-plugins-official`. Conserva los tres guiones reales que ya están en `fixtures/reales/` — son la referencia de calibración de T-08 a T-12 y no se tocan.
 **Aceptación:** los cuatro comandos de verificación se ejecutan (aunque aún sin tests reales) y T-00 queda COMPLETADA en §1 con constancia del estado de partida.
 
 ### T-01 — Linting y formato

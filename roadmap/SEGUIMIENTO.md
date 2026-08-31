@@ -10,14 +10,14 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.1 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-08-31 — arranque de las tres rutinas. **Auditor**: 8 hallazgos (3 altos). **PM**: 6 R-XX en 3 oleadas. **Programador**: T-00 COMPLETADA y P-01 COMPLETADA, con las cuatro verificaciones en verde. Siguiente tarea: T-01.
+**Última actualización:** 2026-08-31 — arranque de las tres rutinas y cierre de las decisiones pendientes. **Auditor**: 8 hallazgos, 3 ya RESUELTOS. **PM**: 6 R-XX en 3 oleadas. **Programador**: T-00 y P-01 COMPLETADAS, cuatro verificaciones en verde. Protocolo actualizado a `develop` (hoja de ruta v1.2) y Poppins verificada. §6 sin preguntas abiertas. Siguiente tarea: T-01.
 
 ---
 
 > ## ⚑ PARA EL DUEÑO — empieza por aquí
 > Lo único que el proyecto necesita de ti está en dos sitios de este documento:
-> - **§3 Bloqueos** = tu lista de tareas. Quedan **dos**: instalar el paquete de `480-branded-pptx` (solo afecta a la salida `.pptx`) y probar el clicker cuando haya reproductor. La funcionalidad asociada queda *latente* hasta que las resuelvas.
-> - **§6 Preguntas abiertas** = tus decisiones. Han vuelto a abrirse **dos**, ambas levantadas por el auditor midiendo la máquina: la rama de trabajo (#7) y la tipografía realmente instalada (#8). Las seis anteriores siguen resueltas.
+> - **§3 Bloqueos** = tu lista de tareas. Quedan **dos**: instalar el paquete de `480-branded-pptx` (solo afecta a la salida `.pptx`) y probar el clicker cuando haya reproductor (T-24). La funcionalidad asociada queda *latente* hasta que las resuelvas.
+> - **§6 Preguntas abiertas** = tus decisiones. **Ninguna pendiente**: las ocho están resueltas.
 >
 > Para control (no exige acción): `DECISIONES_TECNICAS.md` (qué decidió el agente y por qué — sustituye a leer código), `auditoriacontinua.md` (hallazgos abiertos), y aquí §7 (desviaciones) y §5 (P-XX; veta escribiendo `REVERTIR`).
 
@@ -121,8 +121,8 @@
 | 5 | ¿El `.pdf` debe llevar la marca 480 en versión oscura (pantalla) o clara (impresión en papel)? | T-28 | **Clara, fondo blanco** (2026-08-31), alineado con la guía de `480-branded-pptx`. Uso: documento de repaso y, llegado el caso, entregable a terceros → una escena por página, locución como prosa legible y bandera `--para-terceros` que omite notas internas. → T-28 y T-29. |
 | 6 | La guía de marca dice **Poppins** («familia oficial») y el `SKILL.md` de `480-branded-pptx` dice **Figtree** («familia obligatoria»). ¿Cuál manda? | T-28, T-29 | **Poppins** (2026-08-31): manda la guía de marca. El PDF sale en Poppins y el brief de T-29 se la pide también a la skill de marca, para que los dos documentos coincidan. Clave `tipografia_marca`. |
 
-| 7 | **La rama de trabajo del protocolo no existe.** El repo está en `develop`, con `master` y remoto `origin` en GitHub; el protocolo (§0.1, §0.2) dice `main` siete veces. ¿Cambiamos el protocolo a `develop` (git flow) o creamos `main`? Mientras no lo digas, el programador trabaja en `develop` y lo registra como desviación en §7. | §0.1 · `origen: auditoría #1` |  |
-| 8 | **Poppins no está instalada en esta máquina** (Figtree sí, Montserrat no). Con la decisión de ayer, el PDF saldría en Calibri y el PPTX en Figtree: peor que elegir cualquiera de las dos. ¿Instalas Poppins, o cambiamos a Figtree, que ya está y es la que usa la skill de marca? | T-28, T-29 · `origen: auditoría #3` |  |
+| 7 | **La rama de trabajo del protocolo no existe.** El repo está en `develop`, con `master` y remoto `origin` en GitHub; el protocolo decía `main`. | §0.1 · `origen: auditoría #1` | **`develop`** (2026-08-31). Los agentes commitean en `develop`; **`master` es del dueño**, que hace el merge manualmente. Protocolo actualizado (hoja de ruta v1.2, §0.1 y §0.2) y prompts de los tres agentes corregidos. |
+| 8 | **Poppins no está instalada en esta máquina** (Figtree sí, Montserrat no). ¿Instalas Poppins, o cambiamos a Figtree? | T-28, T-29 · `origen: auditoría #3` | **Poppins instalada** (2026-08-31). Verificado: 5 archivos — Bold, SemiBold, Medium, Regular y Light —, que cubren toda la escala tipográfica de la guía de marca. La decisión se mantiene y ahora sí es efectiva. |
 ---
 
 ## 7. DESVIACIONES RESPECTO A LA HOJA DE RUTA ORIGINAL
@@ -131,6 +131,6 @@
 
 | Fecha | Tarea | Desviación | Motivo |
 |-------|-------|-----------|--------|
-| 2026-08-31 | T-00 | Se trabaja y se commitea en `develop`, no en `main` como fija §0.1 | El repositorio ya existía cuando arrancó la primera sesión, con ramas `develop` (activa) y `master`, remoto `origin` en GitHub y un commit inicial del dueño. `main` no existe. Cambiar la topología de ramas no es una decisión del agente: queda como pregunta §6.7 (`origen: auditoría #1`). Mientras tanto se respeta la rama que el dueño dejó activa. |
+| 2026-08-31 | T-00 | Se trabajó y se commiteó en `develop`, no en `main` como fijaba §0.1 | **Desviación cerrada el mismo día:** el dueño resolvió §6.7 confirmando `develop` como rama de trabajo y `master` como suya para el merge manual. El protocolo se actualizó (hoja de ruta v1.2) y a partir de ahí `develop` deja de ser una desviación: es la norma. |
 | 2026-08-31 | T-00 | No se ejecutó `git init` | Ya estaba hecho. El resto de la tarea se cumplió íntegro. |
-| 2026-08-31 | T-00 | No se hizo push al remoto | El protocolo §0.1 contempla push porque en un proyecto web equivale a desplegar. Aquí el "despliegue" es la instalación local de la skill (T-32), que todavía no existe, y publicar en un remoto de GitHub es una acción hacia fuera que el dueño no ha autorizado explícitamente. Commit sí, push pendiente de su visto bueno. |
+| 2026-08-31 | T-00 | No se hizo push al remoto | El protocolo §0.1 contemplaba push porque en un proyecto web equivale a desplegar. Aquí el despliegue es la instalación local de la skill (T-32) y publicar en GitHub es una acción hacia fuera. **Incorporado a la norma en v1.2:** no se hace push sin autorización explícita del dueño. Deja de ser desviación. |

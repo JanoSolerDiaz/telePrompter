@@ -18,7 +18,7 @@
 ### Sesión YYYY-MM-DD HH:MM
 **Tarea(s):** T-XX / R-XX / P-XX
 **Estado resultante:** EN CURSO / COMPLETADA / DESPLEGADA EN PRODUCCIÓN / BLOQUEADA
-**Commits a main:** <hashes y mensajes>
+**Commits a develop:** <hashes y mensajes>
 **Migraciones ejecutadas:** <archivo y resultado, o "ninguna">
 **Archivos creados/modificados:** <lista>
 **Verificaciones pre-push:** tipos ✅/❌ · lint ✅/❌ · tests ✅/❌ · build ✅/❌
