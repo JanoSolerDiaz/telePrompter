@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.1 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-08-31 — arranque de las tres rutinas y cierre de las decisiones pendientes. **Auditor**: 8 hallazgos, 3 ya RESUELTOS. **PM**: 6 R-XX en 3 oleadas. **Programador**: T-00 y P-01 COMPLETADAS, cuatro verificaciones en verde. Protocolo actualizado a `develop` (hoja de ruta v1.2) y Poppins verificada. §6 sin preguntas abiertas. Siguiente tarea: T-01.
+**Última actualización:** 2026-08-31 — las tres rutinas pasan a agentes de nube sobre el repositorio (hoja de ruta v1.3: push a `origin/develop` obligatorio). Antes: arranque de las tres rutinas y cierre de las decisiones pendientes. **Auditor**: 8 hallazgos, 3 ya RESUELTOS. **PM**: 6 R-XX en 3 oleadas. **Programador**: T-00 y P-01 COMPLETADAS, cuatro verificaciones en verde. Protocolo actualizado a `develop` (hoja de ruta v1.2) y Poppins verificada. §6 sin preguntas abiertas. Siguiente tarea: T-01.
 
 ---
 

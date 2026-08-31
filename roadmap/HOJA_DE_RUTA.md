@@ -14,6 +14,12 @@
 > Versión: 1.2 — 2026-08-31 (**cambio de protocolo autorizado por el dueño**, único supuesto en
 > que este documento se toca: la rama de trabajo pasa de `main` a `develop`, y `master` queda
 > reservada para el merge manual del dueño. Afecta a §0.1 y a §0.2.)
+>
+> Versión: 1.3 — 2026-08-31 (**cambio de protocolo autorizado por el dueño**: las rutinas pasan a
+> ejecutarse como agentes de nube sobre un clon del repositorio, no sobre la máquina del dueño.
+> En consecuencia el **push a `origin/develop` deja de requerir autorización y pasa a ser
+> obligatorio** al cerrar sesión: el contenedor se destruye al terminar y sin push el trabajo se
+> pierde. Afecta a §0.1 y a §0.2.)
 > Proyecto: teleprompter — instalación local en `~/.claude/skills/teleprompter/`
 > Repo: <pendiente> (git local, sin remoto)
 > Modo de operación: AUTONOMÍA TOTAL (ver §0.1).
@@ -35,7 +41,9 @@
 **MODO ACTUAL: AUTONOMÍA TOTAL.**
 
 **AUTONOMÍA TOTAL** (vigente antes del primer curso grabado con la skill — prima la agilidad):
-- Trabaja directamente en `develop` y haz commit. **Nunca commitees ni mergees en `master`: esa rama es del dueño, que hace el merge manualmente cuando le parece.** El "despliegue" de este proyecto es la **instalación local de la skill**: sincronizar el paquete a `C:\Users\JanoSolerDíaz\.claude\skills\teleprompter\`. Es intencionado y está permitido.
+- Trabaja directamente en `develop`, commitea y **haz push a `origin/develop` antes de terminar**. **Nunca commitees, mergees ni empujes a `master`: esa rama es del dueño, que hace el merge manualmente cuando le parece.**
+- **Sesiones de nube (rutinas programadas):** trabajas sobre un clon efímero que se destruye al acabar. Empieza siempre con `git checkout develop && git pull origin develop` y termina siempre con push: lo que no se empuja, no ha ocurrido. Instala antes las herramientas de desarrollo (`pip install -r requirements-dev.txt`), que no vienen en el contenedor.
+- **El "despliegue" tiene dos mitades.** Para una sesión de nube, entregar es **push a `origin/develop`**; la instalación de la skill en `~/.claude/skills/teleprompter/` (T-32) solo puede hacerla una sesión local o el dueño, porque el contenedor no alcanza su máquina. Una tarea de nube que dependa de esa instalación se marca BLOQUEADA con ese motivo en lugar de simularla.
 - "Migraciones" = cambios del esquema de `estado.json` (el estado del proyecto de guión). Guarda SIEMPRE el archivo de migración (`scripts/migraciones/NNN_<nombre>.py`, idempotente) ANTES de ejecutarla y ejecuta exactamente ese archivo. Toda migración debe poder aplicarse sobre proyectos de guión ya existentes sin perder validaciones ni ediciones del dueño.
 - Único requisito antes de cada commit/instalación: la verificación local completa debe pasar:
   ```
@@ -66,7 +74,7 @@
 - Logger centralizado — nunca dejar `print()` de depuración en el código; la salida al usuario pasa por el módulo de presentación y los diagnósticos por el logger.
 - Secretos: no commitear jamás claves ni ficheros de entorno. No imprimir secretos en logs ni en ningún documento. No rotar ni modificar claves existentes sin instrucción del dueño.
 - Commits atómicos por tarea con prefijo del ID (p. ej. `T-03: <descripción>`), siempre en `develop`. `master` es territorio del dueño: ni commits, ni merges, ni rebases.
-- Push al remoto: no se hace sin autorización explícita del dueño para esa sesión. El commit local es suficiente; publicar es una acción hacia fuera, y aquí no equivale a desplegar (el despliegue es la instalación local de la skill).
+- Push a `origin/develop`: **obligatorio** al cerrar cada sesión (norma desde v1.3, al pasar las rutinas a la nube). A `master`, jamás: ni push, ni merge, ni pull request. La regla anterior —«no publicar sin autorización»— queda derogada para `develop` y sigue vigente para cualquier otra rama o remoto.
 - Textos de UI y mensajes en español. Todo el proyecto (documentación, código de cara al usuario, salidas) en español.
 - PROHIBIDO degradar seguridad por agilidad (escribir fuera de la carpeta de salida, sobrescribir sin `.bak`, silenciar validaciones, ejecutar contenido del guión de entrada).
 - **Salida autocontenida (regla dura):** el reproductor generado es UN ÚNICO archivo `.html` sin dependencias ni CDN. Prohibido que la salida contenga `http://`, `https://`, `//cdn`, `src=` externo, `@import`, `<link rel="stylesheet">` remoto, fuentes remotas o cualquier `fetch`/`XMLHttpRequest`. Un test automático lo comprueba y su fallo bloquea el commit.
