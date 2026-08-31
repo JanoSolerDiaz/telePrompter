@@ -1,0 +1,42 @@
+[project]
+name = "teleprompter"
+version = "0.1.0"
+description = "Skill que convierte un guion de produccion en .md en tarjetas de locucion y un teleprompter web autocontenido"
+requires-python = ">=3.12"
+dependencies = []  # REGLA INNEGOCIABLE (§0.2): el runtime usa solo la biblioteca estandar
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["scripts", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",    # pycodestyle
+    "F",         # pyflakes
+    "I",         # isort
+    "N",         # pep8-naming
+    "UP",        # pyupgrade
+    "B",         # bugbear
+    "A",         # builtins shadowing
+    "C4",        # comprehensions
+    "PTH",       # usar pathlib
+    "RUF",
+    "T20",       # prohibe print() fuera del modulo de presentacion (§0.2, T-02)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# El modulo de presentacion es el unico autorizado a escribir en la salida estandar (T-02).
+"scripts/presentacion.py" = ["T20"]
+"tests/*" = ["T20"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["scripts", "tests"]
+warn_unreachable = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

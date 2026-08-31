@@ -1,0 +1,5 @@
+# Dependencias EXCLUSIVAMENTE de desarrollo (§0.2).
+# La skill se ejecuta sin ninguna de ellas: solo biblioteca estandar de Python 3.
+mypy==1.18.2
+ruff==0.14.0
+pytest==8.4.2

@@ -10,14 +10,14 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.1 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-08-31 — proyecto renombrado a `teleprompter`; `skill-creator` instalado; guiones reales y logotipos 480 aportados; guía de marca recogida en `references/marca-480.md` (con la corrección del ratio del logotipo); **§6 cerrada al completo** y las decisiones permanentes promovidas a §0.2 (hoja de ruta v1.1). Backlog cargado, todo PENDIENTE.
+**Última actualización:** 2026-08-31 — arranque de las tres rutinas. **Auditor**: 8 hallazgos (3 altos). **PM**: 6 R-XX en 3 oleadas. **Programador**: T-00 COMPLETADA y P-01 COMPLETADA, con las cuatro verificaciones en verde. Siguiente tarea: T-01.
 
 ---
 
 > ## ⚑ PARA EL DUEÑO — empieza por aquí
 > Lo único que el proyecto necesita de ti está en dos sitios de este documento:
 > - **§3 Bloqueos** = tu lista de tareas. Quedan **dos**: instalar el paquete de `480-branded-pptx` (solo afecta a la salida `.pptx`) y probar el clicker cuando haya reproductor. La funcionalidad asociada queda *latente* hasta que las resuelvas.
-> - **§6 Preguntas abiertas** = tus decisiones. **Ninguna pendiente**: las seis están resueltas y las permanentes viven ya en §0.2 de la hoja de ruta.
+> - **§6 Preguntas abiertas** = tus decisiones. Han vuelto a abrirse **dos**, ambas levantadas por el auditor midiendo la máquina: la rama de trabajo (#7) y la tipografía realmente instalada (#8). Las seis anteriores siguen resueltas.
 >
 > Para control (no exige acción): `DECISIONES_TECNICAS.md` (qué decidió el agente y por qué — sustituye a leer código), `auditoriacontinua.md` (hallazgos abiertos), y aquí §7 (desviaciones) y §5 (P-XX; veta escribiendo `REVERTIR`).
 
@@ -27,7 +27,7 @@
 
 | ID | Tarea | Estado | Última sesión | Notas |
 |----|-------|--------|---------------|-------|
-| T-00 | Verificación inicial | PENDIENTE | — | Incluye `git init` y esqueleto de la skill |
+| T-00 | Verificación inicial | **COMPLETADA** | 2026-08-31 | Esqueleto, 4 redes en verde. El repo ya existía: `git init` no fue necesario |
 | T-01 | Linting y formato | PENDIENTE | — | ruff + mypy estricto |
 | T-02 | Logger centralizado | PENDIENTE | — | — |
 | T-03 | Suite de tests mínima | PENDIENTE | — | La más importante en autonomía total |
@@ -61,6 +61,12 @@
 | T-31 | `SKILL.md` y configuración completa | PENDIENTE | — | Todo default documentado |
 | T-32 | Instalación de la skill y guión de ejemplo | PENDIENTE | — | Es el "deploy" |
 | T-33 | Encaje con la cadena de montaje | PENDIENTE | — | Contrato `.srt` + `tarjetas.json` |
+| R-01 | Persistencia verificada + plan B | PENDIENTE | — | Oleada v2 · `origen: auditoría #5` |
+| R-02 | Registro de tomas por escena | PENDIENTE | — | Oleada v2 · parte de rodaje |
+| R-03 | Marcar tropiezos durante la toma | PENDIENTE | — | Oleada v2 · alimenta `FEEDBACK.md` |
+| R-04 | Recalibrar el ritmo con tiempos reales | PENDIENTE | — | Oleada v2 · cierra el bucle de T-12 |
+| R-05 | `.srt` alineado con la toma buena | PENDIENTE | — | Oleada v3 · continuidad con el montaje |
+| R-06 | Coherencia de nombres y `assets/` | PENDIENTE | — | Fase F-D · `origen: auditoría #6` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
@@ -98,7 +104,7 @@
 
 | ID | Descripción | Motivo / valor esperado (incl. `origen: auditoría #N` si aplica) | Estado | Veto del dueño |
 |----|-------------|-------------------------------------------------------------------|--------|----------------|
-|    |             |                                                                   |        |                |
+| P-01 | Acotar `.gitignore`: dejar de ignorar `assets/` y `fixtures/` completos | `origen: auditoría #2` (severidad alta). Con las reglas anteriores quedaban fuera del repo los logotipos de marca, los tres guiones de calibración y —en cuanto existan— las plantillas del reproductor y el fixture del health check, con lo que la CI de T-04 no podría reproducir la verificación. Sustituidas por reglas finas que siguen excluyendo lo generado. | **COMPLETADA** 2026-08-31 |  |
 
 ---
 
@@ -115,6 +121,8 @@
 | 5 | ¿El `.pdf` debe llevar la marca 480 en versión oscura (pantalla) o clara (impresión en papel)? | T-28 | **Clara, fondo blanco** (2026-08-31), alineado con la guía de `480-branded-pptx`. Uso: documento de repaso y, llegado el caso, entregable a terceros → una escena por página, locución como prosa legible y bandera `--para-terceros` que omite notas internas. → T-28 y T-29. |
 | 6 | La guía de marca dice **Poppins** («familia oficial») y el `SKILL.md` de `480-branded-pptx` dice **Figtree** («familia obligatoria»). ¿Cuál manda? | T-28, T-29 | **Poppins** (2026-08-31): manda la guía de marca. El PDF sale en Poppins y el brief de T-29 se la pide también a la skill de marca, para que los dos documentos coincidan. Clave `tipografia_marca`. |
 
+| 7 | **La rama de trabajo del protocolo no existe.** El repo está en `develop`, con `master` y remoto `origin` en GitHub; el protocolo (§0.1, §0.2) dice `main` siete veces. ¿Cambiamos el protocolo a `develop` (git flow) o creamos `main`? Mientras no lo digas, el programador trabaja en `develop` y lo registra como desviación en §7. | §0.1 · `origen: auditoría #1` |  |
+| 8 | **Poppins no está instalada en esta máquina** (Figtree sí, Montserrat no). Con la decisión de ayer, el PDF saldría en Calibri y el PPTX en Figtree: peor que elegir cualquiera de las dos. ¿Instalas Poppins, o cambiamos a Figtree, que ya está y es la que usa la skill de marca? | T-28, T-29 · `origen: auditoría #3` |  |
 ---
 
 ## 7. DESVIACIONES RESPECTO A LA HOJA DE RUTA ORIGINAL
@@ -123,4 +131,6 @@
 
 | Fecha | Tarea | Desviación | Motivo |
 |-------|-------|-----------|--------|
-|       |       |           |        |
+| 2026-08-31 | T-00 | Se trabaja y se commitea en `develop`, no en `main` como fija §0.1 | El repositorio ya existía cuando arrancó la primera sesión, con ramas `develop` (activa) y `master`, remoto `origin` en GitHub y un commit inicial del dueño. `main` no existe. Cambiar la topología de ramas no es una decisión del agente: queda como pregunta §6.7 (`origen: auditoría #1`). Mientras tanto se respeta la rama que el dueño dejó activa. |
+| 2026-08-31 | T-00 | No se ejecutó `git init` | Ya estaba hecho. El resto de la tarea se cumplió íntegro. |
+| 2026-08-31 | T-00 | No se hizo push al remoto | El protocolo §0.1 contempla push porque en un proyecto web equivale a desplegar. Aquí el "despliegue" es la instalación local de la skill (T-32), que todavía no existe, y publicar en un remoto de GitHub es una acción hacia fuera que el dueño no ha autorizado explícitamente. Commit sí, push pendiente de su visto bueno. |

@@ -1,2 +1,24 @@
-assets/
-fixtures/
+# Artefactos de Python
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+
+# Entornos
+.venv/
+venv/
+
+# Salidas generadas por la propia skill al procesar un guión
+*-tarjetas/
+*.bak
+diagnostico-*.log
+
+# Sistema
+Thumbs.db
+desktop.ini
+
+# NOTA (P-01, origen: auditoría #2): `assets/` y `fixtures/` SÍ se versionan.
+# Contienen los logotipos de marca, las plantillas del reproductor y los guiones
+# de calibración: sin ellos la verificación no es reproducible fuera de esta máquina.
