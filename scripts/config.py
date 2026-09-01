@@ -50,6 +50,11 @@ ANTIRREBOTE_CLICKER_MS: int = 120
 TAMANO_GUION_MAX_BYTES: int = 5 * 1024 * 1024
 ESCENAS_MAX: int = 200
 
+# --- Diagnostico (T-02) ------------------------------------------------------------
+# Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
+# escribe fuera de esa carpeta (regla de aislamiento, §0.2).
+NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
+
 
 @dataclass(frozen=True)
 class Configuracion:

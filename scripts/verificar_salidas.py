@@ -20,10 +20,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from logger import configurar_logger
 from presentacion import Nivel, mostrar, titulo
 
 RAIZ = Path(__file__).resolve().parent.parent
 FIXTURE_EJEMPLO = RAIZ / "fixtures" / "guion-ejemplo.md"
+CARPETA_SALIDA_FIXTURE = RAIZ / "fixtures" / "salida"
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
 PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
@@ -33,8 +35,10 @@ PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
     (r"@import\s", "@import de CSS"),
     (r"\bfetch\s*\(", "llamada a fetch()"),
     (r"XMLHttpRequest", "uso de XMLHttpRequest"),
-    (r"""<(?:script|img|iframe|video|audio|source)[^>]+src=["']?(?!data:)[a-zA-Z0-9./]""",
-     "recurso externo en un atributo src"),
+    (
+        r"""<(?:script|img|iframe|video|audio|source)[^>]+src=["']?(?!data:)[a-zA-Z0-9./]""",
+        "recurso externo en un atributo src",
+    ),
 )
 
 
@@ -114,10 +118,18 @@ def main() -> int:
         action="store_true",
         help="Ejecuta la verificacion sobre el guion de ejemplo del repositorio.",
     )
+    analizador.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Ademas de al archivo de log, vuelca el diagnostico tecnico por stderr.",
+    )
     argumentos = analizador.parse_args()
     if not argumentos.fixture:
         mostrar("Indica --fixture para verificar sobre el guion de ejemplo.", Nivel.ERROR)
         return 2
+
+    log = configurar_logger(CARPETA_SALIDA_FIXTURE, verbose=argumentos.verbose)
+    log.info("Arranca la verificacion extremo a extremo sobre el guion de ejemplo.")
 
     titulo("Verificacion de salidas (cuarta red)")
     resultados = [
@@ -134,11 +146,13 @@ def main() -> int:
             "NO APLICABLE": Nivel.AVISO,
         }[resultado.estado]
         mostrar(f"{resultado.etapa}: {resultado.estado} — {resultado.detalle}", nivel)
+        log.debug("Etapa %r: %s — %s", resultado.etapa, resultado.estado, resultado.detalle)
 
     fallos = [r for r in resultados if r.es_fallo]
     pendientes = [r for r in resultados if r.estado == "NO APLICABLE"]
 
     if fallos:
+        log.error("Verificacion fallida: %d etapa(s) rotas.", len(fallos))
         mostrar(f"Verificacion FALLIDA: {len(fallos)} etapa(s) rotas. No commitear.", Nivel.ERROR)
         return 1
 
@@ -150,6 +164,7 @@ def main() -> int:
         )
     else:
         mostrar("OK — todas las etapas verificadas.", Nivel.OK)
+    log.info("Verificacion completada sin fallos (%d etapa(s) pendiente(s)).", len(pendientes))
     return 0
 
 

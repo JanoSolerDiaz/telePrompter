@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.1 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-01 — T-01 (linting y formato) COMPLETADA por una sesión de nube: hook de pre-commit versionado (`scripts/hooks/pre-commit` + `scripts/instalar_hooks.py`) que ejecuta las cuatro verificaciones y bloquea el commit si alguna falla; probado en real (bloqueó un commit con un error de sintaxis y dejó pasar uno limpio). `ruff`/`mypy` estrictos ya estaban configurados desde T-00 y siguen en verde. `DEVELOPERS.md` creado con las instrucciones de puesta en marcha. Sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md`. Siguiente tarea: T-02 (logger centralizado).
+**Última actualización:** 2026-09-01 — T-02 (logger centralizado) COMPLETADA por una sesión de nube: `scripts/logger.py` (biblioteca estándar `logging`) separado de `scripts/presentacion.py` — diagnóstico técnico frente a mensajes al dueño. `configurar_logger(carpeta_salida, verbose=...)` escribe siempre `teleprompter.log` en DEBUG dentro de la carpeta de salida del guion; `--verbose` añade un canal por stderr en INFO. Idempotente entre llamadas repetidas. Cableado en `verificar_salidas.py` (nuevo flag `--verbose`, log en `fixtures/salida/`, ahora ignorada en git por ser artefacto generado) y cubierto por 7 tests nuevos en `tests/test_logger.py`. `ruff` confirma 0 `print()` fuera de `presentacion.py` (regla `T20`). Las cuatro verificaciones en verde. Sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md`. Siguiente tarea: T-03 (suite de tests mínima).
 
 ---
 
@@ -29,7 +29,7 @@
 |----|-------|--------|---------------|-------|
 | T-00 | Verificación inicial | **COMPLETADA** | 2026-08-31 | Esqueleto, 4 redes en verde. El repo ya existía: `git init` no fue necesario |
 | T-01 | Linting y formato | **COMPLETADA** | 2026-09-01 | `ruff`/`mypy` estrictos (ya en verde desde T-00) + hook de pre-commit versionado (`scripts/instalar_hooks.py`) que bloquea el commit en rojo |
-| T-02 | Logger centralizado | PENDIENTE | — | — |
+| T-02 | Logger centralizado | **COMPLETADA** | 2026-09-01 | `scripts/logger.py` (stdlib `logging`), separado de `presentacion.py`; log en la carpeta de salida del guion, `--verbose` cableado en `verificar_salidas.py` |
 | T-03 | Suite de tests mínima | PENDIENTE | — | La más importante en autonomía total |
 | T-04 | CI (local + workflow inactivo) | PENDIENTE | — | — |
 | T-05 | Monitorización de errores (local) | PENDIENTE | — | Sin servicio externo: regla de cero red |

@@ -31,6 +31,19 @@ python -m pytest -q
 python scripts/verificar_salidas.py --fixture
 ```
 
+## Salida al usuario y diagnóstico (T-02)
+
+Dos módulos, dos audiencias, ninguna se mezcla con la otra:
+
+- `scripts/presentacion.py` — lo único autorizado a hablarle al dueño (mensajes en
+  español sobre el resultado de la ejecución). `print()` fuera de este módulo está
+  prohibido por lint (`ruff` regla `T20`).
+- `scripts/logger.py` — diagnóstico técnico. `configurar_logger(carpeta_salida,
+  verbose=...)` escribe siempre `<carpeta_salida>/teleprompter.log` en nivel DEBUG;
+  `--verbose` solo decide si además se ve por stderr mientras el proceso corre. El
+  archivo vive dentro de la carpeta de salida del guion (regla de aislamiento, §0.2),
+  nunca fuera.
+
 ## Estructura
 
 - `scripts/` — código de la skill (biblioteca estándar únicamente).

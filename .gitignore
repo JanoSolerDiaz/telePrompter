@@ -15,6 +15,10 @@ venv/
 *.bak
 diagnostico-*.log
 
+# Salida generada por `verificar_salidas.py --fixture` (cuarta red): reproductor.html,
+# teleprompter.log... Nunca contiene guiones de origen, solo lo derivado.
+fixtures/salida/
+
 # Sistema
 Thumbs.db
 desktop.ini

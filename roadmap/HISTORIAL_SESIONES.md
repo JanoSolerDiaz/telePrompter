@@ -72,3 +72,19 @@
 **Hallazgo de infraestructura:** `git push` sobre HTTPS (vía el proxy de git de la sesión) devuelve 403 con el mensaje «Claude doesn't have GitHub access to JanoSolerDiaz/telePrompter for your organization» — tanto desde el clon de trabajo como desde un segundo clon obtenido con `access: push`. Sin embargo, el servidor MCP de GitHub (`mcp__github__*`, autenticado por otra vía) sí tiene acceso de lectura y escritura al repositorio: `get_me`, `list_branches` y finalmente `push_files` funcionaron con normalidad. Este commit de T-01 se subió a `origin/develop` con `mcp__github__push_files` en lugar de `git push`, para no perder el trabajo de la sesión.
 **Acción para el dueño:** si se quiere que las futuras sesiones de nube puedan usar `git push` directamente (más simple y con hooks locales reales), instalar o revincular la GitHub App de Claude para esta organización/repositorio: https://github.com/apps/claude/installations/select_target o revincular en https://claude.ai/customize/connectors?auth_start=github&auth_start_force=1. Mientras tanto, el push por API (`mcp__github__push_files`) es la vía de repuesto y queda documentado aquí para que ninguna sesión futura lo redescubra desde cero.
 **Próximo paso:** ninguno adicional al ya anotado arriba (T-02); si el dueño revincula el acceso, la siguiente sesión puede confirmar con un `git push` de prueba.
+
+---
+
+### Sesión 2026-09-01 — agente de nube, rutina programada
+**Tarea(s):** T-02 (logger centralizado)
+**Estado resultante:** T-02 COMPLETADA
+**Commits a develop:** `T-02: logger centralizado de diagnostico` (ver `git log origin/develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/logger.py` (nuevo), `tests/test_logger.py` (nuevo, 7 tests), `scripts/config.py` (constante `NOMBRE_ARCHIVO_LOG`), `scripts/verificar_salidas.py` (flag `--verbose`, logger cableado sobre `fixtures/salida/`), `.gitignore` (`fixtures/salida/` pasa a ignorarse por ser artefacto generado), `DEVELOPERS.md` (sección "Salida al usuario y diagnóstico"), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva)
+**Verificaciones pre-push:** tipos ✅ (mypy estricto, 0 errores) · lint ✅ (`ruff check` y `ruff format --check`, 0 avisos; regla `T20` confirma 0 `print()` fuera de `presentacion.py`) · tests ✅ (24 pasan, 7 nuevos de `test_logger.py`) · salidas ✅ (código 0, 4 etapas aún NO APLICABLE con su tarea; probado también con `--verbose`)
+**Health check post-deploy:** no aplicable — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (T-32); no se simula
+**Decisiones tomadas:** 1 fila añadida a `DECISIONES_TECNICAS.md` (logger separado de `presentacion.py` vía `logging` de la biblioteca estándar, un único logger nombrado en vez de uno por módulo, idempotente entre llamadas repetidas)
+**Hallazgos del auditor atendidos:** ninguno de severidad alta abierto en `auditoriacontinua.md` (#5, #6, #8 siguen media/baja, sin acción de esta sesión)
+**Hallazgos:** ninguno nuevo. `fixtures/salida/` no estaba en `.gitignore` pese a que `verificar_salidas.py` ya la usaba como destino futuro de `reproductor.html` (T-18); corregido de paso, era necesario para no versionar el log generado por esta tarea
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-03 (suite de tests mínima) — la tarea más importante en autonomía total (§1)
