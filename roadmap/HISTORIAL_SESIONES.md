@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-07 (estado del proyecto de guión, `estado.json`), sesión de nube
+**Tarea(s):** T-07
+**Estado resultante:** T-07 COMPLETADA
+**Commits a develop:** `T-07: estado persistente del proyecto de guion (estado.json)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna sobre datos reales; se añade el mecanismo y la migración `001_estado_inicial` (cubierta por tests, no hay ningún `estado.json` de producción todavía que migrar)
+**Archivos creados/modificados:** `scripts/estado.py` (nuevo), `scripts/migraciones/__init__.py` (nuevo), `scripts/migraciones/001_estado_inicial.py` (nuevo), `scripts/config.py` (`NOMBRE_ARCHIVO_ESTADO`, `VERSION_ESQUEMA_ESTADO`), `tests/test_estado.py` (nuevo, 27 tests), `tests/test_migraciones.py` (nuevo, 8 tests), `pyproject.toml` (`per-file-ignores` para `N999` en `scripts/migraciones/*.py`), `DEVELOPERS.md` (sección T-07), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (91 pasan + 8 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas NO APLICABLE, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` (nota de entorno del protocolo v1.3)
+**Decisiones tomadas:** 3 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-07): escritura atómica con `Path.replace()` en vez de `os.replace()` (regla `PTH105` de ruff); mecanismo de migraciones `NNN_<nombre>.py` cargadas con `importlib.import_module` (patrón Django, verificado antes de escribir código); la migración `001_estado_inicial` trata cualquier dict sin `version_esquema` como "versión anterior" implícita, al no existir una versión 0 real que preceda a T-07
+**Hallazgos del auditor atendidos:** ninguno nuevo — revisado `auditoriacontinua.md` al empezar, sin hallazgos ABIERTOS de severidad alta; #5, #6 y #8 siguen abiertos y no aplican a esta tarea
+**Hallazgos:** ninguno
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-08 (parser de Markdown y detección del separador de escenas), que consume `EstadoProyecto.separador_escena` para persistir la elección del nivel/patrón de escena
+
+---
+
 ### Sesión 2026-09-01 — T-06 (robustez de entrada), sesión de nube
 **Tarea(s):** T-06
 **Estado resultante:** T-06 COMPLETADA

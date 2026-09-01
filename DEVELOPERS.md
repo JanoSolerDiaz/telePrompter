@@ -119,6 +119,46 @@ usarse). Por eso `entrada.py` evita la sintaxis de generics de PEP 695
 (`def f[T](...)`, que `ast.parse` de 3.11 ni siquiera analiza) y usa
 `typing.TypeVar` clásico. Ver `DECISIONES_TECNICAS.md`, T-06.
 
+## Estado del proyecto de guion (T-07)
+
+`scripts/estado.py` da al proceso memoria entre sesiones: `estado.json`, dentro de la
+carpeta de salida derivada del guion (`<carpeta-del-guion>/<nombre-guion>-tarjetas/`,
+que deriva `entrada.carpeta_salida_para`). Piezas:
+
+- `EstadoProyecto` (dataclass) — el contrato de datos: versión de esquema, `InfoGuion`
+  (ruta, hash sha256, tamaño), configuración efectiva, `SeparadorEscena` (nivel/patrón
+  elegidos por T-08, `None` hasta entonces), y los contenedores que T-08 en adelante
+  rellenan (`escenas`, `reescrituras`, `validacion`, `salidas_generadas`), vacíos por
+  ahora — mismo tratamiento que T-02/T-04/T-05: infraestructura sin productor de datos
+  todavía.
+- `estado_inicial(ruta_guion, configuracion)` — estado de partida para un guion sin
+  `estado.json` previo.
+- `guardar_estado(estado, carpeta_salida)` — escritura **atómica**: escribe a
+  `estado.json.tmp` en la misma carpeta y hace `Path.replace()` (atómico en POSIX y
+  Windows) sobre `estado.json`; si algo falla antes del reemplazo, el `estado.json`
+  anterior queda intacto y el temporal se limpia. Así un proceso interrumpido a mitad
+  de escritura y relanzado nunca encuentra un archivo a medias.
+- `cargar_estado(carpeta_salida)` — lee `estado.json`, aplica las migraciones
+  pendientes (ver abajo) y reconstruye `EstadoProyecto`. Cualquier fallo (archivo
+  ausente, JSON corrupto, estructura incompleta) levanta `EstadoError` con mensaje ya
+  accionable en español, mismo contrato que `EntradaError` (T-06).
+- `guion_modificado(estado, ruta_guion)` / `avisar_si_guion_modificado(...)` — compara
+  el hash guardado contra el hash actual del guion; si difiere, avisa por
+  `presentacion.py` que la próxima pasada recalculará escenas, clasificación y tiempos
+  (todavía no hay recálculo incremental).
+
+**Migraciones (`scripts/migraciones/`).** Cada archivo `NNN_<nombre>.py` define
+`VERSION_DESTINO: int` y `aplicar(datos: dict) -> dict`, debe ser idempotente y debe
+**preservar** cualquier clave ya presente en `datos` (invariante (c) de §0.2: la
+edición del dueño manda), completando solo lo que falte con valores por defecto.
+`aplicar_migraciones` (en `migraciones/__init__.py`) descubre los archivos por el
+prefijo numérico, los ordena y aplica en cadena los que falten según
+`version_esquema` (0 si no existe). El prefijo numérico no es un identificador Python
+válido, así que se cargan con `importlib.import_module` en vez de `import` (mismo
+mecanismo que usa Django); `N999` de ruff está ignorado para esa carpeta a propósito
+(ver `pyproject.toml`). La migración `001_estado_inicial.py` es la que establece el
+esquema versión 1 por primera vez.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

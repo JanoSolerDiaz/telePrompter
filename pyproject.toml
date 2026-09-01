@@ -26,6 +26,10 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# Migraciones numeradas (T-07): "NNN_<nombre>.py" es la convencion pedida por la hoja
+# de ruta (mismo patron que usa Django) y no es un identificador Python valido, pero
+# se cargan con `importlib.import_module`, que no lo exige.
+"scripts/migraciones/*.py" = ["N999"]
 # El modulo de presentacion es el unico autorizado a escribir en la salida estandar (T-02).
 "scripts/presentacion.py" = ["T20"]
 "tests/*" = ["T20"]

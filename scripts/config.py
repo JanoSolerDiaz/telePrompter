@@ -61,6 +61,13 @@ NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
 # Se completa con una marca de tiempo: "<PREFIJO><timestamp>.log".
 PREFIJO_ARCHIVO_DIAGNOSTICO: str = "diagnostico-"
 
+# --- Estado del proyecto de guion (T-07) -------------------------------------------
+# Nombre del archivo de estado dentro de la carpeta de salida del guion.
+NOMBRE_ARCHIVO_ESTADO: str = "estado.json"
+# Version del esquema de `estado.json` que escribe esta version de la skill. Sube en
+# cada migracion nueva (`scripts/migraciones/NNN_<nombre>.py`); nunca se decrementa.
+VERSION_ESQUEMA_ESTADO: int = 1
+
 
 @dataclass(frozen=True)
 class Configuracion:
