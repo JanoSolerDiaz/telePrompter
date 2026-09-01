@@ -315,6 +315,54 @@ de `palabras_por_bloque_min`-`palabras_por_bloque_max` palabras (`config.py`).
   lleva el número de escena (esa granularidad vive en `Escena`), así que reclasificar
   evita añadir un campo a T-09 solo para este caso.
 
+## Motor de tiempos (T-12)
+
+`scripts/tiempos.py::calcular_tiempos` es la única función que calcula tiempos
+(requisito 4): informe, cabecera de `guion-escenas.md` (T-16), `.srt` (T-27) y
+reproductor (T-18+) deben consumir su resultado (`ResultadoTiempos`), nunca
+recalcular por su cuenta.
+
+- **Dos semánticas distintas para el mismo patrón `(m:ss – m:ss)` — el punto más
+  delicado de esta tarea.** El rango horario de un encabezado de escena
+  (`## BLOQUE 4 — ... (1:55 – 3:10)`) son dos **marcas de tiempo del vídeo**: la
+  escena dura `3:10 − 1:55 = 75s`, no "162s de media entre los dos instantes". El
+  metadato de cabecera `**Duración objetivo:**` (`3:40 – 3:55`), en cambio, sí es
+  una **horquilla real de duración total**. Un primer diseño trató ambos igual
+  (tomando el punto medio del par), lo que deducía un ppm de ~40 en los tres
+  guiones reales (muy fuera de la banda `[90, 180]`) simplemente porque sumaba
+  marcas de tiempo como si fueran duraciones — ver la fila de T-12 en
+  `DECISIONES_TECNICAS.md`. `parser.rango_segundos_titulo` (renombrada desde la
+  privada `_rango_segundos` de T-08) devuelve el par crudo en ambos casos; quien
+  llama decide qué hacer con él: `_duracion_objetivo_escena` resta los dos
+  extremos, `_duracion_objetivo_metadato` deja el par tal cual.
+- **Ritmo deducido (requisitos 1, 7, 8):** ppm único para todo el guion —
+  `palabras_totales / (suma_de_duraciones_por_escena / 60)` — con respaldo a
+  `ppm_respaldo` (120) si falta la duración objetivo de alguna escena o el valor
+  cae fuera de `ppm_banda_plausible`. `RitmoAplicado` siempre lleva `origen`
+  (`deducido`/`respaldo`/`manual`), `ppm_deducido` (aunque se descarte) y
+  `ppm_alternativo` (el otro valor, para forzarlo a mano). `Configuracion.ppm_manual`
+  (requisito 8) tiene prioridad sobre ambos; se persiste solo porque ya viaja en
+  `configuracion_efectiva` dentro de `estado.json` (T-07), sin mecanismo nuevo.
+- **Pausas por bloque (requisito 2):** `coma < punto < fin_parrafo < fin_escena`
+  (`config.py`). "Fin de párrafo"/"fin de escena" se deciden por posición (último
+  bloque de respiración de un `BloqueClasificado` de T-09, o de toda la escena),
+  no por puntuación, y sustituyen a la pausa por puntuación cuando aplican
+  (nunca se suman). `_bloques_respiracion_marcados` reclasifica escena a escena
+  con `clasificador.clasificar_escena` en vez de ampliar `BloqueRespiracion`
+  (T-11) con estos dos booleanos — mismo patrón que ya usó T-11 con T-09.
+  `troceo.categoria_puntuacion_final` (nueva función pública) reutiliza los
+  conjuntos de puntuación que ya tenía T-11 para decidir el corte.
+- **Agregados sin descuadre (requisitos 3, 4):** un único `cursor_segundos` que se
+  acumula bloque a bloque; la duración de una escena es la diferencia del cursor
+  antes/después de sus bloques, así que escena y total telescopan exactamente,
+  sin recalcular ni redondear en un paso aparte.
+- **Contraste (requisito 6):** por escena, contra la duración objetivo de esa
+  escena; en total, contra el metadato `**Duración objetivo:**` si está presente,
+  o si no contra la suma de las duraciones por escena (par degenerado
+  `(suma, suma)` para que el tipo del campo no cambie según el origen). Avisa
+  cuando la desviación relativa supera `umbral_desviacion_tiempos`, con cuántas
+  palabras sobran o faltan al ritmo aplicado.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -322,13 +370,14 @@ vez a los tres guiones de calibración de `fixtures/reales/`. Úsalas en vez de 
 sueltas si tu test necesita texto de guion real.
 
 `tests/test_logica_pendiente.py` reúne, con `@pytest.mark.skip(reason=...)`, los tests
-de la lógica de producto que T-03 debía cubrir pero que todavía no existe (motor de
-tiempos, normalizador, exportador `.srt`, e idempotencia de la revalidación, §0.2; el
-parser de T-08, el clasificador de T-09 y el troceador de T-11 ya no están aquí, ver
-`tests/test_parser.py`, `tests/test_clasificador.py` y `tests/test_troceo.py`). Cada
-`skip` nombra la tarea que lo desbloquea y describe, en el docstring, lo que el test
-debe comprobar. Al implementar esa tarea: quita el `skip` y escribe el test descrito
-como parte de su propio criterio de aceptación — no lo dejes como nota aparte.
+de la lógica de producto que T-03 debía cubrir pero que todavía no existe
+(normalizador, exportador `.srt`, e idempotencia de la revalidación, §0.2; el parser de
+T-08, el clasificador de T-09, el troceador de T-11 y el motor de tiempos de T-12 ya no
+están aquí, ver `tests/test_parser.py`, `tests/test_clasificador.py`,
+`tests/test_troceo.py` y `tests/test_tiempos.py`). Cada `skip` nombra la tarea que lo
+desbloquea y describe, en el docstring, lo que el test debe comprobar. Al implementar
+esa tarea: quita el `skip` y escribe el test descrito como parte de su propio criterio
+de aceptación — no lo dejes como nota aparte.
 
 ## Estructura
 

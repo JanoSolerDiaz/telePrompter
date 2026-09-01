@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-12 (motor de tiempos), sesión de nube
+**Tarea(s):** T-12
+**Estado resultante:** T-12 COMPLETADA
+**Commits a develop:** `T-12: motor de tiempos (ppm deducido del guion, respaldo 120 ppm)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-12 no toca el esquema de `estado.json`; `Configuracion.ppm_manual` viaja dentro de `configuracion_efectiva`, que ya existe desde T-07)
+**Archivos creados/modificados:** `scripts/tiempos.py` (nuevo), `scripts/parser.py` (`_rango_segundos` renombrada a pública `rango_segundos_titulo`, reutilizable por T-12), `scripts/troceo.py` (nueva función pública `categoria_puntuacion_final`), `scripts/config.py` (campos nuevos en `Configuracion`: `ppm_banda_plausible`, `ppm_manual`, `pausa_coma_segundos`, `pausa_punto_segundos`, `pausa_fin_parrafo_segundos`, `pausa_fin_escena_segundos`, `umbral_desviacion_tiempos`, con su validación en `__post_init__`), `tests/test_tiempos.py` (nuevo, 8 tests), `tests/test_logica_pendiente.py` (se quita el skip de T-12, ya cubierto por los tests reales), `DEVELOPERS.md` (sección T-12 nueva), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (151 pasan + 3 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas aún NO APLICABLE)
+**Health check post-deploy:** N/A — sesión de nube, no instala la skill (T-32 la instala; ver §3 de SEGUIMIENTO)
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-12): el rango horario de un encabezado de escena (marcas de tiempo del vídeo) y el del metadato `**Duración objetivo:**` (horquilla real de duración) reciben tratamientos distintos pese a compartir el mismo patrón — bug real encontrado probando contra los tres guiones reales antes de escribir un test, que deducía un ppm de 33-47 (muy fuera de banda) hasta corregirlo; la duración objetivo total usa el metadato de cabecera si está presente, con la suma de escenas como respaldo de mismo tipo; "fin de párrafo"/"fin de escena" se deciden reclasificando la escena en vez de ampliar `BloqueRespiracion` (T-11); `ppm_manual` no necesita mecanismo de persistencia propio, ya viaja en `configuracion_efectiva`.
+**Hallazgos del auditor atendidos:** ninguno (sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar la sesión)
+**Hallazgos:** el bug de las dos semánticas del rango horario (ver decisiones) se detectó ejecutando `calcular_tiempos` a mano contra los tres guiones reales ANTES de escribir `tests/test_tiempos.py` — con la primera versión, los tres guiones deducían un ppm de 33-47 y el aviso total pedía "faltan 863/1625/1236 palabras", una desviación sin sentido que delató el error de cálculo antes de que ningún test lo hubiera podido enmascarar con datos sintéticos. Corregido, los tres guiones deducen ppm 140-167 (dentro de banda) con avisos de desviación pequeños y creíbles (0-15%).
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** siguiente tarea de §1 es T-13 (normalización a forma dicha, con diccionario del dueño), que depende de T-11 (ya completada) y es la primera tarea de la FASE B2 (pasada de locutabilidad).
+
+---
+
 ### Sesión 2026-09-01 — T-11 (troceo en bloques de respiración), sesión de nube
 **Tarea(s):** T-11
 **Estado resultante:** T-11 COMPLETADA

@@ -108,6 +108,23 @@ def _texto_plano(contenido: str) -> str:
     return " ".join(linea for linea in lineas if linea)
 
 
+def categoria_puntuacion_final(texto: str) -> str:
+    """Categoria de la puntuacion final de un fragmento ya trabajado por el troceo.
+
+    Publica (no `_`) porque T-12 (motor de tiempos) la reutiliza para decidir la
+    pausa aplicable tras cada bloque de respiracion (coma/punto/ninguna; fin de
+    parrafo y fin de escena los decide T-12 por posicion, no por puntuacion).
+    Devuelve `'fuerte'`, `'debil'` o `'ninguna'`, reusando los mismos conjuntos de
+    caracteres que ya usa el propio troceo para decidir donde cortar.
+    """
+    nucleo = texto.rstrip().rstrip(_CIERRES_A_IGNORAR)
+    if nucleo and nucleo[-1] in _PUNTUACION_FUERTE:
+        return "fuerte"
+    if nucleo and nucleo[-1] in _PUNTUACION_DEBIL:
+        return "debil"
+    return "ninguna"
+
+
 def _nucleo_alfabetico(palabra: str) -> str:
     coincidencias = _PATRON_NUCLEO_ALFABETICO.findall(palabra.lower())
     return coincidencias[0] if coincidencias else ""

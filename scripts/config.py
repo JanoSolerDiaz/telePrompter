@@ -19,6 +19,17 @@ from dataclasses import dataclass, field
 PPM_RESPALDO: int = 120
 PPM_BANDA_PLAUSIBLE: tuple[int, int] = (90, 180)
 
+# Pausas por bloque de respiracion segun su puntuacion final (requisito 2 de T-12),
+# en orden creciente: coma < punto < fin de parrafo < fin de escena.
+PAUSA_COMA_SEGUNDOS: float = 0.15
+PAUSA_PUNTO_SEGUNDOS: float = 0.35
+PAUSA_FIN_PARRAFO_SEGUNDOS: float = 0.6
+PAUSA_FIN_ESCENA_SEGUNDOS: float = 1.0
+
+# Umbral relativo (0.15 = 15 %) de desviacion entre la duracion estimada y la
+# objetivo (por escena y en total) a partir del cual se avisa (requisito 6 de T-12).
+UMBRAL_DESVIACION_TIEMPOS: float = 0.15
+
 # --- Troceo en bloques de respiracion (T-11) --------------------------------------
 PALABRAS_POR_BLOQUE_MIN: int = 6
 PALABRAS_POR_BLOQUE_OBJETIVO: int = 9
@@ -74,6 +85,17 @@ class Configuracion:
     """Configuracion efectiva de una ejecucion. Se congela para que nadie la mute a medias."""
 
     ppm_respaldo: int = PPM_RESPALDO
+    ppm_banda_plausible: tuple[int, int] = field(default=PPM_BANDA_PLAUSIBLE)
+    # Calibracion opcional con toma real (requisito 8 de T-12): si el dueno la fija,
+    # tiene prioridad sobre el ppm deducido y sobre el respaldo. Se persiste sola,
+    # como el resto de `Configuracion`, dentro de `configuracion_efectiva` en
+    # `estado.json` (T-07): no hace falta un mecanismo de persistencia nuevo.
+    ppm_manual: int | None = None
+    pausa_coma_segundos: float = PAUSA_COMA_SEGUNDOS
+    pausa_punto_segundos: float = PAUSA_PUNTO_SEGUNDOS
+    pausa_fin_parrafo_segundos: float = PAUSA_FIN_PARRAFO_SEGUNDOS
+    pausa_fin_escena_segundos: float = PAUSA_FIN_ESCENA_SEGUNDOS
+    umbral_desviacion_tiempos: float = UMBRAL_DESVIACION_TIEMPOS
     palabras_por_bloque_min: int = PALABRAS_POR_BLOQUE_MIN
     palabras_por_bloque_objetivo: int = PALABRAS_POR_BLOQUE_OBJETIVO
     palabras_por_bloque_max: int = PALABRAS_POR_BLOQUE_MAX
@@ -103,3 +125,28 @@ class Configuracion:
             raise ValueError(mensaje)
         if self.ppm_respaldo <= 0:
             raise ValueError("El ritmo de respaldo debe ser un numero positivo de palabras/minuto.")
+        banda_min, banda_max = self.ppm_banda_plausible
+        if banda_min > banda_max or banda_min <= 0:
+            mensaje = (
+                "La banda de plausibilidad del ppm debe ser un rango positivo y creciente "
+                f"({self.ppm_banda_plausible})."
+            )
+            raise ValueError(mensaje)
+        if self.ppm_manual is not None and self.ppm_manual <= 0:
+            raise ValueError(
+                "El ppm calibrado a mano debe ser un numero positivo de palabras/minuto."
+            )
+        for nombre, valor in (
+            ("pausa_coma_segundos", self.pausa_coma_segundos),
+            ("pausa_punto_segundos", self.pausa_punto_segundos),
+            ("pausa_fin_parrafo_segundos", self.pausa_fin_parrafo_segundos),
+            ("pausa_fin_escena_segundos", self.pausa_fin_escena_segundos),
+        ):
+            if valor < 0:
+                raise ValueError(f"La pausa '{nombre}' no puede ser negativa ({valor}).")
+        if not (0 < self.umbral_desviacion_tiempos <= 1):
+            mensaje = (
+                "El umbral de desviacion de tiempos debe estar entre 0 (exclusivo) y 1 "
+                f"(inclusive), como fraccion ({self.umbral_desviacion_tiempos})."
+            )
+            raise ValueError(mensaje)

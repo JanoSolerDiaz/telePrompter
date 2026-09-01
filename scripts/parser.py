@@ -254,8 +254,14 @@ def _patron_para_nivel(nivel: int) -> str:
     return PATRON_ENCABEZADO_ESCENA.replace(nivel_actual, "^" + "#" * nivel, 1)
 
 
-def _rango_segundos(texto_encabezado: str) -> tuple[int, int] | None:
-    coincidencia = _PATRON_RANGO_TIEMPO.search(texto_encabezado)
+def rango_segundos_titulo(texto: str) -> tuple[int, int] | None:
+    """Extrae un rango horario `m:ss - m:ss` (o `m:ss-m:ss`) de un texto libre.
+
+    Publica (no `_`) porque T-12 (motor de tiempos) la reutiliza tal cual sobre el
+    titulo de una escena y sobre el metadato `**Duracion objetivo:**` de cabecera:
+    ambos usan el mismo formato de rango que ya reconoce este patron.
+    """
+    coincidencia = _PATRON_RANGO_TIEMPO.search(texto)
     if not coincidencia:
         return None
     inicio_min, inicio_seg, fin_min, fin_seg = (int(g) for g in coincidencia.groups())
@@ -264,7 +270,7 @@ def _rango_segundos(texto_encabezado: str) -> tuple[int, int] | None:
 
 
 def _duracion_media_segundos(titulos: list[str]) -> float | None:
-    duraciones = [rango[1] - rango[0] for t in titulos if (rango := _rango_segundos(t))]
+    duraciones = [rango[1] - rango[0] for t in titulos if (rango := rango_segundos_titulo(t))]
     return sum(duraciones) / len(duraciones) if duraciones else None
 
 
