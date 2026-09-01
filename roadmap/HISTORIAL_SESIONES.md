@@ -85,6 +85,6 @@
 **Health check post-deploy:** no aplicable — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (T-32); no se simula
 **Decisiones tomadas:** 1 fila añadida a `DECISIONES_TECNICAS.md` (logger separado de `presentacion.py` vía `logging` de la biblioteca estándar, un único logger nombrado en vez de uno por módulo, idempotente entre llamadas repetidas)
 **Hallazgos del auditor atendidos:** ninguno de severidad alta abierto en `auditoriacontinua.md` (#5, #6, #8 siguen media/baja, sin acción de esta sesión)
-**Hallazgos:** ninguno nuevo. `fixtures/salida/` no estaba en `.gitignore` pese a que `verificar_salidas.py` ya la usaba como destino futuro de `reproductor.html` (T-18); corregido de paso, era necesario para no versionar el log generado por esta tarea
+**Hallazgos:** ninguno nuevo. `fixtures/salida/` no estaba en `.gitignore` pese a que `verificar_salidas.py` ya la usaba como destino futuro de `reproductor.html` (T-18); corregido de paso, era necesario para no versionar el log generado por esta tarea. Nota de infraestructura: a diferencia de la sesión de T-01, `git push -u origin develop` funcionó directamente sin el 403 de HTTPS documentado más arriba; no hizo falta recurrir a `mcp__github__push_files`. No se sabe si el acceso quedó revinculado de forma permanente o si fue puntual: la siguiente sesión debe seguir intentando `git push` primero y solo caer al push por API si vuelve a fallar
 **Tareas autopropuestas (P-XX):** ninguna
 **Próximo paso:** T-03 (suite de tests mínima) — la tarea más importante en autonomía total (§1)
