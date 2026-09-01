@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-08 (parser de Markdown y separador de escenas), sesión de nube
+**Tarea(s):** T-08
+**Estado resultante:** T-08 COMPLETADA
+**Commits a develop:** `T-08: parser de Markdown y deteccion del separador de escenas` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-08 no toca el esquema de `estado.json`; consume `SeparadorEscena`, ya definido por T-07)
+**Archivos creados/modificados:** `scripts/parser.py` (nuevo), `tests/test_parser.py` (nuevo, 18 tests), `tests/test_logica_pendiente.py` (quita el talón `test_parser_reconoce_toda_escena_del_guion_real`, ya implementado), `pyproject.toml` (`per-file-ignores` para `RUF001` en `tests/test_parser.py`), `DEVELOPERS.md` (sección T-08, actualiza la mención de T-06 a `parser.py`), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (109 pasan + 7 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas NO APLICABLE, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` (nota de entorno del protocolo v1.3)
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-08): clasificación de encabezado en tres pasos (patrón → escena; lista negra y rótulo de locución consultados a la vez, conflicto solo si las dos aplican) y el porqué de no preguntar ante una sola señal; `DeteccionEscenasAmbiguaError` compartida entre ambigüedad de nivel y de conflicto, con persistencia por `SeparadorEscena` o por `secciones_auxiliares` según el caso, sin ampliar el esquema de `estado.json`; escape unicode del guion largo (U+2013) en el código de producción y `per-file-ignore` de `RUF001` acotado a `tests/test_parser.py`; `extraer_metadatos` sin esquema fijo de claves; el preámbulo nunca es "escena 0", sin bandera de configuración sin uso real que la respalde
+**Hallazgos del auditor atendidos:** ninguno nuevo — revisado `auditoriacontinua.md` al empezar, sin hallazgos ABIERTOS de severidad alta; #5, #6 y #8 siguen abiertos y no aplican a esta tarea
+**Hallazgos:** ninguno
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-09 (clasificador locución / no locución), que reutiliza `parsear_guion` y clasifica dentro de cada `Escena.contenido` qué bloques son recitables
+
+---
+
 ### Sesión 2026-09-01 — T-07 (estado del proyecto de guión, `estado.json`), sesión de nube
 **Tarea(s):** T-07
 **Estado resultante:** T-07 COMPLETADA

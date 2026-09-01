@@ -86,7 +86,7 @@ entrada futuro la use en vez de inventar su propio manejo de errores.
 ## Robustez de entrada (T-06)
 
 `scripts/entrada.py` blinda la única puerta de entrada real (el `.md` del guion)
-antes de que nada lo procese, delante del parser (T-08, que todavía no existe):
+antes de que nada lo procese, delante del parser (`scripts/parser.py`, T-08):
 
 - `validar_ruta_guion(ruta)` — existe, no es una carpeta, tamaño ≤
   `TAMANO_GUION_MAX_BYTES` (`config.py`). Devuelve la ruta resuelta.
@@ -159,6 +159,47 @@ mecanismo que usa Django); `N999` de ruff está ignorado para esa carpeta a prop
 (ver `pyproject.toml`). La migración `001_estado_inicial.py` es la que establece el
 esquema versión 1 por primera vez.
 
+## Parser de escenas (T-08)
+
+`scripts/parser.py` convierte el `.md` en escenas: `parsear_guion(texto)` es el punto
+de entrada. Piezas:
+
+- `dividir_en_bloques(texto)` — trocea el `.md` en un `Bloque` por encabezado (de
+  cualquier nivel), más el preámbulo si lo hay, con la línea de inicio/fin sobre el
+  texto original (trazabilidad). Ignora `#` dentro de vallas de código (` ``` `/`~~~`).
+  Concatenar el `contenido` de todos los bloques, en orden, reconstruye el `.md` línea
+  a línea sin pérdida.
+- `elegir_separador(texto, configuracion)` — decide el nivel/patrón de escena
+  (`estado.SeparadorEscena`). El nivel se deriva de los `#` iniciales de
+  `PATRON_ENCABEZADO_ESCENA` (`config.py`), no está fijado a mano.
+- `parsear_guion(texto, *, configuracion=None, separador=None)` — si `separador` ya
+  trae `nivel`/`patrón` (una decisión persistida de una sesión anterior en
+  `estado.json`, T-07), se usa tal cual sin volver a preguntar el nivel. Los
+  conflictos de clasificación de un encabezado concreto **sí** se revisan siempre,
+  persistido o no, porque dependen de `configuracion.secciones_auxiliares`, que puede
+  cambiar entre pasadas sin que cambie el separador.
+- `extraer_metadatos(texto)` — pares `**Clave:** valor` de la cabecera (duración
+  objetivo, formato, promesa/idea única…), sin esquema fijo de claves: los tres
+  guiones reales no usan las mismas.
+
+**Clasificación de un encabezado del nivel elegido** (ni todo `##` es escena — ver el
+docstring del módulo para el detalle completo):
+1. Casa con el patrón → escena.
+2. Si no: título en `secciones_auxiliares` (lista negra) y cuerpo con
+   `**LOCUCIÓN**` **a la vez** → conflicto real, se levanta
+   `DeteccionEscenasAmbiguaError` con las alternativas y sus consecuencias (nº de
+   escenas, duración media) en vez de decidir en silencio (requisito 6 de T-08).
+   Solo lista negra → auxiliar. Solo `**LOCUCIÓN**` → escena (señal secundaria).
+   Ninguna de las dos → auxiliar (caso por defecto, mayoritario en los tres guiones
+   reales: el subtítulo entrecomillado, por ejemplo).
+3. Ningún encabezado del nivel esperado casa con el patrón → también
+   `DeteccionEscenasAmbiguaError`, con una alternativa por nivel candidato (`#`, `##`,
+   `###`).
+
+Sin CLI todavía que capture la excepción y le pregunte de verdad al dueño (llega con
+T-16/T-17): hoy la persistencia de la respuesta se demuestra en
+`tests/test_parser.py::test_conflicto_de_senales_se_resuelve_ajustando_la_lista_negra`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -166,12 +207,13 @@ vez a los tres guiones de calibración de `fixtures/reales/`. Úsalas en vez de 
 sueltas si tu test necesita texto de guion real.
 
 `tests/test_logica_pendiente.py` reúne, con `@pytest.mark.skip(reason=...)`, los tests
-de la lógica de producto que T-03 debía cubrir pero que todavía no existe (parser,
-clasificador, troceador, motor de tiempos, normalizador, exportador `.srt`, y las dos
-invariantes de cobertura total e idempotencia de §0.2). Cada `skip` nombra la tarea que
-lo desbloquea y describe, en el docstring, lo que el test debe comprobar. Al implementar
-esa tarea: quita el `skip` y escribe el test descrito como parte de su propio criterio de
-aceptación — no lo dejes como nota aparte.
+de la lógica de producto que T-03 debía cubrir pero que todavía no existe (clasificador,
+troceador, motor de tiempos, normalizador, exportador `.srt`, y las dos invariantes de
+cobertura total e idempotencia de §0.2; el parser de T-08 ya no está aquí, ver
+`tests/test_parser.py`). Cada `skip` nombra la tarea que lo desbloquea y describe, en el
+docstring, lo que el test debe comprobar. Al implementar esa tarea: quita el `skip` y
+escribe el test descrito como parte de su propio criterio de aceptación — no lo dejes
+como nota aparte.
 
 ## Estructura
 

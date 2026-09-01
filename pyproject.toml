@@ -33,6 +33,10 @@ select = [
 # El modulo de presentacion es el unico autorizado a escribir en la salida estandar (T-02).
 "scripts/presentacion.py" = ["T20"]
 "tests/*" = ["T20"]
+# Los guiones reales usan el guion largo (U+2013) en los rangos horarios de las
+# escenas; este test compara contra ese texto literal (titulos y metadatos ya
+# extraidos), asi que necesita el caracter tal cual, no su escape unicode (T-08).
+"tests/test_parser.py" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.12"
