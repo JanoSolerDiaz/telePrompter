@@ -59,6 +59,13 @@ _PATRON_METADATO = re.compile(r"^\*\*(?P<clave>[^*]+?):\*\*\s*(?P<valor>.*)$")
 # marca el guion largo como "ambiguo" por su parecido visual con el corto).
 _GUION_LARGO = "\u2013"
 _NIVELES_CANDIDATOS = (1, 2, 3)
+# Motivo textual cuando un encabezado del nivel separador no casa con el patron de
+# escena ni con ninguna senal conocida (ni lista negra ni rotulo de locucion).
+# Constante para que T-10 (convencion.py) pueda distinguir este caso concreto --
+# "seccion auxiliar no reconocida" -- de los demas motivos sin duplicar el literal.
+MOTIVO_SECCION_NO_RECONOCIDA = (
+    "no coincide con el patron de escena ni contiene el rotulo de locucion"
+)
 _PATRON_SENAL_LAXA = re.compile(
     rf"BLOQUE\s+\d+|\(\s*\d{{1,2}}:\d{{2}}\s*[{_GUION_LARGO}-]\s*\d{{1,2}}:\d{{2}}\s*\)",
     re.IGNORECASE,
@@ -300,9 +307,7 @@ def _clasificar_bloques_nivel(
                 (bloque, "titulo en la lista negra de secciones auxiliares (secciones_auxiliares)")
             )
         else:
-            auxiliares.append(
-                (bloque, "no coincide con el patron de escena ni contiene el rotulo de locucion")
-            )
+            auxiliares.append((bloque, MOTIVO_SECCION_NO_RECONOCIDA))
     return _Clasificacion(escenas=escenas, auxiliares=auxiliares, conflictivos=conflictivos)
 
 

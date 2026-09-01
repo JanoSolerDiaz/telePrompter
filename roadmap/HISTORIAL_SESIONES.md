@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-10 (convención de marcado y propuesta de convención explícita), sesión de nube
+**Tarea(s):** T-10
+**Estado resultante:** T-10 COMPLETADA
+**Commits a develop:** `T-10: deteccion de convencion de marcado y propuesta de convencion explicita` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-10 no toca el esquema de `estado.json`)
+**Archivos creados/modificados:** `scripts/convencion.py` (nuevo), `scripts/parser.py` (extrae el literal repetido a la constante `MOTIVO_SECCION_NO_RECONOCIDA`), `tests/test_convencion.py` (nuevo, 10 tests), `DEVELOPERS.md` (sección T-10 nueva), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (130 pasan + 5 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas aún NO APLICABLE hasta T-18/T-27/T-30/T-32, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (protocolo v1.3, §0.1)
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-10): reconocimiento del subtítulo entrecomillado por posición en vez de ampliar la lista negra de `config.py`; histórico de guiones procesados como parámetro de quien llama, sin persistencia nueva; exclusión de las señales estructurales `blank`/`seccion_vacia` de las propuestas
+**Hallazgos del auditor atendidos:** ninguno ABIERTO de severidad alta en `auditoriacontinua.md` (revisado antes de elegir tarea)
+**Hallazgos:** ninguno nuevo. Se confirmó que, sin el reconocimiento por posición del subtítulo entrecomillado, los tres guiones reales habrían salido con una "desviación" en cada pasada por algo que T-08 ya documentó como categoría auxiliar esperada — corregido antes de cerrar la tarea, no quedó como hallazgo pendiente
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-11 (troceo en bloques de respiración, 6–12 palabras configurable)
+
+---
+
 ### Sesión 2026-09-01 — T-09 (clasificador locución / no locución), sesión de nube
 **Tarea(s):** T-09
 **Estado resultante:** T-09 COMPLETADA

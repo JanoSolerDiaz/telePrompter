@@ -241,6 +241,40 @@ siguiente encabezado — frecuente entre escenas, antes del `---`),
 nuevo que vuelva a partir en líneas un `contenido` ya construido por T-08/T-09
 debe hacer lo mismo, no asumir que `.splitlines()` es intercambiable.
 
+## Convención de guiones (T-10)
+
+`scripts/convencion.py` no descubre la convención (T-08/T-09 ya la implementan) ni
+decide si adoptarla (el dueño ya lo hizo: contractual, con aviso — §6 pregunta 3 de
+SEGUIMIENTO, §0.2 de HOJA_DE_RUTA). Formaliza tres cosas:
+
+- **Documento para el guionista:** `generar_convencion_guiones(configuracion)` produce
+  el texto de `convencion-guiones.md` (una página, generado a partir de
+  `Configuracion` para no mantener un segundo texto a mano); `guardar_convencion_guiones
+  (carpeta_salida, configuracion)` lo escribe en la carpeta de salida. Es un documento
+  generado, no uno del dueño: no lleva copia `.bak` al regenerarse (esa regla es para
+  `guion-escenas.md`, T-17).
+- **Desviaciones de la convención (requisito 5), sin bloquear nunca el proceso:**
+  `detectar_desviaciones(resultado_parseo, resultado_clasificacion, configuracion)`
+  señala escena sin rótulo `**LOCUCIÓN**`, rótulo desconocido (una línea con forma
+  `**Algo**` que no es ninguno de los rótulos configurados) y sección auxiliar no
+  reconocida (un encabezado del nivel separador que no es escena ni está en
+  `secciones_auxiliares`). El subtítulo entrecomillado justo tras el título del guión
+  (evidencia de T-08: `# Título` + `## "Subtítulo"`) se reconoce como categoría
+  auxiliar conocida por posición — es el primer encabezado del nivel separador de todo
+  el guion —, no como desviación cada vez.
+- **Consistencia y propuesta de convención explícita (requisitos 1-2):**
+  `medir_consistencia_senales(resultados)` agrega cuántas veces aparece cada `senal` de
+  `BloqueClasificado` (T-09) y si siempre decide el mismo tipo; acepta una lista para
+  poder sumar el guion actual con el histórico de guiones ya procesados, sin que este
+  módulo tenga que inventar su propio almacén de histórico — quien llama decide qué
+  resultados anteriores pasar. `proponer_convenciones(consistencias, configuracion)`
+  propone adoptar como convención explícita cada señal de inferencia 100% consistente
+  que no sea ya contractual (`rotulo`, `cita_bloque`, `rotulo_no_locucion`,
+  `encabezado`, `seccion_auxiliar`, `preambulo`, `blank`, `seccion_vacia`), con ejemplo
+  antes/después y el ahorro que supondría. Sobre los tres guiones reales no genera
+  ninguna propuesta: ya se clasifican enteros por la ruta rápida de rótulo, sin
+  apoyarse en ninguna señal de inferencia de contenido — verificado por test.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
