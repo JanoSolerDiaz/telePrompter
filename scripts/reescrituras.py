@@ -58,7 +58,10 @@ DECISION_PENDIENTE = "pendiente"
 DECISION_ACEPTADA = "aceptada"
 DECISION_RECHAZADA = "rechazada"
 
-_SEPARADOR_MITADES = "\n\n"
+# Publico (no `_`) porque T-17 (revalidacion) necesita partir `propuesta` en
+# sus dos mitades para materializar particiones con la misma identidad que
+# `aplicar_particion_aceptada`, sin duplicar el separador como constante propia.
+SEPARADOR_MITADES = "\n\n"
 
 _MARCA_PENDIENTE = "PENDIENTE"
 _MARCA_ACEPTAR = "ACEPTAR"
@@ -138,7 +141,7 @@ def _reescritura_desde_particion(bloque: BloqueRespiracion, aviso: Aviso) -> Ree
     if not aviso.admite_particion or aviso.particion_sugerida is None:
         return None
     mitad_a, mitad_b = aviso.particion_sugerida
-    propuesta = _SEPARADOR_MITADES.join((mitad_a, mitad_b))
+    propuesta = SEPARADOR_MITADES.join((mitad_a, mitad_b))
     id_ = _calcular_id(
         bloque.numero_escena, bloque.linea_inicio, bloque.linea_fin,
         FAMILIA_PARTICION_RESPIRACION, 0, len(bloque.texto), bloque.texto,
@@ -333,7 +336,7 @@ def aplicar_particion_aceptada(
         return bloques
     if reescritura.decision != DECISION_ACEPTADA:
         return bloques
-    mitad_a, _, mitad_b = reescritura.propuesta.partition(_SEPARADOR_MITADES)
+    mitad_a, _, mitad_b = reescritura.propuesta.partition(SEPARADOR_MITADES)
     resultado: list[BloqueRespiracion] = []
     for bloque in bloques:
         coincide = (

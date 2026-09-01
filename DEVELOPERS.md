@@ -566,6 +566,74 @@ T-15 (`ResultadoParseo`, `ResultadoTiempos`, `list[ResultadoDeteccionBloque]`,
   en su momento: esta tarea entrega el generador, no quien lo invoca sobre un
   guion real de principio a fin (eso llega con T-30, el selector de salidas).
 
+## Revalidación: releer, respetar y recalcular (T-17)
+
+`scripts/revalidacion.py` cierra el ciclo iterable que T-16 dejó preparado --
+validar, pedir cambios, revalidar -- sin perder nunca un ajuste anterior.
+`revalidar_guion(resultado, texto_documento, estado, configuracion=None,
+diccionario=None)` es el único punto de entrada: relee `guion-escenas.md` con
+las mismas funciones de lectura de T-15/T-16 (`extraer_decisiones`,
+`extraer_texto_bloques`, `extraer_estado_revision`, ninguna nueva) y devuelve
+un `ResultadoRevalidacion` (tiempos, detecciones, reescrituras e incidencias
+recalculados) sin tocar el disco por su cuenta -- quien orqueste la sesión
+decide cuándo llamar a `estado.guardar_estado` y a
+`documento_revision.generar_documento_revision`/`guardar_documento_revision`
+para el siguiente ciclo.
+
+- **Identidad estable entre pasadas, no por número de ancla.** El ancla
+  `escena=N indice=K` que ve el documento no es identidad fiable: aceptar una
+  partición en la misma pasada cambia cuántos bloques tiene esa escena, así
+  que el ancla K de un bloque posterior deja de apuntar a lo mismo. Cada
+  bloque "de origen" (antes de cualquier partición) aporta su índice 0-based
+  dentro de la escena -- estable mientras el `.md` de entrada no cambie,
+  porque `trocear_texto` es determinista -- y una partición aceptada reparte
+  ese índice en dos mitades (`'a'`/`'b'`, `_materializar_marcados`). Esa
+  tripleta `(numero_escena, indice_original, mitad)` es la clave que usa todo
+  el módulo para no confundir bloques entre pasadas.
+- **Edición manual: se detecta, nunca se registra aparte.** Para cada ancla
+  del documento leído, se compara su texto contra el que el sistema
+  derivaría (guion de origen + decisiones ya guardadas en `estado.json` al
+  empezar la pasada, ver `_texto_derivado`). Si difieren, es una edición real
+  y se preserva verbatim en el resultado final (invariante (c), §0.2); si no,
+  se usa el texto derivado con las decisiones más recientes ya aplicadas. No
+  hay ningún campo en `estado.json` que diga "esto lo editó el dueño": la
+  comparación es correcta por construcción en cualquier pasada futura,
+  porque el guion de origen no cambia y las decisiones sí están persistidas.
+- **Decisiones: se leen del documento y se funden con el historial.**
+  `reescrituras.fusionar_con_estado` (T-15) trae el historial de
+  `estado.reescrituras` tal cual; `reescrituras.aplicar_decisiones` superpone
+  las marcas (`ACEPTAR`/`RECHAZAR`) que trae el documento leído. Ninguna
+  decisión ya tomada se pierde ni vuelve a proponerse como pendiente
+  (invariante (b)); ninguna función nueva de persistencia, las dos ya
+  existían en T-15.
+- **Informe de incidencias (`Incidencia`, requisito 3): solo lo roto.**
+  Bloques fuera de `[palabras_por_bloque_min, palabras_por_bloque_max]`,
+  escenas sin ningún bloque de respiración, marcas de decisión sobre un `id`
+  de reescritura que ya no existe, texto de locución que contiene un rótulo
+  del guion (`**LOCUCIÓN**`/`**EN PANTALLA**`/`**NOTA**`, señal de que una
+  indicación se coló dentro de un bloque editado a mano) y los avisos de
+  desviación de duración que ya calcula T-12 (`TiempoEscena.aviso`,
+  `ResultadoTiempos.aviso_total`). Nada de repetir una escena o un bloque que
+  ya está bien.
+- **`tiempos.calcular_tiempos_desde_marcados`, el hueco que le faltaba a
+  T-12.** `calcular_tiempos` (T-12) siempre reconstruía sus bloques
+  reclasificando el `ResultadoParseo` original -- no había forma de pasarle
+  bloques ya materializados/editados. Se extrajo el núcleo de cálculo
+  (ritmo, pausas, agregados) a esta nueva función, parametrizada por
+  `marcados_por_escena` en vez de derivarlo siempre; `calcular_tiempos` sigue
+  siendo la única fuente de tiempos sobre el guion sin editar, ahora como un
+  envoltorio de dos líneas alrededor del mismo núcleo. Sin cambio de
+  comportamiento (ver `tests/test_tiempos.py`, sin tocar).
+- **Límite de alcance aceptado, no un bug.** Si un mismo bloque de origen
+  tiene a la vez una normalización (T-13) y una partición (T-14/T-15)
+  aceptadas, la normalización no se materializa en ninguna de las dos
+  mitades: sus offsets se calcularon sobre el bloque entero, y el guardián
+  `bloque.texto[inicio:fin] == original` (mismo patrón que
+  `documento_revision._reescrituras_de_bloque`) la excluye correctamente en
+  vez de aplicarla mal. La decisión sigue intacta en `estado.json`
+  (invariante (b)); solo no se aplica en ese cruce concreto. Ver la fila de
+  T-17 en `DECISIONES_TECNICAS.md`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -573,14 +641,15 @@ vez a los tres guiones de calibración de `fixtures/reales/`. Úsalas en vez de 
 sueltas si tu test necesita texto de guion real.
 
 `tests/test_logica_pendiente.py` reúne, con `@pytest.mark.skip(reason=...)`, los tests
-de la lógica de producto que T-03 debía cubrir pero que todavía no existe
-(normalizador, exportador `.srt`, e idempotencia de la revalidación, §0.2; el parser de
-T-08, el clasificador de T-09, el troceador de T-11 y el motor de tiempos de T-12 ya no
-están aquí, ver `tests/test_parser.py`, `tests/test_clasificador.py`,
-`tests/test_troceo.py` y `tests/test_tiempos.py`). Cada `skip` nombra la tarea que lo
-desbloquea y describe, en el docstring, lo que el test debe comprobar. Al implementar
-esa tarea: quita el `skip` y escribe el test descrito como parte de su propio criterio
-de aceptación — no lo dejes como nota aparte.
+de la lógica de producto que T-03 debía cubrir pero que todavía no existe (por ahora,
+solo el exportador `.srt` de T-27; el parser de T-08, el clasificador de T-09, el
+troceador de T-11, el motor de tiempos de T-12 y la idempotencia de la revalidación de
+T-17 ya no están aquí como `skip`, ver `tests/test_parser.py`,
+`tests/test_clasificador.py`, `tests/test_troceo.py`, `tests/test_tiempos.py` y
+`test_invariante_idempotencia_de_la_revalidacion` en este mismo archivo). Cada `skip`
+nombra la tarea que lo desbloquea y describe, en el docstring, lo que el test debe
+comprobar. Al implementar esa tarea: quita el `skip` y escribe el test descrito como
+parte de su propio criterio de aceptación — no lo dejes como nota aparte.
 
 ## Estructura
 

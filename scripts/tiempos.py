@@ -138,7 +138,7 @@ def _duracion_objetivo_metadato(resultado: ResultadoParseo) -> tuple[int, int] |
     return rango_segundos_titulo(valor) if valor is not None else None
 
 
-def _bloques_respiracion_marcados(
+def bloques_respiracion_marcados(
     escena: Escena, configuracion: Configuracion
 ) -> list[tuple[BloqueRespiracion, bool, bool]]:
     """`(bloque, es_fin_de_parrafo, es_fin_de_escena)` de cada bloque de respiracion.
@@ -148,6 +148,11 @@ def _bloques_respiracion_marcados(
     solo por conveniencia. "Fin de parrafo" es el ultimo bloque de respiracion
     producido por un mismo `BloqueClasificado` de tipo locucion (T-11 trocea cada
     uno por separado); "fin de escena" es ademas el ultimo parrafo de la escena.
+
+    Publica (no `_`) porque T-17 (revalidacion) la reutiliza para obtener los
+    bloques de respiracion "de origen" del guion sin editar, sobre los que
+    aplica materializacion de particiones aceptadas y ediciones del dueno antes
+    de recalcular tiempos con `calcular_tiempos_desde_marcados`.
     """
     bloques_clasificados: list[BloqueClasificado] = [
         bloque
@@ -293,11 +298,31 @@ def calcular_tiempos(
     de tiempos del proyecto (requisito 4): ninguna otra parte del codigo debe
     recalcular una duracion por su cuenta, siempre a partir de este resultado."""
     configuracion = configuracion or Configuracion()
-
     marcados_por_escena = {
-        escena.numero: _bloques_respiracion_marcados(escena, configuracion)
+        escena.numero: bloques_respiracion_marcados(escena, configuracion)
         for escena in resultado.escenas
     }
+    return calcular_tiempos_desde_marcados(resultado, marcados_por_escena, configuracion)
+
+
+def calcular_tiempos_desde_marcados(
+    resultado: ResultadoParseo,
+    marcados_por_escena: dict[int, list[tuple[BloqueRespiracion, bool, bool]]],
+    configuracion: Configuracion | None = None,
+) -> ResultadoTiempos:
+    """Nucleo de `calcular_tiempos`, parametrizado por los bloques de
+    respiracion ya marcados de cada escena en vez de derivarlos siempre por
+    reclasificacion del guion original.
+
+    Existe para T-17 (revalidacion): tras materializar las particiones
+    aceptadas (T-15) y superponer el texto editado a mano por el dueno sobre
+    los bloques de origen, los tiempos deben recalcularse sobre ESE resultado,
+    no sobre una reclasificacion fresca del `.md` de entrada que no sabe nada
+    de ediciones ni decisiones. `calcular_tiempos` sigue siendo la unica
+    fuente de tiempos sobre el guion sin editar (requisito 4 de T-12); esta
+    funcion es el mismo calculo, aplicado a un `marcados_por_escena` distinto."""
+    configuracion = configuracion or Configuracion()
+
     palabras_totales = sum(
         bloque.num_palabras
         for marcados in marcados_por_escena.values()

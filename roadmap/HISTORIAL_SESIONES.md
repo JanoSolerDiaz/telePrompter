@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-17 (revalidación: releer, respetar y recalcular), sesión de nube
+**Tarea(s):** T-17
+**Estado resultante:** T-17 COMPLETADA
+**Commits a develop:** `T-17: revalidacion, releer, respetar y recalcular` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (`estado.validacion` es el contenedor genérico ya reservado desde T-07; T-17 solo fija la forma de su contenido, sin tocar el esquema ni su versión)
+**Archivos creados/modificados:** `scripts/revalidacion.py` (nuevo: `revalidar_guion`, `ResultadoRevalidacion`, `Incidencia`, materialización de particiones con identidad estable `_materializar_marcados`, detectores de incidencia por categoría), `scripts/tiempos.py` (refactor sin cambio de comportamiento: `_bloques_respiracion_marcados` → pública `bloques_respiracion_marcados`; `calcular_tiempos` se divide y delega en el nuevo `calcular_tiempos_desde_marcados`), `scripts/reescrituras.py` (`_SEPARADOR_MITADES` → pública `SEPARADOR_MITADES`, mismo valor), `tests/test_revalidacion.py` (nuevo, 8 tests: el ciclo de tres pasadas encadenadas del criterio de aceptación literal —validar → editar → revalidar → editar → revalidar—, identidad estable de una partición aceptada en una pasada posterior, y un test por categoría del informe de incidencias), `tests/test_logica_pendiente.py` (se quita el `@pytest.mark.skip` de `test_invariante_idempotencia_de_la_revalidacion` y se implementa de verdad, tal como pedía su propio motivo desde T-03), `pyproject.toml` (per-file-ignore `RUF001` para los dos tests nuevos que usan el guion largo real de los rangos horarios), `roadmap/SEGUIMIENTO.md` (§1, cabecera, corrige de paso la referencia obsoleta a la hoja de ruta v1.1), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (252 pasan + 1 skipped, antes 243 + 2) · build ✅ (`verificar_salidas.py --fixture` sigue en verde con las mismas etapas NO APLICABLE hasta T-18/T-27/T-30/T-32, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no instala en `~/.claude/skills/` (T-32 sigue BLOQUEADA por ese motivo)
+**Decisiones tomadas:** 7 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-17): división de `calcular_tiempos` en bloques marcados + núcleo parametrizable; `SEPARADOR_MITADES` pública; identidad de bloque entre pasadas por `(escena, índice de origen, mitad)` en vez de por número de ancla o por rango de líneas; una edición manual se detecta comparando contra el texto que el sistema derivaría, sin registro explícito aparte; límite de alcance aceptado (no resuelto) cuando una normalización y una partición aceptadas coinciden en el mismo bloque de origen; `estado.validacion` guarda historial con marca de tiempo por revalidación, no solo la última; `revalidar_guion` se queda como función pura sobre datos en memoria, sin orquestar disco por su cuenta
+**Hallazgos del auditor atendidos:** ninguno ABIERTO de severidad alta en `auditoriacontinua.md` al empezar la sesión; no se tocó el registro
+**Hallazgos:** ninguno nuevo. Límite de alcance documentado (no un bug): una normalización (T-13) aceptada sobre un bloque que ADEMÁS tiene una partición (T-14/T-15) aceptada no se materializa en ninguna de las dos mitades — la decisión queda intacta en `estado.json` (invariante (b)), solo no se aplica visualmente en ese cruce concreto; ver la fila correspondiente en `DECISIONES_TECNICAS.md`
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-18 (esqueleto del reproductor autocontenido), primera tarea de FASE B4. No depende de ninguna pieza nueva de T-17 en particular, pero si una futura T-30 (CLI) quiere ofrecer "revalidar" como comando, ya tiene `revalidacion.revalidar_guion` como función pura lista para envolver (lee `resultado`/`texto_documento`/`estado`, no toca disco por su cuenta).
+
+---
+
 ### Sesión 2026-09-01 — T-16 (`guion-escenas.md`, documento de revisión de una sola pasada), sesión de nube
 **Tarea(s):** T-16
 **Estado resultante:** T-16 COMPLETADA
