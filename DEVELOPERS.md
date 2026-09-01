@@ -414,6 +414,45 @@ son las que usan los tests y el informe para previsualizar.
   "y/o"...); convención hispana consciente para números (`.` = millar, `,` =
   decimal), la misma que usan los ejemplos del criterio de aceptación.
 
+## Detector de problemas de lectura en voz alta (T-14)
+
+`scripts/deteccion.py::detectar_problemas_bloque`/`detectar_problemas_guion`
+avisan de lo que va a costar decir, sobre `BloqueRespiracion` (T-11) ya
+trozado, **sin modificar nada**: devuelven `Aviso` (`familia`, `severidad`,
+`mensaje`, `recomendacion`, `fragmento`) envueltos en
+`ResultadoDeteccionBloque` (un resultado por bloque, cobertura total,
+invariante (a)).
+
+- **Cinco familias, una por requisito.** `sin_punto_respiracion` (frase larga
+  sin puntuación intermedia), `cacofonia` ("de" encadenados, sílaba inicial
+  repetida, rima involuntaria), `trabalenguas` (grupo de consonantes seguidas,
+  o varias palabras largas seguidas), `anglicismo` (tabla
+  `ANGLICISMOS_COMUNES` en `config.py`) y `estructura_dificil` (incisos
+  acumulados, subordinadas encadenadas, doble negación, voz pasiva larga).
+- **Ninguna familia reescribe, salvo una excepción parcial.** Solo
+  `sin_punto_respiracion` marca `admite_particion=True` y adjunta
+  `particion_sugerida` (una tupla de dos mitades de texto, partiendo por el
+  nexo subordinante más cercano al centro o, si no hay ninguno, por el centro
+  exacto): es la única familia que "afecta al troceo" (requisito 6 de T-14).
+  Aplicar esa partición de verdad es alcance de T-15, no de este detector.
+- **Heurísticas de caracteres, no un analizador lingüístico real** (mismo
+  espíritu que el género por sufijo de T-13): "sílaba repetida" es un prefijo
+  compartido de `longitud_silaba_comparada` caracteres entre palabras
+  adyacentes; "rima" es un sufijo compartido entre palabras de al menos
+  `longitud_minima_palabra_rima` caracteres dentro de una ventana; "trabalenguas"
+  es un grupo de `consonantes_seguidas_dificil` consonantes seguidas dentro de
+  una palabra, o `palabras_dificiles_seguidas_minimas` palabras de
+  `longitud_palabra_dificil`+ caracteres en fila. Todas configurables en
+  `Configuracion` (`config.py`), con validación de que sean enteros positivos.
+- **`ANGLICISMOS_COMUNES` es un diccionario plano de módulo**, no un campo de
+  `Configuracion`, mismo razonamiento que `SIMBOLOS_MONEDA`/`UNIDADES_ABREVIADAS`
+  en T-13 (tabla completa sin caso de uso real que la exija por entrada).
+- **La localización (escena/bloque) vive en `ResultadoDeteccionBloque.bloque`**
+  (`numero_escena`, `linea_inicio`, `linea_fin` de `BloqueRespiracion`), no
+  duplicada dentro de `Aviso`; mismo patrón que `ResultadoNormalizacionBloque`
+  de T-13. El volcado al `.md` anotado es tarea de T-16 (`guion-escenas.md`),
+  que no existe todavía: T-14 deja los datos listos, no genera el documento.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

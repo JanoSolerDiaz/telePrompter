@@ -51,6 +51,18 @@ El texto de la tarjeta es exactamente lo que hay que decir: nunca hay que traduc
 | Conjunciones | `Fernando y Iker` → «Fernando e Iker»; `siete o ocho` → «siete u ocho» | Regla estandar del espanol, con la excepcion del diptongo `hie-`/`hia-` |
 | Diccionario del dueno | `diccionario-locucion.json` en la carpeta de salida | Prioridad sobre cualquier regla automatica de esta tabla; ausente por defecto |
 
+## Detector de problemas de lectura en voz alta (T-14)
+
+Avisa de lo que va a costar decir antes de grabar. **Solo avisa, no reescribe** (salvo la excepcion de la primera fila): severidad y recomendacion por bloque de respiracion, nunca un texto sustituido en su lugar.
+
+| Familia | Ejemplo de aviso | Por defecto |
+|---------|-------------------|-------------|
+| Frase sin punto de respiracion | Bloque largo sin coma ni guion dentro | ≥ 15 palabras sin puntuacion intermedia; unica familia que puede sugerir una particion (no la aplica: T-15 decide) |
+| Cacofonias | «de» encadenado, silaba inicial repetida, rima involuntaria | Ventana de 6 palabras; heuristica de prefijo/sufijo de caracteres, no un silabeador real |
+| Trabalenguas | Grupo de 4+ consonantes seguidas, o 3+ palabras de 10+ caracteres seguidas | `config.py` |
+| Anglicismos | `feedback` → «retroalimentacion» | `ANGLICISMOS_COMUNES` (email, link, online, workshop...) |
+| Estructuras dificiles | Incisos acumulados, subordinadas encadenadas, doble negacion, voz pasiva larga | `config.py` |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.
