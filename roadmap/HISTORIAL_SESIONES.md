@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-09 (clasificador locución / no locución), sesión de nube
+**Tarea(s):** T-09
+**Estado resultante:** T-09 COMPLETADA
+**Commits a develop:** `T-09: clasificador locucion/no locucion` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-09 no toca el esquema de `estado.json`)
+**Archivos creados/modificados:** `scripts/clasificador.py` (nuevo), `scripts/config.py` (`Configuracion` gana `rotulo_locucion`/`rotulos_no_locucion`), `tests/test_clasificador.py` (nuevo, 11 tests), `tests/test_logica_pendiente.py` (quita los talones `test_clasificador_distingue_locucion_de_no_locucion` y `test_invariante_cobertura_total_del_guion`, ya implementados), `pyproject.toml` (`per-file-ignores` para `RUF001` en `tests/test_clasificador.py`), `DEVELOPERS.md` (sección T-09 nueva, actualiza las menciones a `tests/test_logica_pendiente.py`), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (120 pasan + 5 skipped, antes 109 + 7) · build ✅ (cuarta red: 4 etapas NO APLICABLE, todavía correcto a esta altura del backlog)
+**Health check post-deploy:** N/A — sesión de nube, sin instalación local que verificar (T-32 sigue bloqueada por el mismo motivo que en sesiones anteriores)
+**Decisiones tomadas:** 6 filas nuevas en `DECISIONES_TECNICAS.md` con fecha 2026-09-01 y tarea T-09: partición cita-de-bloque/texto-suelto dentro de `**LOCUCIÓN**` (requisito 3); la cita de bloque como señal de inferencia adicional al requisito 2 literal (imprescindible para el ≥95% de precisión exigido); métrica de precisión en palabras, no en líneas, del test de inferencia; `rotulo_locucion`/`rotulos_no_locucion` como campos nuevos de `Configuracion`; y la trampa de `.splitlines()` sobre contenido ya unido con `"\n".join(...)`, que rompía la reconstrucción exacta hasta corregirla con `.split("\n")`.
+**Hallazgos del auditor atendidos:** ninguno nuevo desde la última pasada (2026-08-31, segunda); sin hallazgos ABIERTOS de severidad alta, no había urgencia P-XX que atender antes de T-09.
+**Hallazgos:** ninguno nuevo para el registro de auditoría. Fuera de ese registro: la trampa de `.splitlines()` (ver decisión anterior) es deuda de atención, no de código — queda documentada en `DEVELOPERS.md` para que un futuro módulo que re-trocee un `contenido` ya construido por T-08/T-09 no la repita.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** T-10 (detección de convención de marcado y propuesta de convención explícita), que depende de T-09 y ya puede arrancar. Su `convencion-guiones.md` puede describir directamente la partición cita-de-bloque/rótulo que este `clasificador.py` ya usa como señal.
+
+---
+
 ### Sesión 2026-09-01 — T-08 (parser de Markdown y separador de escenas), sesión de nube
 **Tarea(s):** T-08
 **Estado resultante:** T-08 COMPLETADA

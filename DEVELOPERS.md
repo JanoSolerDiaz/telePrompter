@@ -200,6 +200,47 @@ Sin CLI todavía que capture la excepción y le pregunte de verdad al dueño (ll
 T-16/T-17): hoy la persistencia de la respuesta se demuestra en
 `tests/test_parser.py::test_conflicto_de_senales_se_resuelve_ajustando_la_lista_negra`.
 
+## Clasificador locución / no locución (T-09)
+
+`scripts/clasificador.py` separa, dentro de cada escena ya parseada (T-08), el texto
+que se recita del que no. Punto de entrada: `clasificar_guion(resultado_parseo,
+configuracion)` clasifica el guion entero (preámbulo, secciones auxiliares y cada
+escena) y devuelve `ResultadoClasificacion` (`bloques` + `resumenes` por escena,
+requisito 7). Para una sola escena: `clasificar_escena(escena, configuracion)`.
+
+**Señal primaria (ruta rápida), manda siempre que esté presente** (requisito 1):
+el rótulo de sección — `Configuracion.rotulo_locucion`/`.rotulos_no_locucion`
+(configurables, por defecto `**LOCUCIÓN**` frente a `**EN PANTALLA**`/`**NOTA**`).
+Dentro de una sección `**LOCUCIÓN**`, el texto en cita de bloque (`> `) es
+`locucion`; cualquier otro texto suelto en la misma sección se marca `revisar`
+(requisito 3: es el caso ambiguo más probable en los guiones reales — una acotación
+de ritmo entre dos citas, o un encargo de ejemplo fuera de cita).
+
+**Señales de respaldo (inferencia)**, solo para texto sin rótulo activo (requisito
+2): la propia cita de bloque (`> `) ya es señal suficiente de locución sin
+necesidad del rótulo — es la misma convención ("recitable... en cita de bloque").
+El resto: marca de tiempo, acotación entre paréntesis/corchetes, prefijo
+(`PANTALLA:`, `B-ROLL:`, `NOTA:`, `IMAGEN:`, `TÍTULO:`), mayúsculas, negrita/cursiva
+de línea completa, viñeta de checklist, tabla, enlace suelto, encabezado interno,
+bloque de código. Sin señal clara → `revisar`, nunca se decide en silencio
+(requisito 5).
+
+Cada `BloqueClasificado` lleva `tipo` (`locucion`/`no_locucion`/`revisar`),
+`motivo`, `senal` y su rango de líneas 1-indexado sobre el `.md` original
+(requisito 4). Cobertura total (invariante (a) de §0.2, requisito 6):
+`reconstruir(bloques)`, ordenados por `linea_inicio` y unidos con `\n`, reproduce
+el `.md` de origen sin pérdida — igual que `dividir_en_bloques` en T-08, pero
+también dentro de cada escena.
+
+**Trampa de `str.splitlines()` con contenido ya unido por `"\n".join(...)`:** si la
+última "línea" es una cadena vacía (una línea en blanco real justo antes del
+siguiente encabezado — frecuente entre escenas, antes del `---`),
+`"a\nb\n".splitlines()` devuelve `["a", "b"]` y esa línea en blanco desaparece.
+`clasificador.py` usa `.split("\n")` en su lugar (el inverso exacto de ese
+`join`) al re-trocear `escena.contenido`/`resultado.preambulo`; cualquier código
+nuevo que vuelva a partir en líneas un `contenido` ya construido por T-08/T-09
+debe hacer lo mismo, no asumir que `.splitlines()` es intercambiable.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -207,13 +248,13 @@ vez a los tres guiones de calibración de `fixtures/reales/`. Úsalas en vez de 
 sueltas si tu test necesita texto de guion real.
 
 `tests/test_logica_pendiente.py` reúne, con `@pytest.mark.skip(reason=...)`, los tests
-de la lógica de producto que T-03 debía cubrir pero que todavía no existe (clasificador,
-troceador, motor de tiempos, normalizador, exportador `.srt`, y las dos invariantes de
-cobertura total e idempotencia de §0.2; el parser de T-08 ya no está aquí, ver
-`tests/test_parser.py`). Cada `skip` nombra la tarea que lo desbloquea y describe, en el
-docstring, lo que el test debe comprobar. Al implementar esa tarea: quita el `skip` y
-escribe el test descrito como parte de su propio criterio de aceptación — no lo dejes
-como nota aparte.
+de la lógica de producto que T-03 debía cubrir pero que todavía no existe (troceador,
+motor de tiempos, normalizador, exportador `.srt`, e idempotencia de la revalidación,
+§0.2; el parser de T-08 y el clasificador de T-09 ya no están aquí, ver
+`tests/test_parser.py` y `tests/test_clasificador.py`). Cada `skip` nombra la tarea que
+lo desbloquea y describe, en el docstring, lo que el test debe comprobar. Al implementar
+esa tarea: quita el `skip` y escribe el test descrito como parte de su propio criterio
+de aceptación — no lo dejes como nota aparte.
 
 ## Estructura
 

@@ -79,6 +79,8 @@ class Configuracion:
     tipografia_marca: str = TIPOGRAFIA_MARCA
     incluir_notas_internas: bool = INCLUIR_NOTAS_INTERNAS
     secciones_auxiliares: tuple[str, ...] = field(default=SECCIONES_AUXILIARES)
+    rotulo_locucion: str = ROTULO_LOCUCION
+    rotulos_no_locucion: tuple[str, ...] = field(default=ROTULOS_NO_LOCUCION)
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:

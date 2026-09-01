@@ -1,26 +1,20 @@
 """Suite minima (T-03): talones de la logica de producto que todavia no existe.
 
 T-03 depende solo de T-01 y se ejecuta antes que T-07 a T-27 en el orden de §1 de
-SEGUIMIENTO: para cuando corre esta sesion, el clasificador, el troceador, el motor
-de tiempos, el normalizador y el exportador de `.srt` no estan implementados
-todavia (el parser de T-08 ya existe, ver `tests/test_parser.py`). En vez de fingir
-que estan cubiertos o de omitir la mencion, cada capacidad
-pendiente tiene aqui un test marcado `skip` que nombra la tarea que lo desbloquea
-(mismo tratamiento que "NO APLICABLE" en `verificar_salidas.py`, para T-00). Cuando esa
-tarea aterrice, quitar el `skip` e implementar el test descrito en el motivo es parte
-de su criterio de aceptacion, no una nota aparte.
+SEGUIMIENTO: para cuando corre esta sesion, el troceador, el motor de tiempos, el
+normalizador y el exportador de `.srt` no estan implementados todavia (el parser
+de T-08 y el clasificador de T-09 ya existen, ver `tests/test_parser.py` y
+`tests/test_clasificador.py`). En vez de fingir que estan cubiertos o de omitir la
+mencion, cada capacidad pendiente tiene aqui un test marcado `skip` que nombra la
+tarea que lo desbloquea (mismo tratamiento que "NO APLICABLE" en
+`verificar_salidas.py`, para T-00). Cuando esa tarea aterrice, quitar el `skip` e
+implementar el test descrito en el motivo es parte de su criterio de aceptacion,
+no una nota aparte.
 """
 
 from __future__ import annotations
 
 import pytest
-
-
-@pytest.mark.skip(reason="T-09: el clasificador locucion/no locucion no existe todavia.")
-def test_clasificador_distingue_locucion_de_no_locucion() -> None:
-    """Todo bloque bajo `**LOCUCIÓN**` es locucion; bajo los rotulos de
-    `ROTULOS_NO_LOCUCION` no lo es. Un bloque sin rotulo se infiere y se marca
-    como desviacion de la convencion (§0.2), nunca como error."""
 
 
 @pytest.mark.skip(reason="T-11: el troceador en bloques de respiracion no existe todavia.")
@@ -44,14 +38,6 @@ def test_normalizacion_a_forma_dicha_es_reversible() -> None:
 @pytest.mark.skip(reason="T-27: el exportador de .srt no existe todavia.")
 def test_srt_generado_respeta_el_limite_de_caracteres_por_linea() -> None:
     """Ninguna linea del `.srt` supera `SRT_CARACTERES_POR_LINEA_MAX` (config.py)."""
-
-
-@pytest.mark.skip(reason="T-09: necesita el clasificador para reconstruir el guion.")
-def test_invariante_cobertura_total_del_guion() -> None:
-    """Invariante (a) de §0.2: todo bloque del `.md` de origen queda clasificado
-    (locucion o no locucion) con su motivo visible; nada se descarta en silencio. Un
-    test de reconstruccion debe comparar el guion original contra la union de todos
-    los bloques clasificados."""
 
 
 @pytest.mark.skip(reason="T-17: la revalidacion que respeta ediciones no existe todavia.")
