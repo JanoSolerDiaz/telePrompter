@@ -78,6 +78,59 @@ UNIDADES_ABREVIADAS: dict[str, str] = {
     "m": "metros",
 }
 
+# --- Detector de problemas de lectura en voz alta (T-14) --------------------------
+# Requisito 1: frase sin punto de respiracion (sin puntuacion intermedia) por encima
+# de este numero de palabras. Deliberadamente por encima de
+# `PALABRAS_POR_BLOQUE_MAX` (T-11): solo un bloque de respiracion inusualmente largo
+# (p. ej. un corte forzado) dispara este aviso, no cualquier bloque normal.
+UMBRAL_PALABRAS_SIN_PUNTUACION: int = 15
+# Requisito 2: cacofonias y repeticiones fonicas proximas. Ventana de palabras en la
+# que se buscan silabas repetidas/rima/"de" encadenados, y el minimo de repeticiones
+# de "de" dentro de esa ventana para avisar.
+VENTANA_CACOFONIA_PALABRAS: int = 6
+REPETICIONES_DE_MINIMAS: int = 3
+# Longitud (en caracteres) del prefijo/sufijo que se compara para detectar silaba
+# inicial repetida o rima involuntaria entre dos palabras. Heuristica de caracteres,
+# no un silabeador real del espanol (igual de deliberado que la heuristica de genero
+# de T-13: no perfecta, solo un aviso).
+LONGITUD_SILABA_COMPARADA: int = 3
+LONGITUD_MINIMA_PALABRA_RIMA: int = 5
+# Requisito 3: trabalenguas. Palabra "dificil" = longitud en caracteres por encima de
+# este umbral, o un grupo de consonantes seguidas por encima de este otro. Tres o mas
+# palabras dificiles seguidas disparan el aviso de acumulacion.
+LONGITUD_PALABRA_DIFICIL: int = 10
+CONSONANTES_SEGUIDAS_DIFICIL: int = 4
+PALABRAS_DIFICILES_SEGUIDAS_MINIMAS: int = 3
+# Requisito 4: anglicismos y extranjerismos frecuentes en guiones de produccion ->
+# equivalente o pista de pronunciacion en espanol. No se refleja en `Configuracion`
+# (mismo razonamiento que `SIMBOLOS_MONEDA`/`UNIDADES_ABREVIADAS` en T-13: es una
+# tabla completa, no una entrada individual sobreescribible).
+ANGLICISMOS_COMUNES: dict[str, str] = {
+    "email": "correo electrónico",
+    "feedback": "retroalimentación (o «comentarios»)",
+    "link": "enlace",
+    "online": "en línea",
+    "workshop": "taller",
+    "briefing": "informe (o «reunión informativa»)",
+    "startup": "empresa emergente",
+    "engagement": "interacción (o «compromiso»)",
+    "insights": "hallazgos (o «datos clave»)",
+    "roadmap": "hoja de ruta",
+}
+# Requisito 5: estructuras dificiles. Nexos subordinantes cuya acumulacion senala
+# subordinadas encadenadas; palabras de negacion cuya acumulacion senala doble
+# negacion; umbral de incisos (parentesis, guiones largos o comas de inciso) para
+# "incisos anidados"; longitud minima (en palabras del bloque) para que una voz
+# pasiva detectada cuente como "larga".
+SUBORDINANTES: tuple[str, ...] = (
+    "que", "porque", "aunque", "cuando", "donde", "como", "si", "mientras",
+)
+UMBRAL_SUBORDINADAS_ENCADENADAS: int = 2
+NEGACIONES: tuple[str, ...] = ("no", "nunca", "jamás", "nadie", "ninguno", "ninguna", "tampoco")
+UMBRAL_NEGACIONES_DOBLES: int = 2
+UMBRAL_INCISOS: int = 2
+UMBRAL_PALABRAS_VOZ_PASIVA_LARGA: int = 8
+
 # --- Reproductor (T-18 a T-26) ----------------------------------------------------
 TAMANO_TEXTO_BASE_PX: int = 48
 PASO_VELOCIDAD: float = 0.1
@@ -131,6 +184,20 @@ class Configuracion:
     secciones_auxiliares: tuple[str, ...] = field(default=SECCIONES_AUXILIARES)
     rotulo_locucion: str = ROTULO_LOCUCION
     rotulos_no_locucion: tuple[str, ...] = field(default=ROTULOS_NO_LOCUCION)
+    umbral_palabras_sin_puntuacion: int = UMBRAL_PALABRAS_SIN_PUNTUACION
+    ventana_cacofonia_palabras: int = VENTANA_CACOFONIA_PALABRAS
+    repeticiones_de_minimas: int = REPETICIONES_DE_MINIMAS
+    longitud_silaba_comparada: int = LONGITUD_SILABA_COMPARADA
+    longitud_minima_palabra_rima: int = LONGITUD_MINIMA_PALABRA_RIMA
+    longitud_palabra_dificil: int = LONGITUD_PALABRA_DIFICIL
+    consonantes_seguidas_dificil: int = CONSONANTES_SEGUIDAS_DIFICIL
+    palabras_dificiles_seguidas_minimas: int = PALABRAS_DIFICILES_SEGUIDAS_MINIMAS
+    subordinantes: tuple[str, ...] = field(default=SUBORDINANTES)
+    umbral_subordinadas_encadenadas: int = UMBRAL_SUBORDINADAS_ENCADENADAS
+    negaciones: tuple[str, ...] = field(default=NEGACIONES)
+    umbral_negaciones_dobles: int = UMBRAL_NEGACIONES_DOBLES
+    umbral_incisos: int = UMBRAL_INCISOS
+    umbral_palabras_voz_pasiva_larga: int = UMBRAL_PALABRAS_VOZ_PASIVA_LARGA
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -177,3 +244,20 @@ class Configuracion:
                 f"(inclusive), como fraccion ({self.umbral_desviacion_tiempos})."
             )
             raise ValueError(mensaje)
+        for nombre, valor_entero in (
+            ("umbral_palabras_sin_puntuacion", self.umbral_palabras_sin_puntuacion),
+            ("ventana_cacofonia_palabras", self.ventana_cacofonia_palabras),
+            ("repeticiones_de_minimas", self.repeticiones_de_minimas),
+            ("longitud_silaba_comparada", self.longitud_silaba_comparada),
+            ("longitud_minima_palabra_rima", self.longitud_minima_palabra_rima),
+            ("longitud_palabra_dificil", self.longitud_palabra_dificil),
+            ("consonantes_seguidas_dificil", self.consonantes_seguidas_dificil),
+            ("palabras_dificiles_seguidas_minimas", self.palabras_dificiles_seguidas_minimas),
+            ("umbral_subordinadas_encadenadas", self.umbral_subordinadas_encadenadas),
+            ("umbral_negaciones_dobles", self.umbral_negaciones_dobles),
+            ("umbral_incisos", self.umbral_incisos),
+            ("umbral_palabras_voz_pasiva_larga", self.umbral_palabras_voz_pasiva_larga),
+        ):
+            if valor_entero <= 0:
+                mensaje = f"El umbral '{nombre}' debe ser un entero positivo ({valor_entero})."
+                raise ValueError(mensaje)

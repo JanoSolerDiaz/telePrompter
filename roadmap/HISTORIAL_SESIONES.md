@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-14 (detector de problemas de lectura en voz alta), sesión de nube
+**Tarea(s):** T-14
+**Estado resultante:** T-14 COMPLETADA
+**Commits a develop:** `T-14: detector de problemas de lectura en voz alta (cinco familias sobre BloqueRespiracion)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-14 no toca el esquema de `estado.json`; no hay todavía un punto de entrada que persista avisos, igual que T-10/T-12/T-13)
+**Archivos creados/modificados:** `scripts/deteccion.py` (nuevo: `Aviso`, `ResultadoDeteccionBloque`, `detectar_problemas_bloque`/`detectar_problemas_guion` y las cinco familias privadas), `scripts/config.py` (umbrales nuevos como campos de `Configuracion` con validación de entero positivo, más el diccionario plano `ANGLICISMOS_COMUNES`), `tests/test_deteccion.py` (nuevo, 19 tests: una familia disparada + un contraejemplo por cada uno de los cinco requisitos, cobertura total sobre los tres guiones reales, la restricción de `admite_particion` a una sola familia, y validación de configuración), `SKILL.md` (tabla nueva de familias y su valor por defecto), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`, `DEVELOPERS.md` (sección T-14)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (198 pasan + 2 skipped, antes 179 + 2) · build ✅ (`verificar_salidas.py --fixture` sigue en verde con las mismas 4 etapas NO APLICABLE hasta T-18/T-27/T-30/T-32, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no instala en `~/.claude/skills/` (T-32 sigue BLOQUEADA por ese motivo)
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-14): operar sobre `BloqueRespiracion` (T-11) en vez de reimplementar partición de oraciones; solo `sin_punto_respiracion` admite partición (requisito 6 literal); heurísticas de caracteres sin analizador sintáctico real, con el mismo razonamiento que la concordancia de género de T-13; `ANGLICISMOS_COMUNES` como diccionario plano de módulo, no campo de `Configuracion`
+**Hallazgos del auditor atendidos:** ninguno ABIERTO de severidad alta en `auditoriacontinua.md` al empezar la sesión; no se tocó el registro
+**Hallazgos:** ninguno nuevo. Verificado manualmente (fuera de la suite) que las cinco familias no disparan falsos positivos sobre frases cotidianas sencillas y sí producen avisos reales y acotados (15-17 por guion sobre 71-87 bloques) en los tres guiones de `fixtures/reales/`, sin que ninguna familia inunde el resultado
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-15 (reescrituras marcadas, aceptables y reversibles) — depende de T-13 y T-14, ambas ya completadas. Su alcance ya está acotado por el dueño (§0.2, §6.4: solo forma dicha y respiración) y por el requisito 6 de T-14 (la partición de `sin_punto_respiracion` es la única aviso-familia que T-15 puede llegar a aplicar de verdad).
+
+---
+
 ### Sesión 2026-09-01 — T-13 (normalización a forma dicha), sesión de nube
 **Tarea(s):** T-13
 **Estado resultante:** T-13 COMPLETADA
