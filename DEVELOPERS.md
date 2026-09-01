@@ -44,6 +44,20 @@ Dos módulos, dos audiencias, ninguna se mezcla con la otra:
   archivo vive dentro de la carpeta de salida del guion (regla de aislamiento, §0.2),
   nunca fuera.
 
+## Suite de tests (T-03)
+
+`tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
+vez a los tres guiones de calibración de `fixtures/reales/`. Úsalas en vez de rutas
+sueltas si tu test necesita texto de guion real.
+
+`tests/test_logica_pendiente.py` reúne, con `@pytest.mark.skip(reason=...)`, los tests
+de la lógica de producto que T-03 debía cubrir pero que todavía no existe (parser,
+clasificador, troceador, motor de tiempos, normalizador, exportador `.srt`, y las dos
+invariantes de cobertura total e idempotencia de §0.2). Cada `skip` nombra la tarea que
+lo desbloquea y describe, en el docstring, lo que el test debe comprobar. Al implementar
+esa tarea: quita el `skip` y escribe el test descrito como parte de su propio criterio de
+aceptación — no lo dejes como nota aparte.
+
 ## Estructura
 
 - `scripts/` — código de la skill (biblioteca estándar únicamente).

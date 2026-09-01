@@ -52,6 +52,22 @@
 
 ---
 
+### Sesión 2026-09-01 — agente de nube, rutina programada
+**Tarea(s):** T-03 (suite de tests mínima)
+**Estado resultante:** T-03 COMPLETADA
+**Commits a develop:** `T-03: suite de tests mínima — contrato de convención + talones de la lógica pendiente` (ver `git log origin/develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `tests/conftest.py` (nuevo, fixtures `guiones_reales`/`texto_guiones_reales`), `tests/test_convencion_guiones_reales.py` (nuevo, 5 tests reales contra `fixtures/reales/`), `tests/test_logica_pendiente.py` (nuevo, 8 tests `skip` con contrato), `DEVELOPERS.md` (sección "Suite de tests"), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva)
+**Verificaciones pre-push:** tipos ✅ (mypy estricto, 0 errores) · lint ✅ (ruff, 0 avisos) · tests ✅ (29 pasan, 8 skipped con motivo; antes 24 pasan / 0 skipped) · salidas ✅ (código 0, 4 etapas aún NO APLICABLE con su tarea)
+**Health check post-deploy:** no aplicable — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (T-32); no se simula
+**Decisiones tomadas:** 1 fila añadida a `DECISIONES_TECNICAS.md` (T-03: cómo resolver que su criterio de aceptación cita lógica que T-08 a T-13/T-27 implementan después, mediante tests `skip` con contrato explícito en vez de darla por completada sin más o dejarla sin registro)
+**Hallazgos del auditor atendidos:** ninguno de severidad alta abierto en `auditoriacontinua.md` (#5, #6, #8 siguen media/baja, sin acción de esta sesión)
+**Hallazgos:** el orden de §1 pone T-03 (que depende solo de T-01) antes que la lógica de producto que su propio criterio de aceptación menciona (T-08 a T-13, T-27, todas después en la cola). No es un bug de esta sesión, es una tensión estructural entre la hoja de ruta (inmutable) y el orden real de implementación; queda documentada en `DECISIONES_TECNICAS.md` para que ninguna sesión futura la redescubra. `test_esqueleto.py` ya anticipaba esto en su docstring ("la suite de verdad es T-03"), escrito en T-00 antes de que la secuencia completa estuviera clara
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-04 (CI local + workflow inactivo). Nota para T-08 y siguientes: al implementar cada capacidad, localizar su test correspondiente en `tests/test_logica_pendiente.py`, quitarle el `skip` e implementarlo según el contrato descrito en su docstring — es parte del criterio de aceptación de esa tarea, no un paso aparte
+
+---
+
 ### Sesión 2026-09-01 08:00 — agente de nube, rutina programada
 **Tarea(s):** T-01 (linting y formato)
 **Estado resultante:** T-01 COMPLETADA

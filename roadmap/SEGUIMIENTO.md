@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.1 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-01 — T-02 (logger centralizado) COMPLETADA por una sesión de nube: `scripts/logger.py` (biblioteca estándar `logging`) separado de `scripts/presentacion.py` — diagnóstico técnico frente a mensajes al dueño. `configurar_logger(carpeta_salida, verbose=...)` escribe siempre `teleprompter.log` en DEBUG dentro de la carpeta de salida del guion; `--verbose` añade un canal por stderr en INFO. Idempotente entre llamadas repetidas. Cableado en `verificar_salidas.py` (nuevo flag `--verbose`, log en `fixtures/salida/`, ahora ignorada en git por ser artefacto generado) y cubierto por 7 tests nuevos en `tests/test_logger.py`. `ruff` confirma 0 `print()` fuera de `presentacion.py` (regla `T20`). Las cuatro verificaciones en verde. Sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md`. Siguiente tarea: T-03 (suite de tests mínima).
+**Última actualización:** 2026-09-01 — T-03 (suite de tests mínima) COMPLETADA por una sesión de nube. Su criterio de aceptación cita lógica (parser, clasificador, troceador, motor de tiempos, normalizador, `.srt`) que todavía no existe — esas tareas van después en §1 y solo dependen de T-01 —, así que el hueco se trató como una etapa "NO APLICABLE" expresada en tests: `tests/test_logica_pendiente.py` reúne 8 tests con `@pytest.mark.skip(reason="T-XX: …")` (uno por capacidad pendiente más las invariantes (a) y (c) de §0.2), cada uno con el contrato exacto que deberá cumplir cuando su tarea aterrice. Lo que sí existe hoy —el contrato de convención de `config.py` (`PATRON_ENCABEZADO_ESCENA`, `ROTULO_LOCUCION`, `ROTULOS_NO_LOCUCION`)— se cubre con 5 tests reales en `tests/test_convencion_guiones_reales.py` contra los tres guiones de `fixtures/reales/`, apoyados en `tests/conftest.py` (fixtures `guiones_reales`/`texto_guiones_reales`, reutilizables por T-08 y siguientes). Detalle en `DECISIONES_TECNICAS.md`. Suite: 29 pasan + 8 skipped (antes 24 pasan). Las cuatro verificaciones en verde. Sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md`. Siguiente tarea: T-04 (CI local + workflow inactivo).
 
 ---
 
@@ -30,7 +30,7 @@
 | T-00 | Verificación inicial | **COMPLETADA** | 2026-08-31 | Esqueleto, 4 redes en verde. El repo ya existía: `git init` no fue necesario |
 | T-01 | Linting y formato | **COMPLETADA** | 2026-09-01 | `ruff`/`mypy` estrictos (ya en verde desde T-00) + hook de pre-commit versionado (`scripts/instalar_hooks.py`) que bloquea el commit en rojo |
 | T-02 | Logger centralizado | **COMPLETADA** | 2026-09-01 | `scripts/logger.py` (stdlib `logging`), separado de `presentacion.py`; log en la carpeta de salida del guion, `--verbose` cableado en `verificar_salidas.py` |
-| T-03 | Suite de tests mínima | PENDIENTE | — | La más importante en autonomía total |
+| T-03 | Suite de tests mínima | **COMPLETADA** | 2026-09-01 | Infraestructura + tests reales de convención contra `fixtures/reales/`; lógica aún no implementada (T-08 a T-13, T-27) cubierta con 8 `skip` con contrato explícito en `tests/test_logica_pendiente.py` |
 | T-04 | CI (local + workflow inactivo) | PENDIENTE | — | — |
 | T-05 | Monitorización de errores (local) | PENDIENTE | — | Sin servicio externo: regla de cero red |
 | T-06 | Robustez de entrada | PENDIENTE | — | Equivalente al rate limiting |
