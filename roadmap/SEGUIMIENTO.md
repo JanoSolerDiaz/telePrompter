@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.1 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-08-31 — las tres rutinas pasan a agentes de nube sobre el repositorio (hoja de ruta v1.3: push a `origin/develop` obligatorio). Antes: arranque de las tres rutinas y cierre de las decisiones pendientes. **Auditor**: 8 hallazgos, 3 ya RESUELTOS. **PM**: 6 R-XX en 3 oleadas. **Programador**: T-00 y P-01 COMPLETADAS, cuatro verificaciones en verde. Protocolo actualizado a `develop` (hoja de ruta v1.2) y Poppins verificada. §6 sin preguntas abiertas. Siguiente tarea: T-01.
+**Última actualización:** 2026-09-01 — T-01 (linting y formato) COMPLETADA por una sesión de nube: hook de pre-commit versionado (`scripts/hooks/pre-commit` + `scripts/instalar_hooks.py`) que ejecuta las cuatro verificaciones y bloquea el commit si alguna falla; probado en real (bloqueó un commit con un error de sintaxis y dejó pasar uno limpio). `ruff`/`mypy` estrictos ya estaban configurados desde T-00 y siguen en verde. `DEVELOPERS.md` creado con las instrucciones de puesta en marcha. Sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md`. Siguiente tarea: T-02 (logger centralizado).
 
 ---
 
@@ -28,7 +28,7 @@
 | ID | Tarea | Estado | Última sesión | Notas |
 |----|-------|--------|---------------|-------|
 | T-00 | Verificación inicial | **COMPLETADA** | 2026-08-31 | Esqueleto, 4 redes en verde. El repo ya existía: `git init` no fue necesario |
-| T-01 | Linting y formato | PENDIENTE | — | ruff + mypy estricto |
+| T-01 | Linting y formato | **COMPLETADA** | 2026-09-01 | `ruff`/`mypy` estrictos (ya en verde desde T-00) + hook de pre-commit versionado (`scripts/instalar_hooks.py`) que bloquea el commit en rojo |
 | T-02 | Logger centralizado | PENDIENTE | — | — |
 | T-03 | Suite de tests mínima | PENDIENTE | — | La más importante en autonomía total |
 | T-04 | CI (local + workflow inactivo) | PENDIENTE | — | — |

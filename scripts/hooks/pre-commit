@@ -1,0 +1,39 @@
+#!/bin/sh
+# Hook de pre-commit (T-01): bloquea el commit si la verificacion local esta en rojo.
+#
+# Esta plantilla vive en `scripts/hooks/pre-commit` porque `.git/hooks/` no esta bajo
+# control de version. La instala `scripts/instalar_hooks.py`. No edites la copia
+# instalada: edita esta plantilla y reinstala.
+#
+# Ejecuta, en orden, las cuatro verificaciones del protocolo (HOJA_DE_RUTA.md §0.1):
+# tipos, estilo, tests y extremo a extremo. Para saltar el hook puntualmente usa
+# `git commit --no-verify`, bajo tu propia responsabilidad.
+
+echo "Verificacion pre-commit (T-01: no se commitea con la verificacion en rojo)"
+
+python -m mypy scripts/ tests/
+if [ $? -ne 0 ]; then
+    echo "ERROR mypy: commit abortado."
+    exit 1
+fi
+
+python -m ruff check scripts/ tests/
+if [ $? -ne 0 ]; then
+    echo "ERROR ruff: commit abortado."
+    exit 1
+fi
+
+python -m pytest -q
+if [ $? -ne 0 ]; then
+    echo "ERROR pytest: commit abortado."
+    exit 1
+fi
+
+python scripts/verificar_salidas.py --fixture
+if [ $? -ne 0 ]; then
+    echo "ERROR verificar_salidas.py --fixture: commit abortado."
+    exit 1
+fi
+
+echo "OK verificacion completa: commit permitido."
+exit 0

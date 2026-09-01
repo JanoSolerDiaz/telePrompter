@@ -49,3 +49,26 @@
 ---
 
 *(Las sesiones reales se añaden debajo, la más reciente primero.)*
+
+---
+
+### Sesión 2026-09-01 08:00 — agente de nube, rutina programada
+**Tarea(s):** T-01 (linting y formato)
+**Estado resultante:** T-01 COMPLETADA
+**Commits a develop:** `T-01: hook de pre-commit versionado que bloquea el commit en rojo` (ver `git log origin/develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/hooks/pre-commit` (nuevo), `scripts/instalar_hooks.py` (nuevo), `tests/test_hooks.py` (nuevo), `DEVELOPERS.md` (nuevo), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva)
+**Verificaciones pre-push:** tipos ✅ (mypy estricto, 0 errores) · lint ✅ (ruff, 0 avisos) · tests ✅ (17 pasan, 6 nuevos de `test_hooks.py`) · salidas ✅ (código 0, 4 etapas aún NO APLICABLE con su tarea, como es esperable antes de T-18/T-27/T-30/T-32)
+**Health check post-deploy:** no aplicable — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (T-32); no se simula
+**Decisiones tomadas:** 1 fila añadida a `DECISIONES_TECNICAS.md` (hook versionado + instalador en vez de escribir directamente en `.git/hooks/` o adoptar el framework `pre-commit`)
+**Hallazgos del auditor atendidos:** ninguno de severidad alta abierto en `auditoriacontinua.md` (#5, #6, #8 siguen media/baja, enrutados a R-01/R-06/T-32, sin acción de esta sesión)
+**Hallazgos:** ninguno nuevo. `ruff`/`mypy` ya estaban en verde desde T-00; lo que faltaba de T-01 era exclusivamente el hook de pre-commit, tal y como dejó anotado la sesión anterior en «Próximo paso»
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-02 (logger centralizado). Nota: `scripts/presentacion.py` ya existe y ya es la única capa autorizada a hacer `print()` (regla T20 activa desde T-00); T-02 debe confirmar que cubre todos los casos de diagnóstico con `--verbose` y que el log de ejecución se escribe en la carpeta de salida del guión, no solo por consola
+
+### Sesión 2026-09-01 — nota de infraestructura (push por API)
+**Tarea(s):** ninguna adicional; anexo a la sesión de T-01
+**Estado resultante:** sin cambio de estado de tareas
+**Hallazgo de infraestructura:** `git push` sobre HTTPS (vía el proxy de git de la sesión) devuelve 403 con el mensaje «Claude doesn't have GitHub access to JanoSolerDiaz/telePrompter for your organization» — tanto desde el clon de trabajo como desde un segundo clon obtenido con `access: push`. Sin embargo, el servidor MCP de GitHub (`mcp__github__*`, autenticado por otra vía) sí tiene acceso de lectura y escritura al repositorio: `get_me`, `list_branches` y finalmente `push_files` funcionaron con normalidad. Este commit de T-01 se subió a `origin/develop` con `mcp__github__push_files` en lugar de `git push`, para no perder el trabajo de la sesión.
+**Acción para el dueño:** si se quiere que las futuras sesiones de nube puedan usar `git push` directamente (más simple y con hooks locales reales), instalar o revincular la GitHub App de Claude para esta organización/repositorio: https://github.com/apps/claude/installations/select_target o revincular en https://claude.ai/customize/connectors?auth_start=github&auth_start_force=1. Mientras tanto, el push por API (`mcp__github__push_files`) es la vía de repuesto y queda documentado aquí para que ninguna sesión futura lo redescubra desde cero.
+**Próximo paso:** ninguno adicional al ya anotado arriba (T-02); si el dueño revincula el acceso, la siguiente sesión puede confirmar con un `git push` de prueba.
