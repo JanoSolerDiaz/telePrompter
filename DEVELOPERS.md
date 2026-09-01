@@ -634,6 +634,61 @@ para el siguiente ciclo.
   (invariante (b)); solo no se aplica en ese cruce concreto. Ver la fila de
   T-17 en `DECISIONES_TECNICAS.md`.
 
+## Reproductor: esqueleto autocontenido (T-18)
+
+`scripts/reproductor.py` genera el artefacto principal de la skill: un único
+`.html` que abre con doble clic, offline. No calcula nada por su cuenta --
+toma un `ResultadoParseo` (T-08) y un `ResultadoTiempos` (T-12) ya calculados
+y los compone en una página, mismo patrón que `documento_revision` (T-16) con
+sus propias entradas. `generar_reproductor_html(resultado, resultado_tiempos,
+nombre_guion="guion", configuracion=None)` es el punto de entrada;
+`guardar_reproductor(pagina_html, carpeta_salida)` la escribe como
+`reproductor.html` dentro de la carpeta de salida del guion (aislamiento,
+§0.2).
+
+- **Plantillas, no f-strings gigantes.** `assets/reproductor/plantilla.html`,
+  `estilo.css` y `guion.js` son archivos de verdad, no cadenas Python: se leen
+  y se ensamblan sustituyendo marcadores (`__ESTILO__`, `__SCRIPT__`,
+  `__TITULO__`, `__DATOS_JSON__`, y dentro del CSS los de color/tipografía/
+  tamaño). `test_ninguna_plantilla_deja_un_marcador_sin_sustituir` es la red
+  que evita que un marcador nuevo se quede sin reemplazar en el HTML final.
+- **Los datos viajan como JSON, nunca interpolados en el marcado.** Todas las
+  escenas y bloques de respiración se sirven en un
+  `<script type="application/json" id="datos-reproductor">`, que `guion.js`
+  lee con `JSON.parse` y vuelca al DOM con `textContent` exclusivamente --
+  nunca `innerHTML`. Doble cinturón: aunque el escapado de abajo fallara, no
+  hay vía de inyección de marcado en el render.
+- **Escapado seguro (requisito 3 de T-18), el porqué exacto.** Un bloque de
+  locución con el texto literal `</script>` cerraría la etiqueta igualmente
+  aunque esté dentro de un `type="application/json"`: el analizador HTML
+  decide dónde termina un `<script>` por el texto, no por su atributo `type`.
+  `_json_seguro_para_script` sustituye `<`, `>` y `&` por su escape Unicode
+  (`<`, `>`, `&`) **después** de `json.dumps`, así que el JSON
+  sigue siendo válido y `JSON.parse` lo revierte sin que quien lo lee note
+  nada. Las tildes y las eñes se dejan tal cual (`ensure_ascii=False`): el
+  documento declara `charset="utf-8"` y no hay ningún motivo para escaparlas.
+  Probado además contra un navegador real (Chromium vía Playwright, solo para
+  esta verificación manual, no es una dependencia del proyecto): un bloque con
+  `</script><script>alert(1)</script>` y un `<img onerror=...>` se renderiza
+  como texto literal, sin diálogos ni errores de consola.
+- **Config, no números mágicos.** Colores (`color_fondo_reproductor`,
+  `color_texto_reproductor`, `color_texto_secundario_reproductor`), tamaño de
+  letra base (`tamano_texto_base_px`) y pila tipográfica
+  (`pila_tipografica_reproductor`) viven en `Configuracion` (`scripts/config.py`),
+  con el criterio del dueño ya fijado en §0.2: neutro y oscuro, sin identidad
+  corporativa, solo fuentes del sistema.
+- **La auto-contención ya no es NO APLICABLE.** `verificar_salidas.py` genera
+  ahora el reproductor de verdad sobre el primer guion de
+  `fixtures/reales/` (a falta de `fixtures/guion-ejemplo.md`, que trae T-32) y
+  valida el resultado con el mismo `buscar_recursos_externos` que ya
+  comprobaba T-00. "Guion de ejemplo" y "Generación de salidas" (la
+  canalización completa `.srt`/`.pdf`/`.pptx`) siguen NO APLICABLE hasta T-32
+  y T-30 respectivamente: no es su tarea, cada etapa se activa cuando le toca.
+- **Alcance deliberadamente mínimo.** El HTML lista escenas y bloques en
+  orden, sin índice navegable, sin pantalla completa, sin resaltado ni
+  autoscroll: eso es T-19 a T-22. Este módulo solo demuestra que la
+  canalización de un único archivo autocontenido funciona de punta a punta.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -658,7 +713,7 @@ parte de su propio criterio de aceptación — no lo dejes como nota aparte.
 - `scripts/migraciones/` — migraciones idempotentes del esquema de `estado.json`.
 - `tests/` — suite de pytest.
 - `fixtures/` — guiones de calibración y de ejemplo para las verificaciones.
-- `assets/` — logotipos de marca 480 y, más adelante, plantillas del reproductor.
+- `assets/` — logotipos de marca 480 y `assets/reproductor/` (plantillas del reproductor: `plantilla.html`, `estilo.css`, `guion.js`).
 - `references/` — documentación de referencia (marca 480, contratos de datos).
 - `roadmap/` — el registro de gobierno del proyecto: `SEGUIMIENTO.md` es el hub.
 

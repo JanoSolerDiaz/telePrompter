@@ -136,6 +136,23 @@ TAMANO_TEXTO_BASE_PX: int = 48
 PASO_VELOCIDAD: float = 0.1
 CUENTA_ATRAS_SEGUNDOS: int = 3
 ANTIRREBOTE_CLICKER_MS: int = 120
+# Neutro y oscuro, sin identidad corporativa (regla de §0.2: el reproductor prioriza
+# legibilidad sobre branding; la marca 480 solo aparece en `.pptx` y `.pdf`).
+COLOR_FONDO_REPRODUCTOR: str = "#0b0b0d"
+COLOR_TEXTO_REPRODUCTOR: str = "#f5f5f5"
+COLOR_TEXTO_SECUNDARIO_REPRODUCTOR: str = "#9a9a9a"
+# Solo fuentes del sistema, con pila de respaldo (requisito 2 de T-18): nada remoto.
+PILA_TIPOGRAFICA_REPRODUCTOR: tuple[str, ...] = (
+    "-apple-system",
+    "BlinkMacSystemFont",
+    "Segoe UI",
+    "Roboto",
+    "Helvetica",
+    "Arial",
+    "sans-serif",
+)
+# Nombre del reproductor generado dentro de la carpeta de salida del guion.
+NOMBRE_ARCHIVO_REPRODUCTOR: str = "reproductor.html"
 
 # --- Limites de entrada (T-06) ----------------------------------------------------
 TAMANO_GUION_MAX_BYTES: int = 5 * 1024 * 1024
@@ -207,6 +224,11 @@ class Configuracion:
     umbral_incisos: int = UMBRAL_INCISOS
     umbral_palabras_voz_pasiva_larga: int = UMBRAL_PALABRAS_VOZ_PASIVA_LARGA
     longitud_extracto_indicacion_max: int = LONGITUD_EXTRACTO_INDICACION_MAX
+    tamano_texto_base_px: int = TAMANO_TEXTO_BASE_PX
+    color_fondo_reproductor: str = COLOR_FONDO_REPRODUCTOR
+    color_texto_reproductor: str = COLOR_TEXTO_REPRODUCTOR
+    color_texto_secundario_reproductor: str = COLOR_TEXTO_SECUNDARIO_REPRODUCTOR
+    pila_tipografica_reproductor: tuple[str, ...] = field(default=PILA_TIPOGRAFICA_REPRODUCTOR)
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -267,6 +289,7 @@ class Configuracion:
             ("umbral_incisos", self.umbral_incisos),
             ("umbral_palabras_voz_pasiva_larga", self.umbral_palabras_voz_pasiva_larga),
             ("longitud_extracto_indicacion_max", self.longitud_extracto_indicacion_max),
+            ("tamano_texto_base_px", self.tamano_texto_base_px),
         ):
             if valor_entero <= 0:
                 mensaje = f"El umbral '{nombre}' debe ser un entero positivo ({valor_entero})."

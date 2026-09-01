@@ -93,6 +93,19 @@ El dueno sobrescribe `PENDIENTE` con `ACEPTAR` o `RECHAZAR` a mano, sin sintaxis
 
 Si ya existía una versión previa del archivo, se copia antes a `<nombre>.bak-<marca_de_tiempo>`: nunca se sobrescribe sin dejar rastro de lo que había.
 
+## Reproductor: esqueleto autocontenido (T-18)
+
+`reproductor.html` es el artefacto principal: un único archivo, sin dependencias ni CDN, que funciona con doble clic desde `file://`, offline, en cualquier maquina. Embebe las escenas, los bloques de respiración y los tiempos ya calculados, más su CSS y su JS, en una sola pieza. El escapado es seguro por dos vías a la vez: los datos viajan como JSON dentro de un `<script>` y se vuelcan al DOM solo con `textContent`, nunca con marcado interpretado — ni una cita, un `<`, un `&` o una tilde del guion pueden romper la página ni ejecutarse.
+
+El reproductor **prioriza legibilidad sobre branding**: neutro y oscuro, sin identidad corporativa, solo fuentes del sistema. Este esqueleto (T-18) solo lista escenas y bloques en orden; el índice navegable, la pantalla completa, el avance, el resaltado y el autoscroll llegan en T-19 a T-22.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Color de fondo | `#0b0b0d` | Neutro y oscuro |
+| Color de texto | `#f5f5f5` | — |
+| Tamaño de letra base | 48 px | Legibilidad a distancia de cámara |
+| Tipografía | fuentes del sistema | Pila de respaldo, nada remoto |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

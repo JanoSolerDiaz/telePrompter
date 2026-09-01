@@ -4,10 +4,15 @@ Sustituye al `build` de un proyecto convencional. Ejecuta la skill sobre el guio
 ejemplo y comprueba que lo generado es valido; sobre todo, que el reproductor `.html`
 es **autocontenido** (regla dura de §0.2).
 
-ESTADO ACTUAL (T-00): las etapas que verifica todavia no existen. En lugar de fingir
-que pasa o de fallar siempre, cada etapa se declara NO APLICABLE nombrando la tarea que
-la implementara. Asi la cuarta red dice siempre algo verdadero y va cobrando sentido
-sola segun avanza el backlog. Responde al hallazgo #4 del auditor.
+ESTADO ACTUAL (T-18): el reproductor ya existe (`scripts/reproductor.py`), asi que
+"Generación del reproductor" y "Auto-contención del reproductor" dejan de ser
+NO APLICABLE: se genera de verdad, sobre el primer guion real de calibracion a falta
+de `fixtures/guion-ejemplo.md` (T-32), y se valida a nivel de bytes. "Guion de
+ejemplo" y "Generación de salidas" (la canalizacion completa con `.srt`/`.pdf`/
+`.pptx`) siguen NO APLICABLE hasta T-32 y T-30 respectivamente. Cada etapa se declara
+NO APLICABLE nombrando la tarea que la implementara, para que la cuarta red diga
+siempre algo verdadero y vaya cobrando sentido sola segun avanza el backlog. Responde
+al hallazgo #4 del auditor.
 """
 
 from __future__ import annotations
@@ -21,11 +26,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from logger import configurar_logger
+from parser import parsear_guion
 from presentacion import Nivel, mostrar, titulo
+from reproductor import generar_reproductor_html, guardar_reproductor
+from tiempos import calcular_tiempos
 
 RAIZ = Path(__file__).resolve().parent.parent
 FIXTURE_EJEMPLO = RAIZ / "fixtures" / "guion-ejemplo.md"
 CARPETA_SALIDA_FIXTURE = RAIZ / "fixtures" / "salida"
+CARPETA_GUIONES_REALES = RAIZ / "fixtures" / "reales"
+RUTA_REPRODUCTOR_FIXTURE = CARPETA_SALIDA_FIXTURE / "reproductor.html"
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
 PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
@@ -70,7 +80,7 @@ def verificar_autocontencion(ruta_html: Path) -> Resultado:
         return Resultado(
             "Auto-contencion del reproductor",
             "NO APLICABLE",
-            "el generador del reproductor no existe todavia (T-18).",
+            f"no se ha generado ningun reproductor en {ruta_html}.",
         )
     hallazgos = buscar_recursos_externos(ruta_html.read_text(encoding="utf-8"))
     if hallazgos:
@@ -93,6 +103,38 @@ def verificar_fixture() -> Resultado:
     if not FIXTURE_EJEMPLO.read_text(encoding="utf-8").strip():
         return Resultado("Guion de ejemplo", "FALLO", "el guion de ejemplo esta vacio.")
     return Resultado("Guion de ejemplo", "OK", "presente y con contenido.")
+
+
+def generar_reproductor_fixture() -> Resultado:
+    """Genera el reproductor (T-18) sobre el primer guion real de calibracion.
+
+    A falta de `fixtures/guion-ejemplo.md` (T-32, todavia no existe), usa el mismo
+    material de `fixtures/reales/` que ya calibra T-08 a T-17, para que la
+    comprobacion de auto-contencion tenga un archivo de verdad que validar en vez
+    de quedarse NO APLICABLE indefinidamente."""
+    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
+    if not guiones:
+        return Resultado(
+            "Generación del reproductor",
+            "NO APLICABLE",
+            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+        )
+    ruta_guion = guiones[0]
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        pagina = generar_reproductor_html(resultado, tiempos, nombre_guion=ruta_guion.stem)
+        guardar_reproductor(pagina, CARPETA_SALIDA_FIXTURE)
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación del reproductor",
+            "FALLO",
+            f"no se pudo generar el reproductor sobre {ruta_guion.name}: {excepcion}",
+        )
+    return Resultado(
+        "Generación del reproductor", "OK", f"generado sobre {ruta_guion.name}."
+    )
 
 
 def verificar_generacion() -> Resultado:
@@ -135,7 +177,8 @@ def main() -> int:
     resultados = [
         verificar_fixture(),
         verificar_generacion(),
-        verificar_autocontencion(RAIZ / "fixtures" / "salida" / "reproductor.html"),
+        generar_reproductor_fixture(),
+        verificar_autocontencion(RUTA_REPRODUCTOR_FIXTURE),
         verificar_srt(),
     ]
 
