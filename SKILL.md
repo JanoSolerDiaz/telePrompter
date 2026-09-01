@@ -63,6 +63,21 @@ Avisa de lo que va a costar decir antes de grabar. **Solo avisa, no reescribe** 
 | Anglicismos | `feedback` → «retroalimentacion» | `ANGLICISMOS_COMUNES` (email, link, online, workshop...) |
 | Estructuras dificiles | Incisos acumulados, subordinadas encadenadas, doble negacion, voz pasiva larga | `config.py` |
 
+## Reescrituras marcadas y reversibles (T-15)
+
+Toda propuesta de T-13 (forma dicha) y la particion de T-14 (frase sin punto de respiracion) se marca igual, con original y propuesta a la vez, para que el dueno decida sin perder nada:
+
+```
+<!-- reescritura id=... -->
+> **Original:** 2026
+> **Propuesta:** dos mil veintiséis
+> **Motivo:** cifra: se lee en letras
+> **Decisión:** PENDIENTE
+<!-- /reescritura -->
+```
+
+El dueno sobrescribe `PENDIENTE` con `ACEPTAR` o `RECHAZAR` a mano, sin sintaxis fragil (la lectura ignora mayusculas y espacios de mas). Al revalidar, una reescritura ya decidida no se vuelve a proponer; solo aparecen las nuevas. Un rechazo nunca borra el original, que queda registrado en `estado.json` (append-only) por si se quiere reconsiderar. Deshacer todas las reescrituras de una escena o del guion completo es una operacion aparte que no toca el resto.
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

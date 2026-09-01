@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-15 (reescrituras marcadas, aceptables y reversibles), sesión de nube
+**Tarea(s):** T-15
+**Estado resultante:** T-15 COMPLETADA
+**Commits a develop:** `T-15: reescrituras marcadas, aceptables y reversibles (une T-13 y T-14)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (el contenedor `reescrituras: list[dict]` ya existía en `estado.json` desde T-07; T-15 solo fija la forma de esos `dict`, sin tocar el esquema ni su versión)
+**Archivos creados/modificados:** `scripts/reescrituras.py` (nuevo: `Reescritura`, `recopilar_propuestas`, `formatear_reescritura`/`extraer_decisiones`, `aplicar_decisiones`, `fusionar_con_estado`/`guardar_en_estado`, `pendientes`, `texto_con_reescrituras_aceptadas`, `aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`, `revertir_reescrituras`), `tests/test_reescrituras.py` (nuevo, 26 tests: recopilación, identidad estable del `id`, formato marcado y lectura de la decisión, persistencia y revalidación, aplicación sobre texto y troceo, deshacer global, el ciclo completo del criterio de aceptación literal, y una pasada sobre los tres guiones reales), `SKILL.md` (sección nueva sobre el formato marcado, para el dueño que va a editarlo a mano), `DEVELOPERS.md` (sección T-15), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (224 pasan + 2 skipped, antes 198 + 2) · build ✅ (`verificar_salidas.py --fixture` sigue en verde con las mismas 4 etapas NO APLICABLE hasta T-18/T-27/T-30/T-32, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no instala en `~/.claude/skills/` (T-32 sigue BLOQUEADA por ese motivo)
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-15): identidad de `Reescritura.id` por ocasión (escena+posición+familia+original), no por el contenido de la propuesta; solo la familia `sin_punto_respiracion` de T-14 genera reescritura, sin parámetro para ampliarlo; el formato marcado es un bloque autónomo pensado para T-16, no el documento `guion-escenas.md` completo; la marca de decisión es una sola palabra tolerante a la sintaxis Markdown de alrededor, no dos casillas; una partición aceptada hereda `corte_forzado` del bloque de origen sin recalcularlo
+**Hallazgos del auditor atendidos:** ninguno ABIERTO de severidad alta en `auditoriacontinua.md` al empezar la sesión; no se tocó el registro
+**Hallazgos:** ninguno nuevo. Se detectó y corrigió en la propia sesión (antes de dar la tarea por completada) un fallo en la primera versión del regex de `extraer_decisiones`: exigía un `:` literal justo antes de la marca de decisión y no reconocía el propio formato que `formatear_reescritura` genera (`> **Decisión:** PENDIENTE`, con `**` de negrita Markdown de por medio); corregido a `Decisi[oó]n\W*(...)`, con test de regresión (`test_extraer_decisiones_es_tolerante_a_mayusculas_y_espacios`)
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-16 (`guion-escenas.md` de una sola pasada). Ya tiene disponibles `formatear_reescritura`/`extraer_decisiones` de T-15 para insertar dentro de cada escena, y `pendientes`/`fusionar_con_estado` para no repetir una reescritura ya decidida en revalidaciones sucesivas.
+
+---
+
 ### Sesión 2026-09-01 — Gestión de roadmap (Product Manager), sesión de nube
 **Tarea(s):** ninguna T-XX/P-XX; gestión de `ROADMAP_PRODUCTO.md` y del hub
 **Estado resultante:** N/A (no toca código ni tests)

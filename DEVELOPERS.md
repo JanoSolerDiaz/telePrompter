@@ -453,6 +453,63 @@ invariante (a)).
   de T-13. El volcado al `.md` anotado es tarea de T-16 (`guion-escenas.md`),
   que no existe todavía: T-14 deja los datos listos, no genera el documento.
 
+## Reescrituras marcadas, aceptables y reversibles (T-15)
+
+`scripts/reescrituras.py` une las dos fuentes de propuesta que ya existían
+-- `normalizacion.Normalizacion` (T-13) y `deteccion.Aviso.particion_sugerida`
+(T-14, única familia con `admite_particion=True`) -- en un tipo único,
+`Reescritura`, con ciclo de vida completo: proponer, marcar en texto legible,
+leer la decisión escrita a mano, aplicarla o no, y deshacerla en bloque.
+
+- **`recopilar_propuestas(resultados_normalizacion, resultados_deteccion)`**
+  construye la lista de `Reescritura` a partir de los resultados de T-13/T-14
+  ya calculados; solo la familia `sin_punto_respiracion` de T-14 produce una
+  `Reescritura` (familia `particion_respiracion`), el resto de avisos de T-14
+  se ignoran aquí a propósito (alcance de T-15, §0.2: solo forma dicha y
+  respiración).
+- **Identidad estable, no por contenido.** `Reescritura.id` es un hash de
+  `(numero_escena, linea_inicio, linea_fin, familia, inicio, fin, original)`
+  -- la ocasión concreta, no la propuesta -- para que revalidar con una regla
+  mejorada siga reconociendo "la misma" reescritura (requisito 4) aunque la
+  `propuesta` sugerida cambie de texto.
+- **Formato marcado (`formatear_reescritura`/`extraer_decisiones`).** Un
+  bloque delimitado por `<!-- reescritura id=... --> ... <!-- /reescritura -->`
+  con `Original`/`Propuesta`/`Motivo`/`Decisión` visibles a la vez. La marca
+  de decisión es una sola palabra (`PENDIENTE`/`ACEPTAR`/`RECHAZAR`) que el
+  dueño sobrescribe a mano; `extraer_decisiones` la localiza con
+  `Decisi[oó]n\W*(ACEPTAR|RECHAZAR|PENDIENTE)` (cualquier no-palabra entre
+  "Decisión" y la marca: cubre `:`, `**` de negrita Markdown y espacios de
+  más, sin depender de una columna exacta). Es el bloque que insertará T-16
+  dentro de cada escena de `guion-escenas.md`, no el documento entero --
+  mismo patrón de infraestructura sin consumidor final todavía que ya
+  aplicaron T-02/T-04/T-05/T-07.
+- **Persistencia append-only (`fusionar_con_estado`/`guardar_en_estado`).**
+  `fusionar_con_estado` combina las propuestas recién calculadas con
+  `estado.reescrituras` ya guardado: una propuesta con `id` ya presente
+  conserva su decisión (no se vuelve a mostrar como pendiente); una nueva se
+  añade como `pendiente`; una que ya no se genera (el guion cambió) se
+  conserva igualmente al final de la lista, nunca desaparece.
+- **Aplicación sobre el texto (`texto_con_reescrituras_aceptadas`).** Solo
+  las reescrituras `aceptada` de un bloque se aplican (reconstruye
+  `Normalizacion` a partir de la `Reescritura` y reutiliza
+  `normalizacion.aplicar_normalizaciones`); `pendiente`/`rechazada` dejan el
+  original intacto.
+- **Materializar una partición aceptada
+  (`aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`).** T-14 dejó
+  dicho que "aplicarla de verdad" era alcance de T-15: esta función sustituye,
+  dentro de una lista de `BloqueRespiracion`, el bloque cuyo texto coincide
+  exactamente con el `original` de la reescritura por los dos bloques
+  resultantes de partirlo. Ambos heredan `numero_escena`/`linea_inicio`/
+  `linea_fin`/`corte_forzado` del bloque de origen (T-11 no trackea posición
+  más fina que el bloque, y esta partición no vuelve a pasar por el algoritmo
+  de corte de T-11).
+- **Deshacer global (`revertir_reescrituras`).** Fuerza a `rechazada` todas
+  las reescrituras, o solo las de una escena si se pasa `numero_escena`, sin
+  tocar `original` (invariante (b): sigue disponible aunque se revierta).
+- **Sin migración de `estado.json`.** El contenedor `reescrituras: list[dict]`
+  ya existía desde T-07; esta tarea solo fija la forma de esos `dict`
+  (`asdict(Reescritura)`), sin tocar el esquema ni su versión.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
