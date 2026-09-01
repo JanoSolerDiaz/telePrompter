@@ -63,6 +63,26 @@ Dos módulos, dos audiencias, ninguna se mezcla con la otra:
   archivo vive dentro de la carpeta de salida del guion (regla de aislamiento, §0.2),
   nunca fuera.
 
+## Monitorización de errores (T-05)
+
+`scripts/monitorizacion.py` es la red de seguridad ante fallos que el resto del
+protocolo no cubre (no hay Sentry ni servicio externo: la regla de cero red aplica
+también aquí). Dos piezas:
+
+- `ejecutar_con_diagnostico(funcion, carpeta_salida)` — envuelve el punto de entrada
+  real de la CLI. Si `funcion` lanza una excepción no controlada: vuelca tipo, mensaje
+  y traceback a `<carpeta_salida>/diagnostico-<timestamp>.log` (nunca variables
+  locales, para no arrastrar el contenido íntegro del guion al archivo), dejar
+  constancia en el logger de T-02 y muestra al dueño un mensaje accionable genérico en
+  español por `presentacion.py` — la traza técnica nunca llega a la consola del dueño.
+  Devuelve un código de salida distinto de 0.
+- `ResumenEjecucion` — dataclass con el recuento final que debe mostrarse al terminar
+  sin errores: escenas procesadas, bloques, avisos, reescrituras y salidas generadas.
+
+Como con el logger de T-02, todavía no hay un `main()` real que envolver (llega con
+T-07 en adelante): esta tarea deja la mecánica lista y probada para que cada punto de
+entrada futuro la use en vez de inventar su propio manejo de errores.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

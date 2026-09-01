@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-05 (monitorización de errores local), sesión de nube
+**Tarea(s):** T-05
+**Estado resultante:** T-05 COMPLETADA
+**Commits a develop:** `T-05: monitorizacion de errores local (captura, diagnostico, resumen)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/monitorizacion.py` (nuevo), `scripts/config.py` (`PREFIJO_ARCHIVO_DIAGNOSTICO`), `tests/test_monitorizacion.py` (nuevo, 9 tests), `DEVELOPERS.md` (sección de monitorización de errores), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (44 pasan + 8 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas NO APLICABLE, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` (T-32 sigue BLOQUEADA por ese motivo)
+**Decisiones tomadas:** 1 fila nueva en `DECISIONES_TECNICAS.md` bajo T-05 (mecánica de `ejecutar_con_diagnostico`/`ResumenEjecucion`, sin captura de variables locales en el volcado, wrapper de función en vez de `sys.excepthook`)
+**Hallazgos del auditor atendidos:** ninguno — no había hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar la sesión
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-06 (robustez de entrada, depende de T-03 ya completada)
+
+---
+
 ### Sesión 2026-09-01 — T-04 (CI local + workflow inactivo), sesión de nube
 **Tarea(s):** T-04
 **Estado resultante:** T-04 COMPLETADA

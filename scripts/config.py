@@ -50,10 +50,13 @@ ANTIRREBOTE_CLICKER_MS: int = 120
 TAMANO_GUION_MAX_BYTES: int = 5 * 1024 * 1024
 ESCENAS_MAX: int = 200
 
-# --- Diagnostico (T-02) ------------------------------------------------------------
+# --- Diagnostico (T-02, T-05) ------------------------------------------------------
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
 # escribe fuera de esa carpeta (regla de aislamiento, §0.2).
 NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
+# Prefijo del archivo de diagnostico que vuelca una excepcion no controlada (T-05).
+# Se completa con una marca de tiempo: "<PREFIJO><timestamp>.log".
+PREFIJO_ARCHIVO_DIAGNOSTICO: str = "diagnostico-"
 
 
 @dataclass(frozen=True)
