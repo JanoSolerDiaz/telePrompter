@@ -38,6 +38,7 @@ select = [
 # extraidos), asi que necesita el caracter tal cual, no su escape unicode (T-08).
 "tests/test_parser.py" = ["RUF001"]
 "tests/test_clasificador.py" = ["RUF001"]
+"tests/test_documento_revision.py" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.12"

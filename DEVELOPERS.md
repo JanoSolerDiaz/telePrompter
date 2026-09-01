@@ -510,6 +510,62 @@ leer la decisión escrita a mano, aplicarla o no, y deshacerla en bloque.
   ya existía desde T-07; esta tarea solo fija la forma de esos `dict`
   (`asdict(Reescritura)`), sin tocar el esquema ni su versión.
 
+## Documento de revisión de una sola pasada (T-16)
+
+`scripts/documento_revision.py` compone `guion-escenas.md`: el documento que el
+dueño revisa entero, de una sentada, en cualquier editor de texto plano. No
+recalcula nada por su cuenta -- toma los resultados que ya calcularon T-08 a
+T-15 (`ResultadoParseo`, `ResultadoTiempos`, `list[ResultadoDeteccionBloque]`,
+`list[Reescritura]`) y los compone, el mismo patrón que ya sigue
+`reescrituras.recopilar_propuestas` con `normalizar_guion`/
+`detectar_problemas_guion`.
+
+- **`generar_documento_revision(...)`** es el punto de entrada: cabecera con
+  instrucciones y resumen global (requisito 5), y una sección por escena en
+  orden, reproduciendo el mismo encabezado `## BLOQUE N — <título>` del guion
+  de origen.
+- **Bloques de respiración numerados y anclados
+  (`formatear_bloque_respiracion`).** Cada bloque de `ResultadoTiempos.bloques`
+  (T-12) se numera desde 1 dentro de su escena y se delimita con
+  `<!-- bloque escena=N indice=K --> ... <!-- /bloque -->` -- la misma idea que
+  el ancla `<!-- reescritura id=... -->` de T-15 -- para que una edición a mano
+  del texto siga siendo localizable por `extraer_texto_bloques` sin depender de
+  columna ni indentación (requisito 7). `extraer_texto_bloques` descarta la
+  cabecera `**Bloque N** (...)` y cualquier reescritura o aviso incrustado,
+  dejando solo el texto (editado o no) para una futura revalidación (T-17).
+- **Reescrituras y avisos localizados junto a su bloque (requisito 3).** Una
+  `Reescritura` se asocia a su `BloqueRespiracion` exacto comprobando
+  `bloque.texto[reescritura.inicio:reescritura.fin] == reescritura.original`
+  -- no solo el rango de líneas, porque varios bloques de respiración pueden
+  compartir `linea_inicio`/`linea_fin` (T-11 no trackea posición más fina que
+  el párrafo de origen). Un aviso de la familia `sin_punto_respiracion` con
+  partición sugerida NO se repite como aviso plano: ya se muestra como la
+  `Reescritura` de familia `particion_respiracion` que generó T-15, y
+  mostrarlo dos veces sería redundante.
+- **Indicaciones no recitables al pie de cada escena
+  (`_indicaciones_no_recitables`/`formatear_indicaciones`, requisito 4).**
+  Todo lo que T-09 clasificó como `no_locucion` o `revisar` dentro del rango de
+  líneas de la escena, con su motivo, salvo el propio encabezado de escena, el
+  rótulo suelto (`**EN PANTALLA**` sin cuerpo) y las líneas en blanco --ya
+  visibles en otro sitio del documento y sin nada que revisar. Los extractos
+  largos se truncan a `Configuracion.longitud_extracto_indicacion_max`.
+- **Marca de estado de la revisión completa
+  (`extraer_estado_revision`, requisito 6).** Mismo mecanismo que la marca de
+  decisión de T-15 -- una sola palabra (`PENDIENTE`/`VALIDADO`) que el dueño
+  sobrescribe a mano sobre la línea "Estado de la revisión", leída con
+  `Estado de la revisi[oó]n\W*(PENDIENTE|VALIDADO)` -- para que T-17 sepa
+  cuándo el dueño considera terminada la pasada. Sin marca reconocible se
+  asume `PENDIENTE`: nunca se da una revisión por validada en silencio.
+- **`guardar_documento_revision`.** Escribe `guion-escenas.md` en la carpeta de
+  salida; si ya existía una versión previa, la copia antes a
+  `<nombre>.bak-<marca_de_tiempo>` (invariante (d) de §0.2, sin borrado
+  destructivo). No es la escritura atómica de `estado.json` (T-07): aquí lo que
+  protege el trabajo del dueño es la copia de seguridad, no que un corte a
+  mitad de escritura sea imposible.
+- **Sin punto de entrada de CLI todavía.** Igual que T-02/T-04/T-05/T-07/T-15
+  en su momento: esta tarea entrega el generador, no quien lo invoca sobre un
+  guion real de principio a fin (eso llega con T-30, el selector de salidas).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

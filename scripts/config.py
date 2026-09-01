@@ -152,6 +152,14 @@ NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
 # Se completa con una marca de tiempo: "<PREFIJO><timestamp>.log".
 PREFIJO_ARCHIVO_DIAGNOSTICO: str = "diagnostico-"
 
+# --- Documento de revision (T-16) --------------------------------------------------
+# Nombre del documento de revision de una sola pasada, dentro de la carpeta de salida
+# del guion. Es el archivo que el dueno edita a mano; T-17 lo relee como autoritativo.
+NOMBRE_ARCHIVO_GUION_ESCENAS: str = "guion-escenas.md"
+# Longitud maxima del extracto de una indicacion no recitable mostrado al pie de cada
+# escena, para que una nota larga no desborde la lectura de una sola sentada.
+LONGITUD_EXTRACTO_INDICACION_MAX: int = 120
+
 # --- Estado del proyecto de guion (T-07) -------------------------------------------
 # Nombre del archivo de estado dentro de la carpeta de salida del guion.
 NOMBRE_ARCHIVO_ESTADO: str = "estado.json"
@@ -198,6 +206,7 @@ class Configuracion:
     umbral_negaciones_dobles: int = UMBRAL_NEGACIONES_DOBLES
     umbral_incisos: int = UMBRAL_INCISOS
     umbral_palabras_voz_pasiva_larga: int = UMBRAL_PALABRAS_VOZ_PASIVA_LARGA
+    longitud_extracto_indicacion_max: int = LONGITUD_EXTRACTO_INDICACION_MAX
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -257,6 +266,7 @@ class Configuracion:
             ("umbral_negaciones_dobles", self.umbral_negaciones_dobles),
             ("umbral_incisos", self.umbral_incisos),
             ("umbral_palabras_voz_pasiva_larga", self.umbral_palabras_voz_pasiva_larga),
+            ("longitud_extracto_indicacion_max", self.longitud_extracto_indicacion_max),
         ):
             if valor_entero <= 0:
                 mensaje = f"El umbral '{nombre}' debe ser un entero positivo ({valor_entero})."

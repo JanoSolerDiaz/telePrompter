@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-16 (`guion-escenas.md`, documento de revisión de una sola pasada), sesión de nube
+**Tarea(s):** T-16
+**Estado resultante:** T-16 COMPLETADA
+**Commits a develop:** `T-16: guion-escenas.md, el documento de revision de una sola pasada` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (no toca `estado.json`; el documento se escribe aparte, en `guion-escenas.md`)
+**Archivos creados/modificados:** `scripts/documento_revision.py` (nuevo: `generar_documento_revision`, `formatear_escena`/`formatear_bloque_respiracion`/`formatear_indicaciones`/`formatear_aviso`, `extraer_texto_bloques`, `extraer_estado_revision`, `guardar_documento_revision`), `scripts/config.py` (`NOMBRE_ARCHIVO_GUION_ESCENAS`, `LONGITUD_EXTRACTO_INDICACION_MAX` y su campo en `Configuracion` con validación), `pyproject.toml` (per-file-ignore `RUF001` para el nuevo test, que usa el guion largo real de los rangos horarios como literal), `tests/test_documento_revision.py` (nuevo, 19 tests: cobertura total de escenas y bloques sobre los tres guiones reales, resumen global, numeración de bloques, reescrituras y avisos localizados sin duplicarse, indicaciones no recitables al pie con `revisar` incluido, tolerancia de `extraer_texto_bloques` a la edición manual, marca de estado `PENDIENTE`/`VALIDADO`, copia de seguridad al regenerar), `DEVELOPERS.md` (sección T-16), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (243 pasan + 2 skipped, antes 224 + 2) · build ✅ (`verificar_salidas.py --fixture` sigue en verde con las mismas etapas NO APLICABLE hasta T-18/T-27/T-30/T-32, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no instala en `~/.claude/skills/` (T-32 sigue BLOQUEADA por ese motivo)
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-16): cada escena se reorganiza en "Locución" + "Indicaciones no recitables" en vez de reproducir literalmente los rótulos del guion de origen; cada bloque de respiración se ancla con `<!-- bloque escena=N indice=K -->` (índice propio, porque varios bloques pueden compartir rango de líneas de origen); un aviso `sin_punto_respiracion` con partición sugerida no se repite junto a su reescritura de partición; el título del documento lo decide quien llama a `generar_documento_revision`, no se infiere del guion; `guardar_documento_revision` copia a `.bak-<marca_de_tiempo>` pero no usa escritura atómica de fichero temporal, a diferencia de `estado.json`
+**Hallazgos del auditor atendidos:** ninguno ABIERTO de severidad alta en `auditoriacontinua.md` al empezar la sesión; no se tocó el registro
+**Hallazgos:** ninguno. Se corrigió en la propia sesión (antes de dar la tarea por completada) un fallo en la primera versión de `extraer_texto_bloques`: el ancla `\A` de la cabecera `**Bloque N** (...)` no toleraba los saltos de línea que preceden a esa cabecera dentro del propio ancla `<!-- bloque ... -->`, así que la cabecera quedaba sin recortar; corregido a `\A\s*\*\*Bloque...`, verificado con `test_extraer_texto_bloques_recupera_edicion_manual` y a mano contra los tres guiones reales antes de escribir la suite
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-17 (revalidación: releer, respetar y recalcular). Ya tiene disponibles `extraer_texto_bloques` y `extraer_estado_revision` de T-16 para releer `guion-escenas.md` como autoritativo (invariante (c)), y `pendientes`/`fusionar_con_estado` de T-15 para no repetir una reescritura ya decidida.
+
+---
+
 ### Sesión 2026-09-01 — T-15 (reescrituras marcadas, aceptables y reversibles), sesión de nube
 **Tarea(s):** T-15
 **Estado resultante:** T-15 COMPLETADA

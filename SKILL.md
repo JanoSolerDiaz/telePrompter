@@ -78,6 +78,21 @@ Toda propuesta de T-13 (forma dicha) y la particion de T-14 (frase sin punto de 
 
 El dueno sobrescribe `PENDIENTE` con `ACEPTAR` o `RECHAZAR` a mano, sin sintaxis fragil (la lectura ignora mayusculas y espacios de mas). Al revalidar, una reescritura ya decidida no se vuelve a proponer; solo aparecen las nuevas. Un rechazo nunca borra el original, que queda registrado en `estado.json` (append-only) por si se quiere reconsiderar. Deshacer todas las reescrituras de una escena o del guion completo es una operacion aparte que no toca el resto.
 
+## Documento de revisión de una sola pasada (T-16)
+
+`guion-escenas.md` es el archivo que revisas: todas las escenas en orden, con instrucciones al principio, un resumen global (escenas, palabras, duración, ritmo, avisos, reescrituras pendientes) y, por escena, sus bloques de respiración numerados con las reescrituras y avisos localizados junto a cada uno, más las indicaciones no recitables al pie con su motivo. Se edita a mano en cualquier editor de texto plano:
+
+- Corrige el texto de un bloque de locución libremente; la revalidación respetará tu edición.
+- Acepta o rechaza una reescritura sobreescribiendo su `PENDIENTE` (ver T-15).
+- Para forzar la clasificación de un bloque marcado `REVISAR`, añade el rótulo (`**LOCUCIÓN**`/`**EN PANTALLA**`/`**NOTA**`) que corresponda en el guion de origen.
+- Cuando termines de revisar todo el documento, cambia la marca final de más abajo de `PENDIENTE` a `VALIDADO`:
+
+```
+**Estado de la revisión:** PENDIENTE
+```
+
+Si ya existía una versión previa del archivo, se copia antes a `<nombre>.bak-<marca_de_tiempo>`: nunca se sobrescribe sin dejar rastro de lo que había.
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.
