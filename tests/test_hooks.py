@@ -1,8 +1,9 @@
-"""Tests del hook de pre-commit y su instalador (T-01)."""
+"""Tests del hook de pre-commit y su instalador (T-01, delega en `scripts/ci.py` desde T-04)."""
 
 from __future__ import annotations
 
 import stat
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,15 +17,33 @@ RAIZ = Path(__file__).resolve().parent.parent
 PLANTILLA_PRE_COMMIT = RAIZ / "scripts" / "hooks" / "pre-commit"
 
 
-def test_plantilla_pre_commit_ejecuta_la_verificacion_completa() -> None:
+def test_plantilla_pre_commit_delega_en_ci_py() -> None:
     contenido = PLANTILLA_PRE_COMMIT.read_text(encoding="utf-8")
-    for comando in ("mypy", "ruff check", "pytest", "verificar_salidas.py"):
-        assert comando in contenido, f"el hook no ejecuta: {comando}"
+    assert "scripts/ci.py" in contenido
 
 
-def test_plantilla_pre_commit_aborta_ante_cualquier_fallo() -> None:
-    contenido = PLANTILLA_PRE_COMMIT.read_text(encoding="utf-8")
-    assert contenido.count("exit 1") >= 4
+def _preparar_hook_con_ci_falso(tmp_path: Path, codigo_salida: int) -> Path:
+    """Copia la plantilla del hook a un repo temporal con un `scripts/ci.py` de mentira."""
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "ci.py").write_text(
+        f"import sys\nsys.exit({codigo_salida})\n", encoding="utf-8"
+    )
+    hook = tmp_path / "pre-commit"
+    hook.write_text(PLANTILLA_PRE_COMMIT.read_text(encoding="utf-8"), encoding="utf-8")
+    hook.chmod(hook.stat().st_mode | stat.S_IXUSR)
+    return hook
+
+
+def test_hook_aborta_si_ci_falla(tmp_path: Path) -> None:
+    hook = _preparar_hook_con_ci_falso(tmp_path, codigo_salida=1)
+    resultado = subprocess.run(["sh", str(hook)], cwd=tmp_path, capture_output=True, check=False)
+    assert resultado.returncode == 1
+
+
+def test_hook_permite_commit_si_ci_pasa(tmp_path: Path) -> None:
+    hook = _preparar_hook_con_ci_falso(tmp_path, codigo_salida=0)
+    resultado = subprocess.run(["sh", str(hook)], cwd=tmp_path, capture_output=True, check=False)
+    assert resultado.returncode == 0
 
 
 def test_instalar_hook_copia_y_da_permiso_de_ejecucion(tmp_path: Path) -> None:

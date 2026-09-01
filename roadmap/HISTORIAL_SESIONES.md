@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-04 (CI local + workflow inactivo), sesión de nube
+**Tarea(s):** T-04
+**Estado resultante:** T-04 COMPLETADA
+**Commits a develop:** `T-04: CI local centralizada en scripts/ci.py + workflow de GitHub Actions inactivo` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/ci.py` (nuevo), `scripts/hooks/pre-commit` (ahora delega en `ci.py`), `.github/workflows/ci.yml` (nuevo, `workflow_dispatch` únicamente), `tests/test_ci.py` (nuevo), `tests/test_hooks.py` (aserciones sobre el hook actualizadas a la delegación), `DEVELOPERS.md` (sección CI local), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (35 pasan + 8 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas NO APLICABLE, nada roto)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` (T-32 sigue BLOQUEADA por ese motivo)
+**Decisiones tomadas:** 2 filas nuevas en `DECISIONES_TECNICAS.md` bajo T-04 (centralización de las cuatro verificaciones en `scripts/ci.py`; workflow de GitHub Actions inactivo a propósito pese a que ya existe remoto)
+**Hallazgos del auditor atendidos:** ninguno — no había hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar la sesión
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-05 (monitorización de errores local, depende de T-02 ya completada)
+
+---
+
 ### Sesión 2026-08-31 — arranque manual de las tres rutinas
 **Tarea(s):** auditoría inicial · primer ciclo de PM · T-00 · P-01
 **Estado resultante:** T-00 COMPLETADA · P-01 COMPLETADA

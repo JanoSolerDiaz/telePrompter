@@ -1,0 +1,26 @@
+name: CI (teleprompter)
+
+# T-04: equivalente de GitHub Actions a la CI local (scripts/ci.py), preparado pero
+# INACTIVO a proposito -solo se dispara a mano desde la pestaña "Actions"-. No hay
+# trigger `push` ni `pull_request`: activarlos es una decision del dueño, no de esta
+# tarea. Cuando decida activarla basta con añadir esos triggers aqui.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  verificacion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar herramientas de desarrollo
+        run: pip install -r requirements-dev.txt
+
+      - name: Ejecutar las cuatro verificaciones (scripts/ci.py)
+        run: python scripts/ci.py

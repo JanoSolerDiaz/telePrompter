@@ -20,9 +20,28 @@
    `verificar_salidas.py --fixture`) y aborta el commit si algo falla. Para saltarlo
    puntualmente: `git commit --no-verify` (bajo tu responsabilidad).
 
+## CI local (T-04)
+
+`scripts/ci.py` es el único sitio donde viven las cuatro verificaciones del protocolo
+(antes duplicadas entre el hook y esta guía). El hook de pre-commit lo invoca; para
+lanzarlas sueltas, sin pasar por un commit:
+```
+python scripts/ci.py
+```
+Ejecuta las cuatro etapas en orden y hasta el final aunque alguna falle, para que el
+resumen final diga de una vez qué está roto y qué no; agrega el resultado en un único
+código de salida (0 si las cuatro pasan, 1 si alguna falla).
+
+No hay CI remota propia: el repositorio no tiene integración con un servicio externo.
+Existe un workflow de GitHub Actions equivalente en `.github/workflows/ci.yml`
+(`workflow_dispatch`, sin disparo automático en `push`/`pull_request`) preparado para el
+día que el dueño decida activarlo sobre `origin/develop`; hasta entonces solo se lanza a
+mano desde la pestaña "Actions" de GitHub.
+
 ## Verificación manual
 
-Los mismos cuatro pasos que ejecuta el hook, para lanzarlos sueltos:
+Los mismos cuatro pasos que ejecuta `scripts/ci.py` (y, a través de él, el hook), por si
+hace falta lanzarlos sueltos uno a uno:
 
 ```
 python -m mypy scripts/ tests/
