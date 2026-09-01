@@ -75,6 +75,7 @@ class Configuracion:
 
     ppm_respaldo: int = PPM_RESPALDO
     palabras_por_bloque_min: int = PALABRAS_POR_BLOQUE_MIN
+    palabras_por_bloque_objetivo: int = PALABRAS_POR_BLOQUE_OBJETIVO
     palabras_por_bloque_max: int = PALABRAS_POR_BLOQUE_MAX
     tipografia_marca: str = TIPOGRAFIA_MARCA
     incluir_notas_internas: bool = INCLUIR_NOTAS_INTERNAS
@@ -87,6 +88,17 @@ class Configuracion:
             mensaje = (
                 "El minimo de palabras por bloque no puede superar al maximo "
                 f"({self.palabras_por_bloque_min} > {self.palabras_por_bloque_max})."
+            )
+            raise ValueError(mensaje)
+        if not (
+            self.palabras_por_bloque_min
+            <= self.palabras_por_bloque_objetivo
+            <= self.palabras_por_bloque_max
+        ):
+            mensaje = (
+                "El objetivo de palabras por bloque debe estar entre el minimo y el "
+                f"maximo ({self.palabras_por_bloque_min} <= "
+                f"{self.palabras_por_bloque_objetivo} <= {self.palabras_por_bloque_max})."
             )
             raise ValueError(mensaje)
         if self.ppm_respaldo <= 0:

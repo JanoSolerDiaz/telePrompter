@@ -275,6 +275,46 @@ SEGUIMIENTO, §0.2 de HOJA_DE_RUTA). Formaliza tres cosas:
   ninguna propuesta: ya se clasifican enteros por la ruta rápida de rótulo, sin
   apoyarse en ninguna señal de inferencia de contenido — verificado por test.
 
+## Troceo en bloques de respiración (T-11)
+
+`scripts/troceo.py` parte cada bloque `locucion` ya clasificado (T-09) en fragmentos
+de `palabras_por_bloque_min`-`palabras_por_bloque_max` palabras (`config.py`).
+
+- **Cortar por prioridad (requisito 1):** `_refinar` desciende por cuatro niveles —
+  puntuación fuerte (`.?!;:`) → débil (`,`, guion, apertura de paréntesis/interrogación)
+  → nexos (`y`, `o`, `pero`, `que`, `porque`, `aunque`, `mientras`) → sintagma (antes de
+  preposición o determinante) — y solo baja de nivel cuando el anterior no basta para
+  caber en el máximo. **Gotcha real, encontrado contra los tres guiones reales:** el
+  primer diseño abandonaba un nivel entero (volcando *todo* el resto del párrafo al
+  siguiente nivel) en cuanto no encontraba un candidato dentro de la ventana de tamaño
+  máximo desde el cursor actual — bastaba una sola oración larga sin puntuación fuerte
+  cercana para que el resto de un párrafo de 100+ palabras cayera entero en corte
+  forzado. La corrección: si no hay candidato *dentro* de la ventana, se usa el
+  candidato más cercano *por delante* (aceptando un tramo de sobra que se refina con el
+  siguiente nivel) y se sigue procesando el resto del texto con el mismo nivel, en vez
+  de rendirse para todo lo que queda.
+- **Nunca corta cifras, fechas ni siglas (requisito 2):** `_gaps_protegidos` marca como
+  no cortables los huecos que caen dentro de un patrón de fecha (`15 de marzo de 2026`),
+  número con unidad pegada tras un espacio (`1.500 €`) o sigla puenteada
+  (`E. E. U. U.`). No hay overlap con T-13 (normalización a forma dicha) todavía: esa
+  tarea no existe, así que no hay "expresión normalizada por T-13" que proteger aún.
+- **Fusión de tramos cortos (requisito 3):** `_fusionar_bajo_minimo` funde cada tramo
+  por debajo del mínimo con el vecino que deja el resultado más cerca del objetivo,
+  priorizando no pasarse del máximo pudiendo evitarlo. Si la unión sí supera el máximo,
+  `_dividir_fusion` la reparte en dos usando la misma jerarquía de prioridad en vez de
+  dejar un bloque de más de `palabras_por_bloque_max` palabras — sin esto, sobre los
+  tres guiones reales solo el 88.6% de los bloques quedaba en rango (por debajo del 90%
+  del criterio de aceptación); con el reparto, el 100%.
+- **`trocear_bloque_locucion`** quita la marca de cita (`> `) antes de trocear: contar
+  palabras sobre `bloque.contenido` tal cual (como hace `bloque.contenido.split()`)
+  cuenta el propio `>` de cada línea como una palabra más, inflando cualquier recuento
+  de palabras de locución que se compare contra el troceo (ver el mismo cuidado que
+  T-09 tuvo con `.split("\n")` frente a `.splitlines()`, más arriba).
+- **`trocear_guion`** reclasifica escena a escena con `clasificador.clasificar_escena`
+  en vez de recibir un `ResultadoClasificacion` ya construido: `BloqueClasificado` no
+  lleva el número de escena (esa granularidad vive en `Escena`), así que reclasificar
+  evita añadir un campo a T-09 solo para este caso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -282,13 +322,13 @@ vez a los tres guiones de calibración de `fixtures/reales/`. Úsalas en vez de 
 sueltas si tu test necesita texto de guion real.
 
 `tests/test_logica_pendiente.py` reúne, con `@pytest.mark.skip(reason=...)`, los tests
-de la lógica de producto que T-03 debía cubrir pero que todavía no existe (troceador,
-motor de tiempos, normalizador, exportador `.srt`, e idempotencia de la revalidación,
-§0.2; el parser de T-08 y el clasificador de T-09 ya no están aquí, ver
-`tests/test_parser.py` y `tests/test_clasificador.py`). Cada `skip` nombra la tarea que
-lo desbloquea y describe, en el docstring, lo que el test debe comprobar. Al implementar
-esa tarea: quita el `skip` y escribe el test descrito como parte de su propio criterio
-de aceptación — no lo dejes como nota aparte.
+de la lógica de producto que T-03 debía cubrir pero que todavía no existe (motor de
+tiempos, normalizador, exportador `.srt`, e idempotencia de la revalidación, §0.2; el
+parser de T-08, el clasificador de T-09 y el troceador de T-11 ya no están aquí, ver
+`tests/test_parser.py`, `tests/test_clasificador.py` y `tests/test_troceo.py`). Cada
+`skip` nombra la tarea que lo desbloquea y describe, en el docstring, lo que el test
+debe comprobar. Al implementar esa tarea: quita el `skip` y escribe el test descrito
+como parte de su propio criterio de aceptación — no lo dejes como nota aparte.
 
 ## Estructura
 

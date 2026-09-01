@@ -17,12 +17,6 @@ from __future__ import annotations
 import pytest
 
 
-@pytest.mark.skip(reason="T-11: el troceador en bloques de respiracion no existe todavia.")
-def test_troceo_respeta_el_rango_de_palabras_configurado() -> None:
-    """Cada bloque de respiracion queda entre `palabras_por_bloque_min` y
-    `palabras_por_bloque_max` (config.py), salvo que la locucion completa sea mas corta."""
-
-
 @pytest.mark.skip(reason="T-12: el motor de tiempos no existe todavia.")
 def test_motor_de_tiempos_deduce_el_ppm_del_guion() -> None:
     """El ppm de referencia se deduce de las duraciones objetivo del guion real; si no

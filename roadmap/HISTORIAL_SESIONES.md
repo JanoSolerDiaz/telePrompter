@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-11 (troceo en bloques de respiración), sesión de nube
+**Tarea(s):** T-11
+**Estado resultante:** T-11 COMPLETADA
+**Commits a develop:** `T-11: troceo en bloques de respiracion` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-11 no toca el esquema de `estado.json`)
+**Archivos creados/modificados:** `scripts/troceo.py` (nuevo), `scripts/config.py` (nuevo campo `palabras_por_bloque_objetivo` en `Configuracion`, con validación de que `min <= objetivo <= max`), `tests/test_troceo.py` (nuevo, 14 tests), `tests/test_logica_pendiente.py` (se quita el skip de T-11, ya cubierto por el test real), `DEVELOPERS.md` (sección T-11 nueva), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (144 pasan + 4 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas aún NO APLICABLE)
+**Health check post-deploy:** N/A — sesión de nube, no instala la skill (T-32 la instala; ver §3 de SEGUIMIENTO)
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-11): el algoritmo de corte por prioridad no puede renunciar a un nivel para todo el resto del texto solo porque el candidato más cercano no quepa en la ventana del máximo (bug real encontrado contra `guion-09-proyectos.md`, no en un test sintético); la fusión de tramos por debajo del mínimo reparte la unión en dos si supera el máximo en vez de devolverla entera (subía la cobertura en rango del 88.6% al 100% sobre los tres guiones reales); el troceo no trackea posición palabra a palabra, hereda `linea_inicio`/`linea_fin` del bloque clasificado de origen; `trocear_guion` reclasifica escena a escena en vez de ampliar `BloqueClasificado` con un campo de número de escena.
+**Hallazgos del auditor atendidos:** ninguno (sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar la sesión)
+**Hallazgos:** el primer diseño del troceador tenía un bug real de "abandono de nivel de prioridad" que solo se detectó al probar contra los tres guiones reales, no contra los tests sintéticos escritos primero — ambos bugs (el de prioridad y el de fusión sobre el máximo) están documentados en `DECISIONES_TECNICAS.md` con el caso concreto que los destapó, siguiendo la misma disciplina de sesiones anteriores (T-08, T-09) de calibrar contra los guiones reales, no solo contra casos inventados.
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** siguiente tarea de §1 es T-12 (motor de tiempos: ppm deducido del guión, respaldo 120 ppm), que depende de T-11 (ya completada) y consume `BloqueRespiracion.num_palabras` para estimar duraciones por bloque.
+
+---
+
 ### Sesión 2026-09-01 — T-10 (convención de marcado y propuesta de convención explícita), sesión de nube
 **Tarea(s):** T-10
 **Estado resultante:** T-10 COMPLETADA
