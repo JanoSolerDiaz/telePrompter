@@ -49,6 +49,9 @@ ANTIRREBOTE_CLICKER_MS: int = 120
 # --- Limites de entrada (T-06) ----------------------------------------------------
 TAMANO_GUION_MAX_BYTES: int = 5 * 1024 * 1024
 ESCENAS_MAX: int = 200
+# Tope de tiempo (segundos) para una etapa de proceso arrancada sobre el guion. No hay
+# `signal.alarm` (el dueno trabaja en Windows, sin SIGALRM); ver `entrada.py`.
+TIEMPO_PROCESO_MAX_SEGUNDOS: float = 60.0
 
 # --- Diagnostico (T-02, T-05) ------------------------------------------------------
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca

@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-01 — T-06 (robustez de entrada), sesión de nube
+**Tarea(s):** T-06
+**Estado resultante:** T-06 COMPLETADA
+**Commits a develop:** `T-06: robustez de entrada (validacion, codificacion, tope de tiempo)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/entrada.py` (nuevo), `scripts/config.py` (`TIEMPO_PROCESO_MAX_SEGUNDOS`), `tests/test_entrada.py` (nuevo, 20 tests), `DEVELOPERS.md` (sección de robustez de entrada), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (64 pasan + 8 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas NO APLICABLE como antes)
+**Health check post-deploy:** No aplica — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (nota de entorno del protocolo, v1.3).
+**Decisiones tomadas:** dos filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-06): diseño de `scripts/entrada.py` (guardas de ruta/tamaño/codificación/estructura, `carpeta_salida_para` saneada, `ejecutar_con_limite_de_tiempo` sin `signal.alarm`) y la nota de entorno sobre el `python` real de este contenedor (3.11.15, no 3.12) que descarta la sintaxis PEP 695 en este módulo.
+**Hallazgos del auditor atendidos:** ninguno (sin hallazgos ABIERTOS de severidad alta; #5, #6 y #8 siguen abiertos y no dependen de esta tarea).
+**Hallazgos:** el `python` del PATH en este contenedor es 3.11.15 pese a `requires-python = ">=3.12"` en `pyproject.toml` (`python3.12` existe pero no se usa en los comandos del protocolo). No bloquea nada hoy porque el código no había usado hasta ahora sintaxis exclusiva de 3.12+; queda anotado en `DECISIONES_TECNICAS.md` para que una sesión futura no tropiece igual. No se abre P-XX ni se toca `pyproject.toml`: es una observación de entorno, no una tarea con valor de producto propio.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** T-07 (estado del proyecto de guión, `estado.json`, migración `001_estado_inicial`). Especificación en el cuerpo de `HOJA_DE_RUTA.md`.
+
 ### Sesión 2026-09-01 — T-05 (monitorización de errores local), sesión de nube
 **Tarea(s):** T-05
 **Estado resultante:** T-05 COMPLETADA

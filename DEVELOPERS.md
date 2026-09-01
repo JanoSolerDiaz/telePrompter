@@ -83,6 +83,42 @@ Como con el logger de T-02, todavía no hay un `main()` real que envolver (llega
 T-07 en adelante): esta tarea deja la mecánica lista y probada para que cada punto de
 entrada futuro la use en vez de inventar su propio manejo de errores.
 
+## Robustez de entrada (T-06)
+
+`scripts/entrada.py` blinda la única puerta de entrada real (el `.md` del guion)
+antes de que nada lo procese, delante del parser (T-08, que todavía no existe):
+
+- `validar_ruta_guion(ruta)` — existe, no es una carpeta, tamaño ≤
+  `TAMANO_GUION_MAX_BYTES` (`config.py`). Devuelve la ruta resuelta.
+- `leer_guion(ruta)` — lee validando la ruta, decodifica UTF-8 (con o sin BOM, vía
+  `utf-8-sig`) y rechaza cualquier otra codificación o un contenido vacío/solo
+  blancos, con un error accionable en vez de un `UnicodeDecodeError` crudo.
+- `verificar_estructura_minima(texto)` — cuenta encabezados Markdown de **cualquier
+  nivel** (no el patrón estricto de escena de `PATRON_ENCABEZADO_ESCENA`, a
+  propósito: una entrada hostil podría evitarlo) y rechaza 0 encabezados o más de
+  `ESCENAS_MAX`. No decide qué encabezado es escena — eso sigue siendo trabajo de
+  T-08.
+- `nombre_guion_seguro(ruta)` / `carpeta_salida_para(ruta)` — derivan
+  `<carpeta-del-guion>/<nombre-guion>-tarjetas/` saneando el nombre (unicode NFC,
+  sin separadores de ruta ni secuencias de puntos) y comprobando con
+  `Path.relative_to` que el resultado nunca cae fuera de la carpeta del guion
+  (regla de aislamiento, §0.2).
+- `ejecutar_con_limite_de_tiempo(funcion, segundos=...)` — tope de tiempo con
+  `ThreadPoolExecutor` en vez de `signal.alarm` (no existe en Windows, la máquina
+  del dueño). Si se agota el tiempo, el proceso principal recupera el control de
+  inmediato; el hilo huérfano no se puede matar desde Python.
+
+Todos los fallos usan una única excepción, `EntradaError`, con el mensaje ya
+accionable en español: el futuro `main()` (T-07 en adelante) solo tiene que
+capturarla y mostrarla por `presentacion.py`, igual que hace ya
+`ejecutar_con_diagnostico` (T-05) con cualquier otra excepción no controlada.
+
+**Nota de entorno:** el `python` real de este contenedor es 3.11.15 pese a que
+`pyproject.toml` fija `requires-python = ">=3.12"` (`python3.12` existe aparte, sin
+usarse). Por eso `entrada.py` evita la sintaxis de generics de PEP 695
+(`def f[T](...)`, que `ast.parse` de 3.11 ni siquiera analiza) y usa
+`typing.TypeVar` clásico. Ver `DECISIONES_TECNICAS.md`, T-06.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
