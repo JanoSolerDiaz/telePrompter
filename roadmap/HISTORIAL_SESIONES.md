@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — Gestión de roadmap (Product Manager), sesión de nube
+**Tarea(s):** ninguna T-XX/P-XX; gestión de `ROADMAP_PRODUCTO.md` y del hub
+**Estado resultante:** N/A (no toca código ni tests)
+**Commits a develop:** `roadmap: R-07 (capitulos YouTube) y revision de hallazgos/feedback` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (nueva R-07, oleada v3), `roadmap/SEGUIMIENTO.md` (§1 fila R-07, cabecera), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** N/A — sesión sin cambios de código; no aplica `ci.py`
+**Health check post-deploy:** N/A
+**Decisiones tomadas:** ninguna decisión técnica (esta sesión no escribe código); ver `ROADMAP_PRODUCTO.md` para la justificación de R-07
+**Hallazgos del auditor atendidos:** revisados los tres ABIERTOS de `auditoriacontinua.md` (#5, #6, #8); los tres ya estaban enrutados (R-01, R-06, T-32 respectivamente), ninguno requería una R-XX nueva
+**Hallazgos:** `FEEDBACK.md` sigue vacío (sin entradas `nuevo`) — no hay todavía rodaje real que alimente la oleada v2
+**Tareas autopropuestas (P-XX):** ninguna (esta sesión no ejecuta código, solo gestiona el roadmap de producto)
+**Próximo paso:** el programador sigue por T-14 (detector de problemas de lectura en voz alta); R-07 queda especificada para cuando la oleada v1 esté entregada y arranque la v2/v3, sin bloquear el orden vigente en §1 de `SEGUIMIENTO.md`.
+
+---
+
 ### Sesión 2026-09-01 — T-13 (normalización a forma dicha), sesión de nube
 **Tarea(s):** T-13
 **Estado resultante:** T-13 COMPLETADA

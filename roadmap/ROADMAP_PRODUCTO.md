@@ -8,7 +8,7 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-08-31
+**Última actualización:** 2026-09-01
 
 ---
 
@@ -59,7 +59,8 @@ Contiene R-01 a R-04.
 
 ### Oleada v3 — Continuidad con el montaje
 
-Hacer que lo que sale de aquí no haya que volver a tocarlo en la fase de ffmpeg. Contiene R-05.
+Hacer que lo que sale de aquí no haya que volver a tocarlo en la fase de ffmpeg. Contiene R-05 y
+R-07.
 
 ### Fase transversal F-D — Deuda y coherencia
 
@@ -162,6 +163,36 @@ aproximación que hay que rehacer entera.
 
 **Criterio de aceptación:** con una toma real cronometrada, el `.srt` alineado no tiene solapes y
 su duración total coincide con la de la toma dentro de la tolerancia documentada.
+
+### R-07 — Capítulos de YouTube con marcas de tiempo reales
+**Oleada / Fase:** v3 · **Migración:** No · **Depende de:** R-02, T-08
+**Origen:** roadmap
+
+**Objetivo:** T-08 ya detecta y conserva íntegra la sección auxiliar `## Capítulos (para la
+descripción del vídeo)` que aparece en los tres guiones reales, pero hoy ese contenido no sale
+de ahí: el formador tiene que volver a cronometrar el vídeo ya montado a mano para pegar los
+capítulos en la descripción de YouTube. Con R-02 (registro de tomas) existe ya el dato que hace
+falta — cuánto duró de verdad cada escena buena — así que generar el listado es una unión de dos
+datos que el producto ya tiene, no una funcionalidad nueva desde cero.
+
+**Requisitos:**
+1. Leer los títulos de capítulo de la sección auxiliar `Capítulos` (T-08) y emparejarlos con la
+   escena a la que corresponden, en el mismo orden en que aparecen ambos.
+2. Con R-02 disponible, calcular el tiempo acumulado de inicio de cada escena a partir de la
+   duración real de la toma marcada como buena; sin R-02 o sin tomas registradas todavía, usar
+   las duraciones estimadas de T-12 y decirlo explícitamente en la propia salida (nunca mezclar
+   tiempos reales y estimados sin avisar de cuál es cuál).
+3. Generar `capitulos-youtube.txt` en la carpeta de salida del guión, con el formato exacto que
+   exige YouTube: primera marca `0:00`, una línea `M:SS Título` por capítulo en orden creciente,
+   sin dos marcas a menos de 10 segundos entre sí (mínimo de la propia plataforma).
+4. Si el guión no trae sección `Capítulos`, no se genera el archivo y se informa del motivo
+   (invariante (a): nunca inventar contenido que el guionista no ha escrito).
+5. Regenerable en cada revalidación o tras cerrar tomas nuevas, sin intervención manual.
+
+**Criterio de aceptación:** sobre un guión real con sección `Capítulos` y tomas registradas
+(R-02), el archivo generado respeta el formato de YouTube, empieza en `0:00` y sus marcas
+coinciden con el inicio real de cada escena grabada; sin tomas registradas, usa las duraciones
+estimadas y la primera línea del archivo lo advierte.
 
 ### R-06 — Coherencia de nomenclatura y separación de `assets/`
 **Oleada / Fase:** F-D · **Migración:** Sí (`00N_renombrado_salida`) · **Depende de:** T-32
