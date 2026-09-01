@@ -363,6 +363,57 @@ recalcular por su cuenta.
   cuando la desviación relativa supera `umbral_desviacion_tiempos`, con cuántas
   palabras sobran o faltan al ritmo aplicado.
 
+## Normalización a forma dicha (T-13)
+
+`scripts/normalizacion.py::normalizar_texto` detecta y propone la forma dicha
+de un texto **sin modificarlo**: devuelve una lista de `Normalizacion`
+(`original`, `propuesta`, `familia`, `motivo`, `inicio`, `fin`), nunca un
+texto ya sustituido. `aplicar_normalizaciones`/`deshacer_normalizaciones` son
+inversas exactas entre sí (invariante (b), original siempre recuperable) y
+son las que usan los tests y el informe para previsualizar.
+
+- **Orden de prioridad estricto, no una única regex.** Cada familia de regla
+  (diccionario del dueño → moneda → porcentaje → unidad → rango → fracción →
+  ordinal → cardinal → sigla → símbolo suelto → conjunción) se procesa en ese
+  orden contra el texto completo, marcando cada tramo ya resuelto en un
+  `bytearray` de "ocupado" para que ninguna familia posterior lo reinterprete.
+  El diccionario del dueño (requisito 3) va primero siempre: cualquier entrada
+  literal en `diccionario-locucion.json` gana a cualquier regla automática.
+- **Apócope y concordancia de género solo con sustantivo detrás.** `"21"` a
+  final de frase se lee "veintiuno"; `"21 alumnos"` se lee "veintiún alumnos"
+  (apócope) y `"21 personas"` se lee "veintiuna" (concordancia femenina). La
+  decisión mira la palabra que sigue inmediatamente al número en el propio
+  texto (`_siguiente_palabra`), no el dígito final en solitario.
+- **Género por heurística de sufijo, no un diccionario morfológico completo.**
+  `_genero_por_sustantivo` usa terminaciones (`-a`, `-ción`, `-dad`...) más una
+  lista corta de excepciones frecuentes (`día`, `mano`, `foto`...); por
+  defecto masculino si no reconoce el sufijo. Deliberadamente no exhaustiva:
+  el diccionario del dueño corrige cualquier fallo puntual sin tocar código.
+- **Siglas: deletreo letra a letra por defecto** (`SVG` → "ese uve ge",
+  `deletrear_sigla`), nunca se "adivina" si suena mejor como palabra. El dueño
+  fija una lectura distinta (deletreada de otra forma, leída como palabra, o
+  expandida) con una entrada literal en el diccionario.
+- **Conjunciones "y"/"e", "o"/"u"** (`_PATRON_CONJUNCION`): regla estándar del
+  español ante sonido /i/ u /o/, con la excepción del diptongo `hie-`/`hia-`
+  (`"nieve y hielo"` no cambia). Independiente de las cifras, mismo mecanismo
+  de "ocupado" para no pisar una normalización ya resuelta.
+- **`normalizar_guion` opera sobre `BloqueRespiracion` (T-11) ya trozado, no
+  antes del troceo.** El requisito 2 de T-11 pide no cortar "una expresión
+  normalizada por T-13"; normalizar después de trocear evita el problema por
+  construcción, porque los límites de bloque ya son estables cuando se
+  normaliza. Un resultado (`ResultadoNormalizacionBloque`) por bloque, incluso
+  sin normalizaciones propuestas (cobertura total, invariante (a)).
+- **`SIMBOLOS_MONEDA`/`UNIDADES_ABREVIADAS` en `config.py` son diccionarios
+  planos**, no campos de `Configuracion`: el diccionario de excepciones ya
+  cubre la sobreescritura por el dueño entrada a entrada, así que espejarlas
+  en el dataclass congelado (con la vuelta a tuplas de pares que exigiría la
+  hashabilidad) habría sido una complicación de tipos sin caso de uso real.
+- **Alcance deliberadamente acotado** (documentado en el docstring del módulo
+  y en `DECISIONES_TECNICAS.md`): ordinales del 1º al 10º; `/` solo se lee
+  dentro de una fracción dígito/dígito, nunca suelto (ambiguo: URLs,
+  "y/o"...); convención hispana consciente para números (`.` = millar, `,` =
+  decimal), la misma que usan los ejemplos del criterio de aceptación.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

@@ -51,6 +51,33 @@ RESPALDO_TIPOGRAFICO: tuple[str, ...] = ("Montserrat", "Calibri", "sans-serif")
 INCLUIR_NOTAS_INTERNAS: bool = True  # `--para-terceros` lo pone en False
 SRT_CARACTERES_POR_LINEA_MAX: int = 42
 
+# --- Normalizacion a forma dicha (T-13) --------------------------------------------
+# Diccionario de excepciones editable por el dueno (requisito 3), con prioridad sobre
+# toda regla automatica de `normalizacion.py`. Vive dentro de la carpeta de salida del
+# guion (regla de aislamiento, §0.2): "<carpeta-del-guion>/<nombre-guion>-tarjetas/
+# diccionario-locucion.json". Ausente por defecto: sin el, solo actuan las reglas
+# automaticas.
+NOMBRE_ARCHIVO_DICCIONARIO_LOCUCION: str = "diccionario-locucion.json"
+# Simbolo de moneda -> (forma singular, forma plural). Cualquier entrada que el dueno
+# necesite y no este aqui se cubre con el diccionario de excepciones, que gana siempre.
+SIMBOLOS_MONEDA: dict[str, tuple[str, str]] = {
+    "€": ("euro", "euros"),
+    "$": ("dólar", "dólares"),
+}
+# Abreviatura de unidad -> forma dicha en plural (requisito 1). Ampliable por el dueno
+# via el diccionario de excepciones (una entrada "10 km" en el diccionario gana a esta
+# tabla igual que a cualquier otra regla automatica).
+UNIDADES_ABREVIADAS: dict[str, str] = {
+    "km": "kilómetros",
+    "kg": "kilogramos",
+    "cm": "centímetros",
+    "mm": "milímetros",
+    "min": "minutos",
+    "seg": "segundos",
+    "h": "horas",
+    "m": "metros",
+}
+
 # --- Reproductor (T-18 a T-26) ----------------------------------------------------
 TAMANO_TEXTO_BASE_PX: int = 48
 PASO_VELOCIDAD: float = 0.1

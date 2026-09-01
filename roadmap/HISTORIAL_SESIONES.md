@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-01 — T-13 (normalización a forma dicha), sesión de nube
+**Tarea(s):** T-13
+**Estado resultante:** T-13 COMPLETADA
+**Commits a develop:** `T-13: normalizacion a forma dicha (cifras, siglas, conjunciones, diccionario del dueno)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-13 no toca el esquema de `estado.json`; no hay todavía un punto de entrada que persista reescrituras, igual que T-10 con el histórico y T-12 con la calibración manual)
+**Archivos creados/modificados:** `scripts/normalizacion.py` (nuevo: `normalizar_texto`/`normalizar_bloque`/`normalizar_guion`, `numero_a_cardinal`/`numero_a_ordinal`, `deletrear_sigla`, `aplicar_normalizaciones`/`deshacer_normalizaciones`, `cargar_diccionario_locucion`), `scripts/config.py` (tablas nuevas `NOMBRE_ARCHIVO_DICCIONARIO_LOCUCION`, `SIMBOLOS_MONEDA`, `UNIDADES_ABREVIADAS`), `tests/test_normalizacion.py` (nuevo, 28 tests), `tests/test_logica_pendiente.py` (se quita el skip de T-13, ya cubierto por los tests reales), `SKILL.md` (tabla de familias de regla y su valor por defecto, requisito 5), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (179 pasan + 2 skipped) · build ✅ (`verificar_salidas.py --fixture`, 4 etapas aún NO APLICABLE)
+**Health check post-deploy:** N/A — sesión de nube, no instala la skill (T-32 la instala; ver §3 de SEGUIMIENTO)
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-01, T-13): resolución de familias de regla por prioridad con un `bytearray` de "ocupado" en vez de una única regex combinada; apócope y concordancia de género solo cuando el número precede a una palabra alfabética en el propio texto, nunca por el dígito final en solitario; concordancia de género por heurística de sufijo con excepciones cortas, no un analizador morfológico completo, apoyada en que el diccionario del dueño siempre puede corregir el fallo; las tablas de monedas/unidades de `config.py` quedan como diccionarios planos de módulo (no como campos de `Configuracion`) porque el diccionario de excepciones ya cubre la sobreescritura entrada a entrada; `normalizar_guion` opera sobre `BloqueRespiracion` (T-11) ya trozado, no antes del troceo, para que ningún corte de respiración parta una propuesta por la mitad.
+**Hallazgos del auditor atendidos:** ninguno (sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar la sesión)
+**Hallazgos:** ninguno nuevo; se verificó contra los tres guiones reales que el único texto de locución con cifras/siglas son `"80%"` (`guion-09-proyectos.md`) y `"SVG"` (`guion-artefactos-lienzo.md`) — la batería sintética del criterio de aceptación (años, porcentajes, monedas, ordinales) cubre el resto de familias de regla, sin fixtures reales que las ejerzan todavía.
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** siguiente tarea de §1 es T-14 (detector de problemas de lectura en voz alta), que depende de T-11 (ya completada); sus avisos nunca generan reescritura salvo la excepción ya decidida en §0.2 (frase sin punto de respiración, que puede proponer partición).
+
+---
+
 ### Sesión 2026-09-01 — T-12 (motor de tiempos), sesión de nube
 **Tarea(s):** T-12
 **Estado resultante:** T-12 COMPLETADA

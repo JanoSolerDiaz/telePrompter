@@ -34,6 +34,23 @@ Los rotulos mandan. Cuando faltan, la skill infiere y **avisa** de la desviacion
 | No recitable | `**EN PANTALLA**`, `**NOTA**` |
 | Secciones auxiliares | `Capítulos`, `Preparación antes de grabar`, `Notas de producción` |
 
+## Normalizacion a forma dicha (T-13)
+
+El texto de la tarjeta es exactamente lo que hay que decir: nunca hay que traducir mentalmente una cifra o una sigla al leer en voz alta. Cada familia de regla propone una reescritura marcada (original y propuesta a la vez, nunca se pierde el texto de partida); el diccionario del dueno manda siempre sobre cualquiera de ellas.
+
+| Familia | Ejemplo | Por defecto |
+|---------|---------|-------------|
+| Cardinales y anios | `2026` → «dos mil veintiséis» | Lectura completa en espanol; apocope («un»/«veintiún») y concordancia de genero solo si hay un sustantivo justo detras, por heuristica de sufijo (`config.py`, sin lista exhaustiva) |
+| Ordinales | `1ª` → «primera», `3er` → «tercer» | Del 1º al 10º; fuera de ese rango no se propone nada |
+| Porcentajes | `15 %` → «quince por ciento» | — |
+| Monedas | `1.500 €` → «mil quinientos euros» | `SIMBOLOS_MONEDA` (`€`, `$`); con decimales, «con N céntimos» |
+| Unidades abreviadas | `10 km` → «diez kilómetros» | `UNIDADES_ABREVIADAS` (km, kg, cm, mm, min, seg, h, m) |
+| Rangos y fracciones | `10-250` → «diez a doscientos cincuenta»; `3/4` → «tres partido por cuatro» | — |
+| Simbolos sueltos | `+` → «más», `>` → «mayor que» | `/` solo se lee dentro de una fraccion (ambiguo suelto, no se toca) |
+| Siglas | `SVG` → «ese uve ge» | Deletreo letra a letra si no hay entrada en el diccionario del dueno |
+| Conjunciones | `Fernando y Iker` → «Fernando e Iker»; `siete o ocho` → «siete u ocho» | Regla estandar del espanol, con la excepcion del diptongo `hie-`/`hia-` |
+| Diccionario del dueno | `diccionario-locucion.json` en la carpeta de salida | Prioridad sobre cualquier regla automatica de esta tabla; ausente por defecto |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.
