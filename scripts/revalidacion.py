@@ -153,17 +153,31 @@ def _particion_aceptada_de(
 
 
 def _materializar_marcados(
-    marcados: list[_Marcado], reescrituras: list[Reescritura]
+    marcados: list[_Marcado],
+    reescrituras: list[Reescritura],
+    indices_con_edicion_previa_a_particion: frozenset[int] = frozenset(),
 ) -> list[_MarcadoConIdentidad]:
     """Aplica las particiones aceptadas (T-15) sobre los bloques "de origen"
     de una escena, conservando para cada bloque resultante su identidad
     estable -- `(indice_original, mitad)` -- y el `fin_de_parrafo`/
     `fin_de_escena` que le corresponde: la primera mitad de una particion
     nunca es fin de nada (el texto sigue en la segunda mitad), la segunda
-    hereda el valor del bloque de origen sin partir."""
+    hereda el valor del bloque de origen sin partir.
+
+    `indices_con_edicion_previa_a_particion` es la salvaguarda del invariante
+    (c) para el cruce del hallazgo #9 (`auditoriacontinua.md`): si el dueno
+    edito a mano el bloque `indice_original` ANTES de partirlo (identidad
+    `(indice_original, None)`) y en esta misma revalidacion se acepta ademas
+    la particion sobre ese bloque, partirlo ahora tiraria la edicion a la
+    basura -- ninguna de las dos mitades resultantes conservaria la identidad
+    `None` bajo la que se guardo. Se prefiere no aplicar la particion (queda
+    para una revalidacion posterior, cuando ya no haya conflicto) antes que
+    perder en silencio el texto del dueno."""
     resultado: list[_MarcadoConIdentidad] = []
     for indice_original, (bloque, fin_de_parrafo, fin_de_escena) in enumerate(marcados):
-        particion = _particion_aceptada_de(bloque, reescrituras)
+        particion = None
+        if indice_original not in indices_con_edicion_previa_a_particion:
+            particion = _particion_aceptada_de(bloque, reescrituras)
         if particion is None:
             resultado.append((bloque, fin_de_parrafo, fin_de_escena, (indice_original, None)))
             continue
@@ -173,6 +187,30 @@ def _materializar_marcados(
             (_con_texto(bloque, mitad_b), fin_de_parrafo, fin_de_escena, (indice_original, "b"))
         )
     return resultado
+
+
+def _incidencias_conflicto_edicion_particion(
+    numero_escena: int,
+    marcados: list[_Marcado],
+    reescrituras: list[Reescritura],
+    indices_con_edicion_previa_a_particion: frozenset[int],
+) -> list[Incidencia]:
+    """Avisa (nunca en silencio) del cruce del hallazgo #9: una edicion
+    manual y una particion de respiracion aceptada coincidiendo sobre el
+    mismo bloque en la misma revalidacion. La particion no se aplica esta
+    vez; queda pendiente de una revalidacion posterior sin conflicto."""
+    return [
+        Incidencia(
+            numero_escena,
+            f"Escena {numero_escena}, bloque {indice_original}: hay una edición manual y una "
+            "partición de respiración aceptada sobre el mismo bloque en esta misma "
+            "revalidación; se conserva la edición manual (invariante (c) de §0.2) y la "
+            "partición no se aplica todavía. Vuelve a revalidar sin tocar ese bloque si "
+            "quieres que la partición se materialice.",
+        )
+        for indice_original in sorted(indices_con_edicion_previa_a_particion)
+        if _particion_aceptada_de(marcados[indice_original][0], reescrituras) is not None
+    ]
 
 
 def _incidencias_bloques_fuera_de_rango(
@@ -307,11 +345,25 @@ def revalidar_guion(
     reescrituras_actualizadas = aplicar_decisiones(reescrituras_previas, decisiones_documento)
 
     marcados_finales_por_escena: dict[int, list[_Marcado]] = {}
+    incidencias_conflicto_particion: list[Incidencia] = []
     for escena in resultado.escenas:
         marcados = marcados_originales_por_escena[escena.numero]
+        indices_con_edicion_previa_a_particion = frozenset(
+            indice_original
+            for (numero_escena_edicion, indice_original, mitad) in ediciones_manuales
+            if numero_escena_edicion == escena.numero and mitad is None
+        )
+        incidencias_conflicto_particion.extend(
+            _incidencias_conflicto_edicion_particion(
+                escena.numero,
+                marcados,
+                reescrituras_actualizadas,
+                indices_con_edicion_previa_a_particion,
+            )
+        )
         finales: list[_Marcado] = []
         for bloque, fin_de_parrafo, fin_de_escena, identidad in _materializar_marcados(
-            marcados, reescrituras_actualizadas
+            marcados, reescrituras_actualizadas, indices_con_edicion_previa_a_particion
         ):
             clave_identidad = (escena.numero, *identidad)
             texto_manual = ediciones_manuales.get(clave_identidad)
@@ -339,6 +391,7 @@ def revalidar_guion(
         *_incidencias_marcas_ambiguas(decisiones_documento, reescrituras_actualizadas),
         *_incidencias_indicaciones_en_locucion(bloques_finales, configuracion),
         *_incidencias_duracion_disparada(resultado_tiempos),
+        *incidencias_conflicto_particion,
     ]
 
     validado = marca_estado_documento == MARCA_ESTADO_VALIDADO

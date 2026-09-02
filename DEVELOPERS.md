@@ -633,6 +633,25 @@ para el siguiente ciclo.
   vez de aplicarla mal. La decisión sigue intacta en `estado.json`
   (invariante (b)); solo no se aplica en ese cruce concreto. Ver la fila de
   T-17 en `DECISIONES_TECNICAS.md`.
+- **Edición manual + partición aceptada en la MISMA pasada: sí era un bug
+  (hallazgo #9, corregido por P-02).** La identidad de una edición manual se
+  calcula ANTES de aplicar las decisiones que trae el propio documento
+  (`identidad_por_ancla`, sobre `reescrituras_previas`); si esa misma pasada
+  acepta una partición sobre el bloque editado, la identidad con la que se
+  guardó la edición (`indice_original`, `None`) deja de existir tras
+  materializar la partición (`indice_original`, `'a'`/`'b'`) y la búsqueda
+  posterior fallaba en silencio. `_materializar_marcados` acepta ahora
+  `indices_con_edicion_previa_a_particion`: para esos índices NO aplica la
+  partición esa pasada (la decisión de aceptarla se conserva en
+  `estado.reescrituras`, solo se pospone su materialización), y
+  `_incidencias_conflicto_edicion_particion` deja constancia en el informe.
+  Si nadie vuelve a editar el bloque a mano, una revalidación posterior
+  aplica la partición con normalidad. **Límite conocido y no cerrado:** en
+  esa revalidación posterior, el emparejamiento ancla→identidad puede
+  atribuir el texto editado íntegro a la mitad `'a'` en vez de reconocerlo
+  como "todavía sin partición", dejando la mitad `'b'` con un fragmento del
+  texto de origen sin editar -- no pierde texto, pero produce contenido
+  incorrecto visible. Ver la fila de P-02 en `DECISIONES_TECNICAS.md`.
 
 ## Reproductor: esqueleto autocontenido (T-18)
 

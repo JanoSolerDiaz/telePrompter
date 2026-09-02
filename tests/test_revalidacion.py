@@ -273,6 +273,56 @@ def test_identidad_de_particion_sobrevive_a_aceptarla_en_una_pasada_posterior(
     assert [b.numero_escena for b in bloques] == [1, 2, 3, 4]
 
 
+def test_edicion_manual_y_particion_aceptada_misma_pasada_no_pierde_edicion(
+    tmp_path: Path,
+) -> None:
+    """Hallazgo #9 de `auditoriacontinua.md`: si en la MISMA revalidacion el
+    dueno edita a mano el bloque candidato a particion Y ademas acepta la
+    particion de respiracion sobre ese mismo bloque, la edicion manual debe
+    prevalecer (invariante (c) de §0.2) en vez de perderse en silencio bajo
+    el texto derivado de la particion."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path)
+    resultado = parsear_guion(_GUION, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+    id_particion = _id_por_familia(estado_reescrituras(estado), FAMILIA_PARTICION_RESPIRACION)
+
+    texto_manual = "Texto editado a mano sobre el bloque completo de la escena uno."
+    doc1_editado = doc1.replace(
+        "Hemos revisado proyectos completos durante toda la semana pasada sin "
+        "parar ni un solo momento para descansar del todo.",
+        texto_manual,
+    )
+    doc1_editado = _marcar_decision(doc1_editado, id_particion, "ACEPTAR")
+
+    resultado_revalidacion = revalidar_guion(resultado, doc1_editado, estado, configuracion)
+
+    decisiones = {r.id: r.decision for r in resultado_revalidacion.reescrituras}
+    assert decisiones[id_particion] == DECISION_ACEPTADA  # la decision se registra igualmente
+
+    bloques = [b.bloque for b in resultado_revalidacion.resultado_tiempos.bloques]
+    escena_1_bloques = [b for b in bloques if b.numero_escena == 1]
+    assert len(escena_1_bloques) == 1  # la particion NO se materializa: hay conflicto
+    assert escena_1_bloques[0].texto == texto_manual  # la edicion manual manda
+
+    assert any(
+        "edición manual" in incidencia.mensaje and "partición" in incidencia.mensaje
+        for incidencia in resultado_revalidacion.incidencias
+    )
+
+    # El round-trip sigue siendo valido: el documento se puede regenerar a
+    # partir de este resultado sin perder la edicion manual (invariante (c)).
+    doc2 = generar_documento_revision(
+        resultado,
+        resultado_revalidacion.resultado_tiempos,
+        resultado_revalidacion.detecciones,
+        resultado_revalidacion.reescrituras,
+        configuracion,
+        nombre_guion="prueba",
+    )
+    assert texto_manual in doc2
+
+
 # --- Informe de incidencias (requisito 3): solo lo roto -------------------------------
 
 

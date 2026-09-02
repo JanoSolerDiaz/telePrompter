@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-02 — P-02 (hallazgo #9, urgente antes de T-23), sesión de nube
+**Tarea(s):** P-02 (origen: auditoría #9, severidad alta)
+**Estado resultante:** P-02 COMPLETADA. T-23 sigue PENDIENTE — esta sesión se dedicó íntegra al hallazgo urgente, según manda §0.1/§0.3 ("antes de elegir tarea, revisa el registro de hallazgos... si hay algún hallazgo ABIERTO de severidad alta, atiéndelo como P-XX urgente antes de la cola").
+**Commits a develop:** `P-02: corrige perdida silenciosa de edicion manual al coincidir con particion aceptada (hallazgo #9)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (no toca el esquema de `estado.json`)
+**Archivos creados/modificados:** `scripts/revalidacion.py` (`_materializar_marcados` gana el parámetro `indices_con_edicion_previa_a_particion` y no aplica la partición sobre esos índices; función nueva `_incidencias_conflicto_edicion_particion`; `revalidar_guion` calcula el conjunto de conflicto por escena a partir de `ediciones_manuales` y lo pasa a ambos), `tests/test_revalidacion.py` (test nuevo `test_edicion_manual_y_particion_aceptada_misma_pasada_no_pierde_edicion`), `roadmap/SEGUIMIENTO.md` (§1 cabecera, §5 fila P-02), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (mypy estricto, 0 errores) · lint ✅ (ruff, 0 avisos) · tests ✅ (294 pasan + 1 skipped, antes 293 + 1) · salidas ✅ (`verificar_salidas.py --fixture`, código 0; 3 etapas siguen NO APLICABLE por su tarea correspondiente)
+**Health check post-deploy:** no aplicable — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (T-32); no se simula.
+**Decisiones tomadas:** 1 fila añadida a `DECISIONES_TECNICAS.md`: posponer la materialización de la partición (sin revertir su decisión de aceptación ni tocar el texto editado) y avisar con una incidencia explícita, descartando sobrescribir la edición (violaría el invariante), revertir la decisión del dueño en su nombre, o volver a trocear el texto editado automáticamente.
+**Hallazgos del auditor atendidos:** #9 (severidad alta) — corregido y verificado con test de reproducción exacta del escenario descrito por el auditor.
+**Hallazgos:** al verificar la corrección a mano se encontró un límite conocido, no cerrado por esta P-XX y registrado en `DECISIONES_TECNICAS.md`: en una revalidación POSTERIOR sin que el dueño vuelva a tocar el bloque, el emparejamiento ancla→identidad puede atribuir el texto editado íntegro a la mitad `'a'` de la partición y dejar en la mitad `'b'` un fragmento del texto de ORIGEN sin editar — no hay pérdida de texto, pero sí contenido incorrecto visible. Queda para que la próxima auditoría lo registre como hallazgo propio (candidato a #14) en vez de ampliar el alcance de esta corrección urgente.
+**Tareas autopropuestas (P-XX):** P-02 registrada y ejecutada (ver §5 de SEGUIMIENTO).
+**Próximo paso:** T-23 (ayudas de grabación), sexta de FASE B4 — no se tocó en esta sesión. Quien la retome puede seguir la nota de la sesión de T-22: `elementosBloque[bloqueActual]` y `escenaActual`/`bloqueActual` ya identifican el bloque activo, y `inicio_segundos`/`fin_segundos` ya están disponibles para el cronómetro/contador de progreso.
+
+---
+
 ### Sesión 2026-09-02 — T-22 (autoscroll con bloque centrado), sesión de nube
 **Tarea(s):** T-22
 **Estado resultante:** T-22 COMPLETADA
