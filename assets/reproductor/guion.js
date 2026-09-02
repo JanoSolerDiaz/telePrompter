@@ -256,6 +256,27 @@
     elementoCuentaAtras.hidden = true;
     vistaReproductor.appendChild(elementoCuentaAtras);
 
+    // Ayuda de teclado (T-24, requisito 3): oculta por defecto, `alternarAyuda`
+    // la muestra/oculta con la tecla `?`. Se reconstruye en cada escena, igual
+    // que el resto de la cabecera -- es barata (una docena de elementos) y asi
+    // no hay que preocuparse de que sobreviva a `vistaReproductor.textContent = ""`.
+    elementoAyuda = document.createElement("div");
+    elementoAyuda.className = "ayuda-teclado";
+    elementoAyuda.id = "ayuda-teclado";
+    elementoAyuda.hidden = true;
+    var panelAyuda = document.createElement("div");
+    panelAyuda.className = "ayuda-teclado-panel";
+    var tituloAyuda = document.createElement("h2");
+    tituloAyuda.textContent = "Atajos de teclado";
+    panelAyuda.appendChild(tituloAyuda);
+    panelAyuda.appendChild(construirListaAyudaTeclado());
+    var cierreAyuda = document.createElement("p");
+    cierreAyuda.className = "ayuda-teclado-cierre";
+    cierreAyuda.textContent = "Pulsa ? para cerrar esta ayuda.";
+    panelAyuda.appendChild(cierreAyuda);
+    elementoAyuda.appendChild(panelAyuda);
+    vistaReproductor.appendChild(elementoAyuda);
+
     var escena = datos.escenas[indice];
     var seccion = document.createElement("section");
     seccion.className = "escena";
@@ -338,6 +359,109 @@
   var cronometroMsAcumulados = 0;
   var intervaloCronometro = null;
   var elementoBarraProgreso = null;
+
+  // --- Atajos de teclado y clicker Bluetooth (T-24) --------------------------
+  var elementoAyuda = null;
+
+  // Texto de cada accion en la ayuda (requisito 3): fijo en espanol, no viaja
+  // en el JSON -- a diferencia de las TECLAS (que si son configurables por el
+  // dueno via `datos.mapa_teclas`), estas etiquetas son literales de interfaz
+  // que no tiene sentido reconfigurar.
+  var ETIQUETAS_ACCION_TECLADO = {
+    pausa_avanza: "Pausar / reanudar (o avanzar, segun configuracion)",
+    bloque_siguiente: "Bloque siguiente",
+    bloque_anterior: "Bloque anterior",
+    escena_anterior: "Escena anterior",
+    escena_siguiente: "Escena siguiente",
+    velocidad_mas: "Aumentar velocidad",
+    velocidad_menos: "Reducir velocidad",
+    tamano_mas: "Aumentar tamano de texto",
+    tamano_menos: "Reducir tamano de texto",
+    reiniciar_escena: "Reiniciar escena",
+    ocultar_indicadores: "Mostrar / ocultar indicadores",
+    salir_pantalla_completa: "Salir de pantalla completa",
+    ayuda: "Mostrar / ocultar esta ayuda"
+  };
+
+  // Nombre legible de una tecla tal como la reporta `KeyboardEvent.key`
+  // (requisito 3, "mapa... visible en una ayuda"): sin esto la ayuda mostraria
+  // literales crudos como " " o "ArrowRight", ilegibles para quien graba.
+  var ETIQUETAS_TECLA = {
+    " ": "Espacio",
+    Spacebar: "Espacio",
+    ArrowRight: "→",
+    ArrowLeft: "←",
+    ArrowUp: "↑",
+    ArrowDown: "↓",
+    PageDown: "Av Pág",
+    PageUp: "Re Pág",
+    Escape: "Esc"
+  };
+
+  function etiquetaTecla(tecla) {
+    return ETIQUETAS_TECLA[tecla] || tecla;
+  }
+
+  // Construye la lista de la ayuda leyendo `datos.mapa_teclas` (requisito 3:
+  // "visible... el mapa VIGENTE" -- nunca una copia escrita a mano que pudiera
+  // desincronizarse del mapa real que usa `manejarTeclaReproductor`).
+  function construirListaAyudaTeclado() {
+    var lista = document.createElement("ul");
+    lista.className = "ayuda-teclado-lista";
+    Object.keys(datos.mapa_teclas).forEach(function (accion) {
+      var etiquetasTeclas = [];
+      datos.mapa_teclas[accion].forEach(function (tecla) {
+        var etiqueta = etiquetaTecla(tecla);
+        if (etiquetasTeclas.indexOf(etiqueta) === -1) {
+          etiquetasTeclas.push(etiqueta);
+        }
+      });
+      var item = document.createElement("li");
+      var teclasSpan = document.createElement("span");
+      teclasSpan.className = "ayuda-teclado-teclas";
+      teclasSpan.textContent = etiquetasTeclas.join(" / ");
+      var accionSpan = document.createElement("span");
+      accionSpan.className = "ayuda-teclado-accion";
+      accionSpan.textContent = ETIQUETAS_ACCION_TECLADO[accion] || accion;
+      item.appendChild(teclasSpan);
+      item.appendChild(accionSpan);
+      lista.appendChild(item);
+    });
+    return lista;
+  }
+
+  function alternarAyuda() {
+    if (elementoAyuda) {
+      elementoAyuda.hidden = !elementoAyuda.hidden;
+    }
+  }
+
+  // Mapa de teclas -> accion, construido una vez a partir de `datos.mapa_teclas`
+  // (requisito 3, "configurable en la generacion"): `manejarTeclaReproductor`
+  // nunca compara literales de teclas escritos a mano.
+  var teclaAAccion = {};
+  Object.keys(datos.mapa_teclas).forEach(function (accion) {
+    datos.mapa_teclas[accion].forEach(function (tecla) {
+      teclaAAccion[tecla] = accion;
+    });
+  });
+
+  // Antirrebote del clicker (requisito 2): un clicker Bluetooth barato puede
+  // enviar la misma tecla dos veces por un unico clic fisico (rebote de
+  // contacto). Se descarta una pulsacion de la MISMA accion si llega antes de
+  // que pasen `antirrebote_clicker_ms` desde la ultima aceptada; distintas
+  // acciones no se bloquean entre si.
+  var ultimaPulsacionPorAccion = {};
+
+  function pulsacionPermitida(accion) {
+    var ahora = Date.now();
+    var ultima = ultimaPulsacionPorAccion[accion] || 0;
+    if (ahora - ultima < datos.antirrebote_clicker_ms) {
+      return false;
+    }
+    ultimaPulsacionPorAccion[accion] = ahora;
+    return true;
+  }
 
   // Cuenta atras 3-2-1 antes de arrancar el automatico (requisito 1). Si esta
   // desactivada en la configuracion (o su duracion es 0), arranca al instante
@@ -722,60 +846,69 @@
     pausado = false;
   }
 
+  // Mapa completo (T-24, requisito 1): cada tecla reconocida se resuelve a una
+  // ACCION via `teclaAAccion` (construido a partir de `datos.mapa_teclas`, no
+  // de literales aqui), asi que anadir o remapear una tecla es cosa de
+  // `Configuracion.mapa_teclas_reproductor`, nunca de tocar este switch.
   function manejarTeclaReproductor(evento) {
     if (vistaReproductor.hidden) {
       return;
     }
-    switch (evento.key) {
-      case " ":
-      case "Spacebar":
-        evento.preventDefault();
-        togglePausa();
+    var accion = teclaAAccion[evento.key];
+    if (!accion) {
+      return;
+    }
+    // Requisito 2 ("evitar el desplazamiento nativo de la pagina"): toda tecla
+    // reconocida cancela su accion por defecto del navegador ANTES de aplicar
+    // el antirrebote, para que una pulsacion descartada por rebote tampoco
+    // desplace la pagina.
+    evento.preventDefault();
+    if (!pulsacionPermitida(accion)) {
+      return;
+    }
+    switch (accion) {
+      case "pausa_avanza":
+        if (datos.espacio_avanza_bloque) {
+          bloqueSiguienteManual();
+        } else {
+          togglePausa();
+        }
         break;
-      case "+":
-      case "=":
-        evento.preventDefault();
-        ajustarVelocidad(datos.paso_velocidad);
-        break;
-      case "-":
-        evento.preventDefault();
-        ajustarVelocidad(-datos.paso_velocidad);
-        break;
-      case "]":
-        evento.preventDefault();
-        ajustarTamanoTexto(datos.paso_tamano_texto_px);
-        break;
-      case "[":
-        evento.preventDefault();
-        ajustarTamanoTexto(-datos.paso_tamano_texto_px);
-        break;
-      case "ArrowRight":
-      case "PageDown":
-        evento.preventDefault();
+      case "bloque_siguiente":
         bloqueSiguienteManual();
         break;
-      case "ArrowLeft":
-      case "PageUp":
-        evento.preventDefault();
+      case "bloque_anterior":
         bloqueAnteriorManual();
         break;
-      case "ArrowUp":
-        evento.preventDefault();
+      case "escena_anterior":
         escenaAdyacente(-1);
         break;
-      case "ArrowDown":
-        evento.preventDefault();
+      case "escena_siguiente":
         escenaAdyacente(1);
         break;
-      case "r":
-      case "R":
-        evento.preventDefault();
+      case "velocidad_mas":
+        ajustarVelocidad(datos.paso_velocidad);
+        break;
+      case "velocidad_menos":
+        ajustarVelocidad(-datos.paso_velocidad);
+        break;
+      case "tamano_mas":
+        ajustarTamanoTexto(datos.paso_tamano_texto_px);
+        break;
+      case "tamano_menos":
+        ajustarTamanoTexto(-datos.paso_tamano_texto_px);
+        break;
+      case "reiniciar_escena":
         reiniciarEscenaActual();
         break;
-      case "h":
-      case "H":
-        evento.preventDefault();
+      case "ocultar_indicadores":
         alternarIndicadores();
+        break;
+      case "salir_pantalla_completa":
+        salirPantallaCompleta();
+        break;
+      case "ayuda":
+        alternarAyuda();
         break;
       default:
         break;

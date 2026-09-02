@@ -139,6 +139,14 @@ PASO_VELOCIDAD: float = 0.1
 VELOCIDAD_MINIMA: float = 0.5
 VELOCIDAD_MAXIMA: float = 2.0
 CUENTA_ATRAS_SEGUNDOS: int = 3
+# Milisegundos minimos entre dos pulsaciones aceptadas de la MISMA accion del
+# reproductor (T-24, requisito 2, "antirrebote configurable"): un clicker Bluetooth
+# barato puede enviar la misma tecla dos veces por un unico clic fisico (rebote de
+# contacto); una pulsacion que llega antes de este tiempo desde la anterior de la
+# misma accion se descarta en silencio. `0` desactiva el antirrebote. Reservada
+# desde T-20 (mismo patron que `PASO_VELOCIDAD` en T-18: la constante ya existia
+# antes de que la tarea que la usa llegara a la cola), cableada a `Configuracion`
+# y al JSON incrustado en esta tarea.
 ANTIRREBOTE_CLICKER_MS: int = 120
 # Neutro y oscuro, sin identidad corporativa (regla de §0.2: el reproductor prioriza
 # legibilidad sobre branding; la marca 480 solo aparece en `.pptx` y `.pdf`).
@@ -201,6 +209,43 @@ DURACION_AUTOSCROLL_MS: int = 400
 # si esta activada. "Desactivable" es el booleano, no poner la duracion a cero -- el
 # mismo patron paso/activable que ya usa el resto del reproductor.
 CUENTA_ATRAS_ACTIVADA: bool = True
+
+# --- Atajos de teclado y clicker Bluetooth (T-24) -----------------------------------
+# Un clicker Bluetooth se identifica ante el sistema operativo como un teclado
+# corriente: no hay API que lo distinga de una pulsacion real, asi que la
+# "compatibilidad" (requisito 2) es enteramente cuestion del mapa de teclas de abajo
+# y de tolerar el rebote de contacto tipico de un mando barato (`ANTIRREBOTE_CLICKER_MS`,
+# ya reservada mas arriba junto al resto de constantes del reproductor).
+# Requisito 1: `Espacio` puede pausar/reanudar (por defecto, para quien opera desde
+# teclado) o avanzar al bloque siguiente (util si el boton principal del clicker
+# envia Espacio en vez de PageDown/flecha derecha, como hacen algunos mandos de
+# presentaciones). Decision del dueno, no una heuristica: no hay forma de saber
+# desde el navegador que boton fisico disparo la tecla.
+ESPACIO_AVANZA_BLOQUE: bool = False
+# Mapa de teclas del reproductor (requisitos 1 y 3): nombre de accion -> teclas que
+# la disparan (varias teclas por accion, nunca una combinacion con modificador --
+# requisito 4, "ningun atajo depende de combinaciones que un clicker no puede
+# enviar"). Vive aqui, no escrito a mano en `guion.js`, para que sea "configurable en
+# la generacion" tal cual pide el requisito 3; viaja al JSON incrustado como
+# cualquier otro valor de `Configuracion` y la ayuda en pantalla (tecla `?`) se
+# construye leyendo este mismo mapa, nunca uno paralelo. Tupla de pares (no un
+# `dict`) para que el valor por defecto siga siendo inmutable como el resto de
+# `Configuracion` (regla del dataclass congelado).
+MAPA_TECLAS_REPRODUCTOR: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("pausa_avanza", (" ", "Spacebar")),
+    ("bloque_siguiente", ("ArrowRight", "PageDown")),
+    ("bloque_anterior", ("ArrowLeft", "PageUp")),
+    ("escena_anterior", ("ArrowUp",)),
+    ("escena_siguiente", ("ArrowDown",)),
+    ("velocidad_mas", ("+", "=")),
+    ("velocidad_menos", ("-",)),
+    ("tamano_mas", ("]",)),
+    ("tamano_menos", ("[",)),
+    ("reiniciar_escena", ("r", "R")),
+    ("ocultar_indicadores", ("h", "H")),
+    ("salir_pantalla_completa", ("Escape",)),
+    ("ayuda", ("?",)),
+)
 
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
 # escribe fuera de esa carpeta (regla de aislamiento, §0.2).
@@ -283,6 +328,11 @@ class Configuracion:
     duracion_autoscroll_ms: int = DURACION_AUTOSCROLL_MS
     cuenta_atras_segundos: int = CUENTA_ATRAS_SEGUNDOS
     cuenta_atras_activada: bool = CUENTA_ATRAS_ACTIVADA
+    antirrebote_clicker_ms: int = ANTIRREBOTE_CLICKER_MS
+    espacio_avanza_bloque: bool = ESPACIO_AVANZA_BLOQUE
+    mapa_teclas_reproductor: tuple[tuple[str, tuple[str, ...]], ...] = field(
+        default=MAPA_TECLAS_REPRODUCTOR
+    )
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -403,3 +453,17 @@ class Configuracion:
                 f"({self.atenuacion_minima} <= {self.atenuacion_niveles[-1]})."
             )
             raise ValueError(mensaje)
+        if self.antirrebote_clicker_ms < 0:
+            mensaje = (
+                "El antirrebote del clicker no puede ser negativo "
+                f"({self.antirrebote_clicker_ms})."
+            )
+            raise ValueError(mensaje)
+        if not self.mapa_teclas_reproductor:
+            raise ValueError("El mapa de teclas del reproductor no puede estar vacio.")
+        for accion, teclas in self.mapa_teclas_reproductor:
+            if not teclas:
+                mensaje = (
+                    f"La accion '{accion}' del mapa de teclas no tiene ninguna tecla asignada."
+                )
+                raise ValueError(mensaje)

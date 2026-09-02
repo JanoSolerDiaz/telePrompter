@@ -150,6 +150,15 @@ def _construir_datos(
         # (requisito 1), configurables.
         "cuenta_atras_segundos": configuracion.cuenta_atras_segundos,
         "cuenta_atras_activada": configuracion.cuenta_atras_activada,
+        # Atajos de teclado y clicker Bluetooth (T-24): antirrebote de pulsaciones
+        # repetidas (requisito 2), si `Espacio` pausa/reanuda o avanza (requisito 1)
+        # y el mapa de teclas completo (requisitos 1 y 3) -- `dict()` sobre la tupla
+        # de pares de `Configuracion` porque un objeto JSON es mas comodo de recorrer
+        # desde `guion.js` que un array de pares; la tupla de origen sigue siendo el
+        # valor inmutable que exige el dataclass congelado.
+        "antirrebote_clicker_ms": configuracion.antirrebote_clicker_ms,
+        "espacio_avanza_bloque": configuracion.espacio_avanza_bloque,
+        "mapa_teclas": dict(configuracion.mapa_teclas_reproductor),
     }
 
 
