@@ -143,6 +143,9 @@ def _construir_datos(
         "tamano_texto_minimo_px": configuracion.tamano_texto_minimo_px,
         "tamano_texto_maximo_px": configuracion.tamano_texto_maximo_px,
         "tiempo_inactividad_cursor_ms": configuracion.tiempo_inactividad_cursor_ms,
+        # Autoscroll con bloque centrado (T-22): duracion del desplazamiento suave,
+        # configurable -- `guion.js` no la trae escrita a mano.
+        "duracion_autoscroll_ms": configuracion.duracion_autoscroll_ms,
     }
 
 

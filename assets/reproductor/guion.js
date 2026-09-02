@@ -144,12 +144,19 @@
   }
 
   function solicitarPantallaCompleta(elementoAFocarAlTerminar) {
+    // `{ preventScroll: true }` (T-22): sin esto, un foco en un boton situado
+    // arriba de la pagina (la cabecera) dispara el scroll-into-view por
+    // defecto del navegador y deshace el centrado que acaba de calcular
+    // `centrarBloqueActivo` -- confirmado con Playwright: al conceder pantalla
+    // completa, este foco diferido llegaba DESPUES del centrado inicial de
+    // `iniciarMotor` y lo pisaba, devolviendo el scroll a 0 en cada entrada a
+    // una escena.
     if (document.fullscreenElement) {
       // Ya en pantalla completa (p. ej. al pasar de escena a escena desde el
       // propio reproductor, T-20): no hace falta pedirla de nuevo, solo
       // recuperar el foco en el elemento indicado.
       if (elementoAFocarAlTerminar) {
-        elementoAFocarAlTerminar.focus();
+        elementoAFocarAlTerminar.focus({ preventScroll: true });
       }
       return;
     }
@@ -163,7 +170,7 @@
         // transicion a pantalla completa; sin esto, el recorrido por teclado
         // se quedaria sin foco visible justo despues de arrancar la escena.
         if (elementoAFocarAlTerminar) {
-          elementoAFocarAlTerminar.focus();
+          elementoAFocarAlTerminar.focus({ preventScroll: true });
         }
       })
       .catch(function () {
@@ -329,6 +336,81 @@
     });
   }
 
+  // --- Autoscroll con bloque centrado (T-22) -------------------------------
+  //
+  // El documento entero desplaza (no hay un contenedor propio con overflow:
+  // `#app` crece con la altura natural de la pagina), asi que centrar el
+  // bloque activo es mover `window.scrollY`. La animacion es una interpolacion
+  // manual con `requestAnimationFrame` -- no `scrollIntoView({behavior:
+  // 'smooth'})` -- para poder cancelar limpiamente una animacion en curso y
+  // arrancar la siguiente desde la posicion real en ese instante (requisito 2,
+  // "sin rebotes al avanzar rapido a mano"): con el nativo, dos llamadas
+  // seguidas encolan o interrumpen sin control sobre el punto de partida.
+  var animacionScroll = null;
+
+  function detenerAnimacionScroll() {
+    if (animacionScroll !== null) {
+      cancelAnimationFrame(animacionScroll);
+      animacionScroll = null;
+    }
+  }
+
+  function alturaViewport() {
+    return document.documentElement.clientHeight;
+  }
+
+  function scrollMaximo() {
+    return Math.max(document.documentElement.scrollHeight - alturaViewport(), 0);
+  }
+
+  // Suavizado ease-in-out (aceleracion y frenado simetricos, sin rebote).
+  function suavizarProgreso(progreso) {
+    return progreso < 0.5
+      ? 2 * progreso * progreso
+      : 1 - Math.pow(-2 * progreso + 2, 2) / 2;
+  }
+
+  function centrarBloqueActivo(animado) {
+    if (escenaActual === -1) {
+      return;
+    }
+    var elemento = elementosBloque[bloqueActual];
+    if (!elemento) {
+      return;
+    }
+    var rect = elemento.getBoundingClientRect();
+    var origen = window.scrollY;
+    var centroElemento = rect.top + origen + rect.height / 2;
+    var objetivo = Math.max(
+      0,
+      Math.min(centroElemento - alturaViewport() / 2, scrollMaximo())
+    );
+    detenerAnimacionScroll();
+    // Requisito 3 (si el texto cabe entero, no se desplaza nada) sale gratis
+    // de esta clausula: con `scrollMaximo() === 0` el objetivo siempre coincide
+    // con el origen, y no hay animacion ni salto que hacer.
+    if (!animado || Math.abs(objetivo - origen) < 1) {
+      window.scrollTo(0, objetivo);
+      return;
+    }
+    var distancia = objetivo - origen;
+    var duracion = datos.duracion_autoscroll_ms;
+    var marcaInicio = null;
+    function paso(marcaActual) {
+      if (marcaInicio === null) {
+        marcaInicio = marcaActual;
+      }
+      var progreso = Math.min((marcaActual - marcaInicio) / duracion, 1);
+      window.scrollTo(0, origen + distancia * suavizarProgreso(progreso));
+      if (progreso < 1) {
+        animacionScroll = requestAnimationFrame(paso);
+      } else {
+        animacionScroll = null;
+      }
+    }
+    animacionScroll = requestAnimationFrame(paso);
+  }
+
   function actualizarIndicadorVelocidad() {
     if (!indicadorVelocidad || escenaActual === -1) {
       return;
@@ -366,6 +448,10 @@
     tamanoTextoActualPx = nuevo;
     document.documentElement.style.setProperty("--tamano-base", nuevo + "px");
     actualizarIndicadorTamano();
+    // Requisito 4 (correcto tras cambiar el tamano de texto): el cambio de
+    // fuente reflow-ea el bloque activo a otra altura de pagina; recentrarlo
+    // con animacion para que el salto no se note como un tirón.
+    centrarBloqueActivo(true);
   }
 
   function detenerTemporizador() {
@@ -401,6 +487,7 @@
     }
     bloqueActual += 1;
     marcarBloqueActivo(bloqueActual);
+    centrarBloqueActivo(true);
     iniciarTemporizadorBloque();
   }
 
@@ -411,6 +498,7 @@
     }
     bloqueActual = Math.max(0, Math.min(indice, bloques.length - 1));
     marcarBloqueActivo(bloqueActual);
+    centrarBloqueActivo(true);
     iniciarTemporizadorBloque();
   }
 
@@ -493,6 +581,7 @@
     actualizarIndicadorPausa();
     if (bloquesEscenaActual().length > 0) {
       marcarBloqueActivo(0);
+      centrarBloqueActivo(false);
       iniciarTemporizadorBloque();
     }
   }
@@ -581,6 +670,14 @@
     }
     temporizadorCursor = setTimeout(ocultarCursor, datos.tiempo_inactividad_cursor_ms);
   }
+
+  // Requisito 4 (correcto tras redimensionar la ventana): recentra sin
+  // animacion -- un redimensionado no es un gesto de lectura, es un cambio
+  // estructural del lienzo, y animarlo solo añadiria un desfase visible
+  // mientras el usuario todavia esta arrastrando el borde de la ventana.
+  window.addEventListener("resize", function () {
+    centrarBloqueActivo(false);
+  });
 
   document.addEventListener("mousemove", reprogramarOcultarCursor);
   document.addEventListener("fullscreenchange", function () {

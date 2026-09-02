@@ -190,6 +190,12 @@ MARGEN_SEGURO_PX: int = 64
 # Cursor oculto en pantalla completa tras esta inactividad del raton (requisito 4).
 TIEMPO_INACTIVIDAD_CURSOR_MS: int = 3000
 
+# --- Autoscroll con bloque centrado (T-22) ----------------------------------------
+# Duracion del desplazamiento suave que recentra el bloque activo (requisito 2). Se
+# aplica tanto al avance/retroceso como al recalculo tras cambiar el tamano de texto;
+# el redimensionado de ventana recentra de forma instantanea, sin animacion.
+DURACION_AUTOSCROLL_MS: int = 400
+
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
 # escribe fuera de esa carpeta (regla de aislamiento, §0.2).
 NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
@@ -268,6 +274,7 @@ class Configuracion:
     color_acento_reproductor: str = COLOR_ACENTO_REPRODUCTOR
     margen_seguro_px: int = MARGEN_SEGURO_PX
     tiempo_inactividad_cursor_ms: int = TIEMPO_INACTIVIDAD_CURSOR_MS
+    duracion_autoscroll_ms: int = DURACION_AUTOSCROLL_MS
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -347,6 +354,7 @@ class Configuracion:
             ("tamano_texto_minimo_px", self.tamano_texto_minimo_px),
             ("tamano_texto_maximo_px", self.tamano_texto_maximo_px),
             ("tiempo_inactividad_cursor_ms", self.tiempo_inactividad_cursor_ms),
+            ("duracion_autoscroll_ms", self.duracion_autoscroll_ms),
         ):
             if valor_entero <= 0:
                 mensaje = f"El umbral '{nombre}' debe ser un entero positivo ({valor_entero})."
