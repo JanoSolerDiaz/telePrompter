@@ -142,9 +142,38 @@ button:focus-visible {
   margin-bottom: 1.5em;
 }
 
+.reproductor-info {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
 .contador-escena {
   color: var(--color-texto-secundario);
   font-variant-numeric: tabular-nums;
+}
+
+.velocidad-escena {
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+  min-width: 5.5em;
+}
+
+.estado-pausa {
+  color: #f5c542;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75em;
+  letter-spacing: 0.03em;
+}
+
+/* Bloque activo del motor de avance (T-20). Tratamiento minimo a proposito:
+   el resaltado/atenuado de contexto con gradiente configurable es T-21. */
+.bloque--activo {
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid #f5c542;
+  padding-left: 0.75em;
+  font-weight: 600;
 }
 
 .btn-volver {

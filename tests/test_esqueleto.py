@@ -30,6 +30,21 @@ def test_configuracion_rechaza_rango_de_bloque_imposible() -> None:
         Configuracion(palabras_por_bloque_min=15, palabras_por_bloque_max=6)
 
 
+def test_configuracion_rechaza_paso_de_velocidad_no_positivo() -> None:
+    with pytest.raises(ValueError, match="paso de velocidad"):
+        Configuracion(paso_velocidad=0)
+
+
+def test_configuracion_rechaza_limites_de_velocidad_decrecientes() -> None:
+    with pytest.raises(ValueError, match="Los limites de velocidad"):
+        Configuracion(velocidad_minima=2.0, velocidad_maxima=0.5)
+
+
+def test_configuracion_rechaza_rango_de_velocidad_que_no_incluye_el_ritmo_base() -> None:
+    with pytest.raises(ValueError, match="incluir 1\\.0"):
+        Configuracion(velocidad_minima=1.2, velocidad_maxima=1.5)
+
+
 def test_html_autocontenido_no_dispara_hallazgos() -> None:
     html = """<!doctype html><html><head><style>body{color:#fff}</style></head>
     <body><script>const escenas=[];</script></body></html>"""

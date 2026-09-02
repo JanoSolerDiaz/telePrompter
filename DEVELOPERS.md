@@ -739,6 +739,82 @@ pintar una única página larga a dos "vistas" que se alternan dentro del mismo
   fixture real de `fixtures/salida/reproductor.html`, sin usar el ratón y sin
   errores de consola.
 
+## Motor de avance híbrido (T-20)
+
+Tampoco toca `reproductor.py` en lo esencial: los bloques ya traen
+`inicio_segundos`/`fin_segundos` (T-12, vía T-18) y su diferencia es
+exactamente la duración que hay que resaltarlos. Solo se añaden tres claves
+nuevas al JSON incrustado -- `paso_velocidad`, `velocidad_minima`,
+`velocidad_maxima` (config, sin números mágicos) -- para que `guion.js` no
+tenga que traer sus límites de velocidad escritos a mano. Todo el motor vive
+en `assets/reproductor/guion.js`:
+
+- **Reloj por bloque, no por escena.** `iniciarTemporizadorBloque()` arma un
+  único `setTimeout` con la duración del bloque activo
+  (`fin_segundos - inicio_segundos`, que ya incluye la pausa tras el bloque)
+  dividida por `velocidadesEscena[escenaActual]`. Al disparar,
+  `avanzarAutomatico()` mueve el índice y vuelve a llamar a
+  `iniciarTemporizadorBloque()`: es una cadena de temporizadores de un solo
+  bloque, no un intervalo global. En el último bloque de la escena no hay más
+  que encadenar y la función no hace nada.
+- **Velocidad recordada por escena, no persistida (requisito 5).**
+  `velocidadesEscena` es un array paralelo a `datos.escenas`, mismo patrón que
+  `estadosEscena` de T-19: vive en memoria de la pestaña, arranca en `1.0` por
+  escena y sobrevive mientras se navega de escena en escena desde el propio
+  reproductor (`ArrowUp`/`ArrowDown`). Persistirla entre sesiones es T-26, no
+  esta tarea -- mismo razonamiento que ya dejó T-19 para el estado de escena.
+- **Cambiar de velocidad no toca el bloque en curso (requisito 2).**
+  `ajustarVelocidad(delta)` solo actualiza `velocidadesEscena[escenaActual]`
+  (con redondeo al paso configurado para evitar deriva de coma flotante) y el
+  indicador visible; nunca cancela ni reprograma el temporizador activo. El
+  cambio se nota la próxima vez que `iniciarTemporizadorBloque()` lo lea, es
+  decir, desde el bloque siguiente -- literal al requisito ("sin cortes").
+- **Avanzar a mano reinicia el reloj sin salir del automático (requisito 3).**
+  `irABloque(indice)` (usada por `bloqueSiguienteManual`/`bloqueAnteriorManual`/
+  `reiniciarEscenaActual`) mueve el índice y llama de nuevo a
+  `iniciarTemporizadorBloque()`, que arranca un reloj nuevo para el bloque de
+  destino con su propia duración completa. Si el motor no estaba en pausa,
+  ese nuevo reloj empieza a correr inmediatamente: "avanzar a mano" nunca dejó
+  de estar en modo automático, solo cambió qué bloque cuenta el tiempo.
+- **Pausa exacta, no aproximada (requisito 4, "reanuda exactamente donde
+  estaba").** `togglePausa()` no reinicia nada: al pausar, calcula
+  `bloqueMsRestantes` restando el tiempo transcurrido desde que arrancó el
+  reloj del bloque actual (`bloqueInicioMarca`) a su duración total, y cancela
+  el `setTimeout` pendiente. Al reanudar, arma un `setTimeout` nuevo con
+  exactamente ese resto. Pausar y reanudar varias veces seguidas es
+  correcto por construcción: `bloqueMsRestantes` siempre es "lo que falta
+  medido desde la última marca", nunca un valor absoluto que pueda desincronizarse.
+- **Teclado del motor, adelantado de T-24 a propósito.** `manejarTeclaReproductor`
+  (un único listener en `document`, activo solo si `vistaReproductor` no está
+  oculta) ya usa el mapa final que describe T-24: `Espacio` pausa/reanuda,
+  `+`/`-` (y `=` sin mayúscula, por si el teclado no la ofrece directo) ajustan
+  velocidad, `→`/`PageDown` y `←`/`PageUp` avanzan/retroceden un bloque,
+  `↑`/`↓` cambian de escena sin salir de pantalla completa, `R` reinicia la
+  escena. T-24 no tiene que reasignar teclas, solo añadir el modal de ayuda
+  (`?`), el antirrebote del clicker y la tolerancia de repeticiones rápidas.
+- **Cambiar de escena sin volver a pedir pantalla completa.**
+  `escenaAdyacente(delta)` reutiliza `reproducirEscena(destino)` tal cual (
+  reconstruye la vista del reproductor entera, igual que "Volver al índice"
+  seguido de reproducir otra escena), pero `solicitarPantallaCompleta` ahora
+  comprueba `document.fullscreenElement` primero: si ya está en pantalla
+  completa, solo refoca el botón "Volver al índice" en vez de volver a llamar
+  a `requestFullscreen()` (evita un permiso denegado o un parpadeo por pedir
+  algo que ya se tiene).
+- **Resaltado mínimo a propósito.** `.bloque--activo` en `estilo.css` es un
+  fondo y un borde discretos, lo justo para verificar el motor a ojo. El
+  tratamiento real (contexto atenuado con gradiente configurable, contraste
+  AAA) es T-21; no se adelanta aquí para no invadir su alcance.
+- **Verificación.** `tests/test_reproductor.py` comprueba (como texto sobre el
+  HTML/JS generado, igual que T-18/T-19) que las funciones y los datos
+  esperados están presentes. El comportamiento real -- cadena de avances
+  automáticos, avance manual que no detiene el automático, pausa/reanudación
+  exacta, velocidad que acelera el ritmo, recuerdo de velocidad por escena,
+  cambio de escena sin salir de pantalla completa -- se verificó a mano con
+  Playwright headless sobre `fixtures/salida/reproductor.html` (Chromium, no
+  es una dependencia del proyecto), incluyendo temporizadores reales
+  (`wait_for_timeout`) contra las duraciones reales de los bloques del guion
+  de calibración.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

@@ -133,7 +133,11 @@ UMBRAL_PALABRAS_VOZ_PASIVA_LARGA: int = 8
 
 # --- Reproductor (T-18 a T-26) ----------------------------------------------------
 TAMANO_TEXTO_BASE_PX: int = 48
+# Motor de avance hibrido (T-20): la velocidad es un multiplicador sobre la duracion
+# estimada de cada bloque (T-12); 1.0 = ritmo calculado tal cual, sin acelerar ni frenar.
 PASO_VELOCIDAD: float = 0.1
+VELOCIDAD_MINIMA: float = 0.5
+VELOCIDAD_MAXIMA: float = 2.0
 CUENTA_ATRAS_SEGUNDOS: int = 3
 ANTIRREBOTE_CLICKER_MS: int = 120
 # Neutro y oscuro, sin identidad corporativa (regla de §0.2: el reproductor prioriza
@@ -225,6 +229,9 @@ class Configuracion:
     umbral_palabras_voz_pasiva_larga: int = UMBRAL_PALABRAS_VOZ_PASIVA_LARGA
     longitud_extracto_indicacion_max: int = LONGITUD_EXTRACTO_INDICACION_MAX
     tamano_texto_base_px: int = TAMANO_TEXTO_BASE_PX
+    paso_velocidad: float = PASO_VELOCIDAD
+    velocidad_minima: float = VELOCIDAD_MINIMA
+    velocidad_maxima: float = VELOCIDAD_MAXIMA
     color_fondo_reproductor: str = COLOR_FONDO_REPRODUCTOR
     color_texto_reproductor: str = COLOR_TEXTO_REPRODUCTOR
     color_texto_secundario_reproductor: str = COLOR_TEXTO_SECUNDARIO_REPRODUCTOR
@@ -261,6 +268,20 @@ class Configuracion:
             raise ValueError(
                 "El ppm calibrado a mano debe ser un numero positivo de palabras/minuto."
             )
+        if self.paso_velocidad <= 0:
+            raise ValueError("El paso de velocidad debe ser un numero positivo.")
+        if self.velocidad_minima <= 0 or self.velocidad_minima > self.velocidad_maxima:
+            mensaje = (
+                "Los limites de velocidad deben ser positivos y crecientes "
+                f"({self.velocidad_minima} <= {self.velocidad_maxima})."
+            )
+            raise ValueError(mensaje)
+        if not (self.velocidad_minima <= 1.0 <= self.velocidad_maxima):
+            mensaje = (
+                "El rango de velocidad debe incluir 1.0 (ritmo sin acelerar ni frenar) "
+                f"({self.velocidad_minima} <= 1.0 <= {self.velocidad_maxima})."
+            )
+            raise ValueError(mensaje)
         for nombre, valor in (
             ("pausa_coma_segundos", self.pausa_coma_segundos),
             ("pausa_punto_segundos", self.pausa_punto_segundos),

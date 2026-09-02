@@ -231,6 +231,66 @@ def test_estilo_define_foco_visible_para_elementos_navegables() -> None:
     assert ":focus-visible" in pagina
 
 
+# --- Motor de avance hibrido (T-20) --------------------------------------------------
+
+
+def test_datos_incrustados_incluyen_paso_y_limites_de_velocidad() -> None:
+    configuracion = Configuracion(paso_velocidad=0.2, velocidad_minima=0.6, velocidad_maxima=1.8)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    datos = _extraer_datos(pagina)
+    assert datos["paso_velocidad"] == pytest.approx(0.2)
+    assert datos["velocidad_minima"] == pytest.approx(0.6)
+    assert datos["velocidad_maxima"] == pytest.approx(1.8)
+
+
+def test_bloques_llevan_tiempos_para_que_el_motor_calcule_su_duracion() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    for escena in datos["escenas"]:
+        for bloque in escena["bloques"]:
+            assert bloque["fin_segundos"] >= bloque["inicio_segundos"]
+
+
+def test_reproductor_incluye_indicadores_de_velocidad_y_pausa() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert '"velocidad-escena"' in pagina
+    assert '"estado-pausa"' in pagina
+
+
+def test_motor_expone_pausa_avance_manual_y_ajuste_de_velocidad() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: velocidad ajustable en vivo, aplicada desde el bloque siguiente.
+    assert "function ajustarVelocidad" in pagina
+    # Requisito 3: avance manual que reinicia el reloj del bloque sin reiniciar la escena.
+    assert "function bloqueSiguienteManual" in pagina
+    assert "function bloqueAnteriorManual" in pagina
+    assert "function iniciarTemporizadorBloque" in pagina
+    # Requisito 4: pausa/reanudar, reiniciar escena, escena anterior/siguiente.
+    assert "function togglePausa" in pagina
+    assert "function reiniciarEscenaActual" in pagina
+    assert "function escenaAdyacente" in pagina
+
+
+def test_motor_escucha_teclas_de_control_en_el_reproductor() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert '"keydown", manejarTeclaReproductor' in pagina
+    for tecla in ('"ArrowRight"', '"ArrowLeft"', '"PageDown"', '"PageUp"', '"+"', '"-"'):
+        assert tecla in pagina
+
+
+def test_estilo_define_bloque_activo_para_el_resaltado_del_motor() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert ".bloque--activo" in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 

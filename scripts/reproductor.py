@@ -64,6 +64,7 @@ def _construir_datos(
     resultado: ResultadoParseo,
     resultado_tiempos: ResultadoTiempos,
     nombre_guion: str,
+    configuracion: Configuracion,
 ) -> dict[str, Any]:
     """Escenas, bloques y tiempos en la forma que consume `guion.js`.
 
@@ -105,6 +106,11 @@ def _construir_datos(
         "ritmo_ppm": resultado_tiempos.ritmo.ppm_aplicado,
         "duracion_total_segundos": resultado_tiempos.duracion_total_segundos,
         "escenas": escenas_datos,
+        # Motor de avance hibrido (T-20): limites y paso de la velocidad en vivo,
+        # configurables (§0.2, "sin numeros magicos"); nunca escritos a mano en guion.js.
+        "paso_velocidad": configuracion.paso_velocidad,
+        "velocidad_minima": configuracion.velocidad_minima,
+        "velocidad_maxima": configuracion.velocidad_maxima,
     }
 
 
@@ -122,7 +128,7 @@ def generar_reproductor_html(
     oscuros -- todo configurable via `Configuracion`, nada remoto.
     """
     configuracion = configuracion or Configuracion()
-    datos = _construir_datos(resultado, resultado_tiempos, nombre_guion)
+    datos = _construir_datos(resultado, resultado_tiempos, nombre_guion, configuracion)
 
     estilo = (
         _leer_plantilla("estilo.css")
