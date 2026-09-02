@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-02 — T-25 (modo espejo), sesión de nube
+**Tarea(s):** T-25
+**Estado resultante:** T-25 **COMPLETADA**
+**Commits a develop:** `T-25: modo espejo` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/config.py` (nueva acción `espejo` en `MAPA_TECLAS_REPRODUCTOR`, `ESPEJO_INCLUYE_INDICADORES`/`Configuracion.espejo_incluye_indicadores`), `scripts/reproductor.py` (`espejo_incluye_indicadores` al JSON incrustado), `assets/reproductor/guion.js` (persistencia local mínima — `claveAlmacenamiento`/`leerPreferencia`/`guardarPreferencia` — y el propio modo espejo — `aplicarClaseEspejo`/`actualizarBotonEspejo`/`alternarEspejo`, botón `#btn-espejo` agrupado en `.reproductor-controles`, `case "espejo"` en `manejarTeclaReproductor`), `assets/reproductor/estilo.css` (`.reproductor-controles`, `.btn-espejo[aria-pressed="true"]`, `#vista-reproductor.espejo-texto .escena`, `#vista-reproductor.espejo-completo`), `tests/test_reproductor.py` (5 tests nuevos), `tests/test_esqueleto.py` (1 test nuevo), `DEVELOPERS.md` (sección T-25), `roadmap/SEGUIMIENTO.md` (cabecera, §1 fila T-25), `roadmap/DECISIONES_TECNICAS.md` (2 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (316 passed, 1 skipped; antes 310+1) · build ✅ (`verificar_salidas.py --fixture`, 3 etapas NO APLICABLE justificadas + reproductor y auto-contención OK)
+**Health check post-deploy:** No aplica — sesión de nube, sin instalación local de la skill (T-32 sigue pendiente y fuera del alcance de una sesión de nube)
+**Decisiones tomadas:** 2 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-02, T-25): (1) el volteo horizontal es `transform: scaleX(-1)` sobre `.escena` por defecto, con una segunda clase (`espejo-completo`) configurable para voltear también los indicadores; (2) persistencia local mínima adelantada de T-26, limitada al ajuste de espejo (`claveAlmacenamiento`/`leerPreferencia`/`guardarPreferencia`, clave ya derivada del guion), porque el propio criterio de aceptación de T-25 exige que el ajuste persista tras recargar y nada bloquea implementarlo ya — a diferencia del estado de escena de T-19, que si se dejó deliberadamente en memoria por no exigirlo su propio criterio
+**Hallazgos del auditor atendidos:** ninguno nuevo; sin hallazgos ABIERTOS de severidad alta al empezar (el #9 ya está corregido en código por P-02, pendiente solo de que el auditor lo reevalúe y lo cierre en su propio documento — no es trabajo de esta sesión)
+**Hallazgos:** ninguno nuevo. El hallazgo #5 de `auditoriacontinua.md` (localStorage no verificado contra `file://`) pasa a aplicar también al ajuste de espejo, no solo a lo que traerá T-26 — mismo mecanismo, mismo límite conocido, sin ampliar su alcance
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-26 (persistencia local de preferencias), décima de FASE B4. Ya puede reutilizar directamente `claveAlmacenamiento`/`leerPreferencia`/`guardarPreferencia` de `guion.js` (T-25) para el resto de preferencias (tamaño de texto, velocidad por escena, última escena vista, indicadores) en vez de diseñar el mecanismo desde cero — solo falta decidir la clave de cada preferencia y leerla/guardarla en los puntos ya identificados (`ajustarTamanoTexto`, `ajustarVelocidad`, `volverAlIndice`/`reproducirEscena`, `alternarIndicadores`)
+
 ### Sesión 2026-09-02 — Decisiones del dueño sobre T-24 y T-29, sesión local (sin código)
 **Tarea(s):** T-24, T-24b (nueva), T-29 — ninguna implementada; solo se fija su alcance
 **Estado resultante:** T-24 **COMPLETADA** por la sesión de nube que corrió en paralelo (ver la entrada siguiente), con exactamente el alcance aquí decidido · T-24b BLOQUEADA · T-29 PENDIENTE, confirmada como NO bloqueada

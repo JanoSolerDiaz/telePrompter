@@ -22,6 +22,36 @@
     return minutos + ":" + (resto < 10 ? "0" : "") + resto;
   }
 
+  // Persistencia local del ajuste de espejo (T-25, requisito 3 y criterio de
+  // aceptacion: "el ajuste persiste tras recargar"). T-26 disena el mecanismo
+  // general para el resto de preferencias (tamano de texto, velocidad por
+  // escena, ultima escena vista, indicadores); esta clave sigue ya el mismo
+  // patron que T-26 va a necesitar (derivada del guion, requisito 2 de T-26)
+  // para que esa tarea solo tenga que reutilizarla, no redisenarla. Con
+  // `try/catch`: `localStorage` puede fallar (navegacion privada, cuota
+  // agotada, o el propio `file://` sin soporte -- hallazgo #5 de
+  // `auditoriacontinua.md`, ya conocido) y el reproductor sigue funcionando
+  // en memoria, solo sin recordar el ajuste entre sesiones.
+  function claveAlmacenamiento(preferencia) {
+    return "teleprompter:" + datos.guion + ":" + preferencia;
+  }
+
+  function leerPreferencia(preferencia) {
+    try {
+      return window.localStorage.getItem(claveAlmacenamiento(preferencia));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function guardarPreferencia(preferencia, valor) {
+    try {
+      window.localStorage.setItem(claveAlmacenamiento(preferencia), valor);
+    } catch (error) {
+      // Sin persistencia disponible: se ignora, no es un error del reproductor.
+    }
+  }
+
   // Estado por escena (T-19, requisito 1). Solo en memoria: no persiste entre
   // sesiones (eso es T-26/R-02, con su propio mecanismo). Aqui una escena pasa
   // de "pendiente" a "grabada" en cuanto se ha abierto y cerrado el reproductor
@@ -226,6 +256,17 @@
 
     cabecera.appendChild(info);
 
+    var controles = document.createElement("div");
+    controles.className = "reproductor-controles";
+
+    botonEspejo = document.createElement("button");
+    botonEspejo.type = "button";
+    botonEspejo.className = "btn-volver btn-espejo";
+    botonEspejo.id = "btn-espejo";
+    botonEspejo.addEventListener("click", alternarEspejo);
+    actualizarBotonEspejo();
+    controles.appendChild(botonEspejo);
+
     var botonVolver = document.createElement("button");
     botonVolver.type = "button";
     botonVolver.className = "btn-volver";
@@ -234,9 +275,12 @@
     botonVolver.addEventListener("click", function () {
       volverAlIndice(indice);
     });
-    cabecera.appendChild(botonVolver);
+    controles.appendChild(botonVolver);
+
+    cabecera.appendChild(controles);
 
     vistaReproductor.appendChild(cabecera);
+    aplicarClaseEspejo();
 
     // Barra de progreso de la escena por bloques (T-23, requisito 3): el
     // relleno crece con `(bloqueActual + 1) / total`, asi que llega al 100 %
@@ -363,6 +407,10 @@
   // --- Atajos de teclado y clicker Bluetooth (T-24) --------------------------
   var elementoAyuda = null;
 
+  // --- Modo espejo (T-25) -----------------------------------------------------
+  var botonEspejo = null;
+  var espejoActivado = leerPreferencia("espejo") === "1";
+
   // Texto de cada accion en la ayuda (requisito 3): fijo en espanol, no viaja
   // en el JSON -- a diferencia de las TECLAS (que si son configurables por el
   // dueno via `datos.mapa_teclas`), estas etiquetas son literales de interfaz
@@ -380,7 +428,8 @@
     reiniciar_escena: "Reiniciar escena",
     ocultar_indicadores: "Mostrar / ocultar indicadores",
     salir_pantalla_completa: "Salir de pantalla completa",
-    ayuda: "Mostrar / ocultar esta ayuda"
+    ayuda: "Mostrar / ocultar esta ayuda",
+    espejo: "Activar / desactivar modo espejo"
   };
 
   // Nombre legible de una tecla tal como la reporta `KeyboardEvent.key`
@@ -549,6 +598,35 @@
   // porque el toggle no toca `vistaReproductor.classList`, solo su contenido).
   function alternarIndicadores() {
     vistaReproductor.classList.toggle("indicadores-ocultos");
+  }
+
+  // Modo espejo (T-25, requisito 1): volteo horizontal via CSS `transform`, no
+  // clases fijas por bloque -- por eso es compatible gratis con el resaltado
+  // (T-21, opacidad por bloque) y el autoscroll (T-22, requisito 2): un
+  // `transform: scaleX(-1)` no cambia la posicion/altura vertical que usa
+  // `getBoundingClientRect` para centrar, solo el eje horizontal. Por defecto
+  // (`espejo_incluye_indicadores=false`) el volteo se aplica solo a `.escena`
+  // (titulo + bloques, el "texto" del requisito 1); con la configuracion
+  // activada, cubre tambien la cabecera y el resto de indicadores.
+  function aplicarClaseEspejo() {
+    var completo = !!datos.espejo_incluye_indicadores;
+    vistaReproductor.classList.toggle("espejo-texto", espejoActivado && !completo);
+    vistaReproductor.classList.toggle("espejo-completo", espejoActivado && completo);
+  }
+
+  function actualizarBotonEspejo() {
+    if (!botonEspejo) {
+      return;
+    }
+    botonEspejo.setAttribute("aria-pressed", String(espejoActivado));
+    botonEspejo.textContent = espejoActivado ? "Espejo: activado" : "Espejo: desactivado";
+  }
+
+  function alternarEspejo() {
+    espejoActivado = !espejoActivado;
+    aplicarClaseEspejo();
+    guardarPreferencia("espejo", espejoActivado ? "1" : "0");
+    actualizarBotonEspejo();
   }
 
   function bloquesEscenaActual() {
@@ -909,6 +987,9 @@
         break;
       case "ayuda":
         alternarAyuda();
+        break;
+      case "espejo":
+        alternarEspejo();
         break;
       default:
         break;

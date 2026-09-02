@@ -523,6 +523,71 @@ def test_estilo_define_el_panel_de_ayuda_de_teclado() -> None:
     assert ".ayuda-teclado-panel" in pagina
 
 
+# --- Modo espejo (T-25) --------------------------------------------------------------
+
+
+def test_datos_incrustados_incluyen_el_alcance_del_modo_espejo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina_por_defecto = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert _extraer_datos(pagina_por_defecto)["espejo_incluye_indicadores"] is False
+
+    configuracion = Configuracion(espejo_incluye_indicadores=True)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    assert _extraer_datos(pagina)["espejo_incluye_indicadores"] is True
+
+
+def test_mapa_de_teclas_incluye_espejo_por_defecto() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert _extraer_datos(pagina)["mapa_teclas"]["espejo"] == ["m", "M"]
+
+
+def test_guion_js_activa_el_modo_espejo_por_tecla_y_por_boton() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: activable con tecla (el mapa configurable ya cubre "m"/"M")
+    # y desde los controles (un boton dedicado, no solo el atajo).
+    assert 'case "espejo":' in pagina
+    assert "function alternarEspejo" in pagina
+    assert 'btn-espejo' in pagina
+    assert "botonEspejo.addEventListener(\"click\", alternarEspejo)" in pagina
+
+
+def test_guion_js_aplica_el_volteo_solo_al_texto_salvo_configuracion_contraria() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1 ("sin afectar a la orientacion de los indicadores si asi se
+    # configura"): dos clases distintas segun `espejo_incluye_indicadores`,
+    # nunca una unica que siempre voltee todo el reproductor.
+    assert "function aplicarClaseEspejo" in pagina
+    assert '"espejo-texto"' in pagina
+    assert '"espejo-completo"' in pagina
+
+
+def test_estilo_voltea_solo_la_escena_por_defecto_y_todo_si_se_configura() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "#vista-reproductor.espejo-texto .escena {" in pagina
+    assert "#vista-reproductor.espejo-completo {" in pagina
+
+
+def test_guion_js_persiste_el_ajuste_de_espejo_con_clave_derivada_del_guion() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3 y criterio de aceptacion ("persiste tras recargar"): via
+    # `localStorage`, con clave derivada del guion (mismo patron que exigira
+    # T-26) y protegido con `try/catch` (hallazgo #5, `file://` no verificado).
+    assert "function claveAlmacenamiento" in pagina
+    assert 'return "teleprompter:" + datos.guion + ":" + preferencia' in pagina
+    assert "window.localStorage.getItem" in pagina
+    assert "window.localStorage.setItem" in pagina
+    assert "leerPreferencia(\"espejo\") === \"1\"" in pagina
+    assert "guardarPreferencia(\"espejo\"" in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 

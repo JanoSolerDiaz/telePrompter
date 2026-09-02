@@ -1172,6 +1172,88 @@ lleva al JSON incrustado) y `guion.js` (el propio motor de teclado).
   avanza al bloque siguiente en vez de pausar -- verificado que NO deja
   "En pausa" en el indicador. Sin errores de consola en ningún paso.
 
+## Modo espejo (T-25)
+
+Volteo horizontal del texto para leer contra el cristal de un teleprompter
+físico. Cambios en tres archivos: `config.py` (nueva acción `espejo` en
+`MAPA_TECLAS_REPRODUCTOR` y campo `espejo_incluye_indicadores`),
+`reproductor.py` (lo lleva al JSON incrustado) y `guion.js`/`estilo.css` (el
+volteo en sí y su persistencia).
+
+- **El volteo es un `transform: scaleX(-1)` de CSS sobre `.escena`, no una
+  reescritura del texto ni una clase por bloque (requisito 1, "volteo
+  horizontal del texto").** `aplicarClaseEspejo()` alterna una de dos clases
+  en `#vista-reproductor`: `espejo-texto` (por defecto,
+  `Configuracion.espejo_incluye_indicadores=False`) aplica el `transform`
+  solo a `.escena` -- título y bloques, lo que el requisito llama "el
+  texto" --, dejando la cabecera, la barra de progreso, la cuenta atrás y la
+  ayuda de teclado sin voltear, porque son indicadores para quien opera el
+  reproductor, no contenido que el cristal deba reflejar. Con
+  `espejo_incluye_indicadores=True`, se aplica en su lugar `espejo-completo`
+  sobre el propio `#vista-reproductor`, que voltea todo -- montaje físico
+  donde el cristal cubre la pantalla entera, indicadores incluidos. Las dos
+  reglas CSS conviven siempre en `estilo.css`; `guion.js` decide cuál
+  activar leyendo `datos.espejo_incluye_indicadores`, nunca al revés.
+- **Compatible gratis con el resaltado y el autoscroll (requisito 2), sin
+  ningún ajuste en `marcarBloqueActivo`/`centrarBloqueActivo`.**
+  `scaleX(-1)` solo invierte el eje horizontal: no cambia la posición ni la
+  altura vertical que `getBoundingClientRect` devuelve para un elemento
+  transformado, así que el cálculo de centrado de T-22 (que solo mira
+  `rect.top`/`rect.height`) sigue centrando el bloque activo exactamente
+  igual con el espejo activo o no. Verificado a mano con Playwright
+  (viewport reducido a 800×300 para forzar scroll real): la posición
+  vertical del bloque activo tras cada avance es la misma con y sin espejo
+  activo, dentro del margen de la propia animación.
+- **Activable con tecla y desde los controles (requisito 1, literal).** La
+  tecla es una entrada más de `MAPA_TECLAS_REPRODUCTOR`
+  (`("espejo", ("m", "M"))`), resuelta por el mismo `teclaAAccion` de T-24 --
+  ningún cableado nuevo en `manejarTeclaReproductor`, solo un `case` más. El
+  control es un botón nuevo (`#btn-espejo`, agrupado con "Volver al índice"
+  dentro de `.reproductor-controles`, un `<div>` flex que sustituye al
+  antiguo hijo único de `.reproductor-cabecera` para no romper su
+  `justify-content: space-between` con un tercer elemento suelto) que llama
+  a la misma función `alternarEspejo()` que el atajo de teclado -- una sola
+  fuente de verdad para "activar/desactivar", nunca dos implementaciones
+  paralelas. El botón refleja el estado con `aria-pressed` y con su propio
+  texto ("Espejo: activado"/"desactivado"), y se resalta con el color de
+  acento mientras está activo (`.btn-espejo[aria-pressed="true"]`).
+- **Persistencia local mínima, adelantada de T-26 solo para este ajuste
+  (requisito 3 y criterio de aceptación: "el ajuste persiste tras
+  recargar").** T-26 (persistencia local de preferencias) todavía no existe,
+  pero el propio criterio de aceptación de T-25 exige la recarga, y a
+  diferencia del estado de escena de T-19 (que T-19 dejó deliberadamente en
+  memoria, ver su fila en `DECISIONES_TECNICAS.md`), aquí no hay ninguna
+  tarea futura cuyo trabajo se duplicara por adelantarlo: nada bloquea
+  hacerlo ya. Se añaden tres funciones pequeñas y genéricas --
+  `claveAlmacenamiento(preferencia)` (devuelve
+  `"teleprompter:" + datos.guion + ":" + preferencia`, ya con la clave
+  derivada del guion que el requisito 2 de T-26 va a pedir para el resto de
+  preferencias), `leerPreferencia`/`guardarPreferencia` (envuelven
+  `localStorage.getItem`/`setItem` en `try/catch`, mismo patrón que T-26
+  fijará: si `localStorage` falla -- navegación privada, cuota agotada, o el
+  propio `file://` sin soporte verificado, hallazgo #5 de
+  `auditoriacontinua.md`, todavía abierto -- el reproductor sigue
+  funcionando en memoria, solo sin recordar el ajuste). T-26 solo tiene que
+  reutilizar estas tres funciones para el resto de preferencias (tamaño de
+  texto, velocidad por escena, última escena vista, indicadores), no
+  diseñar el mecanismo desde cero.
+- **Verificación.** `tests/test_esqueleto.py` cubre el valor por defecto de
+  la nueva acción y de `espejo_incluye_indicadores`;
+  `tests/test_reproductor.py` comprueba las claves nuevas del JSON, que el
+  mapa incluye `espejo` por defecto, la presencia de
+  `aplicarClaseEspejo`/`alternarEspejo`/`claveAlmacenamiento` y de las dos
+  reglas CSS. El comportamiento real se verificó a mano con Playwright
+  headless (Chromium, no es una dependencia del proyecto) sobre
+  `fixtures/reales/guion-08-busqueda-investigacion.md`: el botón y la tecla
+  `M`/`m` activan y desactivan el modo por igual (mismo `aria-pressed` y
+  mismo `transform` calculado, `matrix(-1, 0, 0, 1, 0, 0)`, sobre `.escena`);
+  con `espejo_incluye_indicadores=True` el `transform` aparece en su lugar
+  sobre `#vista-reproductor` completo; tras recargar la página con el modo
+  activo, el botón sigue mostrando "activado" y el texto sigue volteado sin
+  volver a pulsar nada; avanzar de bloque en bloque con el espejo activo
+  sigue centrando el bloque activo verticalmente igual que sin él. Sin
+  errores de consola en ningún paso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

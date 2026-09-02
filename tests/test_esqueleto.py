@@ -23,6 +23,10 @@ def test_configuracion_por_defecto_es_coherente() -> None:
     configuracion = Configuracion()
     assert configuracion.palabras_por_bloque_min <= configuracion.palabras_por_bloque_max
     assert configuracion.ppm_respaldo > 0
+    # Modo espejo (T-25): accion presente en el mapa por defecto, desactivada
+    # para los indicadores salvo que el dueno la active explicitamente.
+    assert dict(configuracion.mapa_teclas_reproductor)["espejo"] == ("m", "M")
+    assert configuracion.espejo_incluye_indicadores is False
 
 
 def test_configuracion_rechaza_rango_de_bloque_imposible() -> None:

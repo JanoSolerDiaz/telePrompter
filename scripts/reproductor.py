@@ -159,6 +159,9 @@ def _construir_datos(
         "antirrebote_clicker_ms": configuracion.antirrebote_clicker_ms,
         "espacio_avanza_bloque": configuracion.espacio_avanza_bloque,
         "mapa_teclas": dict(configuracion.mapa_teclas_reproductor),
+        # Modo espejo (T-25): si el volteo horizontal (requisito 1) cubre tambien
+        # los indicadores o solo el texto de la escena (titulo y bloques).
+        "espejo_incluye_indicadores": configuracion.espejo_incluye_indicadores,
     }
 
 

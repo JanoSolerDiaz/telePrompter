@@ -245,7 +245,19 @@ MAPA_TECLAS_REPRODUCTOR: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("ocultar_indicadores", ("h", "H")),
     ("salir_pantalla_completa", ("Escape",)),
     ("ayuda", ("?",)),
+    ("espejo", ("m", "M")),
 )
+
+# --- Modo espejo (T-25) -------------------------------------------------------------
+# Volteo horizontal del texto para leer contra el cristal de un teleprompter
+# fisico (requisito 1). Por defecto el volteo afecta solo a la escena (titulo y
+# bloques): la cabecera, la barra de progreso, la cuenta atras y la ayuda de
+# teclado son indicadores para quien opera el reproductor, no texto que el
+# cristal deba reflejar, y volteados de mas solo estorbarian al operador que
+# mira la pantalla directamente. Con `True`, el volteo cubre tambien esos
+# indicadores -- util si el montaje fisico deja SOLO el cristal entre la
+# camara y toda la pantalla, indicadores incluidos.
+ESPEJO_INCLUYE_INDICADORES: bool = False
 
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
 # escribe fuera de esa carpeta (regla de aislamiento, §0.2).
@@ -333,6 +345,7 @@ class Configuracion:
     mapa_teclas_reproductor: tuple[tuple[str, tuple[str, ...]], ...] = field(
         default=MAPA_TECLAS_REPRODUCTOR
     )
+    espejo_incluye_indicadores: bool = ESPEJO_INCLUYE_INDICADORES
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:

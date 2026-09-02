@@ -311,6 +311,12 @@ button:focus-visible {
   font-weight: 600;
 }
 
+.reproductor-controles {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
 .btn-volver {
   padding: 0.4em 0.9em;
   border: 1px solid var(--color-texto-secundario);
@@ -323,6 +329,29 @@ button:focus-visible {
 
 .btn-volver:hover {
   background: rgba(255, 255, 255, 0.07);
+}
+
+/* Boton de modo espejo (T-25, requisito 1: "activable... desde los
+   controles"), resaltado con el color de acento mientras esta activo. */
+.btn-espejo[aria-pressed="true"] {
+  border-color: var(--color-acento);
+  color: var(--color-acento);
+}
+
+/* Modo espejo (T-25, requisito 1): volteo horizontal via `transform`, no
+   clases por bloque -- compatible gratis con el resaltado (opacidad por
+   bloque, T-21) y el autoscroll (T-22), que solo miran la posicion vertical.
+   Por defecto (`espejo-texto`) el volteo cubre solo el titulo y los bloques
+   de la escena, nunca la cabecera ni el resto de indicadores (requisito 1,
+   "sin afectar a la orientacion de los indicadores"); con
+   `espejo_incluye_indicadores` activado en la configuracion, `guion.js`
+   aplica en su lugar `espejo-completo`, que voltea el reproductor entero. */
+#vista-reproductor.espejo-texto .escena {
+  transform: scaleX(-1);
+}
+
+#vista-reproductor.espejo-completo {
+  transform: scaleX(-1);
 }
 
 [hidden] {
