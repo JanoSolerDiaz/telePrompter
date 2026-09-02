@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-02 — T-26 (persistencia local de preferencias), sesión de nube
+**Tarea(s):** T-26
+**Estado resultante:** T-26 **COMPLETADA**; **FASE B4 (reproductor) queda cerrada**
+**Commits a develop:** `T-26: persistencia local de preferencias` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `assets/reproductor/guion.js` (restauración de tamaño de texto e indicadores ocultos por clave; `velocidadesEscena` restaurado por `"velocidad_escena_" + escena.numero`, guardado en `ajustarVelocidad`; `guardarUltimaEscenaVista`/`calcularReanudacion` nuevas, ligadas a `marcarBloqueActivo`; botón `#btn-continuar` en `renderizarIndice`; `reproducirEscena`/`iniciarMotor` con el nuevo parámetro `bloqueInicial`, corrigiendo de paso un `marcarBloqueActivo(0)` literal por la variable `bloqueActual`; `limpiarPreferenciasAlmacenadas`/`restablecerPreferencias` nuevas y botón `#btn-restablecer-preferencias` en la ayuda), `assets/reproductor/estilo.css` (`.btn-continuar`, `.btn-restablecer-preferencias`), `tests/test_reproductor.py` (7 tests nuevos), `SKILL.md` (secciones nuevas «Modo espejo (T-25)» —omitida por error en su propia sesión— y «Persistencia local de preferencias (T-26)»), `DEVELOPERS.md` (sección T-26), `roadmap/SEGUIMIENTO.md` (cabecera, §1 fila T-26), `roadmap/DECISIONES_TECNICAS.md` (4 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada). Ningún archivo Python cambia: `config.py`/`reproductor.py` ya exponían todo lo necesario desde T-18/T-20/T-21
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (323 passed, 1 skipped; antes 316+1) · build ✅ (`verificar_salidas.py --fixture`, 3 etapas NO APLICABLE justificadas + reproductor y auto-contención OK)
+**Health check post-deploy:** No aplica — sesión de nube, sin instalación local de la skill (T-32 sigue pendiente y fuera del alcance de una sesión de nube)
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-02, T-26): (1) la restauración de "última escena vista" usa un botón explícito "Continuar" en el índice, nunca un relanzamiento automático al cargar la página, porque `requestFullscreen()` exige un gesto de usuario real y un intento automático habría fallado en silencio, dejando una restauración a medias sin pantalla completa; (2) velocidad por escena y última escena vista se indexan por el NÚMERO de escena y por `inicio_segundos` del bloque, no por índice, para sobrevivir a un troceo distinto en una regeneración (requisito 5 literal); (3) "Restablecer preferencias" es un botón en el panel de ayuda (`?`), no una tecla nueva del mapa configurable, para no arriesgar que un clicker la dispare por accidente
+**Hallazgos del auditor atendidos:** ninguno nuevo; sin hallazgos ABIERTOS de severidad alta al empezar (el #9 sigue corregido en código por P-02, pendiente solo de que el auditor lo reevalúe y lo cierre en su propio documento)
+**Hallazgos:** el hallazgo #5 de `auditoriacontinua.md` (localStorage no verificado contra `file://` real) sigue aplicando sin cambios — el mecanismo es el mismo que T-25 ya dejó documentado, solo extendido a más preferencias; no es trabajo de esta sesión ampliarlo ni cerrarlo, es del auditor reevaluarlo. Aparte, se detectó y corrigió una omisión de la sesión de T-25: `SKILL.md` documentaba el modo espejo en ningún sitio pese a la regla dura de §0.2 ("todo default configurable y documentado en SKILL.md") — no se registra como P-XX por ser puramente documental y quedar resuelta dentro de esta misma sesión, sin código de producción afectado
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-27 (exportador `.srt` borrador), primera de FASE B5. Consumible por ffmpeg; un subtítulo por bloque de respiración con los tiempos ya calculados por T-12, usando el texto locutado final (reescrituras aceptadas incluidas, no el original)
+
 ### Sesión 2026-09-02 — T-25 (modo espejo), sesión de nube
 **Tarea(s):** T-25
 **Estado resultante:** T-25 **COMPLETADA**

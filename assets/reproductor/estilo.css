@@ -285,6 +285,31 @@ button:focus-visible {
   color: var(--color-texto-secundario);
 }
 
+/* Restablecer preferencias (T-26, requisito 4), dentro del panel de ayuda. */
+.btn-restablecer-preferencias {
+  display: block;
+  margin-top: 1em;
+}
+
+/* Boton "Continuar" en el indice (T-26, requisitos 1 y 5): resaltado con el
+   color de acento para distinguirlo de las filas de escena normales. */
+.btn-continuar {
+  display: block;
+  margin: 0.5em 0 1.5em;
+  padding: 0.6em 1.2em;
+  border: 1px solid var(--color-acento);
+  border-radius: 0.4em;
+  background: none;
+  color: var(--color-acento);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-continuar:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
 /* Indicadores ocultables con una tecla (requisito 4): un unico interruptor
    sobre la cabecera y la barra de progreso, sin tocar el guion en si. */
 #vista-reproductor.indicadores-ocultos .reproductor-cabecera,

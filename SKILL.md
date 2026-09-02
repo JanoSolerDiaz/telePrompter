@@ -146,6 +146,25 @@ Toda la escena se puede recorrer solo con `Espacio`, `Re Pág` y `Av Pág` — l
 | Antirrebote del clicker | 120 ms | Descarta una repetición de la misma acción antes de este tiempo; `0` lo desactiva |
 | Mapa de teclas | ver arriba | `mapa_teclas_reproductor`: nombre de acción → teclas que la disparan |
 
+## Modo espejo (T-25)
+
+Para leer contra el cristal de un teleprompter físico: la tecla `M`/`m` (o el botón "Espejo" de la cabecera) voltea el texto en horizontal. Por defecto solo se voltea el título y los bloques de la escena, nunca la cabecera, la barra de progreso ni la ayuda; con `espejo_incluye_indicadores=True` se voltea el reproductor entero, para montajes donde el cristal cubre toda la pantalla. Compatible con el autoscroll, el resaltado y el cambio de tamaño de texto sin ningún ajuste extra. El ajuste persiste tras recargar (ver T-26).
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Espejo incluye indicadores | No | `espejo_incluye_indicadores=True` voltea también la cabecera y el resto de indicadores |
+
+## Persistencia local de preferencias (T-26)
+
+Cerrar el navegador y reabrir el archivo retoma la grabación sin reconfigurar nada: `localStorage` recuerda el tamaño de texto, la velocidad ajustada por escena, el modo espejo, la visibilidad de indicadores y la última escena vista (escena y bloque). La clave se deriva del nombre del guión, así que dos guiones no se pisan las preferencias entre sí. Toda lectura y escritura está protegida con `try/catch`: si `localStorage` no está disponible (`file://` restringido, navegación privada), el reproductor funciona igual con los valores por defecto, sin errores.
+
+En vez de relanzar automáticamente el reproductor al cargar la página (que fallaría en silencio: entrar en pantalla completa exige un gesto de usuario real), el índice ofrece un botón **"Continuar: escena N — título"** cuando hay una sesión anterior que retomar; un clic entra directamente en esa escena, en el bloque más cercano al que se dejó. Si el guión se regenera con un troceo distinto, la velocidad de cada escena se conserva (se guarda por número de escena) y la posición se reajusta al bloque cuyo instante de inicio esté más cerca del guardado, no al mismo índice. La ayuda del reproductor (`?`) incluye un botón **"Restablecer preferencias"** que borra todo lo guardado para ese guión y repone los valores por defecto sin recargar la página.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Preferencias persistidas | tamaño de texto, velocidad por escena, modo espejo, indicadores, última escena vista | Clave `teleprompter:<guion>:<preferencia>` |
+| Restablecer preferencias | botón en la ayuda (`?`) | Borra solo las claves de este guión |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

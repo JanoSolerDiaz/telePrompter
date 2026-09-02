@@ -1254,6 +1254,120 @@ volteo en sí y su persistencia).
   sigue centrando el bloque activo verticalmente igual que sin él. Sin
   errores de consola en ningún paso.
 
+## Persistencia local de preferencias (T-26)
+
+Extiende el mecanismo mínimo que T-25 adelantó (`claveAlmacenamiento`/
+`leerPreferencia`/`guardarPreferencia`) al resto de preferencias del
+requisito 1: tamaño de texto, velocidad ajustada por escena, visibilidad de
+indicadores y última escena vista. Ningún archivo Python cambia —
+`config.py`/`reproductor.py` ya exponían todo lo necesario (límites de
+tamaño y velocidad, `escena.numero`, `bloque.inicio_segundos`, `datos.guion`)
+desde T-18/T-20/T-21 — todo el trabajo vive en `guion.js`/`estilo.css`.
+
+- **Tamaño de texto y visibilidad de indicadores (requisito 1): mismo patrón
+  que el espejo de T-25, una clave por preferencia.** `tamanoTextoActualPx`
+  se inicializa leyendo `"tamano_texto"` (acotado a
+  `tamano_texto_minimo_px`/`maximo_px`, igual que `ajustarTamanoTexto`) y
+  aplica `--tamano-base` de inmediato, antes incluso de entrar en una
+  escena, para que el índice ya se lea con el tamaño elegido. `ajustarTamanoTexto`
+  guarda cada cambio. `indicadores_ocultos` se lee una vez, antes de la
+  primera renderización, para decidir si `vistaReproductor` arranca con la
+  clase `indicadores-ocultos`; `alternarIndicadores` guarda el nuevo estado
+  en cada toggle.
+- **Velocidad por escena (requisitos 1 y 5): la clave usa el NUMERO de
+  escena, no su índice en el array.** `velocidadesEscena` se construye
+  leyendo `"velocidad_escena_" + escena.numero` para cada escena (acotada a
+  `velocidad_minima`/`maxima`); `ajustarVelocidad` guarda con la misma
+  clave. Usar el número (estable) en vez del índice (que cambiaría si el
+  parser detectara una escena de más o de menos en una regeneración) es lo
+  que hace literal el requisito 5 ("si el troceo cambió, la velocidad por
+  escena se conserva"): el troceo cambia bloques dentro de una escena, no
+  el número de la escena en sí.
+- **Última escena vista (requisitos 1 y 5): se guarda el `inicio_segundos`
+  del bloque activo, no su índice, para poder reencontrar el bloque más
+  cercano si el troceo cambia el número de bloques.**
+  `guardarUltimaEscenaVista(indiceBloque)` se llama desde el final de
+  `marcarBloqueActivo` — ya se invoca en todo cambio de bloque real (entrar
+  en la escena, avance automático, avance/retroceso manual) — y persiste
+  `"ultima_escena_numero"` (el número de la escena) y
+  `"ultima_escena_inicio_segundos"` (el `inicio_segundos` de T-12 del bloque
+  activo). `calcularReanudacion()` hace el camino inverso: busca la escena
+  por número (`null` si ya no existe, p. ej. el guión perdió una escena) y,
+  dentro de ella, el bloque cuyo `inicio_segundos` esté más cerca del
+  guardado — no el mismo índice, que podría apuntar a un bloque distinto si
+  el troceo cambió el número de bloques de esa escena. Verificado a mano
+  (ver más abajo) regenerando el mismo guión con dos configuraciones de
+  troceo distintas (8 y 17 bloques en la misma escena): la posición
+  restaurada cae en el bloque de la segunda versión cuyo `inicio_segundos`
+  es el más próximo al de la primera, y la velocidad de esa escena se
+  conserva intacta.
+- **Sin relanzamiento automático al cargar la página: un botón "Continuar"
+  explícito en el índice (requisitos 1 y 5), no una decisión menor.**
+  `document.documentElement.requestFullscreen()` exige un gesto de usuario
+  real; una llamada automática a `reproducirEscena` al final del script (sin
+  clic de por medio) habría entrado en la escena y el bloque correctos pero
+  se habría quedado en modo ventana, con `solicitarPantallaCompleta`
+  tragándose el rechazo del navegador en su `.catch()` — una "restauración"
+  a medias, y además le habría quitado al índice de T-19 su papel de único
+  punto de entrada. `renderizarIndice()` llama a `calcularReanudacion()` y,
+  si no es `null`, añade un botón `#btn-continuar` con el rótulo "Continuar:
+  escena N — título"; su `click` llama a
+  `reproducirEscena(indiceEscena, indiceBloque)` con un gesto de usuario
+  real detrás, así que la petición de pantalla completa sí prospera.
+  `reproducirEscena`/`iniciarMotor` ganan un segundo parámetro
+  `bloqueInicial` (por defecto `0`, así que todas las llamadas existentes —
+  clic en una fila del índice, `escenaAdyacente` — siguen entrando siempre
+  por el primer bloque, sin cambiar su comportamiento). De paso corrige un
+  bug preexistente y sin efecto visible hasta ahora: `iniciarMotor` llamaba
+  a `marcarBloqueActivo(0)` con un literal en vez de con la variable
+  `bloqueActual` que la propia función acaba de fijar — daba igual mientras
+  `bloqueActual` siempre arrancara en `0`, pero con `bloqueInicial` distinto
+  de cero habría marcado el bloque equivocado como activo.
+- **Restablecer preferencias (requisito 4): un botón dentro de la ayuda del
+  reproductor (`?`), no un atajo de teclado nuevo** — el mapa de T-24 ya
+  reserva todas las teclas sin modificador razonables, y esto no es algo
+  que un clicker deba poder disparar por accidente.
+  `limpiarPreferenciasAlmacenadas()` enumera todas las claves de
+  `localStorage` con el prefijo `"teleprompter:" + datos.guion + ":"` (nunca
+  borra las de otro guión) y las borra una a una, con el mismo `try/catch`
+  que el resto de la persistencia. `restablecerPreferencias()` la llama y
+  además repone en memoria cada valor a su por defecto — tamaño de texto,
+  las velocidades por escena a `1.0`, espejo desactivado, indicadores
+  visibles — sin recargar la página, para que el efecto se vea al instante
+  dentro de la misma sesión de grabación.
+- **Verificación.** `tests/test_reproductor.py` añade siete tests que
+  comprueban, sobre el HTML generado: las claves de lectura/escritura de
+  cada preferencia (tamaño, velocidad por escena con clave por número,
+  indicadores, última escena vista), la presencia de
+  `calcularReanudacion`/`guardarUltimaEscenaVista`/
+  `restablecerPreferencias`/`limpiarPreferenciasAlmacenadas`, que
+  `reproducirEscena`/`iniciarMotor` aceptan el nuevo `bloqueInicial`, y que
+  la última sentencia del script sigue siendo `renderizarIndice();` (nunca
+  un lanzamiento automático del reproductor). El comportamiento real se
+  verificó a mano con Playwright headless (Chromium, no es una dependencia
+  del proyecto) sobre `fixtures/reales/guion-08-busqueda-investigacion.md`
+  (con `cuenta_atras_activada=False` para acelerar la verificación, sin
+  tocar el criterio de aceptación): al abrir el archivo por primera vez no
+  aparece el botón "Continuar"; tras entrar en una escena, avanzar bloques,
+  subir la velocidad, aumentar el tamaño de texto, activar el espejo y
+  ocultar los indicadores, `localStorage` recoge las seis claves esperadas;
+  recargar la página aplica ya el tamaño de texto guardado en el propio
+  índice y muestra "Continuar: escena 2 — ...", y pulsarlo entra
+  directamente en esa escena con el tamaño, la velocidad, el espejo, los
+  indicadores ocultos y el bloque activo restaurados; pulsando "Restablecer
+  preferencias" en la ayuda, `localStorage` queda vacío para ese guión, el
+  espejo se desactiva, los indicadores reaparecen y el tamaño vuelve al
+  valor por defecto, y una recarga posterior ya no ofrece "Continuar"; con
+  `localStorage` bloqueado (una `Proxy` que lanza al acceder, simulando
+  `file://` restringido o navegación privada) el reproductor entra en una
+  escena y avanza un bloque sin ningún error de página. Una segunda pasada,
+  regenerando el mismo guión con dos configuraciones de troceo distintas
+  (8 y 17 bloques en la escena 2), confirmó el requisito 5: la velocidad
+  ajustada en la primera versión sobrevive intacta en la segunda, y el
+  bloque restaurado es el de la segunda versión cuyo `inicio_segundos` está
+  más cerca del guardado, no el mismo índice. Sin errores de consola en
+  ningún paso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

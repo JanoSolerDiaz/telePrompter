@@ -588,6 +588,101 @@ def test_guion_js_persiste_el_ajuste_de_espejo_con_clave_derivada_del_guion() ->
     assert "guardarPreferencia(\"espejo\"" in pagina
 
 
+# --- Persistencia local de preferencias (T-26) ----------------------------------------
+
+
+def test_guion_js_restaura_el_tamano_de_texto_guardado() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: se lee "tamano_texto" con la misma pareja
+    # leerPreferencia/guardarPreferencia de T-25, acotado a los limites
+    # configurados, y se aplica de inmediato a la variable CSS --tamano-base
+    # (no solo al cambiarlo con [ / ]).
+    assert 'leerPreferencia("tamano_texto")' in pagina
+    assert 'guardarPreferencia("tamano_texto", String(nuevo))' in pagina
+    assert (
+        'document.documentElement.style.setProperty("--tamano-base", '
+        "tamanoTextoActualPx + \"px\")"
+    ) in pagina
+
+
+def test_guion_js_restaura_la_velocidad_por_escena_con_clave_por_numero() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisitos 1 y 5: la clave usa el NUMERO de escena, no su indice, para
+    # sobrevivir a un troceo distinto en una regeneracion posterior.
+    assert 'leerPreferencia("velocidad_escena_" + escena.numero)' in pagina
+    assert (
+        'guardarPreferencia("velocidad_escena_" + datos.escenas[escenaActual].numero, '
+        "String(nueva))"
+    ) in pagina
+
+
+def test_guion_js_restaura_la_visibilidad_de_indicadores() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert 'leerPreferencia("indicadores_ocultos") === "1"' in pagina
+    assert '"indicadores_ocultos",' in pagina
+    assert 'vistaReproductor.classList.contains("indicadores-ocultos") ? "1" : "0"' in pagina
+
+
+def test_guion_js_guarda_y_reencuentra_la_ultima_escena_vista() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function guardarUltimaEscenaVista" in pagina
+    assert 'guardarPreferencia("ultima_escena_numero", String(escena.numero))' in pagina
+    assert (
+        'guardarPreferencia("ultima_escena_inicio_segundos", String(bloque.inicio_segundos))'
+        in pagina
+    )
+    # Requisito 5: se reencuentra el bloque MAS CERCANO por inicio_segundos,
+    # no por indice, para sobrevivir a un troceo distinto.
+    assert "function calcularReanudacion" in pagina
+    assert "Math.abs(bloque.inicio_segundos - inicioGuardado)" in pagina
+
+
+def test_guion_js_ofrece_un_boton_continuar_en_el_indice_sin_lanzar_solo_al_cargar() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "btn-continuar" in pagina
+    assert "var reanudacion = calcularReanudacion();" in pagina
+    assert "reproducirEscena(reanudacion.indiceEscena, reanudacion.indiceBloque)" in pagina
+    # El boton "Continuar" es la unica via de reanudacion: `renderizarIndice()`
+    # (que construye ese boton) es la ultima llamada del script, sin ningun
+    # `reproducirEscena`/`iniciarMotor` automatico justo antes del cierre --
+    # `requestFullscreen` exige un gesto de usuario real y un intento
+    # automatico fallaria en silencio (ver `solicitarPantallaCompleta`).
+    coincidencia_cierre = re.search(r"([\s\S]*?)\n\s*\}\)\(\);\s*</script>", pagina)
+    assert coincidencia_cierre is not None
+    ultima_sentencia = coincidencia_cierre.group(1).rstrip().splitlines()[-1].strip()
+    assert ultima_sentencia == "renderizarIndice();"
+
+
+def test_guion_js_restablece_preferencias_desde_la_ayuda() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: un boton dentro del panel de ayuda, no un atajo de teclado
+    # aparte, que borra toda clave de este guion y repone los valores por
+    # defecto en memoria sin recargar la pagina.
+    assert "btn-restablecer-preferencias" in pagina
+    assert "function restablecerPreferencias" in pagina
+    assert "function limpiarPreferenciasAlmacenadas" in pagina
+    assert 'prefijo = "teleprompter:" + datos.guion + ":"' in pagina
+    assert "window.localStorage.removeItem(clave)" in pagina
+
+
+def test_guion_js_pasa_el_bloque_inicial_a_iniciarmotor() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5: reproducirEscena/iniciarMotor aceptan un bloque de arranque
+    # distinto de 0, para que el boton "Continuar" pueda entrar directamente
+    # en el bloque mas cercano en vez de siempre en el primero.
+    assert "function reproducirEscena(indice, bloqueInicial)" in pagina
+    assert "function iniciarMotor(indice, bloqueInicial)" in pagina
+    assert "bloqueActual = bloqueInicial || 0;" in pagina
+    assert "marcarBloqueActivo(bloqueActual);" in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 

@@ -63,11 +63,18 @@
     return "pendiente";
   });
   // Velocidad recordada por escena (T-20, requisito 5): multiplicador sobre la
-  // duracion estimada de cada bloque, 1.0 = sin acelerar ni frenar. Solo en
-  // memoria de la pestaña, mismo criterio que `estadosEscena` de arriba --
-  // persistirla entre sesiones es T-26, con su propio mecanismo.
-  var velocidadesEscena = datos.escenas.map(function () {
-    return 1.0;
+  // duracion estimada de cada bloque, 1.0 = sin acelerar ni frenar. Persistida
+  // por escena (T-26, requisito 1) con clave derivada del NUMERO de escena
+  // (no de su indice), para que sobreviva a un troceo distinto tras
+  // regenerar el HTML (requisito 5: "si el troceo cambio, la velocidad por
+  // escena se conserva").
+  var velocidadesEscena = datos.escenas.map(function (escena) {
+    var guardada = leerPreferencia("velocidad_escena_" + escena.numero);
+    var valor = guardada === null ? NaN : parseFloat(guardada);
+    if (isNaN(valor)) {
+      return 1.0;
+    }
+    return Math.max(datos.velocidad_minima, Math.min(valor, datos.velocidad_maxima));
   });
   var botonesEscena = [];
 
@@ -76,6 +83,12 @@
   var vistaReproductor = document.createElement("section");
   vistaReproductor.id = "vista-reproductor";
   vistaReproductor.hidden = true;
+  // Visibilidad de indicadores restaurada (T-26, requisito 1): el interruptor
+  // en si vive en `alternarIndicadores`/CSS (T-23); aqui solo se aplica el
+  // valor guardado antes de la primera renderizacion.
+  if (leerPreferencia("indicadores_ocultos") === "1") {
+    vistaReproductor.classList.add("indicadores-ocultos");
+  }
   contenedor.appendChild(vistaIndice);
   contenedor.appendChild(vistaReproductor);
 
@@ -128,6 +141,28 @@
       datos.ritmo_ppm +
       " ppm";
     vistaIndice.appendChild(resumen);
+
+    // "Continuar" (T-26, requisitos 1 y 5): un boton explicito, no un salto
+    // automatico al cargar la pagina. `requestFullscreen` exige un gesto de
+    // usuario real -- un intento automatico en `iniciarMotor` habria fallado
+    // en silencio (ver `solicitarPantallaCompleta`) y habria dejado la
+    // posicion restaurada pero sin pantalla completa, una experiencia a
+    // medias. El boton resuelve la restauracion con un clic real, sin quitar
+    // al indice su papel de punto de entrada (T-19).
+    var reanudacion = calcularReanudacion();
+    if (reanudacion) {
+      var escenaReanudacion = datos.escenas[reanudacion.indiceEscena];
+      var botonContinuar = document.createElement("button");
+      botonContinuar.type = "button";
+      botonContinuar.className = "btn-continuar";
+      botonContinuar.id = "btn-continuar";
+      botonContinuar.textContent =
+        "Continuar: escena " + (reanudacion.indiceEscena + 1) + " — " + escenaReanudacion.titulo;
+      botonContinuar.addEventListener("click", function () {
+        reproducirEscena(reanudacion.indiceEscena, reanudacion.indiceBloque);
+      });
+      vistaIndice.appendChild(botonContinuar);
+    }
 
     var lista = document.createElement("ul");
     lista.className = "lista-escenas";
@@ -314,6 +349,16 @@
     tituloAyuda.textContent = "Atajos de teclado";
     panelAyuda.appendChild(tituloAyuda);
     panelAyuda.appendChild(construirListaAyudaTeclado());
+    // Restablecer preferencias (T-26, requisito 4): un unico boton que borra
+    // toda clave de este guion en `localStorage` y vuelve cada ajuste en
+    // memoria a su valor por defecto, sin recargar la pagina.
+    var botonRestablecer = document.createElement("button");
+    botonRestablecer.type = "button";
+    botonRestablecer.className = "btn-volver btn-restablecer-preferencias";
+    botonRestablecer.id = "btn-restablecer-preferencias";
+    botonRestablecer.textContent = "Restablecer preferencias";
+    botonRestablecer.addEventListener("click", restablecerPreferencias);
+    panelAyuda.appendChild(botonRestablecer);
     var cierreAyuda = document.createElement("p");
     cierreAyuda.className = "ayuda-teclado-cierre";
     cierreAyuda.textContent = "Pulsa ? para cerrar esta ayuda.";
@@ -351,14 +396,14 @@
     return botonVolver;
   }
 
-  function reproducirEscena(indice) {
+  function reproducirEscena(indice, bloqueInicial) {
     detenerMotor();
     var botonVolver = renderizarReproductor(indice);
     vistaIndice.hidden = true;
     vistaReproductor.hidden = false;
     solicitarPantallaCompleta(botonVolver);
     iniciarCuentaAtras(function () {
-      iniciarMotor(indice);
+      iniciarMotor(indice, bloqueInicial);
     });
   }
 
@@ -598,6 +643,10 @@
   // porque el toggle no toca `vistaReproductor.classList`, solo su contenido).
   function alternarIndicadores() {
     vistaReproductor.classList.toggle("indicadores-ocultos");
+    guardarPreferencia(
+      "indicadores_ocultos",
+      vistaReproductor.classList.contains("indicadores-ocultos") ? "1" : "0"
+    );
   }
 
   // Modo espejo (T-25, requisito 1): volteo horizontal via CSS `transform`, no
@@ -659,6 +708,105 @@
       elemento.style.opacity = esActivo ? "" : String(opacidadPorDistancia(Math.abs(i - indice)));
     });
     actualizarBarraProgreso();
+    guardarUltimaEscenaVista(indice);
+  }
+
+  // Ultima escena vista (T-26, requisitos 1 y 5): se guarda el NUMERO de
+  // escena (estable aunque el orden cambiara) y el `inicio_segundos` del
+  // bloque activo -- no su indice -- para poder reencontrar el bloque mas
+  // cercano si una regeneracion cambia el troceo (requisito 5, "la posicion
+  // se reajusta al bloque mas cercano"). Se llama desde `marcarBloqueActivo`,
+  // que ya se invoca en cada cambio de bloque real: al entrar en la escena,
+  // al avanzar automaticamente y al avanzar/retroceder a mano.
+  function guardarUltimaEscenaVista(indiceBloque) {
+    if (escenaActual === -1) {
+      return;
+    }
+    var escena = datos.escenas[escenaActual];
+    var bloque = escena.bloques[indiceBloque];
+    if (!bloque) {
+      return;
+    }
+    guardarPreferencia("ultima_escena_numero", String(escena.numero));
+    guardarPreferencia("ultima_escena_inicio_segundos", String(bloque.inicio_segundos));
+  }
+
+  // Localiza donde retomar (requisitos 1 y 5): `null` si no hay nada guardado
+  // o si la escena guardada ya no existe (p. ej. el guion cambio de numero de
+  // escenas); si existe, resuelve el bloque mas cercano por `inicio_segundos`
+  // en vez de por indice, para sobrevivir a un troceo distinto.
+  function calcularReanudacion() {
+    var numeroGuardado = leerPreferencia("ultima_escena_numero");
+    if (numeroGuardado === null) {
+      return null;
+    }
+    var numero = parseInt(numeroGuardado, 10);
+    var indiceEscena = -1;
+    for (var i = 0; i < datos.escenas.length; i++) {
+      if (datos.escenas[i].numero === numero) {
+        indiceEscena = i;
+        break;
+      }
+    }
+    if (indiceEscena === -1) {
+      return null;
+    }
+    var bloques = datos.escenas[indiceEscena].bloques;
+    if (bloques.length === 0) {
+      return null;
+    }
+    var inicioGuardado = parseFloat(leerPreferencia("ultima_escena_inicio_segundos"));
+    var indiceBloque = 0;
+    if (!isNaN(inicioGuardado)) {
+      var mejorDiferencia = Infinity;
+      bloques.forEach(function (bloque, indice) {
+        var diferencia = Math.abs(bloque.inicio_segundos - inicioGuardado);
+        if (diferencia < mejorDiferencia) {
+          mejorDiferencia = diferencia;
+          indiceBloque = indice;
+        }
+      });
+    }
+    return { indiceEscena: indiceEscena, indiceBloque: indiceBloque };
+  }
+
+  // Restablecer preferencias (requisito 4): borra toda clave de este guion en
+  // `localStorage` y vuelve cada ajuste en memoria a su valor por defecto,
+  // sin recargar la pagina.
+  function limpiarPreferenciasAlmacenadas() {
+    try {
+      var prefijo = "teleprompter:" + datos.guion + ":";
+      var aEliminar = [];
+      for (var i = 0; i < window.localStorage.length; i++) {
+        var clave = window.localStorage.key(i);
+        if (clave && clave.indexOf(prefijo) === 0) {
+          aEliminar.push(clave);
+        }
+      }
+      aEliminar.forEach(function (clave) {
+        window.localStorage.removeItem(clave);
+      });
+    } catch (error) {
+      // Sin almacenamiento disponible: no hay nada que limpiar.
+    }
+  }
+
+  function restablecerPreferencias() {
+    limpiarPreferenciasAlmacenadas();
+    tamanoTextoActualPx = datos.tamano_texto_base_px;
+    document.documentElement.style.setProperty("--tamano-base", tamanoTextoActualPx + "px");
+    actualizarIndicadorTamano();
+    velocidadesEscena = datos.escenas.map(function () {
+      return 1.0;
+    });
+    actualizarIndicadorVelocidad();
+    espejoActivado = false;
+    aplicarClaseEspejo();
+    actualizarBotonEspejo();
+    vistaReproductor.classList.remove("indicadores-ocultos");
+    if (escenaActual !== -1) {
+      centrarBloqueActivo(true);
+    }
   }
 
   // --- Autoscroll con bloque centrado (T-22) -------------------------------
@@ -756,7 +904,21 @@
   // NO es un array paralelo a `datos.escenas` como `velocidadesEscena` -- un
   // unico valor global que persiste mientras se navega de escena en escena,
   // igual que ya hace la velocidad dentro de una misma escena.
-  var tamanoTextoActualPx = datos.tamano_texto_base_px;
+  // Restaurado (T-26, requisito 1) con la clave "tamano_texto"; si no hay
+  // valor guardado, o `localStorage` no esta disponible, se usa el mismo
+  // valor por defecto de siempre.
+  var tamanoTextoActualPx = (function () {
+    var guardado = leerPreferencia("tamano_texto");
+    var valor = guardado === null ? NaN : parseInt(guardado, 10);
+    if (isNaN(valor)) {
+      return datos.tamano_texto_base_px;
+    }
+    return Math.max(
+      datos.tamano_texto_minimo_px,
+      Math.min(valor, datos.tamano_texto_maximo_px)
+    );
+  })();
+  document.documentElement.style.setProperty("--tamano-base", tamanoTextoActualPx + "px");
 
   function actualizarIndicadorTamano() {
     if (!indicadorTamano) {
@@ -771,6 +933,7 @@
       Math.min(tamanoTextoActualPx + delta, datos.tamano_texto_maximo_px)
     );
     tamanoTextoActualPx = nuevo;
+    guardarPreferencia("tamano_texto", String(nuevo));
     document.documentElement.style.setProperty("--tamano-base", nuevo + "px");
     actualizarIndicadorTamano();
     // Requisito 4 (correcto tras cambiar el tamano de texto): el cambio de
@@ -885,6 +1048,7 @@
     var nueva = redondearVelocidad(velocidadesEscena[escenaActual] + delta);
     nueva = Math.max(datos.velocidad_minima, Math.min(nueva, datos.velocidad_maxima));
     velocidadesEscena[escenaActual] = nueva;
+    guardarPreferencia("velocidad_escena_" + datos.escenas[escenaActual].numero, String(nueva));
     actualizarIndicadorVelocidad();
   }
 
@@ -899,9 +1063,9 @@
     reproducirEscena(destino);
   }
 
-  function iniciarMotor(indice) {
+  function iniciarMotor(indice, bloqueInicial) {
     escenaActual = indice;
-    bloqueActual = 0;
+    bloqueActual = bloqueInicial || 0;
     pausado = false;
     actualizarIndicadorVelocidad();
     actualizarIndicadorTamano();
@@ -909,7 +1073,7 @@
     actualizarBarraProgreso();
     iniciarCronometro();
     if (bloquesEscenaActual().length > 0) {
-      marcarBloqueActivo(0);
+      marcarBloqueActivo(bloqueActual);
       centrarBloqueActivo(false);
       iniciarTemporizadorBloque();
     }
