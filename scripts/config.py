@@ -51,6 +51,39 @@ RESPALDO_TIPOGRAFICO: tuple[str, ...] = ("Montserrat", "Calibri", "sans-serif")
 INCLUIR_NOTAS_INTERNAS: bool = True  # `--para-terceros` lo pone en False
 SRT_CARACTERES_POR_LINEA_MAX: int = 42
 
+# --- Exportador .pdf con identidad 480 (T-28) --------------------------------------
+# Variante "Gris" (fondo claro, requisito 3): ruta relativa a la raiz del proyecto,
+# configurable. Si el archivo no existe o no es un PNG valido, el PDF sale sin
+# logotipo y la generacion no falla.
+RUTA_LOGO_PDF: str = "assets/480_Gris.png"
+# Anchos de referencia de `references/marca-480.md`; el alto se mide siempre del
+# PNG en tiempo de generacion (`ancho / ratio`), nunca se codifica una constante de
+# relacion de aspecto (regla dura de esa referencia).
+PDF_ANCHO_LOGO_PORTADA_PULGADAS: float = 2.4
+PDF_ANCHO_LOGO_PIE_PULGADAS: float = 0.7
+# Maquetacion (requisito 1): margenes minimos, interlineado del cuerpo (1.3-1.5).
+PDF_MARGEN_LATERAL_PULGADAS: float = 0.6
+PDF_MARGEN_SUPERIOR_PULGADAS: float = 0.5
+PDF_INTERLINEADO: float = 1.4
+# Paleta 480 (requisito 1, `references/marca-480.md`): texto principal/secundario,
+# acento (linea bajo los titulos), fondo y borde sutil de las tarjetas.
+PDF_COLOR_TEXTO: str = "#333333"
+PDF_COLOR_TEXTO_SECUNDARIO: str = "#888888"
+PDF_COLOR_ACENTO: str = "#39FE90"
+PDF_COLOR_ALERTA: str = "#FF4950"
+PDF_COLOR_FONDO: str = "#FFFFFF"
+PDF_COLOR_BORDE: str = "#E5E7EB"
+# Ruta manual del ejecutable de Chrome/Edge (requisito 4): si el dueno la fija,
+# tiene prioridad sobre la deteccion automatica (nombres conocidos en el PATH y
+# rutas de instalacion estandar de Windows/macOS). Vacio por defecto.
+PDF_CHROME_EJECUTABLE_MANUAL: str | None = None
+# Tope de tiempo (segundos) para el subproceso de conversion a PDF, mismo criterio
+# que `TIEMPO_PROCESO_MAX_SEGUNDOS` de T-06: nunca se queda colgado sin avisar.
+PDF_TIMEOUT_CONVERSION_SEGUNDOS: float = 30.0
+# Nombres de archivo dentro de la carpeta de salida del guion.
+NOMBRE_ARCHIVO_HTML_IMPRESION: str = "guion-impresion.html"
+NOMBRE_ARCHIVO_PDF: str = "guion.pdf"
+
 # --- Exportador .srt borrador (T-27) -----------------------------------------------
 # Un subtitulo por bloque de respiracion por defecto (requisito 1); un bloque cuya
 # duracion total (palabras + pausa) no llega a este minimo se funde con el siguiente
@@ -322,6 +355,7 @@ class Configuracion:
     palabras_por_bloque_objetivo: int = PALABRAS_POR_BLOQUE_OBJETIVO
     palabras_por_bloque_max: int = PALABRAS_POR_BLOQUE_MAX
     tipografia_marca: str = TIPOGRAFIA_MARCA
+    respaldo_tipografico: tuple[str, ...] = field(default=RESPALDO_TIPOGRAFICO)
     incluir_notas_internas: bool = INCLUIR_NOTAS_INTERNAS
     secciones_auxiliares: tuple[str, ...] = field(default=SECCIONES_AUXILIARES)
     rotulo_locucion: str = ROTULO_LOCUCION
@@ -370,6 +404,20 @@ class Configuracion:
     srt_lineas_max_por_subtitulo: int = SRT_LINEAS_MAX_POR_SUBTITULO
     srt_duracion_minima_segundos: float = SRT_DURACION_MINIMA_SEGUNDOS
     srt_con_bom: bool = SRT_CON_BOM
+    ruta_logo_pdf: str = RUTA_LOGO_PDF
+    pdf_ancho_logo_portada_pulgadas: float = PDF_ANCHO_LOGO_PORTADA_PULGADAS
+    pdf_ancho_logo_pie_pulgadas: float = PDF_ANCHO_LOGO_PIE_PULGADAS
+    pdf_margen_lateral_pulgadas: float = PDF_MARGEN_LATERAL_PULGADAS
+    pdf_margen_superior_pulgadas: float = PDF_MARGEN_SUPERIOR_PULGADAS
+    pdf_interlineado: float = PDF_INTERLINEADO
+    pdf_color_texto: str = PDF_COLOR_TEXTO
+    pdf_color_texto_secundario: str = PDF_COLOR_TEXTO_SECUNDARIO
+    pdf_color_acento: str = PDF_COLOR_ACENTO
+    pdf_color_alerta: str = PDF_COLOR_ALERTA
+    pdf_color_fondo: str = PDF_COLOR_FONDO
+    pdf_color_borde: str = PDF_COLOR_BORDE
+    pdf_chrome_ejecutable_manual: str | None = PDF_CHROME_EJECUTABLE_MANUAL
+    pdf_timeout_conversion_segundos: float = PDF_TIMEOUT_CONVERSION_SEGUNDOS
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -522,3 +570,14 @@ class Configuracion:
                 f"({self.srt_duracion_minima_segundos})."
             )
             raise ValueError(mensaje)
+        for nombre, valor_flotante in (
+            ("pdf_ancho_logo_portada_pulgadas", self.pdf_ancho_logo_portada_pulgadas),
+            ("pdf_ancho_logo_pie_pulgadas", self.pdf_ancho_logo_pie_pulgadas),
+            ("pdf_margen_lateral_pulgadas", self.pdf_margen_lateral_pulgadas),
+            ("pdf_margen_superior_pulgadas", self.pdf_margen_superior_pulgadas),
+            ("pdf_interlineado", self.pdf_interlineado),
+            ("pdf_timeout_conversion_segundos", self.pdf_timeout_conversion_segundos),
+        ):
+            if valor_flotante <= 0:
+                mensaje = f"'{nombre}' debe ser un numero positivo ({valor_flotante})."
+                raise ValueError(mensaje)

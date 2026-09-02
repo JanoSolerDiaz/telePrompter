@@ -1435,6 +1435,85 @@ ya hace `reproductor.py`. Es una librería pura, sin punto de entrada de CLI tod
   reproductor (`generar_srt_fixture`/`verificar_srt`, activadas en esta tarea:
   antes eran NO APLICABLE a la espera de T-27).
 
+## Exportador `.pdf` con identidad 480 (T-28)
+
+`scripts/pdf.py` genera el documento de repaso/entregable con la marca 480
+(`references/marca-480.md`). Igual que `srt.py` (T-27), es una librería pura sin
+punto de entrada de CLI todavía: consume `ResultadoParseo` + `ResultadoTiempos` tal
+cual, sin recalcular nada — el texto de cada bloque ya es el locutado final si
+`resultado_tiempos` viene de una revalidación (T-17). A diferencia de
+`documento_revision.py` (T-16), este módulo **nunca** muestra el aparato de
+reescrituras (`<!-- reescritura ... -->`, original/propuesta/decisión): esa vista
+de edición vive en `guion-escenas.md`; aquí solo hay texto ya decidido, en prosa
+legible, en las dos variantes del documento.
+
+- **Plantillas en `assets/pdf/`, mismo patrón que el reproductor (T-18).**
+  `plantilla.html` + `estilo.css` con marcadores `__EN_MAYUSCULAS__` sustituidos por
+  `.replace()` desde `Configuracion` — nada de HTML/CSS escrito a mano en Python.
+- **Logotipo autocontenido y con ratio medido (requisito 3).** `_dimensiones_png`
+  lee la cabecera `IHDR` del PNG (firma + longitud + tipo de chunk + ancho/alto en
+  big-endian, bytes 16-24) sin ninguna dependencia de imagen; `_logo_html` calcula
+  `alto = ancho_deseado / (ancho_px/alto_px)` y lo incrusta como
+  `data:image/png;base64,...`. Es deliberado que sea `data:` y no una ruta relativa
+  al archivo: `verificar_salidas.buscar_recursos_externos` rechaza **cualquier**
+  `src=` que no sea `data:`, aunque apunte a un archivo local — un `.html`
+  autocontenido no depende de ningún archivo aparte, ni siquiera del propio
+  proyecto. Si el PNG no existe o su cabecera no es válida, `_logo_html` devuelve
+  `""` (ningún `<img>` en el marcado) y la generación sigue sin fallar.
+- **Notas internas vs. indicaciones de pantalla (requisito 6, modo
+  `--para-terceros`).** `_es_nota_interna` detecta el rótulo `NOTA` dentro del
+  `motivo` de clasificación que ya calcula `clasificador.py` (T-09) — que siempre lo
+  cita literalmente (`"rotulo 'NOTA': ..."`, `"prefijo 'NOTA:'"`) —; cualquier otra
+  indicación (`EN PANTALLA`, o ambigua sin señal clara) se trata como indicación de
+  pantalla y se mantiene siempre, para no decidir en silencio que algo sin marcar
+  como nota es prescindible (T-09, requisito 5). `Configuracion.incluir_notas_internas`
+  (reservada desde T-00, sin cablear hasta esta tarea) es el interruptor — el mismo
+  que reutilizará T-29 —: `False` es el modo `--para-terceros`.
+- **Prosa continua, no lista (requisito 5).** `_prosa_escena` envuelve cada bloque
+  de respiración en su propio `<span class="bloque">`; el límite entre bloques lo
+  marca `estilo.css` con `.bloque:not(:last-child)::after { content: " · "; }` — un
+  separador tipográfico discreto, nunca un `<li>` ni un salto de línea que rompa la
+  lectura como prosa.
+- **Una escena por página (criterio de aceptación).** `.pagina { page-break-after:
+  always }` con `:last-child { page-break-after: auto }`; Chrome en modo impresión
+  respeta el `@page` de `estilo.css` (tamaño, márgenes) al convertir a `.pdf`. El
+  número de páginas resultante es siempre escenas + 1 (portada), verificado tanto
+  contando `class="pagina"` en el HTML como — cuando hay Chrome disponible —
+  contando `/Count N` en los bytes crudos del `.pdf` generado (el árbol de páginas
+  de Chrome no usa flujos comprimidos para ese objeto).
+- **Chrome/Edge headless, nunca obligatorio (requisito 4).**
+  `detectar_ejecutable_chrome` prioriza `Configuracion.pdf_chrome_ejecutable_manual`
+  si el dueño la fija; si no, nombres conocidos vía `shutil.which` (cubre Linux/macOS
+  con Chrome o Chromium instalados de forma estándar) y las rutas de instalación
+  estándar de Windows/macOS, incluida la instalación por usuario en
+  `%LOCALAPPDATA%`. `convertir_html_a_pdf` invoca
+  `chrome --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=...`
+  con un `subprocess.run` acotado en tiempo (`pdf_timeout_conversion_segundos`,
+  mismo criterio que `TIEMPO_PROCESO_MAX_SEGUNDOS` de T-06); **decisión verificada
+  en esta sesión** (sandbox de nube, root): Chrome se niega a arrancar como root sin
+  `--no-sandbox` (`Running as root without --no-sandbox is not supported`), así que
+  el argumento se añade solo cuando `os.geteuid() == 0` — en la máquina del dueño,
+  sin privilegios de administrador, ese bloque nunca se activa. Sin ejecutable
+  detectado, o si la conversión falla por cualquier motivo, `exportar_pdf` nunca
+  lanza: deja el HTML de impresión listo y un mensaje accionable ("abre
+  `guion-impresion.html` y usa Ctrl+P").
+- **Verificación.** `tests/test_pdf.py` cubre: lectura de la cabecera `IHDR` del
+  logotipo real (1993×805, ratio 2,4758) y de un PNG ausente/inválido; el número de
+  páginas coincide con escenas + portada en los tres guiones reales; auto-contención
+  de bytes en los tres guiones reales (incluido el logotipo incrustado); ausencia
+  del logotipo sin romper la generación; la prosa nunca usa `<li>`/`<ul>`; portada
+  con título/duración/escenas/palabras; el modo `--para-terceros` omite la nota
+  interna real de `fixtures/reales/guion-artefactos-lienzo.md` sin tocar las
+  indicaciones de pantalla; detección de Chrome con ruta manual válida/inválida;
+  conversión con un ejecutable inexistente (no lanza); y, cuando hay un Chrome/Edge
+  real disponible (detección automática o el Chromium de Playwright de este
+  entorno, nunca una dependencia del proyecto), generación real del `.pdf` con el
+  número de páginas correcto y sin la nota interna en modo `--para-terceros`.
+  `verificar_salidas.py --fixture` genera el HTML de impresión (y el `.pdf` si hay
+  Chrome) de verdad sobre el mismo guion real que usan el reproductor y el `.srt`
+  (`generar_pdf_fixture`, activada en esta tarea), y `verificar_autocontencion` gana
+  un parámetro `etapa` para reutilizarse también aquí, no solo con el reproductor.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

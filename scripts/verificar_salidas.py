@@ -4,16 +4,22 @@ Sustituye al `build` de un proyecto convencional. Ejecuta la skill sobre el guio
 ejemplo y comprueba que lo generado es valido; sobre todo, que el reproductor `.html`
 es **autocontenido** (regla dura de §0.2).
 
-ESTADO ACTUAL (T-18, T-27): el reproductor y el exportador de `.srt` ya existen
-(`scripts/reproductor.py`, `scripts/srt.py`), asi que "Generación del reproductor",
-"Auto-contención del reproductor", "Generación del .srt" y "Validez del .srt" dejan
-de ser NO APLICABLE: se generan de verdad, sobre el primer guion real de calibracion
-a falta de `fixtures/guion-ejemplo.md` (T-32), y se validan (a nivel de bytes el
-`.html`, con las reglas de ffmpeg el `.srt`). "Guion de ejemplo" y "Generación de
-salidas" (la canalizacion completa con `.pdf`/`.pptx`) siguen NO APLICABLE hasta T-32
-y T-30 respectivamente. Cada etapa se declara NO APLICABLE nombrando la tarea que la
-implementara, para que la cuarta red diga siempre algo verdadero y vaya cobrando
-sentido sola segun avanza el backlog. Responde al hallazgo #4 del auditor.
+ESTADO ACTUAL (T-18, T-27, T-28): el reproductor, el exportador de `.srt` y el
+exportador `.pdf` ya existen (`scripts/reproductor.py`, `scripts/srt.py`,
+`scripts/pdf.py`), asi que "Generación del reproductor", "Auto-contención del
+reproductor", "Generación del .srt", "Validez del .srt", "Generación del HTML de
+impresión (.pdf)" y "Auto-contención del HTML de impresión" dejan de ser NO
+APLICABLE: se generan de verdad, sobre el primer guion real de calibracion a falta
+de `fixtures/guion-ejemplo.md` (T-32), y se validan (a nivel de bytes el `.html` del
+reproductor y el de impresion, con las reglas de ffmpeg el `.srt`). La conversion a
+`.pdf` de verdad depende de que haya un Chrome/Edge instalado en la maquina que
+ejecuta la verificacion (T-28, requisito 4): cuando no lo hay, la etapa de
+generacion sigue en OK (el HTML de impresion se genera igual, sin fallar) y lo dice
+en el detalle. "Guion de ejemplo" y "Generación de salidas" (la canalizacion
+completa con `.pdf`/`.pptx`) siguen NO APLICABLE hasta T-32 y T-30 respectivamente.
+Cada etapa se declara NO APLICABLE nombrando la tarea que la implementara, para que
+la cuarta red diga siempre algo verdadero y vaya cobrando sentido sola segun avanza
+el backlog. Responde al hallazgo #4 del auditor.
 """
 
 from __future__ import annotations
@@ -26,9 +32,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from config import NOMBRE_ARCHIVO_SRT
+from config import NOMBRE_ARCHIVO_HTML_IMPRESION, NOMBRE_ARCHIVO_SRT
 from logger import configurar_logger
 from parser import parsear_guion
+from pdf import exportar_pdf
 from presentacion import Nivel, mostrar, titulo
 from reproductor import generar_reproductor_html, guardar_reproductor
 from srt import exportar_srt, guardar_srt, validar_srt
@@ -40,6 +47,7 @@ CARPETA_SALIDA_FIXTURE = RAIZ / "fixtures" / "salida"
 CARPETA_GUIONES_REALES = RAIZ / "fixtures" / "reales"
 RUTA_REPRODUCTOR_FIXTURE = CARPETA_SALIDA_FIXTURE / "reproductor.html"
 RUTA_SRT_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_SRT
+RUTA_HTML_IMPRESION_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_HTML_IMPRESION
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
 PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
@@ -78,22 +86,24 @@ def buscar_recursos_externos(html: str) -> list[str]:
     return hallazgos
 
 
-def verificar_autocontencion(ruta_html: Path) -> Resultado:
-    """Comprueba que un reproductor generado no depende de nada externo."""
+def verificar_autocontencion(
+    ruta_html: Path, etapa: str = "Auto-contencion del reproductor"
+) -> Resultado:
+    """Comprueba que un `.html` generado (reproductor o impresion) no depende de nada externo."""
     if not ruta_html.exists():
         return Resultado(
-            "Auto-contencion del reproductor",
+            etapa,
             "NO APLICABLE",
-            f"no se ha generado ningun reproductor en {ruta_html}.",
+            f"no se ha generado ningun archivo en {ruta_html}.",
         )
     hallazgos = buscar_recursos_externos(ruta_html.read_text(encoding="utf-8"))
     if hallazgos:
         return Resultado(
-            "Auto-contencion del reproductor",
+            etapa,
             "FALLO",
             "el HTML depende de recursos externos: " + "; ".join(hallazgos),
         )
-    return Resultado("Auto-contencion del reproductor", "OK", f"{ruta_html.name} es autocontenido.")
+    return Resultado(etapa, "OK", f"{ruta_html.name} es autocontenido.")
 
 
 def verificar_fixture() -> Resultado:
@@ -179,6 +189,40 @@ def generar_srt_fixture() -> Resultado:
     return Resultado("Generación del .srt", "OK", f"generado sobre {ruta_guion.name}.")
 
 
+def generar_pdf_fixture() -> Resultado:
+    """Genera el HTML de impresion y, si hay Chrome/Edge, el `.pdf` (T-28) sobre
+    el mismo guion real que usan el reproductor y el .srt.
+
+    Mismo criterio que `generar_reproductor_fixture`/`generar_srt_fixture`: a
+    falta de `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
+    `fixtures/reales/`. La ausencia de Chrome/Edge en la maquina de
+    verificacion no es un fallo (requisito 4 de T-28: la skill nunca falla
+    por su ausencia), asi que esta etapa sigue en OK sin el `.pdf` real."""
+    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
+    if not guiones:
+        return Resultado(
+            "Generación del HTML de impresión (.pdf)",
+            "NO APLICABLE",
+            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+        )
+    ruta_guion = guiones[0]
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        resultado_pdf = exportar_pdf(
+            resultado, tiempos, CARPETA_SALIDA_FIXTURE, nombre_guion=ruta_guion.stem
+        )
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación del HTML de impresión (.pdf)",
+            "FALLO",
+            f"no se pudo generar el HTML de impresion sobre {ruta_guion.name}: {excepcion}",
+        )
+    detalle = f"generado sobre {ruta_guion.name}. {resultado_pdf.mensaje}"
+    return Resultado("Generación del HTML de impresión (.pdf)", "OK", detalle)
+
+
 def verificar_srt(ruta_srt: Path) -> Resultado:
     """Valida el .srt generado con las mismas reglas que aplica ffmpeg (T-27, requisito 5)."""
     if not ruta_srt.exists():
@@ -223,6 +267,10 @@ def main() -> int:
         verificar_autocontencion(RUTA_REPRODUCTOR_FIXTURE),
         generar_srt_fixture(),
         verificar_srt(RUTA_SRT_FIXTURE),
+        generar_pdf_fixture(),
+        verificar_autocontencion(
+            RUTA_HTML_IMPRESION_FIXTURE, etapa="Auto-contención del HTML de impresión"
+        ),
     ]
 
     for resultado in resultados:

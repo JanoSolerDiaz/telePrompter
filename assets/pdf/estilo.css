@@ -1,0 +1,149 @@
+/* Identidad 480 para el HTML de impresion (T-28). Fondo blanco puro, sin
+   gradientes, alineacion siempre a la izquierda (references/marca-480.md).
+   Los marcadores __EN_MAYUSCULAS__ los sustituye `pdf.py` con los valores de
+   `Configuracion`: nada de esto vive escrito a mano en el codigo Python. */
+
+@page {
+  size: letter;
+  margin: __MARGEN_SUPERIOR_IN__in __MARGEN_LATERAL_IN__in;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: __COLOR_FONDO__;
+  color: __COLOR_TEXTO__;
+  font-family: __PILA_TIPOGRAFICA__;
+  font-size: 11pt;
+}
+
+.pagina {
+  page-break-after: always;
+  padding-top: 0.1in;
+}
+
+.pagina:last-child {
+  page-break-after: auto;
+}
+
+/* --- Portada -------------------------------------------------------------- */
+
+.portada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 9in;
+}
+
+.portada .logo-portada {
+  margin-bottom: 0.4in;
+}
+
+.portada h1 {
+  font-weight: 700;
+  font-size: 28pt;
+  margin: 0 0 0.15in;
+  color: __COLOR_TEXTO__;
+}
+
+.portada .subtitulo {
+  font-weight: 500;
+  font-size: 13pt;
+  color: __COLOR_TEXTO_SECUNDARIO__;
+  margin: 0 0 0.1in;
+}
+
+.portada .meta {
+  font-size: 10pt;
+  color: __COLOR_TEXTO_SECUNDARIO__;
+}
+
+/* --- Paginas de escena ------------------------------------------------------ */
+
+.escena h2 {
+  font-weight: 600;
+  font-size: 20pt;
+  margin: 0 0 6px;
+  color: __COLOR_TEXTO__;
+}
+
+.linea-acento {
+  width: 0.9in;
+  height: 3px;
+  background: __COLOR_ACENTO__;
+  margin: 0 0 0.2in;
+}
+
+.meta-escena {
+  font-weight: 500;
+  font-size: 10pt;
+  color: __COLOR_TEXTO_SECUNDARIO__;
+  margin: 0 0 0.25in;
+}
+
+.aviso-desviacion {
+  color: __COLOR_ALERTA__;
+}
+
+.prosa {
+  line-height: __INTERLINEADO__;
+  text-align: left;
+  font-size: 12pt;
+  margin: 0 0 0.3in;
+}
+
+/* Limite de bloque de respiracion marcado de forma discreta (requisito 5:
+   "no troceado en lista"): un separador sutil entre bloques, nunca una
+   vineta ni un salto de linea que rompa la lectura como prosa continua. */
+.bloque:not(:last-child)::after {
+  content: " · ";
+  color: __COLOR_TEXTO_SECUNDARIO__;
+}
+
+.pie-escena h3 {
+  font-weight: 600;
+  font-size: 11pt;
+  color: __COLOR_TEXTO_SECUNDARIO__;
+  border-top: 1px solid __COLOR_BORDE__;
+  padding-top: 0.15in;
+  margin: 0 0 0.1in;
+}
+
+.pie-escena ul {
+  margin: 0 0 0.15in;
+  padding-left: 0.2in;
+  font-size: 9.5pt;
+  color: __COLOR_TEXTO__;
+}
+
+.pie-escena li {
+  margin-bottom: 0.05in;
+}
+
+.pie-escena .sin-indicaciones {
+  font-size: 9.5pt;
+  color: __COLOR_TEXTO_SECUNDARIO__;
+  font-style: italic;
+}
+
+.notas-internas {
+  font-size: 8.5pt;
+  color: __COLOR_TEXTO_SECUNDARIO__;
+}
+
+.pie-pagina {
+  position: fixed;
+  bottom: 0.15in;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 7pt;
+  color: __COLOR_TEXTO_SECUNDARIO__;
+}

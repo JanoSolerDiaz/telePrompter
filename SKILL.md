@@ -1,6 +1,6 @@
 ---
 name: teleprompter
-description: Convierte un guion de produccion en .md en tarjetas de locucion y un teleprompter web autocontenido con resaltado tipo karaoke. Usala cuando el usuario hable de "tarjetas de locucion", "teleprompter", "guion para grabar", "bloques de respiracion", "que tengo que recitar", o cuando pida preparar la locucion de un video a partir de un guion en Markdown, o generar subtitulos .srt borrador desde ese guion.
+description: Convierte un guion de produccion en .md en tarjetas de locucion y un teleprompter web autocontenido con resaltado tipo karaoke. Usala cuando el usuario hable de "tarjetas de locucion", "teleprompter", "guion para grabar", "bloques de respiracion", "que tengo que recitar", o cuando pida preparar la locucion de un video a partir de un guion en Markdown, generar subtitulos .srt borrador desde ese guion, o exportarlo a .pdf con la marca 480.
 ---
 
 # teleprompter — del guion a la camara
@@ -175,6 +175,26 @@ Arranca los subtítulos en la fase de montaje sin partir de cero: un subtítulo 
 | Caracteres por línea | 42 | — |
 | Líneas por subtítulo | 2 | Un bloque que no cabe se reparte en varios subtítulos, con el tiempo repartido según las palabras de cada reparto |
 | BOM (marca de orden de bytes) | No | `srt_con_bom=True` antepone el BOM; UTF-8 sin él por defecto |
+
+## Exportador `.pdf` con identidad 480 (T-28)
+
+Documento de repaso antes de grabar y, llegado el caso, entregable presentable a terceros: el guion completo con la identidad visual de la casa (`references/marca-480.md`), una **escena por página** — título, duración objetivo y estimada, y el texto de locución **legible como prosa** (los límites de bloque se marcan de forma discreta, nunca como lista de tarjetas), con las indicaciones no recitables al pie. Portada con el título, la duración total y objetivo, el número de escenas y de palabras.
+
+El logotipo (variante Gris, para fondo claro) se incrusta en el propio HTML como `data:image/png;base64,...`: ni siquiera un archivo local aparte cuenta como autocontenido. Su relación de aspecto **se mide de la cabecera `IHDR` del PNG en el momento de generar**, nunca de una constante — la guía de marca dice 668/376, pero los archivos reales miden 1993×805 (ratio 2,4758); usar la constante de la guía los habría deformado un 39 %. Si el archivo no existe o no es un PNG válido, el PDF sale sin logotipo y no falla.
+
+La conversión a `.pdf` usa Chrome o Edge en modo headless (`--print-to-pdf`), detectado por nombre en el `PATH` o por las rutas de instalación estándar de Windows/macOS (`pdf_chrome_ejecutable_manual` fija una ruta a mano si la detección no la encuentra). **Sin Chrome/Edge disponible, la skill deja listo el HTML de impresión con instrucciones para exportarlo a mano con Ctrl+P — nunca falla por su ausencia.**
+
+`Configuracion.incluir_notas_internas` (el mismo interruptor que usará T-29) es el modo **`--para-terceros`**: en `False` omite las indicaciones marcadas como nota interna de producción (rótulo `**NOTA**`), y deja solo el texto de locución final y las indicaciones de pantalla (`**EN PANTALLA**`, y cualquier indicación ambigua sin rótulo claro: nunca se decide en silencio que algo es prescindible).
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Tipografía de marca | Poppins | Respaldo Montserrat → Calibri → sans del sistema (`respaldo_tipografico`), resuelto por nombre del sistema |
+| Ruta del logotipo | `assets/480_Gris.png` | Variante Gris (fondo claro); ausente → PDF sin logotipo, no falla |
+| Ancho del logotipo (portada / pie de página) | 2,4" / 0,7" | El alto se calcula siempre del ratio medido del PNG |
+| Márgenes (lateral / superior) | 0,6" / 0,5" | Mínimo de la guía de marca |
+| Interlineado del cuerpo | 1,4 | Dentro del rango 1,3–1,5 de la guía de marca |
+| Notas internas incluidas | Sí | `incluir_notas_internas=False` es el modo `--para-terceros` |
+| Ruta manual de Chrome/Edge | ninguna | `pdf_chrome_ejecutable_manual`; si no se fija, detección automática |
 
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
