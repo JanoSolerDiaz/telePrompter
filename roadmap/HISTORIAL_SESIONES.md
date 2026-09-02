@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-02 — T-31 (`SKILL.md` y configuración completa), sesión de nube
+**Tarea(s):** T-31
+**Estado resultante:** T-31 **COMPLETADA**; primera tarea de FASE B6 (empaquetado como skill e integración)
+**Commits a develop:** `T-31: SKILL.md y configuración completa` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (tarea puramente documental, ningún cambio de `estado.json`)
+**Archivos creados/modificados:** `SKILL.md` (quita la nota «BORRADOR (T-00)»; sustituye el «extracto» final por «Precedencia de configuración (T-31)» y «Valores por defecto — tabla completa (T-31)» con los 81 campos de `Configuracion` agrupados por área; añade enlaces «Ver también» a las tres referencias nuevas desde las secciones de convención de guion, documento de revisión y atajos de teclado), `references/convencion-guion.md` (nuevo), `references/formato-guion-escenas.md` (nuevo), `references/mapa-teclas.md` (nuevo), `tests/test_skill_md.py` (nuevo, 4 tests), `DEVELOPERS.md` (sección T-31, línea de `references/` en «Estructura» actualizada con los tres archivos nuevos), `roadmap/SEGUIMIENTO.md` (cabecera, §1 fila T-31), `roadmap/DECISIONES_TECNICAS.md` (4 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (390 passed, 0 skipped; antes 386) · build ✅ (`verificar_salidas.py --fixture`: las nueve etapas de generación/validación en OK, 1 etapa NO APLICABLE justificada hasta T-32, ninguna regresión)
+**Health check post-deploy:** No aplica — sesión de nube, sin instalación local de la skill (T-32 sigue pendiente y fuera del alcance de una sesión de nube)
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-02, T-31): (1) el test de completitud compara los campos de `Configuracion`, no las 100 constantes de módulo de `config.py`, contra una sección delimitada de `SKILL.md` (no todo backtick del archivo), en las dos direcciones; (2) la precedencia de configuración se documenta como modelo conceptual sin construir un cargador de archivo de configuración de usuario/proyecto nuevo — el mecanismo real es Claude construyendo `Configuracion(**overrides)`, y `configuracion_efectiva` en `estado.json` ya cumple el nivel de proyecto; (3) la documentación extensa se añade a `references/` sin recortar las tablas y resúmenes ya existentes en `SKILL.md`, que no son "documentación extensa" sino resúmenes concisos por tarea
+**Hallazgos del auditor atendidos:** ninguno nuevo; sin hallazgos ABIERTOS de severidad alta al empezar (el #9 sigue corregido en código por P-02, pendiente solo de que el auditor lo reevalúe y lo cierre en su propio documento)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-32 (instalación de la skill y guion de ejemplo), segunda tarea de FASE B6. Depende de T-31 (ya completa). Nota de entorno: la instalación en `~/.claude/skills/teleprompter/` y su health check posterior no pueden ejecutarse desde una sesión de nube (protocolo v1.3) — si a esta tarea le toca de nuevo una sesión de nube, entregar el script de instalación y `fixtures/guion-ejemplo.md` (no dependen de la instalación local) y marcar BLOQUEADA solo la verificación post-instalación, con ese motivo explícito en §3 de SEGUIMIENTO.
+
 ### Sesión 2026-09-02 — T-30 (selector de salidas por validación), sesión de nube
 **Tarea(s):** T-30
 **Estado resultante:** T-30 **COMPLETADA**; cuarta y última tarea de FASE B5 (FASE B5 queda cerrada)

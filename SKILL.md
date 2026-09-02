@@ -5,10 +5,6 @@ description: Convierte un guion de produccion en .md en tarjetas de locucion y u
 
 # teleprompter — del guion a la camara
 
-> **BORRADOR (T-00).** Este archivo se completa en T-31, que exige que toda opcion por
-> defecto del codigo aparezca aqui documentada, con un test que falla si divergen.
-> De momento describe el flujo previsto y lo ya decidido.
-
 Tres pasos: **guion → validacion → salidas**.
 
 1. **Guion.** Le pasas un `.md`. La skill lo trocea en escenas, separa lo que se recita de lo que no, lo parte en bloques de respiracion y estima tiempos.
@@ -33,6 +29,9 @@ Los rotulos mandan. Cuando faltan, la skill infiere y **avisa** de la desviacion
 | Texto a recitar | `**LOCUCIÓN**` y el cuerpo en cita de bloque (`> `) |
 | No recitable | `**EN PANTALLA**`, `**NOTA**` |
 | Secciones auxiliares | `Capítulos`, `Preparación antes de grabar`, `Notas de producción` |
+
+Detalle completo, casos límite y cómo se resuelven los conflictos entre señales:
+`references/convencion-guion.md`.
 
 ## Normalizacion a forma dicha (T-13)
 
@@ -93,6 +92,8 @@ El dueno sobrescribe `PENDIENTE` con `ACEPTAR` o `RECHAZAR` a mano, sin sintaxis
 
 Si ya existía una versión previa del archivo, se copia antes a `<nombre>.bak-<marca_de_tiempo>`: nunca se sobrescribe sin dejar rastro de lo que había.
 
+Formato completo del documento (anclas de bloque, sintaxis de reescritura, qué se puede editar a mano): `references/formato-guion-escenas.md`.
+
 ## Reproductor: esqueleto autocontenido (T-18) e índice con pantalla completa (T-19)
 
 `reproductor.html` es el artefacto principal: un único archivo, sin dependencias ni CDN, que funciona con doble clic desde `file://`, offline, en cualquier maquina. Embebe las escenas, los bloques de respiración y los tiempos ya calculados, más su CSS y su JS, en una sola pieza. El escapado es seguro por dos vías a la vez: los datos viajan como JSON dentro de un `<script>` y se vuelcan al DOM solo con `textContent`, nunca con marcado interpretado — ni una cita, un `<`, un `&` o una tilde del guion pueden romper la página ni ejecutarse.
@@ -145,6 +146,8 @@ Toda la escena se puede recorrer solo con `Espacio`, `Re Pág` y `Av Pág` — l
 | `Espacio` pausa/reanuda o avanza | Pausa/reanuda | `espacio_avanza_bloque=True` lo cambia a "avanzar", para clickers cuyo botón principal envía `Espacio` |
 | Antirrebote del clicker | 120 ms | Descarta una repetición de la misma acción antes de este tiempo; `0` lo desactiva |
 | Mapa de teclas | ver arriba | `mapa_teclas_reproductor`: nombre de acción → teclas que la disparan |
+
+Mapa completo, por qué un clicker Bluetooth funciona sin código especial y cómo calibrar uno físico: `references/mapa-teclas.md`.
 
 ## Modo espejo (T-25)
 
@@ -223,21 +226,190 @@ Las salidas seleccionadas se generan de forma independiente: el fallo o la laten
 |--------|-------------|------|
 | Salidas seleccionadas | pregunta cada vez | Sin selección previa, sugiere las cuatro; con histórico, sugiere la última selección registrada en `estado.json` |
 
-## Valores por defecto (extracto — la tabla completa la cierra T-31)
+## Precedencia de configuración (T-31)
 
-Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.
+```
+valores por defecto  →  configuración del usuario  →  configuración del proyecto de guion  →  argumentos de la invocación
+```
 
-| Opcion | Por defecto | Nota |
-|--------|-------------|------|
-| Ritmo | **deducido del guion** | Del total de palabras frente a las duraciones objetivo de los encabezados |
-| Ritmo de respaldo | 120 ppm | Si el guion no trae duraciones o el valor deducido no es plausible |
-| Banda plausible de ritmo | 90–180 ppm | Fuera de ella se descarta el deducido, avisando |
-| Bloque de respiracion | 6–12 palabras (objetivo 9) | Unidad de resaltado de todas las salidas |
-| Alcance de reescrituras | forma dicha + respiracion | Cacofonias, anglicismos y estilo solo se **avisan** |
-| Tipografia de marca | Poppins | Solo `.pdf` y `.pptx`; el reproductor es neutro |
-| Notas internas en las salidas | incluidas | `--para-terceros` las omite |
+- **Valores por defecto:** los de la tabla de abajo, escritos una sola vez en `scripts/config.py` (`Configuracion`, dataclass congelado — "sin números mágicos", §0.2). Ningún otro módulo lleva una constante de comportamiento escrita a mano.
+- **Configuración del usuario:** preferencias del dueño que valen para todos sus guiones (p. ej. "yo siempre grabo a 0.9x"). Hoy no hay un archivo de configuración de usuario propio: el dueño se lo dice a Claude en la conversación y Claude lo traslada al nivel siguiente.
+- **Configuración del proyecto de guion:** ajustes que valen solo para un guion concreto y persisten junto a él — `configuracion_efectiva` dentro de su `estado.json` (T-07) es exactamente esto: la `Configuracion` con la que se procesó esa carpeta de salida, para que una revalidación (T-17) reutilice el mismo criterio sin que el dueño tenga que repetirlo.
+- **Argumentos de la invocación:** lo que el dueño pide para esta sesión en concreto (p. ej. "genera el PDF para terceros"). Es el nivel más específico y gana siempre sobre los tres anteriores.
 
-**Precedencia:** valores por defecto → configuracion del usuario → configuracion del proyecto de guion → argumentos de la invocacion.
+Mecánicamente, cada nivel es un `Configuracion(**overrides)`: esta skill no tiene ni tendrá una CLI de terminal con `argparse` propia (ver `DECISIONES_TECNICAS.md`, T-30) — es Claude quien construye la `Configuracion` efectiva de la sesión combinando estos niveles antes de llamar a cada módulo, nunca el propio código con un `input()`.
+
+## Valores por defecto — tabla completa (T-31)
+
+Todo valor de esta tabla vive en `scripts/config.py`, único lugar del código donde puede
+haber un valor por defecto, como campo de `Configuracion` (columna "Clave"). Un test
+(`tests/test_skill_md.py`) compara los campos reales de `Configuracion` contra las
+claves citadas aquí y falla si divergen en cualquier sentido — ninguno de los dos puede
+adelantarse al otro.
+
+### Ritmo y tiempos (T-12)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `ppm_respaldo` | 120 ppm | Respaldo si el guion no trae duraciones objetivo o el valor deducido no es plausible |
+| `ppm_banda_plausible` | 90–180 ppm | Fuera de esta banda se descarta el ppm deducido del guion, avisando |
+| `ppm_manual` | ninguno | Calibración con toma real; si se fija, gana al deducido y al respaldo |
+| `pausa_coma_segundos` | 0,15 s | Pausa tras una coma |
+| `pausa_punto_segundos` | 0,35 s | Pausa tras un punto |
+| `pausa_fin_parrafo_segundos` | 0,6 s | Pausa al final de un párrafo |
+| `pausa_fin_escena_segundos` | 1,0 s | Pausa al final de una escena |
+| `umbral_desviacion_tiempos` | 0,15 (15 %) | A partir de aquí se avisa de la desviación entre duración estimada y objetivo |
+
+### Troceo en bloques de respiración (T-11)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `palabras_por_bloque_min` | 6 | Mínimo de palabras de un bloque de respiración |
+| `palabras_por_bloque_objetivo` | 9 | Tamaño al que aspira el troceador |
+| `palabras_por_bloque_max` | 12 | Máximo antes de forzar un corte |
+
+### Convención de guion (T-08, T-09)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `rotulo_locucion` | `**LOCUCIÓN**` | Rótulo del texto a recitar |
+| `rotulos_no_locucion` | `**EN PANTALLA**`, `**NOTA**` | Rótulos de lo no recitable |
+| `secciones_auxiliares` | `Capítulos`, `Preparación antes de grabar`, `Notas de producción` | Títulos que nunca son escena aunque casen con el nivel de encabezado |
+
+`PATRON_ENCABEZADO_ESCENA` (el patrón `## BLOQUE N — <título> (m:ss – m:ss)`) es
+también un valor de `scripts/config.py`, pero no es un campo de `Configuracion`
+sobreescribible en la invocación: cambiar el formato de escena es una decisión
+contractual con el dueño (§0.2), no un ajuste de sesión. Detalle completo en
+`references/convencion-guion.md`.
+
+### Detector de problemas de lectura en voz alta (T-14)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `umbral_palabras_sin_puntuacion` | 15 | Frase sin punto de respiración a partir de esta longitud |
+| `ventana_cacofonia_palabras` | 6 | Ventana de palabras para detectar cacofonías/rima |
+| `repeticiones_de_minimas` | 3 | Repeticiones de «de» dentro de la ventana para avisar |
+| `longitud_silaba_comparada` | 3 | Caracteres de prefijo/sufijo comparados para sílaba inicial repetida o rima |
+| `longitud_minima_palabra_rima` | 5 | Longitud mínima de palabra para que cuente en la detección de rima |
+| `longitud_palabra_dificil` | 10 | Caracteres a partir de los cuales una palabra cuenta como "difícil" |
+| `consonantes_seguidas_dificil` | 4 | Consonantes seguidas que marcan una palabra como trabalenguas |
+| `palabras_dificiles_seguidas_minimas` | 3 | Palabras difíciles seguidas que disparan el aviso de acumulación |
+| `subordinantes` | que, porque, aunque, cuando, donde, como, si, mientras | Nexos que cuentan para "subordinadas encadenadas" |
+| `umbral_subordinadas_encadenadas` | 2 | Repeticiones de un subordinante para avisar |
+| `negaciones` | no, nunca, jamás, nadie, ninguno, ninguna, tampoco | Palabras que cuentan para "doble negación" |
+| `umbral_negaciones_dobles` | 2 | Negaciones en el mismo bloque para avisar |
+| `umbral_incisos` | 2 | Incisos (paréntesis, guiones largos, comas de inciso) para "incisos anidados" |
+| `umbral_palabras_voz_pasiva_larga` | 8 | Palabras mínimas del bloque para que una voz pasiva cuente como "larga" |
+
+`ANGLICISMOS_COMUNES` es una tabla completa (anglicismo → equivalente en español), no
+un campo individual de `Configuracion` — misma decisión que las tablas de
+normalización de abajo. Documentada por nombre en la sección de detección de arriba.
+
+### Normalización a forma dicha (T-13) — tablas, no campos individuales
+
+`SIMBOLOS_MONEDA` y `UNIDADES_ABREVIADAS` son tablas completas (símbolo/abreviatura →
+forma dicha), no un campo `Configuracion` por entrada: ampliarlas es editar la tabla
+en `scripts/config.py`, o añadir la excepción puntual al diccionario del dueño
+(`diccionario-locucion.json`, que siempre gana). Documentadas por nombre en la sección
+de normalización más arriba.
+
+### Documento de revisión (T-16)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `longitud_extracto_indicacion_max` | 120 caracteres | Longitud máxima del extracto de una indicación no recitable al pie de escena |
+
+### Reproductor: tema, resaltado y velocidad (T-18, T-20, T-21)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `tamano_texto_base_px` | 48 px | Tamaño de letra inicial |
+| `paso_velocidad` | 0,1 | Incremento de velocidad por pulsación |
+| `velocidad_minima` | 0,5× | Límite inferior de velocidad |
+| `velocidad_maxima` | 2,0× | Límite superior de velocidad |
+| `color_fondo_reproductor` | `#0b0b0d` | Neutro y oscuro, sin identidad corporativa |
+| `color_texto_reproductor` | `#f5f5f5` | — |
+| `color_texto_secundario_reproductor` | `#9a9a9a` | Indicadores secundarios (cabecera, contadores) |
+| `pila_tipografica_reproductor` | fuentes del sistema | `-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif`; nada remoto |
+| `atenuacion_niveles` | 0,75 / 0,5 / 0,35 | Opacidad del contexto por distancia al bloque activo, estrictamente decreciente |
+| `atenuacion_minima` | 0,2 | Suelo de atenuación: el contexto nunca desaparece del todo |
+| `paso_tamano_texto_px` | 4 px | Incremento del tamaño de texto en vivo (`[`/`]`) |
+| `tamano_texto_minimo_px` | 24 px | — |
+| `tamano_texto_maximo_px` | 96 px | — |
+| `color_acento_reproductor` | `#f5c542` | Foco visible, indicador de pausa, borde del bloque activo |
+| `margen_seguro_px` | 64 px | Alrededor de todo el contenido |
+| `tiempo_inactividad_cursor_ms` | 3000 ms | Antes de ocultar el cursor en pantalla completa |
+
+### Autoscroll (T-22)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `duracion_autoscroll_ms` | 400 ms | Duración del desplazamiento suave al recentrar el bloque activo |
+
+### Ayudas de grabación (T-23)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `cuenta_atras_segundos` | 3 s | Duración de la cuenta atrás antes de arrancar el automático |
+| `cuenta_atras_activada` | Sí | `False` la omite: el automático arranca al instante |
+
+### Atajos de teclado y clicker Bluetooth (T-24)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `antirrebote_clicker_ms` | 120 ms | Descarta una repetición de la misma acción antes de este tiempo; `0` lo desactiva |
+| `espacio_avanza_bloque` | No | `True`: `Espacio` avanza el bloque en vez de pausar/reanudar |
+| `mapa_teclas_reproductor` | ver `references/mapa-teclas.md` | Acción → teclas que la disparan; ninguna con modificador |
+
+### Modo espejo (T-25)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `espejo_incluye_indicadores` | No | `True` voltea también cabecera, barra de progreso y ayuda |
+
+### Exportador `.srt` borrador (T-27)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `srt_caracteres_por_linea_max` | 42 | — |
+| `srt_lineas_max_por_subtitulo` | 2 | Un grupo que no cabe se reparte en varios subtítulos consecutivos |
+| `srt_duracion_minima_segundos` | 1,2 s | Por debajo, el bloque se funde con el siguiente de la misma escena; `0` desactiva la agrupación |
+| `srt_con_bom` | No | `True` antepone la marca de orden de bytes (BOM) |
+
+### Exportador `.pdf` con identidad 480 (T-28)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `tipografia_marca` | Poppins | Compartida con el `.pptx`; el reproductor es neutro y no la usa |
+| `respaldo_tipografico` | Montserrat → Calibri → sans-serif | Si Poppins no está instalada en el sistema |
+| `incluir_notas_internas` | Sí | `False` es el modo `--para-terceros`; compartida con el `.pptx` |
+| `ruta_logo_pdf` | `assets/480_Gris.png` | Variante sobre fondo claro; ausente → PDF sin logotipo, no falla |
+| `pdf_ancho_logo_portada_pulgadas` | 2,4" | El alto se calcula siempre del ratio medido del PNG |
+| `pdf_ancho_logo_pie_pulgadas` | 0,7" | — |
+| `pdf_margen_lateral_pulgadas` | 0,6" | Mínimo de la guía de marca |
+| `pdf_margen_superior_pulgadas` | 0,5" | — |
+| `pdf_interlineado` | 1,4 | Dentro del rango 1,3–1,5 de la guía de marca |
+| `pdf_color_texto` | `#333333` | — |
+| `pdf_color_texto_secundario` | `#888888` | — |
+| `pdf_color_acento` | `#39FE90` | Línea bajo los títulos |
+| `pdf_color_alerta` | `#FF4950` | — |
+| `pdf_color_fondo` | `#FFFFFF` | Versión clara, para impresión en papel |
+| `pdf_color_borde` | `#E5E7EB` | Borde sutil de las tarjetas |
+| `pdf_chrome_ejecutable_manual` | ninguno | Ruta a mano si la detección automática de Chrome/Edge no lo encuentra |
+| `pdf_timeout_conversion_segundos` | 30 s | Tope de tiempo del subproceso de conversión a `.pdf` |
+
+### Adaptador `.pptx` con identidad 480 (T-29)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `ruta_skill_marca_pptx` | `~/.claude/skills/480-branded-pptx` | Solo se comprueba que la carpeta existe; ausente → salida latente, nunca falla |
+| `ruta_skill_pptx_base` | `~/.claude/skills/pptx` | Dependencia de la anterior |
+| `pptx_escenas_por_diapositiva` | 1 | Agrupación configurable de escenas por diapositiva de contenido |
+| `pptx_umbral_indice_secciones` | 4 diapositivas de contenido | A partir de aquí el deck lleva diapositiva de índice |
+| `ruta_logo_pptx_oscuro` | `assets/480_Blanco.png` | Variante sobre fondo oscuro (portada y cierre) |
+| `pptx_ancho_logo_portada_pulgadas` | 2,4" | — |
+| `pptx_ancho_logo_contenido_pulgadas` | 0,7" | — |
+| `pptx_ancho_logo_cierre_pulgadas` | 2,8" | — |
 
 ## Donde encaja
 

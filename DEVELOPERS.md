@@ -1650,6 +1650,40 @@ cual, igual que los cuatro módulos que orquesta.
   la selección de la pasada anterior; y `registrar_generacion` como
   append-only sobre varias pasadas.
 
+## `SKILL.md` y configuración completa (T-31)
+
+`SKILL.md` deja de tener un extracto de valores por defecto y pasa a tener la tabla
+completa de los 81 campos de `Configuracion` (`scripts/config.py`), agrupada por área
+en la sección «Valores por defecto — tabla completa (T-31)».
+
+- **El test que impide que el código y la documentación diverjan es
+  `tests/test_skill_md.py`.** Compara, en las dos direcciones,
+  `{campo.name for campo in dataclasses.fields(Configuracion)}` contra las claves
+  citadas entre backticks dentro de esa sección (delimitada buscando el siguiente
+  encabezado `## ` real — cuidado, no cualquier `###`, ver `_PATRON_SIGUIENTE_H2`).
+  **Si añades un campo nuevo a `Configuracion`, añade su fila en esa tabla en el
+  mismo commit** o `test_toda_clave_de_configuracion_esta_documentada_en_skill_md`
+  falla; si renombras o quitas uno, quita también su fila o
+  `test_skill_md_no_documenta_una_clave_que_ya_no_existe_en_configuracion` falla.
+- **Qué NO entra en esa comparación.** `PATRON_ENCABEZADO_ESCENA` (contractual con el
+  dueño, no una decisión de sesión) y las tablas completas de sustitución
+  (`SIMBOLOS_MONEDA`, `UNIDADES_ABREVIADAS`, `ANGLICISMOS_COMUNES`) son constantes de
+  módulo que nunca se mirroriaron como campo de `Configuracion` (decisión ya tomada en
+  T-13/T-14, ver `DECISIONES_TECNICAS.md`): siguen documentadas por nombre en
+  `SKILL.md`, pero fuera de esta tabla y de este test.
+- **Documentación extensa movida a `references/` (requisito 4), no a `SKILL.md`.**
+  Tres archivos nuevos: `convencion-guion.md` (T-08 a T-10), `formato-guion-escenas.md`
+  (T-15 a T-17) y `mapa-teclas.md` (T-24). `SKILL.md` conserva solo el resumen y un
+  enlace («Ver también») desde cada sección correspondiente; el detalle y los casos
+  límite viven en el archivo de `references/`.
+- **Precedencia de configuración (requisito 3) documentada, no implementada.** Esta
+  skill no tiene un cargador de "configuración de usuario" ni de "configuración de
+  proyecto" como archivo propio — no existe todavía una CLI (ver la decisión de T-30
+  sobre por qué no habrá `argparse`/`input()`): los cuatro niveles son conceptuales,
+  y el mecanismo real hoy es que Claude construye `Configuracion(**overrides)` en la
+  sesión. `configuracion_efectiva` dentro de `estado.json` (T-07) ya cumple el papel
+  de "configuración del proyecto de guion" sin necesitar nada nuevo.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -1675,7 +1709,7 @@ parte de su propio criterio de aceptación — no lo dejes como nota aparte.
 - `tests/` — suite de pytest.
 - `fixtures/` — guiones de calibración y de ejemplo para las verificaciones.
 - `assets/` — logotipos de marca 480, `assets/reproductor/` (plantillas del reproductor: `plantilla.html`, `estilo.css`, `guion.js`) y `assets/pdf/` (plantillas del HTML de impresión).
-- `references/` — documentación de referencia (marca 480 en `marca-480.md`, contrato `tarjetas.json` en `contrato-tarjetas.md`).
+- `references/` — documentación de referencia: marca 480 (`marca-480.md`), contrato `tarjetas.json` (`contrato-tarjetas.md`), convención de marcado del guion (`convencion-guion.md`), formato de `guion-escenas.md` (`formato-guion-escenas.md`) y mapa de teclas del reproductor (`mapa-teclas.md`).
 - `roadmap/` — el registro de gobierno del proyecto: `SEGUIMIENTO.md` es el hub.
 
 ## Convenciones de rama
