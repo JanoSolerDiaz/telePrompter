@@ -184,6 +184,53 @@ def test_guardar_reproductor_escribe_en_la_carpeta_de_salida(tmp_path: Path) -> 
     assert destino.read_text(encoding="utf-8") == pagina
 
 
+# --- Indice de escenas y pantalla completa (T-19) -----------------------------------
+
+
+def test_indice_incluye_fila_navegable_por_escena_con_titulo_duracion_y_estado() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+
+    assert '"escena-fila-"' in pagina  # id de cada fila, construido como "escena-fila-" + indice
+    assert "Reproducir escena " in pagina  # prefijo del aria-label de cada fila
+    assert "escena-numero" in pagina and "escena-titulo" in pagina and "escena-duracion" in pagina
+    # Estado inicial de toda escena: pendiente (T-19, requisito 1); "grabada" y
+    # "revisada" son estados alcanzables desde el navegador, no desde el HTML
+    # generado, asi que solo se comprueba que las tres etiquetas existen para
+    # cuando el JS las necesite en tiempo de ejecucion.
+    assert "pendiente: \"Pendiente\"" in pagina
+    assert "grabada: \"Grabada\"" in pagina
+    assert "revisada: \"Revisada\"" in pagina
+
+
+def test_reproductor_incluye_contador_de_escena_y_boton_volver_al_indice() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert '"contador-escena"' in pagina
+    assert '"btn-volver-indice"' in pagina
+    assert "Volver al índice" in pagina
+
+
+def test_reproductor_solicita_pantalla_completa_al_reproducir_una_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "requestFullscreen" in pagina
+    assert "exitFullscreen" in pagina
+
+
+def test_indice_admite_navegacion_por_flechas_entre_filas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "ArrowDown" in pagina
+    assert "ArrowUp" in pagina
+
+
+def test_estilo_define_foco_visible_para_elementos_navegables() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert ":focus-visible" in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 

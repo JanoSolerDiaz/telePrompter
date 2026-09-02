@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-02 — T-19 (índice de escenas y entrada a pantalla completa), sesión de nube
+**Tarea(s):** T-19
+**Estado resultante:** T-19 COMPLETADA
+**Commits a develop:** `T-19: indice de escenas y entrada a pantalla completa` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-19 no toca el esquema de `estado.json`)
+**Archivos creados/modificados:** `assets/reproductor/guion.js` (reescrito: vista de índice y vista de reproductor alternadas dentro de `#app`, navegación por teclado, `requestFullscreen`/`exitFullscreen`, estado por escena en memoria), `assets/reproductor/estilo.css` (estilos nuevos: filas del índice, insignias de estado, foco visible, cabecera del reproductor y botón volver), `tests/test_reproductor.py` (5 tests nuevos, estáticos sobre el HTML/JS generado), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md` (3 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (mypy estricto, 0 errores) · lint ✅ (ruff, 0 avisos) · tests ✅ (272 pasan + 1 skipped, antes 262 + 1) · salidas ✅ (`verificar_salidas.py --fixture`, código 0, "Generación del reproductor" y "Auto-contención" en OK; 3 etapas siguen NO APLICABLE por su tarea correspondiente)
+**Health check post-deploy:** no aplicable — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (T-32); no se simula. En su lugar, criterio de aceptación literal de T-19 verificado con Playwright headless (paquete instalado solo para esta comprobación manual, Chromium ya preinstalado en el contenedor, ninguno de los dos es dependencia del proyecto) sobre el fixture real generado por la 4ª red: recorrido completo solo con teclado — `Tab` a la primera fila, tres `ArrowDown` hasta la escena 4, `Enter` arranca en pantalla completa con contador "4/N", `Enter` sobre "Volver al índice" regresa sin recargar (misma URL) con el foco de vuelta en la fila 4 — sin usar el ratón y sin errores de consola
+**Decisiones tomadas:** 3 filas añadidas a `DECISIONES_TECNICAS.md`: (1) estado por escena solo en memoria de la pestaña, no persistido (transitorio hasta R-02/T-26); (2) cada fila del índice es un único `<button>` que hace de fila navegable y de botón de play a la vez; (3) refocar el botón "Volver al índice" dentro del `.then()` de `requestFullscreen()`, porque Chromium vacía el foco al completar la transición a pantalla completa
+**Hallazgos del auditor atendidos:** ninguno de severidad alta abierto en `auditoriacontinua.md` (#5, #6, #8 siguen media/baja, sin acción de esta sesión)
+**Hallazgos:** uno propio, corregido en la misma sesión antes del push: el `.focus()` síncrono sobre "Volver al índice" se perdía al completar la transición a pantalla completa (Chromium resetea el foco de la página), lo que habría dejado el recorrido de teclado sin foco visible justo tras arrancar la escena. Detectado con la verificación manual de Playwright, no con la suite de `pytest` (el proyecto no ejecuta JS en sus tests, solo verifica el HTML/JS generado como texto)
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-20 (motor de avance híbrido) — depende de T-19. Nota para quien la retome: el estado por escena vive en `estadosEscena` dentro de `guion.js` (in-memory); T-20 no necesita tocarlo, pero T-26 sí deberá decidir cómo persistirlo (o sustituirlo) junto con la velocidad por escena
+
+---
+
 ### Sesión 2026-09-01 — T-18 (esqueleto del reproductor autocontenido), sesión de nube
 **Tarea(s):** T-18
 **Estado resultante:** T-18 COMPLETADA

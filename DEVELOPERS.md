@@ -689,6 +689,56 @@ nombre_guion="guion", configuracion=None)` es el punto de entrada;
   autoscroll: eso es T-19 a T-22. Este módulo solo demuestra que la
   canalización de un único archivo autocontenido funciona de punta a punta.
 
+## Índice de escenas y pantalla completa (T-19)
+
+T-19 no toca `reproductor.py`: los datos que genera Python no cambian de
+forma. Todo el trabajo está en `assets/reproductor/guion.js`, que pasa de
+pintar una única página larga a dos "vistas" que se alternan dentro del mismo
+`#app`, usando el atributo `hidden` -- sin `location.href`, sin recarga:
+
+- **`vista-indice`**: una fila por escena (`escena-fila-N`), cada una un único
+  `<button>` con número, título, duración estimada formateada y una insignia
+  de estado (`escena-estado--pendiente|grabada|revisada`). La fila entera ES
+  el botón de play: no hay un botón de play separado dentro de la fila
+  (decisión en `DECISIONES_TECNICAS.md`, 2026-09-02). Eso da navegación con
+  `Tab` gratis (orden natural de foco de un `<button>`), con `Enter`/`Espacio`
+  gratis (disparan el `click` nativo) y con clic gratis. Las flechas
+  (`ArrowUp`/`ArrowDown`/`Home`/`End`) se interceptan a mano en el `<ul>` para
+  saltar entre filas.
+- **`vista-reproductor`**: cabecera con el contador `N/total`
+  (`contador-escena`) y el botón `btn-volver-indice`, seguida de la escena
+  activa (mismo render de bloques que ya existía en T-18, ahora solo para una
+  escena en vez de para todas).
+- **Pantalla completa.** Pulsar una fila llama a
+  `document.documentElement.requestFullscreen()`, con `.catch()` silencioso si
+  el navegador la deniega -- el reproductor sigue funcionando en modo ventana,
+  sin excepción no capturada ni error de consola. "Volver al índice" llama a
+  `document.exitFullscreen()` si procede.
+- **Foco tras la transición a pantalla completa, el detalle que no es obvio.**
+  Chromium vacía el foco de la página (`document.activeElement` pasa a
+  `<body>`) al completar la transición a pantalla completa, pisando cualquier
+  `.focus()` llamado antes de pedirla. `solicitarPantallaCompleta` por eso
+  recibe el botón "Volver al índice" y lo refoca dentro del `.then()` de la
+  promesa, no antes de llamarla. Sin esto, el criterio de aceptación literal
+  de T-19 (recorrido completo solo con teclado) se rompe justo al entrar en
+  la escena. Verificado con Chromium vía Playwright headless (solo para esta
+  comprobación manual, no es una dependencia del proyecto).
+- **Estado por escena, deliberadamente efímero.** `estadosEscena` vive en
+  memoria de `guion.js`, no en `datos` (que sigue siendo solo lo que genera
+  Python) ni en ningún almacenamiento persistente. Toda escena arranca
+  `pendiente` y pasa a `grabada` al reproducirse y volver al índice al menos
+  una vez; `revisada` está definida en `ETIQUETAS_ESTADO` pero ninguna
+  interacción de T-19 la alcanza todavía -- persistirlo de verdad (o
+  sustituirlo por datos reales de rodaje) es T-26/R-02, no esta tarea.
+- **Verificación del criterio de aceptación.** Al no ejecutar JS, la suite de
+  `pytest` solo comprueba que el HTML/JS generado contiene las piezas
+  esperadas (ids, textos, nombres de función) como texto -- igual que ya hacía
+  T-18. El recorrido de teclado en sí (llegar a la escena 4 solo con `Tab` y
+  flechas, arrancar en pantalla completa con `Enter`, volver al índice con
+  `Enter` sin recargar) se verificó a mano con Playwright headless sobre el
+  fixture real de `fixtures/salida/reproductor.html`, sin usar el ratón y sin
+  errores de consola.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

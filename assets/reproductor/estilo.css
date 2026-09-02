@@ -65,3 +65,102 @@ h1 {
 .bloque:last-child {
   border-bottom: none;
 }
+
+/* Foco visible en todo elemento navegable (T-19, requisito 3). */
+button:focus-visible {
+  outline: 3px solid #f5c542;
+  outline-offset: 2px;
+}
+
+.lista-escenas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.escena-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  width: 100%;
+  margin-bottom: 0.6em;
+  padding: 0.85em 1em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5em;
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.escena-fila:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.escena-numero {
+  min-width: 2em;
+  color: var(--color-texto-secundario);
+}
+
+.escena-titulo {
+  flex: 1 1 auto;
+  font-weight: 600;
+}
+
+.escena-duracion {
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+.escena-estado {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.25em 0.6em;
+  border-radius: 1em;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.escena-estado--pendiente {
+  color: var(--color-texto-secundario);
+}
+
+.escena-estado--grabada {
+  color: #4ade80;
+}
+
+.escena-estado--revisada {
+  color: #60a5fa;
+}
+
+.reproductor-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5em;
+}
+
+.contador-escena {
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-volver {
+  padding: 0.4em 0.9em;
+  border: 1px solid var(--color-texto-secundario);
+  border-radius: 0.4em;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-volver:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+[hidden] {
+  display: none !important;
+}

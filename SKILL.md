@@ -93,11 +93,11 @@ El dueno sobrescribe `PENDIENTE` con `ACEPTAR` o `RECHAZAR` a mano, sin sintaxis
 
 Si ya existía una versión previa del archivo, se copia antes a `<nombre>.bak-<marca_de_tiempo>`: nunca se sobrescribe sin dejar rastro de lo que había.
 
-## Reproductor: esqueleto autocontenido (T-18)
+## Reproductor: esqueleto autocontenido (T-18) e índice con pantalla completa (T-19)
 
 `reproductor.html` es el artefacto principal: un único archivo, sin dependencias ni CDN, que funciona con doble clic desde `file://`, offline, en cualquier maquina. Embebe las escenas, los bloques de respiración y los tiempos ya calculados, más su CSS y su JS, en una sola pieza. El escapado es seguro por dos vías a la vez: los datos viajan como JSON dentro de un `<script>` y se vuelcan al DOM solo con `textContent`, nunca con marcado interpretado — ni una cita, un `<`, un `&` o una tilde del guion pueden romper la página ni ejecutarse.
 
-El reproductor **prioriza legibilidad sobre branding**: neutro y oscuro, sin identidad corporativa, solo fuentes del sistema. Este esqueleto (T-18) solo lista escenas y bloques en orden; el índice navegable, la pantalla completa, el avance, el resaltado y el autoscroll llegan en T-19 a T-22.
+El reproductor **prioriza legibilidad sobre branding**: neutro y oscuro, sin identidad corporativa, solo fuentes del sistema. Al abrirlo se ve un **índice de escenas** (título, duración estimada y estado pendiente/grabada/revisada), navegable con `Tab`, flechas y clic; elegir una entra en **pantalla completa** directamente en esa escena, con un contador "N/total" visible, y "Volver al índice" regresa sin recargar la página. El avance automático, el resaltado, la tipografía de grabación y el autoscroll llegan en T-20 a T-22.
 
 | Opción | Por defecto | Nota |
 |--------|-------------|------|
