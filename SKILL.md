@@ -1,6 +1,6 @@
 ---
 name: teleprompter
-description: Convierte un guion de produccion en .md en tarjetas de locucion y un teleprompter web autocontenido con resaltado tipo karaoke. Usala cuando el usuario hable de "tarjetas de locucion", "teleprompter", "guion para grabar", "bloques de respiracion", "que tengo que recitar", o cuando pida preparar la locucion de un video a partir de un guion en Markdown, generar subtitulos .srt borrador desde ese guion, o exportarlo a .pdf con la marca 480.
+description: Convierte un guion de produccion en .md en tarjetas de locucion y un teleprompter web autocontenido con resaltado tipo karaoke. Usala cuando el usuario hable de "tarjetas de locucion", "teleprompter", "guion para grabar", "bloques de respiracion", "que tengo que recitar", o cuando pida preparar la locucion de un video a partir de un guion en Markdown, generar subtitulos .srt borrador desde ese guion, exportarlo a .pdf con la marca 480, o convertirlo en una presentacion .pptx con la marca 480.
 ---
 
 # teleprompter — del guion a la camara
@@ -195,6 +195,23 @@ La conversión a `.pdf` usa Chrome o Edge en modo headless (`--print-to-pdf`), d
 | Interlineado del cuerpo | 1,4 | Dentro del rango 1,3–1,5 de la guía de marca |
 | Notas internas incluidas | Sí | `incluir_notas_internas=False` es el modo `--para-terceros` |
 | Ruta manual de Chrome/Edge | ninguna | `pdf_chrome_ejecutable_manual`; si no se fija, detección automática |
+
+## Adaptador `.pptx` con identidad 480 (T-29)
+
+Entrega el guion de locución como presentación de marca **sin reinventar estilos**: la skill `480-branded-pptx` (Node + `pptxgenjs`, apoyada a su vez en la skill `pptx`) son instrucciones **para Claude**, no un ejecutable, así que esta skill no la invoca como subproceso. En su lugar produce dos archivos en la carpeta de salida — `tarjetas.json` (el contrato de intercambio, documentado en `references/contrato-tarjetas.md`) y `brief-pptx.md` (el brief de invocación en Markdown) — y es Claude quien genera el `.pptx` de verdad, delegando en esa skill dentro de la misma sesión, leyendo ambos archivos.
+
+`tarjetas.json` trae, por escena: número, título, duración objetivo y estimada, aviso de desviación si lo hay, los bloques de respiración (texto **locutado final**, con las reescrituras aceptadas ya materializadas), la prosa unida, y las indicaciones no recitables ya separadas en `indicaciones_pantalla` y `notas_internas` — mismo criterio que el `.pdf` (T-28) para distinguir una de otra. El modo `--para-terceros` (el mismo `incluir_notas_internas=False` de T-28) vacía `notas_internas` en el propio JSON, no solo en la presentación. El brief describe la estructura de deck que la skill de marca ya impone (portada DARK, índice LIGHT solo si hay 4+ diapositivas de contenido, una diapositiva de contenido por escena — agrupación configurable —, cierre DARK) y corrige por escrito dos discrepancias conocidas de su `SKILL.md` frente a los assets reales de este proyecto: usar Poppins en vez de Figtree, y la relación de aspecto del logotipo medida del PNG (con una tabla de alturas ya calculada) en vez de la constante `668/376` de la guía de marca.
+
+Si `480-branded-pptx` o su dependencia, la skill `pptx`, no están instaladas en esta máquina, `tarjetas.json` y el brief se generan igual y la generación **nunca falla**: el mensaje devuelto marca la salida `.pptx` como latente y dice exactamente qué falta.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Escenas por diapositiva de contenido | 1 | `pptx_escenas_por_diapositiva`: agrupación configurable |
+| Umbral de diapositiva de índice | 4 diapositivas de contenido | `pptx_umbral_indice_secciones`, según `references/marca-480.md` |
+| Logotipo sobre fondo oscuro | `assets/480_Blanco.png` | Portada y cierre; el de fondo claro reutiliza `ruta_logo_pdf` (T-28) |
+| Ancho del logotipo (portada / contenido / cierre) | 2,4" / 0,7" / 2,8" | El alto se calcula siempre del ratio medido del PNG, igual que el `.pdf` |
+| Rutas de las skills de marca | `~/.claude/skills/480-branded-pptx` y `~/.claude/skills/pptx` | Solo se comprueba que la carpeta existe; ausentes → salida `.pptx` latente, nunca falla |
+| Notas internas en `tarjetas.json` | incluidas | `--para-terceros` las vacía del propio JSON, no solo del deck |
 
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 

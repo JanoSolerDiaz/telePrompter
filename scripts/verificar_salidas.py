@@ -4,27 +4,34 @@ Sustituye al `build` de un proyecto convencional. Ejecuta la skill sobre el guio
 ejemplo y comprueba que lo generado es valido; sobre todo, que el reproductor `.html`
 es **autocontenido** (regla dura de §0.2).
 
-ESTADO ACTUAL (T-18, T-27, T-28): el reproductor, el exportador de `.srt` y el
-exportador `.pdf` ya existen (`scripts/reproductor.py`, `scripts/srt.py`,
-`scripts/pdf.py`), asi que "Generación del reproductor", "Auto-contención del
-reproductor", "Generación del .srt", "Validez del .srt", "Generación del HTML de
-impresión (.pdf)" y "Auto-contención del HTML de impresión" dejan de ser NO
-APLICABLE: se generan de verdad, sobre el primer guion real de calibracion a falta
-de `fixtures/guion-ejemplo.md` (T-32), y se validan (a nivel de bytes el `.html` del
-reproductor y el de impresion, con las reglas de ffmpeg el `.srt`). La conversion a
-`.pdf` de verdad depende de que haya un Chrome/Edge instalado en la maquina que
-ejecuta la verificacion (T-28, requisito 4): cuando no lo hay, la etapa de
-generacion sigue en OK (el HTML de impresion se genera igual, sin fallar) y lo dice
-en el detalle. "Guion de ejemplo" y "Generación de salidas" (la canalizacion
-completa con `.pdf`/`.pptx`) siguen NO APLICABLE hasta T-32 y T-30 respectivamente.
-Cada etapa se declara NO APLICABLE nombrando la tarea que la implementara, para que
-la cuarta red diga siempre algo verdadero y vaya cobrando sentido sola segun avanza
-el backlog. Responde al hallazgo #4 del auditor.
+ESTADO ACTUAL (T-18, T-27, T-28, T-29): el reproductor, el exportador de `.srt`, el
+exportador `.pdf` y el adaptador `.pptx` ya existen (`scripts/reproductor.py`,
+`scripts/srt.py`, `scripts/pdf.py`, `scripts/pptx.py`), asi que "Generación del
+reproductor", "Auto-contención del reproductor", "Generación del .srt", "Validez del
+.srt", "Generación del HTML de impresión (.pdf)", "Auto-contención del HTML de
+impresión", "Generación de tarjetas.json y brief (.pptx)" y "Validez de
+tarjetas.json" dejan de ser NO APLICABLE: se generan de verdad, sobre el primer
+guion real de calibracion a falta de `fixtures/guion-ejemplo.md` (T-32), y se
+validan (a nivel de bytes el `.html` del reproductor y el de impresion, con las
+reglas de ffmpeg el `.srt`, contra el contrato de `references/contrato-tarjetas.md`
+el `tarjetas.json`). La conversion a `.pdf` de verdad depende de que haya un
+Chrome/Edge instalado en la maquina que ejecuta la verificacion (T-28, requisito
+4): cuando no lo hay, la etapa de generacion sigue en OK (el HTML de impresion se
+genera igual, sin fallar) y lo dice en el detalle. La generacion real del `.pptx`
+nunca la hace este codigo (T-29: la delega Claude en `480-branded-pptx` dentro de
+la sesion), asi que su etapa de generacion sigue en OK con la salida `.pptx`
+LATENTE mientras esa skill no este instalada -- nunca falla por su ausencia.
+"Guion de ejemplo" y "Generación de salidas" (la canalizacion completa) siguen NO
+APLICABLE hasta T-32 y T-30 respectivamente. Cada etapa se declara NO APLICABLE
+nombrando la tarea que la implementara, para que la cuarta red diga siempre algo
+verdadero y vaya cobrando sentido sola segun avanza el backlog. Responde al
+hallazgo #4 del auditor.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -32,10 +39,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from config import NOMBRE_ARCHIVO_HTML_IMPRESION, NOMBRE_ARCHIVO_SRT
+from config import NOMBRE_ARCHIVO_HTML_IMPRESION, NOMBRE_ARCHIVO_SRT, NOMBRE_ARCHIVO_TARJETAS_JSON
 from logger import configurar_logger
 from parser import parsear_guion
 from pdf import exportar_pdf
+from pptx import exportar_pptx, validar_tarjetas
 from presentacion import Nivel, mostrar, titulo
 from reproductor import generar_reproductor_html, guardar_reproductor
 from srt import exportar_srt, guardar_srt, validar_srt
@@ -48,6 +56,7 @@ CARPETA_GUIONES_REALES = RAIZ / "fixtures" / "reales"
 RUTA_REPRODUCTOR_FIXTURE = CARPETA_SALIDA_FIXTURE / "reproductor.html"
 RUTA_SRT_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_SRT
 RUTA_HTML_IMPRESION_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_HTML_IMPRESION
+RUTA_TARJETAS_JSON_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_TARJETAS_JSON
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
 PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
@@ -223,6 +232,60 @@ def generar_pdf_fixture() -> Resultado:
     return Resultado("Generación del HTML de impresión (.pdf)", "OK", detalle)
 
 
+def generar_pptx_fixture() -> Resultado:
+    """Genera `tarjetas.json` y el brief de invocacion (T-29) sobre el mismo
+    guion real que usan el reproductor, el .srt y el HTML de impresion.
+
+    Mismo criterio que las demas etapas: a falta de
+    `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
+    `fixtures/reales/`. La ausencia de la skill de marca `480-branded-pptx`
+    en la maquina de verificacion no es un fallo (requisito 4 de T-29: la
+    skill nunca falla por su ausencia), asi que esta etapa sigue en OK con
+    la salida .pptx marcada como latente en el detalle."""
+    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
+    if not guiones:
+        return Resultado(
+            "Generación de tarjetas.json y brief (.pptx)",
+            "NO APLICABLE",
+            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+        )
+    ruta_guion = guiones[0]
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        resultado_pptx = exportar_pptx(
+            resultado, tiempos, CARPETA_SALIDA_FIXTURE, nombre_guion=ruta_guion.stem
+        )
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación de tarjetas.json y brief (.pptx)",
+            "FALLO",
+            f"no se pudo generar sobre {ruta_guion.name}: {excepcion}",
+        )
+    detalle = f"generado sobre {ruta_guion.name}. {resultado_pptx.mensaje}"
+    return Resultado("Generación de tarjetas.json y brief (.pptx)", "OK", detalle)
+
+
+def verificar_tarjetas_json(ruta_json: Path) -> Resultado:
+    """Valida `tarjetas.json` contra el contrato de
+    `references/contrato-tarjetas.md` (T-29, requisito 1)."""
+    if not ruta_json.exists():
+        return Resultado(
+            "Validez de tarjetas.json",
+            "NO APLICABLE",
+            f"no se ha generado ningun tarjetas.json en {ruta_json}.",
+        )
+    try:
+        datos = json.loads(ruta_json.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as excepcion:
+        return Resultado("Validez de tarjetas.json", "FALLO", f"JSON invalido: {excepcion}")
+    problemas = validar_tarjetas(datos)
+    if problemas:
+        return Resultado("Validez de tarjetas.json", "FALLO", "; ".join(problemas))
+    return Resultado("Validez de tarjetas.json", "OK", f"{ruta_json.name} cumple el contrato.")
+
+
 def verificar_srt(ruta_srt: Path) -> Resultado:
     """Valida el .srt generado con las mismas reglas que aplica ffmpeg (T-27, requisito 5)."""
     if not ruta_srt.exists():
@@ -271,6 +334,8 @@ def main() -> int:
         verificar_autocontencion(
             RUTA_HTML_IMPRESION_FIXTURE, etapa="Auto-contención del HTML de impresión"
         ),
+        generar_pptx_fixture(),
+        verificar_tarjetas_json(RUTA_TARJETAS_JSON_FIXTURE),
     ]
 
     for resultado in resultados:

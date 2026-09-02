@@ -94,12 +94,17 @@ def _leer_plantilla(nombre: str) -> str:
     return (_CARPETA_PLANTILLAS / nombre).read_text(encoding="utf-8")
 
 
-def _dimensiones_png(ruta: Path) -> tuple[int, int] | None:
+def dimensiones_png(ruta: Path) -> tuple[int, int] | None:
     """Ancho y alto de un PNG leidos de su cabecera `IHDR` (requisito 3): la
     relacion de aspecto se mide siempre del archivo, nunca se codifica una
     constante (ver `references/marca-480.md`). `None` si el archivo no existe,
     no es legible o no es un PNG valido -- el logotipo se omite sin romper la
-    generacion, nunca una excepcion."""
+    generacion, nunca una excepcion.
+
+    Publica desde T-29: `pptx.py` la reutiliza para medir el mismo logotipo
+    al calcular las alturas del brief de invocacion, mismo patron que
+    `tiempos.PAUSA_FIN_ESCENA` (promovida de privada a publica en T-27 por la
+    misma razon: un segundo modulo la necesita tal cual, sin duplicarla)."""
     try:
         cabecera = ruta.open("rb").read(24)
     except OSError:
@@ -119,7 +124,7 @@ def _logo_html(ancho_pulgadas: float, clase_css: str, configuracion: Configuraci
     es un PNG legible -- el PDF sale sin logotipo, nunca falla."""
     ruta_configurada = Path(configuracion.ruta_logo_pdf)
     ruta = ruta_configurada if ruta_configurada.is_absolute() else RAIZ / ruta_configurada
-    dimensiones = _dimensiones_png(ruta)
+    dimensiones = dimensiones_png(ruta)
     if dimensiones is None:
         return ""
     ancho_px, alto_px = dimensiones
@@ -162,20 +167,28 @@ def _prosa_escena(bloques: list[BloqueConTiempo]) -> str:
     return f'<p class="prosa">{spans}</p>'
 
 
-def _es_nota_interna(bloque: BloqueClasificado) -> bool:
+def es_nota_interna(bloque: BloqueClasificado) -> bool:
     """`True` si la indicacion viene de un rotulo/senal `NOTA` (nota interna
     de produccion, requisito 6): se detecta por el nombre del rotulo dentro
     del motivo de clasificacion (T-09), que siempre lo cita literalmente
     (`"rotulo 'NOTA': ..."`, `"prefijo 'NOTA:'"`). Cualquier otra indicacion
     -- `EN PANTALLA`, o ambigua sin senal clara -- se trata como indicacion de
     pantalla y se mantiene siempre: nunca se decide en silencio (T-09,
-    requisito 5) que algo sin marcar como nota es prescindible."""
+    requisito 5) que algo sin marcar como nota es prescindible.
+
+    Publica desde T-29: `pptx.py` reutiliza este mismo criterio para separar
+    indicaciones de pantalla y notas internas en `tarjetas.json`, en vez de
+    duplicar la heuristica de subcadena (mismo patron que `dimensiones_png`,
+    ver su docstring)."""
     return "nota" in bloque.motivo.lower()
 
 
-def _indicaciones_no_recitables(
+def indicaciones_no_recitables(
     escena: Escena, bloques_clasificados: list[BloqueClasificado]
 ) -> list[BloqueClasificado]:
+    """Publica desde T-29: `pptx.py` la reutiliza tal cual para listar las
+    indicaciones de una escena antes de separarlas en pantalla/notas
+    internas (`es_nota_interna`), sin duplicar el filtro."""
     return [
         bloque
         for bloque in bloques_clasificados
@@ -195,7 +208,7 @@ def _formatear_indicaciones_html(
     visibles = [
         bloque
         for bloque in bloques
-        if configuracion.incluir_notas_internas or not _es_nota_interna(bloque)
+        if configuracion.incluir_notas_internas or not es_nota_interna(bloque)
     ]
     if not visibles:
         return '<p class="sin-indicaciones">(ninguna)</p>'
@@ -259,7 +272,7 @@ def _pagina_escena(
         if tiempo_escena.aviso
         else ""
     )
-    indicaciones = _indicaciones_no_recitables(escena, bloques_clasificados)
+    indicaciones = indicaciones_no_recitables(escena, bloques_clasificados)
     logo_pie = _logo_html(configuracion.pdf_ancho_logo_pie_pulgadas, "logo-pie", configuracion)
     return (
         '<section class="pagina escena">'

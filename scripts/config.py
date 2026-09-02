@@ -104,6 +104,38 @@ SRT_CON_BOM: bool = False
 # Nombre del .srt dentro de la carpeta de salida del guion.
 NOMBRE_ARCHIVO_SRT: str = "guion.srt"
 
+# --- Adaptador .pptx via 480-branded-pptx (T-29) -----------------------------------
+# Version del contrato de intercambio `tarjetas.json` (requisito 1, documentado en
+# `references/contrato-tarjetas.md`): sube si el JSON cambia de forma incompatible,
+# nunca decrece (mismo criterio que `VERSION_ESQUEMA_ESTADO`, T-07).
+VERSION_CONTRATO_TARJETAS: int = 1
+NOMBRE_ARCHIVO_TARJETAS_JSON: str = "tarjetas.json"
+NOMBRE_ARCHIVO_BRIEF_PPTX: str = "brief-pptx.md"
+# Deteccion de disponibilidad (requisito 4): la generacion real del `.pptx` no la
+# hace este codigo -- la hace Claude delegando en `480-branded-pptx` dentro de la
+# misma sesion (ver docstring de `pptx.py`) -- asi que aqui solo se comprueba que
+# las dos carpetas de skill existen, nunca su contenido. Ausentes por defecto en
+# una sesion de nube: la salida `.pptx` queda latente sin fallar.
+RUTA_SKILL_MARCA_PPTX: str = "~/.claude/skills/480-branded-pptx"
+RUTA_SKILL_PPTX_BASE: str = "~/.claude/skills/pptx"
+# Cuantas escenas entran en una misma diapositiva de contenido (requisito 2,
+# "agrupacion configurable"). 1 por defecto: una diapositiva por escena, que es
+# ademas el criterio de aceptacion literal de T-29.
+PPTX_ESCENAS_POR_DIAPOSITIVA: int = 1
+# Umbral de diapositivas de contenido a partir del cual el deck lleva una
+# diapositiva de indice (`references/marca-480.md`: "solo si hay 4+ secciones").
+PPTX_UMBRAL_INDICE_SECCIONES: int = 4
+# Variante del logotipo sobre fondo oscuro (portada y cierre, requisito 2 del brief).
+# La variante clara reutiliza `RUTA_LOGO_PDF` (T-28): mismo archivo "Gris" que ya usa
+# el `.pdf`, ambos sobre fondo claro.
+RUTA_LOGO_PPTX_OSCURO: str = "assets/480_Blanco.png"
+# Anchos de referencia de `references/marca-480.md` para las diapositivas DARK; el
+# alto se mide siempre del PNG en tiempo de generacion (`dimensiones_png`, T-28),
+# nunca se codifica una relacion de aspecto (misma regla que el `.pdf`).
+PPTX_ANCHO_LOGO_PORTADA_PULGADAS: float = 2.4
+PPTX_ANCHO_LOGO_CONTENIDO_PULGADAS: float = 0.7
+PPTX_ANCHO_LOGO_CIERRE_PULGADAS: float = 2.8
+
 # --- Normalizacion a forma dicha (T-13) --------------------------------------------
 # Diccionario de excepciones editable por el dueno (requisito 3), con prioridad sobre
 # toda regla automatica de `normalizacion.py`. Vive dentro de la carpeta de salida del
@@ -418,6 +450,14 @@ class Configuracion:
     pdf_color_borde: str = PDF_COLOR_BORDE
     pdf_chrome_ejecutable_manual: str | None = PDF_CHROME_EJECUTABLE_MANUAL
     pdf_timeout_conversion_segundos: float = PDF_TIMEOUT_CONVERSION_SEGUNDOS
+    ruta_skill_marca_pptx: str = RUTA_SKILL_MARCA_PPTX
+    ruta_skill_pptx_base: str = RUTA_SKILL_PPTX_BASE
+    pptx_escenas_por_diapositiva: int = PPTX_ESCENAS_POR_DIAPOSITIVA
+    pptx_umbral_indice_secciones: int = PPTX_UMBRAL_INDICE_SECCIONES
+    ruta_logo_pptx_oscuro: str = RUTA_LOGO_PPTX_OSCURO
+    pptx_ancho_logo_portada_pulgadas: float = PPTX_ANCHO_LOGO_PORTADA_PULGADAS
+    pptx_ancho_logo_contenido_pulgadas: float = PPTX_ANCHO_LOGO_CONTENIDO_PULGADAS
+    pptx_ancho_logo_cierre_pulgadas: float = PPTX_ANCHO_LOGO_CIERRE_PULGADAS
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -577,7 +617,22 @@ class Configuracion:
             ("pdf_margen_superior_pulgadas", self.pdf_margen_superior_pulgadas),
             ("pdf_interlineado", self.pdf_interlineado),
             ("pdf_timeout_conversion_segundos", self.pdf_timeout_conversion_segundos),
+            ("pptx_ancho_logo_portada_pulgadas", self.pptx_ancho_logo_portada_pulgadas),
+            ("pptx_ancho_logo_contenido_pulgadas", self.pptx_ancho_logo_contenido_pulgadas),
+            ("pptx_ancho_logo_cierre_pulgadas", self.pptx_ancho_logo_cierre_pulgadas),
         ):
             if valor_flotante <= 0:
                 mensaje = f"'{nombre}' debe ser un numero positivo ({valor_flotante})."
                 raise ValueError(mensaje)
+        if self.pptx_escenas_por_diapositiva <= 0:
+            mensaje = (
+                "Las escenas por diapositiva del .pptx deben ser un entero positivo "
+                f"({self.pptx_escenas_por_diapositiva})."
+            )
+            raise ValueError(mensaje)
+        if self.pptx_umbral_indice_secciones <= 0:
+            mensaje = (
+                "El umbral de secciones para incluir indice en el .pptx debe ser un "
+                f"entero positivo ({self.pptx_umbral_indice_secciones})."
+            )
+            raise ValueError(mensaje)

@@ -1450,7 +1450,7 @@ legible, en las dos variantes del documento.
 - **Plantillas en `assets/pdf/`, mismo patrón que el reproductor (T-18).**
   `plantilla.html` + `estilo.css` con marcadores `__EN_MAYUSCULAS__` sustituidos por
   `.replace()` desde `Configuracion` — nada de HTML/CSS escrito a mano en Python.
-- **Logotipo autocontenido y con ratio medido (requisito 3).** `_dimensiones_png`
+- **Logotipo autocontenido y con ratio medido (requisito 3).** `dimensiones_png`
   lee la cabecera `IHDR` del PNG (firma + longitud + tipo de chunk + ancho/alto en
   big-endian, bytes 16-24) sin ninguna dependencia de imagen; `_logo_html` calcula
   `alto = ancho_deseado / (ancho_px/alto_px)` y lo incrusta como
@@ -1461,14 +1461,17 @@ legible, en las dos variantes del documento.
   proyecto. Si el PNG no existe o su cabecera no es válida, `_logo_html` devuelve
   `""` (ningún `<img>` en el marcado) y la generación sigue sin fallar.
 - **Notas internas vs. indicaciones de pantalla (requisito 6, modo
-  `--para-terceros`).** `_es_nota_interna` detecta el rótulo `NOTA` dentro del
+  `--para-terceros`).** `es_nota_interna` detecta el rótulo `NOTA` dentro del
   `motivo` de clasificación que ya calcula `clasificador.py` (T-09) — que siempre lo
   cita literalmente (`"rotulo 'NOTA': ..."`, `"prefijo 'NOTA:'"`) —; cualquier otra
   indicación (`EN PANTALLA`, o ambigua sin señal clara) se trata como indicación de
   pantalla y se mantiene siempre, para no decidir en silencio que algo sin marcar
   como nota es prescindible (T-09, requisito 5). `Configuracion.incluir_notas_internas`
-  (reservada desde T-00, sin cablear hasta esta tarea) es el interruptor — el mismo
-  que reutilizará T-29 —: `False` es el modo `--para-terceros`.
+  (reservada desde T-00, sin cablear hasta T-28) es el interruptor — el mismo que
+  reutiliza T-29 —: `False` es el modo `--para-terceros`. `es_nota_interna` e
+  `indicaciones_no_recitables` pasan de privadas a públicas en T-29, que las
+  reutiliza tal cual en `pptx.py` en vez de duplicar la heurística — ver su propia
+  sección más abajo.
 - **Prosa continua, no lista (requisito 5).** `_prosa_escena` envuelve cada bloque
   de respiración en su propio `<span class="bloque">`; el límite entre bloques lo
   marca `estilo.css` con `.bloque:not(:last-child)::after { content: " · "; }` — un
@@ -1514,6 +1517,81 @@ legible, en las dos variantes del documento.
   (`generar_pdf_fixture`, activada en esta tarea), y `verificar_autocontencion` gana
   un parámetro `etapa` para reutilizarse también aquí, no solo con el reproductor.
 
+## Adaptador `.pptx` con identidad 480 (T-29)
+
+`scripts/pptx.py` **no genera ningún `.pptx`**. Verificado con el `SKILL.md` de
+`480-branded-pptx`: esa skill son instrucciones para Claude, no un ejecutable —
+genera el `.pptx` con Node + `pptxgenjs` apoyándose en la skill `pptx`, y exige QA
+visual, así que invocarla como subproceso no es una opción. El reparto es: este
+módulo produce `tarjetas.json` (el contrato, `references/contrato-tarjetas.md`) y
+`brief-pptx.md` (el brief de invocación en Markdown); es Claude quien genera el
+`.pptx` de verdad, delegando en esa skill dentro de la misma sesión, leyendo ambos
+archivos. Mismo patrón de entrada que `srt.py`/`pdf.py`: consume `ResultadoParseo` +
+`ResultadoTiempos` tal cual, sin recalcular nada.
+
+- **Reutiliza `pdf.py` en vez de duplicar, tres funciones promovidas de privadas a
+  públicas en esta tarea** (mismo patrón que `tiempos.PAUSA_FIN_ESCENA` en T-27):
+  `dimensiones_png` (mide la relación de aspecto real del logotipo para la tabla de
+  alturas del brief), `es_nota_interna` e `indicaciones_no_recitables` (separan
+  indicaciones de pantalla y notas internas con el mismo criterio que el `.pdf`).
+  `pptx.py` no importa nada privado (`_`) de otro módulo.
+- **`Tarjeta`/`ResultadoTarjetas` → `tarjetas_a_diccionario` → JSON.** Los
+  dataclasses son la representación tipada; `tarjetas_a_diccionario` es la única
+  función que conoce la forma exacta del JSON (documentada en
+  `references/contrato-tarjetas.md`), y `validar_tarjetas` valida contra esa misma
+  forma — mismo patrón de "una función serializa, otra valida a mano" que
+  `srt.validar_srt` (T-27), sin depender de `jsonschema` (§0.2, sin dependencias de
+  terceros).
+- **`--para-terceros` vacía `notas_internas` en el propio JSON, no solo en la
+  presentación (requisito 3).** `_indicaciones_de_escena` devuelve `()` para las
+  notas internas en cuanto `Configuracion.incluir_notas_internas` es `False`, antes
+  de que el dato llegue a `Tarjeta` — a diferencia del `.pdf`, que solo las omite al
+  maquetar. Decisión deliberada: el JSON es un contrato que puede consumir cualquier
+  cosa, no solo esta skill; si las notas internas siguieran en el JSON "por si
+  acaso", cualquier consumidor futuro del modo `--para-terceros` podría filtrarlas
+  mal y exponerlas.
+- **El brief corrige por escrito el `SKILL.md` de la skill de marca (requisito 2).**
+  `_relacion_aspecto_texto` mide el ratio real del logotipo con `dimensiones_png`
+  (mismo archivo que usa el `.pdf`, `ruta_logo_pdf`) y `_tabla_alturas_logo_markdown`
+  calcula las alturas correctas para los tres anchos de referencia de
+  `references/marca-480.md` (portada, header de contenido, cierre) — nunca la
+  constante `668/376` de la guía. El texto de la corrección de tipografía (Poppins,
+  no Figtree) es literal, no derivado de ningún dato.
+- **Agrupación configurable (requisito 2) e índice condicional.**
+  `_agrupar_tarjetas` reparte las tarjetas en grupos de
+  `Configuracion.pptx_escenas_por_diapositiva` (1 por defecto — una diapositiva por
+  escena, que es además el criterio de aceptación literal de la tarea: "el brief ...
+  describe tantas diapositivas de contenido como escenas"); el brief solo incluye la
+  diapositiva de índice si el número de grupos alcanza
+  `Configuracion.pptx_umbral_indice_secciones` (4 por defecto, de
+  `references/marca-480.md`: "solo si hay 4+ secciones"). No hay diapositivas
+  separadoras: esta skill no agrupa escenas en bloques mayores que la propia
+  escena, así que ese elemento de la estructura de deck simplemente no aplica —
+  documentado como tal en el propio brief, nunca omitido en silencio.
+- **Detección de disponibilidad, nunca un fallo (requisito 4).**
+  `detectar_skill_pptx_disponible` solo comprueba que
+  `Configuracion.ruta_skill_marca_pptx` y `ruta_skill_pptx_base` existen como
+  carpetas (`Path.is_dir()`, con `expanduser()` para `~`) — nunca su contenido, eso
+  es responsabilidad de esas skills. `exportar_pptx` genera y guarda
+  `tarjetas.json`/el brief siempre, y solo cambia el mensaje devuelto
+  (`ResultadoPptx.mensaje`, `skill_disponible`) según el resultado de esa detección.
+  En una sesión de nube, sin `~/.claude/skills/`, es siempre `False`: la salida
+  `.pptx` queda latente, tal como exige el criterio de aceptación de la tarea.
+- **Verificación.** `tests/test_pptx.py` cubre: una tarjeta por escena; separación
+  correcta de indicaciones de pantalla y notas internas; el modo `--para-terceros`
+  vaciando `notas_internas` en el propio diccionario serializado; `validar_tarjetas`
+  detectando clave ausente, tipo incorrecto, `numero_escenas` inconsistente y una
+  escena totalmente vacía; el criterio de aceptación literal (tantas diapositivas de
+  contenido como escenas) sobre un guion de prueba y sobre los tres guiones reales;
+  las correcciones de Poppins/relación de aspecto presentes en el brief; el umbral
+  de índice condicional en ambos sentidos; la agrupación configurable fundiendo dos
+  escenas en una diapositiva; y `detectar_skill_pptx_disponible`/`exportar_pptx` en
+  sus tres combinaciones (ninguna carpeta, una sola, las dos). `verificar_salidas.py
+  --fixture` genera `tarjetas.json` y el brief de verdad sobre el mismo guion real
+  que usan el reproductor, el `.srt` y el HTML de impresión
+  (`generar_pptx_fixture`), y valida el JSON contra el contrato
+  (`verificar_tarjetas_json`).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -1538,8 +1616,8 @@ parte de su propio criterio de aceptación — no lo dejes como nota aparte.
 - `scripts/migraciones/` — migraciones idempotentes del esquema de `estado.json`.
 - `tests/` — suite de pytest.
 - `fixtures/` — guiones de calibración y de ejemplo para las verificaciones.
-- `assets/` — logotipos de marca 480 y `assets/reproductor/` (plantillas del reproductor: `plantilla.html`, `estilo.css`, `guion.js`).
-- `references/` — documentación de referencia (marca 480, contratos de datos).
+- `assets/` — logotipos de marca 480, `assets/reproductor/` (plantillas del reproductor: `plantilla.html`, `estilo.css`, `guion.js`) y `assets/pdf/` (plantillas del HTML de impresión).
+- `references/` — documentación de referencia (marca 480 en `marca-480.md`, contrato `tarjetas.json` en `contrato-tarjetas.md`).
 - `roadmap/` — el registro de gobierno del proyecto: `SEGUIMIENTO.md` es el hub.
 
 ## Convenciones de rama

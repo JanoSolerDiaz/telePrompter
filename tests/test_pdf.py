@@ -10,9 +10,9 @@ from config import Configuracion
 from parser import ResultadoParseo, parsear_guion
 from pdf import (
     ResultadoPdf,
-    _dimensiones_png,
     convertir_html_a_pdf,
     detectar_ejecutable_chrome,
+    dimensiones_png,
     exportar_pdf,
     generar_html_impresion,
     guardar_html_impresion,
@@ -77,17 +77,17 @@ def test_dimensiones_png_lee_ihdr_del_logo_real() -> None:
     """El logotipo real mide 1993x805 (ratio 2.4758), no el 668/376 de la guia
     de marca (`references/marca-480.md`): la relacion se mide siempre del
     archivo, nunca se codifica una constante."""
-    assert _dimensiones_png(LOGO_REAL) == (1993, 805)
+    assert dimensiones_png(LOGO_REAL) == (1993, 805)
 
 
 def test_dimensiones_png_ausente_devuelve_none(tmp_path: Path) -> None:
-    assert _dimensiones_png(tmp_path / "no-existe.png") is None
+    assert dimensiones_png(tmp_path / "no-existe.png") is None
 
 
 def test_dimensiones_png_no_valido_devuelve_none(tmp_path: Path) -> None:
     ruta = tmp_path / "no-es-un-png.png"
     ruta.write_bytes(b"esto no es un PNG, le falta hasta la firma")
-    assert _dimensiones_png(ruta) is None
+    assert dimensiones_png(ruta) is None
 
 
 # --- Estructura del HTML de impresion -----------------------------------------------
