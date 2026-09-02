@@ -394,6 +394,66 @@ def test_guion_js_recentra_al_redimensionar_la_ventana() -> None:
     assert '"resize"' in pagina
 
 
+# --- Ayudas de grabacion (T-23) -----------------------------------------------------
+
+
+def test_datos_incrustados_incluyen_cuenta_atras() -> None:
+    configuracion = Configuracion(cuenta_atras_segundos=5, cuenta_atras_activada=False)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    datos = _extraer_datos(pagina)
+    assert datos["cuenta_atras_segundos"] == 5
+    assert datos["cuenta_atras_activada"] is False
+
+
+def test_reproductor_incluye_cronometro_y_barra_de_progreso() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert '"cronometro-toma"' in pagina
+    assert "barra-progreso-contenedor" in pagina
+    assert "barra-progreso-relleno" in pagina
+    assert "cuenta-atras" in pagina
+
+
+def test_guion_js_expone_cuenta_atras_cronometro_y_barra_de_progreso() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: cuenta atras 3-2-1 antes de arrancar, desactivable.
+    assert "function iniciarCuentaAtras" in pagina
+    assert "cuenta_atras_activada" in pagina
+    # Requisito 2: cronometro de la toma frente a la duracion estimada.
+    assert "function actualizarCronometro" in pagina
+    assert "function iniciarCronometro" in pagina
+    # Requisito 3: barra de progreso de la escena por bloques.
+    assert "function actualizarBarraProgreso" in pagina
+
+
+def test_motor_permite_ocultar_los_indicadores_con_una_tecla() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function alternarIndicadores" in pagina
+    assert "indicadores-ocultos" in pagina
+    for tecla in ('"h"', '"H"'):
+        assert tecla in pagina
+
+
+def test_estilo_oculta_cabecera_y_barra_de_progreso_cuando_se_alternan_indicadores() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "#vista-reproductor.indicadores-ocultos .reproductor-cabecera" in pagina
+    assert "#vista-reproductor.indicadores-ocultos .barra-progreso-contenedor" in pagina
+
+
+def test_pausa_congela_el_cronometro_de_la_toma() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # requisito 2: el cronometro es tiempo de reloj real, se congela en pausa
+    # igual que el reloj del bloque (T-20), no sigue corriendo de fondo.
+    assert "cronometroMsAcumulados += Date.now() - cronometroInicioMarca" in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 

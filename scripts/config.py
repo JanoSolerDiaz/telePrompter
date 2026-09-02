@@ -196,6 +196,12 @@ TIEMPO_INACTIVIDAD_CURSOR_MS: int = 3000
 # el redimensionado de ventana recentra de forma instantanea, sin animacion.
 DURACION_AUTOSCROLL_MS: int = 400
 
+# --- Ayudas de grabacion (T-23) ----------------------------------------------------
+# Cuenta atras antes de arrancar el automatico (requisito 1): duracion en segundos y
+# si esta activada. "Desactivable" es el booleano, no poner la duracion a cero -- el
+# mismo patron paso/activable que ya usa el resto del reproductor.
+CUENTA_ATRAS_ACTIVADA: bool = True
+
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
 # escribe fuera de esa carpeta (regla de aislamiento, §0.2).
 NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
@@ -275,6 +281,8 @@ class Configuracion:
     margen_seguro_px: int = MARGEN_SEGURO_PX
     tiempo_inactividad_cursor_ms: int = TIEMPO_INACTIVIDAD_CURSOR_MS
     duracion_autoscroll_ms: int = DURACION_AUTOSCROLL_MS
+    cuenta_atras_segundos: int = CUENTA_ATRAS_SEGUNDOS
+    cuenta_atras_activada: bool = CUENTA_ATRAS_ACTIVADA
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -355,6 +363,7 @@ class Configuracion:
             ("tamano_texto_maximo_px", self.tamano_texto_maximo_px),
             ("tiempo_inactividad_cursor_ms", self.tiempo_inactividad_cursor_ms),
             ("duracion_autoscroll_ms", self.duracion_autoscroll_ms),
+            ("cuenta_atras_segundos", self.cuenta_atras_segundos),
         ):
             if valor_entero <= 0:
                 mensaje = f"El umbral '{nombre}' debe ser un entero positivo ({valor_entero})."

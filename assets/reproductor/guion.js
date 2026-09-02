@@ -204,6 +204,11 @@
     contador.textContent = (indice + 1) + "/" + datos.escenas.length;
     info.appendChild(contador);
 
+    elementoCronometro = document.createElement("span");
+    elementoCronometro.className = "cronometro-toma";
+    elementoCronometro.id = "cronometro-toma";
+    info.appendChild(elementoCronometro);
+
     indicadorTamano = document.createElement("span");
     indicadorTamano.className = "tamano-texto";
     indicadorTamano.id = "tamano-texto";
@@ -232,6 +237,24 @@
     cabecera.appendChild(botonVolver);
 
     vistaReproductor.appendChild(cabecera);
+
+    // Barra de progreso de la escena por bloques (T-23, requisito 3): el
+    // relleno crece con `(bloqueActual + 1) / total`, asi que llega al 100 %
+    // justo con el ultimo bloque, no con el tiempo estimado.
+    var barraProgresoContenedor = document.createElement("div");
+    barraProgresoContenedor.className = "barra-progreso-contenedor";
+    elementoBarraProgreso = document.createElement("div");
+    elementoBarraProgreso.className = "barra-progreso-relleno";
+    barraProgresoContenedor.appendChild(elementoBarraProgreso);
+    vistaReproductor.appendChild(barraProgresoContenedor);
+
+    // Cuenta atras 3-2-1 antes de arrancar (T-23, requisito 1): oculta por
+    // defecto, `iniciarCuentaAtras` la muestra si esta activada en la
+    // configuracion.
+    elementoCuentaAtras = document.createElement("div");
+    elementoCuentaAtras.className = "cuenta-atras";
+    elementoCuentaAtras.hidden = true;
+    vistaReproductor.appendChild(elementoCuentaAtras);
 
     var escena = datos.escenas[indice];
     var seccion = document.createElement("section");
@@ -269,7 +292,9 @@
     vistaIndice.hidden = true;
     vistaReproductor.hidden = false;
     solicitarPantallaCompleta(botonVolver);
-    iniciarMotor(indice);
+    iniciarCuentaAtras(function () {
+      iniciarMotor(indice);
+    });
   }
 
   function volverAlIndice(indice) {
@@ -305,6 +330,103 @@
   var bloqueInicioMarca = 0;
   var bloqueMsRestantes = 0;
 
+  // --- Ayudas de grabacion (T-23) -------------------------------------------
+  var elementoCuentaAtras = null;
+  var temporizadorCuentaAtras = null;
+  var elementoCronometro = null;
+  var cronometroInicioMarca = 0;
+  var cronometroMsAcumulados = 0;
+  var intervaloCronometro = null;
+  var elementoBarraProgreso = null;
+
+  // Cuenta atras 3-2-1 antes de arrancar el automatico (requisito 1). Si esta
+  // desactivada en la configuracion (o su duracion es 0), arranca al instante
+  // -- "desactivable" es este booleano, nunca poner la duracion a cero.
+  function iniciarCuentaAtras(alTerminar) {
+    if (!datos.cuenta_atras_activada || datos.cuenta_atras_segundos <= 0) {
+      alTerminar();
+      return;
+    }
+    var restante = datos.cuenta_atras_segundos;
+    elementoCuentaAtras.hidden = false;
+    elementoCuentaAtras.textContent = String(restante);
+    function tick() {
+      restante -= 1;
+      if (restante <= 0) {
+        elementoCuentaAtras.hidden = true;
+        temporizadorCuentaAtras = null;
+        alTerminar();
+        return;
+      }
+      elementoCuentaAtras.textContent = String(restante);
+      temporizadorCuentaAtras = setTimeout(tick, 1000);
+    }
+    temporizadorCuentaAtras = setTimeout(tick, 1000);
+  }
+
+  function detenerCuentaAtras() {
+    if (temporizadorCuentaAtras !== null) {
+      clearTimeout(temporizadorCuentaAtras);
+      temporizadorCuentaAtras = null;
+    }
+    if (elementoCuentaAtras) {
+      elementoCuentaAtras.hidden = true;
+    }
+  }
+
+  // Cronometro de la toma (requisito 2): tiempo real transcurrido frente a la
+  // duracion estimada de la escena. Cuenta tiempo de reloj, no tiempo de
+  // guion -- por eso se congela en pausa (`cronometroMsAcumulados` guarda lo
+  // ya transcurrido, `cronometroInicioMarca` se reinicia al reanudar), igual
+  // que ya hace el reloj del bloque (`bloqueMsRestantes`/`bloqueInicioMarca`).
+  function actualizarCronometro() {
+    if (!elementoCronometro || escenaActual === -1) {
+      return;
+    }
+    var transcurridoMs = cronometroMsAcumulados;
+    if (!pausado) {
+      transcurridoMs += Date.now() - cronometroInicioMarca;
+    }
+    var estimado = datos.escenas[escenaActual].duracion_estimada_segundos;
+    elementoCronometro.textContent =
+      formatearTiempo(transcurridoMs / 1000) + " / " + formatearTiempo(estimado);
+  }
+
+  function iniciarCronometro() {
+    cronometroMsAcumulados = 0;
+    cronometroInicioMarca = Date.now();
+    actualizarCronometro();
+    intervaloCronometro = setInterval(actualizarCronometro, 250);
+  }
+
+  function detenerCronometro() {
+    if (intervaloCronometro !== null) {
+      clearInterval(intervaloCronometro);
+      intervaloCronometro = null;
+    }
+  }
+
+  // Barra de progreso de la escena por bloques (requisito 3): progreso por
+  // recuento de bloques, no por tiempo -- asi llega al 100 % exactamente con
+  // el ultimo bloque, sin depender de que la duracion real coincida con la
+  // estimada.
+  function actualizarBarraProgreso() {
+    if (!elementoBarraProgreso) {
+      return;
+    }
+    var total = escenaActual === -1 ? 0 : bloquesEscenaActual().length;
+    var progreso = total > 0 ? (bloqueActual + 1) / total : 0;
+    elementoBarraProgreso.style.width = (progreso * 100) + "%";
+  }
+
+  // Indicadores discretos, ocultables con una tecla (requisito 4): un unico
+  // interruptor sobre la vista del reproductor, persistente mientras se
+  // navega de escena en escena (no se resetea en `renderizarReproductor`,
+  // porque el toggle no toca `vistaReproductor.classList`, solo su contenido).
+  function alternarIndicadores() {
+    vistaReproductor.classList.toggle("indicadores-ocultos");
+  }
+
   function bloquesEscenaActual() {
     return datos.escenas[escenaActual].bloques;
   }
@@ -334,6 +456,7 @@
       elemento.classList.toggle("bloque--activo", esActivo);
       elemento.style.opacity = esActivo ? "" : String(opacidadPorDistancia(Math.abs(i - indice)));
     });
+    actualizarBarraProgreso();
   }
 
   // --- Autoscroll con bloque centrado (T-22) -------------------------------
@@ -530,6 +653,7 @@
     if (pausado) {
       pausado = false;
       bloqueInicioMarca = Date.now();
+      cronometroInicioMarca = Date.now();
       if (bloqueMsRestantes > 0) {
         temporizadorBloque = setTimeout(avanzarAutomatico, bloqueMsRestantes);
       }
@@ -537,6 +661,7 @@
       pausado = true;
       detenerTemporizador();
       bloqueMsRestantes = Math.max(bloqueMsRestantes - (Date.now() - bloqueInicioMarca), 0);
+      cronometroMsAcumulados += Date.now() - cronometroInicioMarca;
     }
     actualizarIndicadorPausa();
   }
@@ -579,6 +704,8 @@
     actualizarIndicadorVelocidad();
     actualizarIndicadorTamano();
     actualizarIndicadorPausa();
+    actualizarBarraProgreso();
+    iniciarCronometro();
     if (bloquesEscenaActual().length > 0) {
       marcarBloqueActivo(0);
       centrarBloqueActivo(false);
@@ -588,6 +715,8 @@
 
   function detenerMotor() {
     detenerTemporizador();
+    detenerCronometro();
+    detenerCuentaAtras();
     escenaActual = -1;
     bloqueActual = 0;
     pausado = false;
@@ -642,6 +771,11 @@
       case "R":
         evento.preventDefault();
         reiniciarEscenaActual();
+        break;
+      case "h":
+      case "H":
+        evento.preventDefault();
+        alternarIndicadores();
         break;
       default:
         break;

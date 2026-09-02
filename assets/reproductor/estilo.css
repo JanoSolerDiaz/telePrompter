@@ -181,6 +181,50 @@ button:focus-visible {
   letter-spacing: 0.03em;
 }
 
+/* Ayudas de grabacion (T-23): cronometro de la toma, barra de progreso por
+   bloques y cuenta atras antes de arrancar. Los indicadores comparten el
+   mismo tratamiento discreto que el resto de la cabecera (T-20/T-21). */
+.cronometro-toma {
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+  min-width: 7em;
+}
+
+.barra-progreso-contenedor {
+  height: 4px;
+  margin-bottom: 1.5em;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.barra-progreso-relleno {
+  height: 100%;
+  width: 0%;
+  background: var(--color-acento);
+  transition: width 0.2s ease-in-out;
+}
+
+.cuenta-atras {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8em;
+  font-weight: 700;
+  color: var(--color-acento);
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10;
+}
+
+/* Indicadores ocultables con una tecla (requisito 4): un unico interruptor
+   sobre la cabecera y la barra de progreso, sin tocar el guion en si. */
+#vista-reproductor.indicadores-ocultos .reproductor-cabecera,
+#vista-reproductor.indicadores-ocultos .barra-progreso-contenedor {
+  display: none;
+}
+
 /* Resaltado del bloque activo (T-20) y atenuacion del contexto (T-21,
    requisito 1). La opacidad de cada bloque de contexto la calcula
    `guion.js` bloque a bloque segun su distancia al activo (gradiente

@@ -994,6 +994,79 @@ Todo el trabajo vive en `assets/reproductor/guion.js`:
   termina exactamente centrado, sin oscilar) y tras redimensionar la
   ventana de 500 a 700 px de alto -- sin errores de consola en ningún paso.
 
+## Ayudas de grabación (T-23)
+
+Cuatro añadidos independientes a `assets/reproductor/guion.js`, todos sobre el
+mismo `reproducirEscena`/`iniciarMotor`/`detenerMotor` de T-19/T-20 -- ninguno
+introduce un modo nuevo, solo instrumentan el que ya existía. Dos claves
+nuevas en el JSON incrustado (`cuenta_atras_segundos`, `cuenta_atras_activada`
+en `Configuracion`, sin números mágicos).
+
+- **Cuenta atrás (requisito 1), como una envoltura de `iniciarMotor`, no una
+  parte de él.** `reproducirEscena` ya no llama a `iniciarMotor(indice)`
+  directamente: llama a `iniciarCuentaAtras(function () { iniciarMotor(indice); })`.
+  Si `cuenta_atras_activada` es `false` (o la duración es `0`), la cuenta
+  atrás invoca el callback al instante -- "desactivable" es ese booleano, no
+  poner la duración a cero, mismo patrón paso/activable del resto del
+  reproductor. El overlay (`.cuenta-atras`, `position: fixed`) se crea de
+  nuevo en cada `renderizarReproductor`, y `detenerMotor` (que ya se llama al
+  principio de `reproducirEscena` y en `volverAlIndice`) cancela cualquier
+  cuenta atrás pendiente con `detenerCuentaAtras` -- así, salir al índice a
+  mitad de la cuenta atrás no deja un `setTimeout` colgado que dispare
+  `iniciarMotor` sobre una escena que ya no está en pantalla.
+- **Cronómetro de la toma (requisito 2): tiempo de reloj real, no tiempo de
+  guion.** Mismo patrón que ya usa el reloj del bloque de T-20
+  (`bloqueInicioMarca`/`bloqueMsRestantes`): `cronometroInicioMarca` +
+  `cronometroMsAcumulados`, recalculado siempre desde marcas de tiempo
+  absolutas (`Date.now()`), nunca acumulando por intervalo -- así la deriva
+  del criterio de aceptación ("< 1 % en una toma de 3 minutos") es
+  estructuralmente imposible, no un valor medido: un `setInterval` de 250 ms
+  solo decide cada cuánto se REDIBUJA la cifra, el valor en sí sale siempre de
+  restar dos marcas de reloj reales. `togglePausa` congela y reanuda el
+  cronómetro exactamente donde ya congelaba y reanudaba el reloj del bloque,
+  reutilizando la misma pareja de líneas en el mismo sitio. Formato con
+  `formatearTiempo` (T-19): "transcurrido / estimado".
+- **Barra de progreso por bloques (requisito 3), deliberadamente NO por
+  tiempo.** `actualizarBarraProgreso` calcula `(bloqueActual + 1) / total`, no
+  una fracción de `duracion_estimada_segundos`. Es la única forma de que el
+  criterio de aceptación ("la barra llega al 100 % justo con el último
+  bloque") se cumpla por construcción: con progreso por tiempo, una toma que
+  se alarga o se acorta respecto a la estimación dejaría la barra en un punto
+  distinto de 100 % justo cuando el locutor llega al último bloque. Se
+  actualiza desde dentro de `marcarBloqueActivo` (ya se llama con el
+  `bloqueActual` correcto desde `iniciarMotor`, `avanzarAutomatico` e
+  `irABloque`), más una llamada explícita en `iniciarMotor` para el caso de
+  escena sin bloques de locución (el `if (bloquesEscenaActual().length > 0)`
+  de T-20 nunca llama a `marcarBloqueActivo` ahí, así que sin esa llamada
+  extra la barra se quedaría con el ancho de la escena anterior).
+- **Indicadores discretos, ocultables con una tecla (requisito 4): un único
+  interruptor, no una lista de elementos que ocultar uno a uno.**
+  `alternarIndicadores` alterna una sola clase (`indicadores-ocultos`) en
+  `#vista-reproductor`; el CSS (`#vista-reproductor.indicadores-ocultos
+  .reproductor-cabecera`, `...  .barra-progreso-contenedor`) decide qué
+  desaparece. Como el toggle vive en `vistaReproductor.classList` y
+  `renderizarReproductor` solo vacía `vistaReproductor.textContent`, el
+  estado sobrevive a un cambio de escena -- ocultar los indicadores antes de
+  arrancar a grabar una tanda de escenas seguidas no hay que repetirlo en
+  cada una. Tecla `H`/`h`, mismo `switch` de `manejarTeclaReproductor` que ya
+  usan el resto de atajos de T-20/T-21; T-24 la documentará en el mapa
+  completo y en la ayuda `?`, no hace falta tocar nada aquí cuando llegue.
+- **Verificación.** `tests/test_reproductor.py` comprueba (como texto sobre
+  el HTML/JS generado) las dos claves nuevas del JSON, la presencia de
+  `iniciarCuentaAtras`/`actualizarCronometro`/`actualizarBarraProgreso`/
+  `alternarIndicadores` y las reglas CSS del toggle;
+  `tests/test_esqueleto.py` cubre el rechazo de una `cuenta_atras_segundos`
+  no positiva. El comportamiento real se verificó a mano con Playwright
+  headless (Chromium, no es una dependencia del proyecto) sobre
+  `fixtures/salida/reproductor.html`: al pulsar play aparece "3", cuenta
+  hasta "1" y desaparece sin que el motor arranque antes de tiempo; con
+  `cuenta_atras_activada=False` el motor arranca al instante sin overlay; el
+  cronómetro avanza con el reloj real y se congela exactamente en pausa (dos
+  lecturas separadas por 1.5 s de pausa, idénticas); la barra de progreso
+  pasa de 25 % (bloque 1 de 4) a 100 % en el último bloque de una escena
+  real; `H` oculta la cabecera y la barra y una segunda pulsación las
+  devuelve -- sin errores de consola en ningún paso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

@@ -75,6 +75,11 @@ def test_configuracion_rechaza_duracion_de_autoscroll_no_positiva() -> None:
         Configuracion(duracion_autoscroll_ms=0)
 
 
+def test_configuracion_rechaza_duracion_de_cuenta_atras_no_positiva() -> None:
+    with pytest.raises(ValueError, match="cuenta_atras_segundos"):
+        Configuracion(cuenta_atras_segundos=0)
+
+
 def test_html_autocontenido_no_dispara_hallazgos() -> None:
     html = """<!doctype html><html><head><style>body{color:#fff}</style></head>
     <body><script>const escenas=[];</script></body></html>"""

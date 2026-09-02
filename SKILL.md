@@ -127,6 +127,15 @@ El bloque activo se mantiene siempre visible sin que quien graba tenga que tocar
 |--------|-------------|------|
 | Duración del desplazamiento suave | 400 ms | Avance/retroceso y cambio de tamaño de texto; el redimensionado recentra al instante |
 
+## Ayudas de grabación (T-23)
+
+Grabar sin ayudante ni cronómetro externo: al pulsar play, una cuenta atrás 3-2-1 avisa antes de que arranque el automático (desactivable). Durante la toma, un cronómetro muestra el tiempo real transcurrido frente a la duración estimada de la escena, y una barra de progreso marca cuánto queda por recuento de bloques (llega al 100 % justo con el último). Todos estos indicadores son discretos y se ocultan y muestran de nuevo con la tecla `H`.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Duración de la cuenta atrás | 3 s | Desactivable con `cuenta_atras_activada` |
+| Cuenta atrás activada | Sí | `False` la omite: el automático arranca al instante |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

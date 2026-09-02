@@ -146,6 +146,10 @@ def _construir_datos(
         # Autoscroll con bloque centrado (T-22): duracion del desplazamiento suave,
         # configurable -- `guion.js` no la trae escrita a mano.
         "duracion_autoscroll_ms": configuracion.duracion_autoscroll_ms,
+        # Ayudas de grabacion (T-23): duracion de la cuenta atras y si esta activada
+        # (requisito 1), configurables.
+        "cuenta_atras_segundos": configuracion.cuenta_atras_segundos,
+        "cuenta_atras_activada": configuracion.cuenta_atras_activada,
     }
 
 
