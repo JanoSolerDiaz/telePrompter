@@ -53,6 +53,28 @@ def _leer_plantilla(nombre: str) -> str:
     return (_CARPETA_PLANTILLAS / nombre).read_text(encoding="utf-8")
 
 
+def _luminancia_relativa(color_hex: str) -> float:
+    """Luminancia relativa WCAG de un color `#rrggbb` (sin alfa ni forma corta)."""
+    color_hex = color_hex.lstrip("#")
+    componentes = (int(color_hex[i : i + 2], 16) / 255 for i in (0, 2, 4))
+    linealizados = [
+        c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in componentes
+    ]
+    rojo, verde, azul = linealizados
+    return 0.2126 * rojo + 0.7152 * verde + 0.0722 * azul
+
+
+def contraste_relativo(color_a: str, color_b: str) -> float:
+    """Ratio de contraste WCAG (1.0 a 21.0) entre dos colores `#rrggbb`.
+
+    Usado para verificar la regla dura de T-21 (requisito 3, "contraste AAA
+    para el bloque activo"): AAA de texto normal exige un ratio >= 7.0.
+    """
+    l1 = _luminancia_relativa(color_a) + 0.05
+    l2 = _luminancia_relativa(color_b) + 0.05
+    return max(l1, l2) / min(l1, l2)
+
+
 def _json_seguro_para_script(datos: dict[str, Any]) -> str:
     texto = json.dumps(datos, ensure_ascii=False)
     for caracter, escape in _ESCAPES_JSON_EN_SCRIPT:
@@ -111,6 +133,16 @@ def _construir_datos(
         "paso_velocidad": configuracion.paso_velocidad,
         "velocidad_minima": configuracion.velocidad_minima,
         "velocidad_maxima": configuracion.velocidad_maxima,
+        # Resaltado y tema de grabacion (T-21): gradiente de atenuacion del contexto
+        # (requisito 1) y limites/paso del tamano de texto en vivo (requisito 2),
+        # todo configurable -- `guion.js` no trae ninguno de estos valores a mano.
+        "atenuacion_niveles": configuracion.atenuacion_niveles,
+        "atenuacion_minima": configuracion.atenuacion_minima,
+        "tamano_texto_base_px": configuracion.tamano_texto_base_px,
+        "paso_tamano_texto_px": configuracion.paso_tamano_texto_px,
+        "tamano_texto_minimo_px": configuracion.tamano_texto_minimo_px,
+        "tamano_texto_maximo_px": configuracion.tamano_texto_maximo_px,
+        "tiempo_inactividad_cursor_ms": configuracion.tiempo_inactividad_cursor_ms,
     }
 
 
@@ -135,7 +167,9 @@ def generar_reproductor_html(
         .replace("__COLOR_FONDO__", configuracion.color_fondo_reproductor)
         .replace("__COLOR_TEXTO__", configuracion.color_texto_reproductor)
         .replace("__COLOR_TEXTO_SECUNDARIO__", configuracion.color_texto_secundario_reproductor)
+        .replace("__COLOR_ACENTO__", configuracion.color_acento_reproductor)
         .replace("__TAMANO_TEXTO_BASE_PX__", str(configuracion.tamano_texto_base_px))
+        .replace("__MARGEN_SEGURO_PX__", str(configuracion.margen_seguro_px))
         .replace(
             "__PILA_TIPOGRAFICA__",
             ", ".join(

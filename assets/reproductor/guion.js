@@ -197,6 +197,11 @@
     contador.textContent = (indice + 1) + "/" + datos.escenas.length;
     info.appendChild(contador);
 
+    indicadorTamano = document.createElement("span");
+    indicadorTamano.className = "tamano-texto";
+    indicadorTamano.id = "tamano-texto";
+    info.appendChild(indicadorTamano);
+
     indicadorVelocidad = document.createElement("span");
     indicadorVelocidad.className = "velocidad-escena";
     indicadorVelocidad.id = "velocidad-escena";
@@ -284,6 +289,7 @@
   // completo: solo reinician el reloj del bloque actual (requisito 3).
   var elementosBloque = [];
   var indicadorVelocidad = null;
+  var indicadorTamano = null;
   var indicadorPausa = null;
   var escenaActual = -1;
   var bloqueActual = 0;
@@ -300,9 +306,26 @@
     return Math.max(bloque.fin_segundos - bloque.inicio_segundos, 0) * 1000;
   }
 
+  // Resaltado del bloque activo y atenuacion del contexto (T-21, requisito 1):
+  // el bloque activo queda a opacidad plena, y cada bloque de contexto recibe
+  // la opacidad que le toque segun su distancia, leida del gradiente
+  // configurable (`atenuacion_niveles`); mas alla del ultimo nivel se aplica
+  // el suelo `atenuacion_minima`, para que el contexto nunca desaparezca del
+  // todo.
+  function opacidadPorDistancia(distancia) {
+    var niveles = datos.atenuacion_niveles;
+    var indiceNivel = distancia - 1;
+    if (indiceNivel < niveles.length) {
+      return niveles[indiceNivel];
+    }
+    return datos.atenuacion_minima;
+  }
+
   function marcarBloqueActivo(indice) {
     elementosBloque.forEach(function (elemento, i) {
-      elemento.classList.toggle("bloque--activo", i === indice);
+      var esActivo = i === indice;
+      elemento.classList.toggle("bloque--activo", esActivo);
+      elemento.style.opacity = esActivo ? "" : String(opacidadPorDistancia(Math.abs(i - indice)));
     });
   }
 
@@ -319,6 +342,30 @@
       return;
     }
     indicadorPausa.textContent = pausado ? "En pausa" : "";
+  }
+
+  // Control en vivo del tamano de texto (T-21, requisito 2). Preferencia de
+  // lectura de quien graba, no del ritmo de una escena concreta: a proposito
+  // NO es un array paralelo a `datos.escenas` como `velocidadesEscena` -- un
+  // unico valor global que persiste mientras se navega de escena en escena,
+  // igual que ya hace la velocidad dentro de una misma escena.
+  var tamanoTextoActualPx = datos.tamano_texto_base_px;
+
+  function actualizarIndicadorTamano() {
+    if (!indicadorTamano) {
+      return;
+    }
+    indicadorTamano.textContent = tamanoTextoActualPx + " px";
+  }
+
+  function ajustarTamanoTexto(delta) {
+    var nuevo = Math.max(
+      datos.tamano_texto_minimo_px,
+      Math.min(tamanoTextoActualPx + delta, datos.tamano_texto_maximo_px)
+    );
+    tamanoTextoActualPx = nuevo;
+    document.documentElement.style.setProperty("--tamano-base", nuevo + "px");
+    actualizarIndicadorTamano();
   }
 
   function detenerTemporizador() {
@@ -442,6 +489,7 @@
     bloqueActual = 0;
     pausado = false;
     actualizarIndicadorVelocidad();
+    actualizarIndicadorTamano();
     actualizarIndicadorPausa();
     if (bloquesEscenaActual().length > 0) {
       marcarBloqueActivo(0);
@@ -475,6 +523,14 @@
         evento.preventDefault();
         ajustarVelocidad(-datos.paso_velocidad);
         break;
+      case "]":
+        evento.preventDefault();
+        ajustarTamanoTexto(datos.paso_tamano_texto_px);
+        break;
+      case "[":
+        evento.preventDefault();
+        ajustarTamanoTexto(-datos.paso_tamano_texto_px);
+        break;
       case "ArrowRight":
       case "PageDown":
         evento.preventDefault();
@@ -504,6 +560,40 @@
   }
 
   document.addEventListener("keydown", manejarTeclaReproductor);
+
+  // Cursor oculto en pantalla completa tras inactividad (T-21, requisito 4):
+  // "cero elementos que distraigan" incluye el propio puntero del raton
+  // quieto sobre la imagen. Solo se oculta con pantalla completa activa; al
+  // salir de ella (o al mover el raton) vuelve a mostrarse de inmediato.
+  var temporizadorCursor = null;
+
+  function ocultarCursor() {
+    temporizadorCursor = null;
+    if (document.fullscreenElement) {
+      contenedor.classList.add("cursor-oculto");
+    }
+  }
+
+  function reprogramarOcultarCursor() {
+    contenedor.classList.remove("cursor-oculto");
+    if (temporizadorCursor !== null) {
+      clearTimeout(temporizadorCursor);
+    }
+    temporizadorCursor = setTimeout(ocultarCursor, datos.tiempo_inactividad_cursor_ms);
+  }
+
+  document.addEventListener("mousemove", reprogramarOcultarCursor);
+  document.addEventListener("fullscreenchange", function () {
+    if (document.fullscreenElement) {
+      reprogramarOcultarCursor();
+    } else {
+      contenedor.classList.remove("cursor-oculto");
+      if (temporizadorCursor !== null) {
+        clearTimeout(temporizadorCursor);
+        temporizadorCursor = null;
+      }
+    }
+  });
 
   renderizarIndice();
 })();

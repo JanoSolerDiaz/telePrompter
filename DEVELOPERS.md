@@ -815,6 +815,91 @@ en `assets/reproductor/guion.js`:
   (`wait_for_timeout`) contra las duraciones reales de los bloques del guion
   de calibración.
 
+## Resaltado, tipografía y tema de grabación (T-21)
+
+Tampoco toca `reproductor.py` en lo esencial más allá de sumar siete claves
+nuevas al JSON incrustado (`atenuacion_niveles`, `atenuacion_minima`,
+`tamano_texto_base_px`, `paso_tamano_texto_px`, `tamano_texto_minimo_px`,
+`tamano_texto_maximo_px`, `tiempo_inactividad_cursor_ms`) y dos marcadores
+nuevos en la plantilla de `estilo.css` (`__COLOR_ACENTO__`,
+`__MARGEN_SEGURO_PX__`) -- mismo patrón que ya siguió T-20 para los límites
+de velocidad. El resto vive en `assets/reproductor/guion.js` y
+`estilo.css`:
+
+- **Atenuación del contexto por distancia, no por clase fija (requisito 1).**
+  `marcarBloqueActivo(indice)` ya no solo alterna `.bloque--activo`: para
+  cada bloque que no es el activo, calcula `opacidadPorDistancia(distancia)`
+  (`Math.abs(i - indice)`) y la aplica como `style.opacity` directamente,
+  en vez de un número fijo de clases CSS. `distancia - 1` indexa
+  `datos.atenuacion_niveles` (gradiente estrictamente decreciente,
+  configurable); más allá del último nivel se usa `datos.atenuacion_minima`
+  como suelo. Se optó por opacidad calculada en JS en vez de N clases CSS
+  (`.bloque--atenuado-1`, `-2`...) porque el número de niveles es
+  configurable: una clase por nivel obligaría a generar tantas reglas CSS
+  como niveles trajera la configuración, acoplando la plantilla a un valor
+  de `Configuracion`.
+- **El bloque activo nunca se atenúa a sí mismo.** `esActivo` limpia
+  `style.opacity` a `""` (deja que gane la opacidad `1` de `.bloque--activo`
+  en `estilo.css`), en vez de asignarle `1` a mano -- así un futuro cambio
+  de la opacidad base del bloque activo en CSS no queda pisado por un valor
+  inline puesto aquí.
+- **Contraste AAA verificado por test, no solo por ojo (requisito 3).**
+  `reproductor.py` gana `contraste_relativo(color_a, color_b)`, una
+  implementación directa de la fórmula de luminancia relativa WCAG (sin
+  dependencia nueva: es aritmética de biblioteca estándar). No se usa para
+  nada en tiempo de generación -- es una función de verificación, ejercida
+  por `tests/test_reproductor.py::test_contraste_del_bloque_activo_cumple_aaa`,
+  que falla si algún día los colores por defecto (`color_texto_reproductor`
+  contra `color_fondo_reproductor`) bajan de la razón 7:1 que exige AAA para
+  texto normal. Con los valores actuales (`#f5f5f5` sobre `#0b0b0d`) el
+  ratio real es ~18.5:1, muy por encima del mínimo.
+- **Color de acento centralizado, no repetido a mano (limpieza de alcance).**
+  `#f5c542` aparecía tal cual en tres reglas de `estilo.css` (foco visible,
+  indicador de pausa, borde del bloque activo) desde T-19/T-20, sin pasar
+  por `Configuracion` -- una excepción a la regla "sin números mágicos"
+  que este tema es la ocasión natural de cerrar. Ahora es
+  `color_acento_reproductor` (`Configuracion`) → `--color-acento` (CSS) → las
+  tres reglas lo referencian.
+- **Margen seguro configurable, mismo patrón que el resto del tema.**
+  `#app { padding: 2rem 1.5rem 6rem; }` (fijo, sin pasar por configuración)
+  pasa a `padding: var(--margen-seguro);`, con `margen_seguro_px` en
+  `Configuracion` (por defecto 64 px, uniforme en los cuatro lados).
+- **Tamaño de texto en vivo, preferencia global, no por escena (requisito
+  2).** `ajustarTamanoTexto(delta)` mueve `tamanoTextoActualPx` (un único
+  valor de módulo, no un array paralelo a `datos.escenas` como
+  `velocidadesEscena` de T-20) dentro de
+  `[tamano_texto_minimo_px, tamano_texto_maximo_px]` y lo aplica con
+  `document.documentElement.style.setProperty('--tamano-base', ...)`. Se
+  decidió que NO sea por escena, a diferencia de la velocidad: el tamaño de
+  letra es una preferencia de lectura de quien graba (su distancia a la
+  cámara, su vista), no algo que dependa del contenido de una escena
+  concreta -- cambiarlo una vez debe seguir aplicando al pasar a la escena
+  siguiente. Teclas `[`/`]`, elegidas por estar libres en el mapa que T-20
+  ya adelantó de T-24 (`Espacio`, `+`/`-`, flechas/`PageUp`/`PageDown`, `R`)
+  y no chocar con `M`/`H`/`?`, ya reservadas por T-24 a modo espejo, ocultar
+  indicadores y la ayuda.
+- **Cursor oculto solo en pantalla completa, nunca en modo ventana
+  (requisito 4).** `reprogramarOcultarCursor()` reinicia un `setTimeout`
+  en cada `mousemove`; al dispararse, `ocultarCursor()` comprueba
+  `document.fullscreenElement` antes de añadir la clase `cursor-oculto` a
+  `#app` -- en modo ventana (pantalla completa denegada por el navegador)
+  el cursor nunca desaparece, porque ahí no compite con ninguna cámara. El
+  listener de `fullscreenchange` limpia la clase y el temporizador al salir
+  de pantalla completa, para no dejar el cursor oculto por error al volver
+  al índice.
+- **Verificación.** `tests/test_reproductor.py` comprueba (como texto sobre
+  el HTML/JS generado) las claves nuevas del JSON, la sustitución de los
+  marcadores de acento/margen y la presencia de las funciones nuevas;
+  `tests/test_esqueleto.py` cubre la validación de `Configuracion` (niveles
+  de atenuación decrecientes, suelo dentro de rango, límites de tamaño
+  coherentes, margen no negativo). El comportamiento real -- gradiente de
+  opacidad aplicado bloque a bloque según distancia real al activo, tamaño
+  de texto que cambia en vivo y persiste al cambiar de escena, cursor que se
+  oculta tras la inactividad configurada y reaparece al mover el ratón, cero
+  errores de consola -- se verificó a mano con Playwright headless sobre
+  `fixtures/salida/reproductor.html` (Chromium, no es una dependencia del
+  proyecto).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-02 — T-21 (resaltado, tipografía y tema de grabación), sesión de nube
+**Tarea(s):** T-21
+**Estado resultante:** T-21 COMPLETADA
+**Commits a develop:** `T-21: resaltado, tipografia y tema de grabacion` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (T-21 no toca el esquema de `estado.json`)
+**Archivos creados/modificados:** `scripts/config.py` (constantes y campos nuevos en `Configuracion`: `atenuacion_niveles`, `atenuacion_minima`, `paso_tamano_texto_px`, `tamano_texto_minimo_px`/`maximo_px`, `color_acento_reproductor`, `margen_seguro_px`, `tiempo_inactividad_cursor_ms`, con validación en `__post_init__`), `scripts/reproductor.py` (`_construir_datos` añade las siete claves nuevas al JSON incrustado; `generar_reproductor_html` sustituye `__COLOR_ACENTO__`/`__MARGEN_SEGURO_PX__`; función nueva `contraste_relativo`/`_luminancia_relativa`, fórmula WCAG), `assets/reproductor/guion.js` (`opacidadPorDistancia`/`marcarBloqueActivo` con atenuación por distancia, `ajustarTamanoTexto`/`actualizarIndicadorTamano` con teclas `[`/`]`, ocultación de cursor tras inactividad en pantalla completa), `assets/reproductor/estilo.css` (`--color-acento`, `--margen-seguro`, `.cursor-oculto`, `.tamano-texto`, transición de opacidad en `.bloque`), `tests/test_reproductor.py` (7 tests nuevos), `tests/test_esqueleto.py` (6 tests nuevos de validación de `Configuracion`), `SKILL.md` (sección T-21), `DEVELOPERS.md` (sección T-21), `roadmap/SEGUIMIENTO.md` (§1, cabecera), `roadmap/DECISIONES_TECNICAS.md` (5 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (mypy estricto, 0 errores) · lint ✅ (ruff, 0 avisos) · tests ✅ (288 pasan + 1 skipped, antes 281 + 1) · salidas ✅ (`verificar_salidas.py --fixture`, código 0, "Generación del reproductor" y "Auto-contención" en OK; 3 etapas siguen NO APLICABLE por su tarea correspondiente)
+**Health check post-deploy:** no aplicable — sesión de nube, sin acceso a `~/.claude/skills/teleprompter/` (T-32); no se simula. En su lugar, criterio de aceptación literal de T-21 verificado con Playwright headless (paquete instalado solo para esta comprobación manual, desinstalado al terminar; Chromium ya preinstalado en el contenedor, ninguno de los dos es dependencia del proyecto) sobre el fixture real generado por la 4ª red: con el bloque activo en el índice 2, los bloques 0/1/3 mostraron opacidad computada 0.5/0.75/0.75 — exactamente los valores que predicen los niveles de atenuación por defecto (`0.75, 0.5, 0.35`) según su distancia real al activo; dos pulsaciones de `]` subieron el tamaño de texto de 48 a 56 px, reflejado tanto en `--tamano-base` como en el indicador visible; tras 3.3 s de inactividad del ratón en pantalla completa el contenedor ganó la clase `cursor-oculto`, y un movimiento posterior del ratón la quitó de inmediato — sin errores de consola en ningún paso
+**Decisiones tomadas:** 5 filas añadidas a `DECISIONES_TECNICAS.md`: (1) atenuación de contexto calculada en JS como opacidad por distancia en vez de clases CSS fijas, porque el número de niveles es configurable; (2) contraste AAA verificado por una función y un test propios (fórmula WCAG), no solo a ojo; (3) tamaño de texto en vivo como preferencia global, no por escena, a diferencia de la velocidad de T-20; (4) cursor oculto solo con pantalla completa activa, comprobado en el momento de disparar el temporizador; (5) color de acento (`#f5c542`) centralizado en `Configuracion`, cerrando una excepción a "sin números mágicos" que arrastraban T-19/T-20
+**Hallazgos del auditor atendidos:** ninguno de severidad alta abierto en `auditoriacontinua.md` (#5, #6, #8 siguen media/baja, sin acción de esta sesión)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-22 (autoscroll con bloque centrado), quinta y última de FASE B4 — depende de T-21. Nota para quien la retome: `marcarBloqueActivo(indice)` en `guion.js` ya recorre `elementosBloque` en cada cambio de bloque para fijar la opacidad de contexto; T-22 puede reutilizar ese mismo recorrido (o el propio `indice`) para centrar el elemento activo con `scrollIntoView`/cálculo manual, sin duplicar el índice del bloque activo en una variable aparte.
+
+---
+
 ### Sesión 2026-09-02 — T-20 (motor de avance híbrido), sesión de nube
 **Tarea(s):** T-20
 **Estado resultante:** T-20 COMPLETADA

@@ -166,6 +166,30 @@ ESCENAS_MAX: int = 200
 TIEMPO_PROCESO_MAX_SEGUNDOS: float = 60.0
 
 # --- Diagnostico (T-02, T-05) ------------------------------------------------------
+# --- Resaltado, tipografia y tema de grabacion (T-21) -----------------------------
+# Gradiente de atenuacion del contexto (bloques distintos al activo, requisito 1):
+# opacidad por distancia al bloque activo (posicion 0 = un bloque de distancia,
+# posicion 1 = dos bloques...), estrictamente decreciente. Mas alla del ultimo
+# nivel se aplica ATENUACION_MINIMA como suelo: el contexto nunca desaparece del
+# todo, solo se atenua mas.
+ATENUACION_NIVELES: tuple[float, ...] = (0.75, 0.5, 0.35)
+ATENUACION_MINIMA: float = 0.2
+# Control en vivo del tamano de texto (requisito 2), mismo patron paso/minimo/maximo
+# que ya uso la velocidad en T-20.
+PASO_TAMANO_TEXTO_PX: int = 4
+TAMANO_TEXTO_MINIMO_PX: int = 24
+TAMANO_TEXTO_MAXIMO_PX: int = 96
+# Color de acento del reproductor (foco visible, indicador de pausa, borde del
+# bloque activo): antes escrito a mano tres veces en `estilo.css`, ahora
+# configurable como el resto del tema.
+COLOR_ACENTO_REPRODUCTOR: str = "#f5c542"
+# Margen seguro entre el borde de la pantalla y el contenido (requisito 4): que
+# nada quede cortado por el marco de un cristal de teleprompter ni por el borde
+# de la pantalla de grabacion.
+MARGEN_SEGURO_PX: int = 64
+# Cursor oculto en pantalla completa tras esta inactividad del raton (requisito 4).
+TIEMPO_INACTIVIDAD_CURSOR_MS: int = 3000
+
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
 # escribe fuera de esa carpeta (regla de aislamiento, §0.2).
 NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
@@ -236,6 +260,14 @@ class Configuracion:
     color_texto_reproductor: str = COLOR_TEXTO_REPRODUCTOR
     color_texto_secundario_reproductor: str = COLOR_TEXTO_SECUNDARIO_REPRODUCTOR
     pila_tipografica_reproductor: tuple[str, ...] = field(default=PILA_TIPOGRAFICA_REPRODUCTOR)
+    atenuacion_niveles: tuple[float, ...] = field(default=ATENUACION_NIVELES)
+    atenuacion_minima: float = ATENUACION_MINIMA
+    paso_tamano_texto_px: int = PASO_TAMANO_TEXTO_PX
+    tamano_texto_minimo_px: int = TAMANO_TEXTO_MINIMO_PX
+    tamano_texto_maximo_px: int = TAMANO_TEXTO_MAXIMO_PX
+    color_acento_reproductor: str = COLOR_ACENTO_REPRODUCTOR
+    margen_seguro_px: int = MARGEN_SEGURO_PX
+    tiempo_inactividad_cursor_ms: int = TIEMPO_INACTIVIDAD_CURSOR_MS
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -311,7 +343,46 @@ class Configuracion:
             ("umbral_palabras_voz_pasiva_larga", self.umbral_palabras_voz_pasiva_larga),
             ("longitud_extracto_indicacion_max", self.longitud_extracto_indicacion_max),
             ("tamano_texto_base_px", self.tamano_texto_base_px),
+            ("paso_tamano_texto_px", self.paso_tamano_texto_px),
+            ("tamano_texto_minimo_px", self.tamano_texto_minimo_px),
+            ("tamano_texto_maximo_px", self.tamano_texto_maximo_px),
+            ("tiempo_inactividad_cursor_ms", self.tiempo_inactividad_cursor_ms),
         ):
             if valor_entero <= 0:
                 mensaje = f"El umbral '{nombre}' debe ser un entero positivo ({valor_entero})."
                 raise ValueError(mensaje)
+        if self.margen_seguro_px < 0:
+            raise ValueError(f"El margen seguro no puede ser negativo ({self.margen_seguro_px}).")
+        if not (
+            self.tamano_texto_minimo_px
+            <= self.tamano_texto_base_px
+            <= self.tamano_texto_maximo_px
+        ):
+            mensaje = (
+                "El tamano de texto base debe estar entre el minimo y el maximo "
+                f"({self.tamano_texto_minimo_px} <= {self.tamano_texto_base_px} <= "
+                f"{self.tamano_texto_maximo_px})."
+            )
+            raise ValueError(mensaje)
+        if not self.atenuacion_niveles:
+            raise ValueError("La atenuacion de contexto necesita al menos un nivel.")
+        nivel_anterior = 1.0
+        for nivel in self.atenuacion_niveles:
+            if not (0 < nivel <= 1):
+                mensaje = (
+                    "Cada nivel de atenuacion debe estar entre 0 (exclusivo) y 1 "
+                    f"(inclusive) ({nivel})."
+                )
+                raise ValueError(mensaje)
+            if nivel >= nivel_anterior:
+                raise ValueError(
+                    "Los niveles de atenuacion deben ser estrictamente decrecientes "
+                    f"({self.atenuacion_niveles})."
+                )
+            nivel_anterior = nivel
+        if not (0 < self.atenuacion_minima <= self.atenuacion_niveles[-1]):
+            mensaje = (
+                "La atenuacion minima debe ser positiva y no superar el ultimo nivel "
+                f"({self.atenuacion_minima} <= {self.atenuacion_niveles[-1]})."
+            )
+            raise ValueError(mensaje)

@@ -18,7 +18,7 @@ import pytest
 
 from config import Configuracion
 from parser import ResultadoParseo, parsear_guion
-from reproductor import generar_reproductor_html, guardar_reproductor
+from reproductor import contraste_relativo, generar_reproductor_html, guardar_reproductor
 from tiempos import ResultadoTiempos, calcular_tiempos
 from verificar_salidas import buscar_recursos_externos
 
@@ -289,6 +289,81 @@ def test_estilo_define_bloque_activo_para_el_resaltado_del_motor() -> None:
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     assert ".bloque--activo" in pagina
+
+
+# --- Resaltado, tipografia y tema de grabacion (T-21) -------------------------------
+
+
+def test_contraste_del_bloque_activo_cumple_aaa() -> None:
+    configuracion = Configuracion()
+    ratio = contraste_relativo(
+        configuracion.color_texto_reproductor, configuracion.color_fondo_reproductor
+    )
+    assert ratio >= 7.0, f"contraste {ratio:.2f}:1 por debajo del minimo AAA (7:1)"
+
+
+def test_contraste_relativo_es_simetrico_y_maximo_para_blanco_sobre_negro() -> None:
+    assert contraste_relativo("#ffffff", "#000000") == pytest.approx(21.0, abs=0.01)
+    assert contraste_relativo("#ffffff", "#000000") == contraste_relativo("#000000", "#ffffff")
+    assert contraste_relativo("#abcdef", "#abcdef") == pytest.approx(1.0)
+
+
+def test_datos_incrustados_incluyen_gradiente_de_atenuacion_y_limites_de_tamano() -> None:
+    configuracion = Configuracion(
+        atenuacion_niveles=(0.8, 0.4),
+        atenuacion_minima=0.15,
+        tamano_texto_base_px=50,
+        paso_tamano_texto_px=5,
+        tamano_texto_minimo_px=20,
+        tamano_texto_maximo_px=90,
+        tiempo_inactividad_cursor_ms=2500,
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    datos = _extraer_datos(pagina)
+    assert datos["atenuacion_niveles"] == [pytest.approx(0.8), pytest.approx(0.4)]
+    assert datos["atenuacion_minima"] == pytest.approx(0.15)
+    assert datos["tamano_texto_base_px"] == 50
+    assert datos["paso_tamano_texto_px"] == 5
+    assert datos["tamano_texto_minimo_px"] == 20
+    assert datos["tamano_texto_maximo_px"] == 90
+    assert datos["tiempo_inactividad_cursor_ms"] == 2500
+
+
+def test_estilo_usa_color_de_acento_y_margen_seguro_configurables() -> None:
+    configuracion = Configuracion(color_acento_reproductor="#ff00ff", margen_seguro_px=80)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    assert "#ff00ff" in pagina
+    assert "80px" in pagina
+
+
+def test_guion_js_calcula_atenuacion_de_contexto_por_distancia() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function opacidadPorDistancia" in pagina
+    assert "atenuacion_niveles" in pagina
+    assert "atenuacion_minima" in pagina
+
+
+def test_guion_js_permite_ajustar_tamano_de_texto_en_vivo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function ajustarTamanoTexto" in pagina
+    assert '"]"' in pagina
+    assert '"["' in pagina
+    assert "--tamano-base" in pagina
+
+
+def test_guion_js_oculta_el_cursor_tras_inactividad_en_pantalla_completa() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "cursor-oculto" in pagina
+    assert "fullscreenchange" in pagina
 
 
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:

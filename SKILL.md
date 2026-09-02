@@ -97,14 +97,27 @@ Si ya existía una versión previa del archivo, se copia antes a `<nombre>.bak-<
 
 `reproductor.html` es el artefacto principal: un único archivo, sin dependencias ni CDN, que funciona con doble clic desde `file://`, offline, en cualquier maquina. Embebe las escenas, los bloques de respiración y los tiempos ya calculados, más su CSS y su JS, en una sola pieza. El escapado es seguro por dos vías a la vez: los datos viajan como JSON dentro de un `<script>` y se vuelcan al DOM solo con `textContent`, nunca con marcado interpretado — ni una cita, un `<`, un `&` o una tilde del guion pueden romper la página ni ejecutarse.
 
-El reproductor **prioriza legibilidad sobre branding**: neutro y oscuro, sin identidad corporativa, solo fuentes del sistema. Al abrirlo se ve un **índice de escenas** (título, duración estimada y estado pendiente/grabada/revisada), navegable con `Tab`, flechas y clic; elegir una entra en **pantalla completa** directamente en esa escena, con un contador "N/total" visible, y "Volver al índice" regresa sin recargar la página. El avance automático, el resaltado, la tipografía de grabación y el autoscroll llegan en T-20 a T-22.
+El reproductor **prioriza legibilidad sobre branding**: neutro y oscuro, sin identidad corporativa, solo fuentes del sistema. Al abrirlo se ve un **índice de escenas** (título, duración estimada y estado pendiente/grabada/revisada), navegable con `Tab`, flechas y clic; elegir una entra en **pantalla completa** directamente en esa escena, con un contador "N/total" visible, y "Volver al índice" regresa sin recargar la página. El avance automático llega en T-20; el autoscroll, en T-22.
 
 | Opción | Por defecto | Nota |
 |--------|-------------|------|
 | Color de fondo | `#0b0b0d` | Neutro y oscuro |
 | Color de texto | `#f5f5f5` | — |
-| Tamaño de letra base | 48 px | Legibilidad a distancia de cámara |
+| Tamaño de letra base | 48 px | Legibilidad a distancia de cámara; ajustable en vivo, ver T-21 |
 | Tipografía | fuentes del sistema | Pila de respaldo, nada remoto |
+
+## Resaltado, tipografía y tema de grabación (T-21)
+
+El bloque activo se lee a distancia y el contexto no compite con él: el bloque que toca decir queda a opacidad plena con un borde de acento; los bloques anteriores y posteriores se atenúan según su distancia al activo, siguiendo un gradiente configurable con un suelo mínimo (el contexto nunca desaparece del todo). El contraste del bloque activo frente al fondo es AAA (≥ 7:1, verificado por test). Márgenes seguros alrededor del contenido y cursor oculto en pantalla completa tras un tiempo de inactividad, para que no quede nada que distraiga delante de la cámara.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Gradiente de atenuación del contexto | `0.75, 0.5, 0.35` (por distancia) | Estrictamente decreciente |
+| Suelo de atenuación | `0.2` | Nunca por debajo, nunca por encima del último nivel |
+| Color de acento | `#f5c542` | Foco visible, indicador de pausa, borde del bloque activo |
+| Paso / límites de tamaño de texto en vivo | 4 px · 24–96 px | Teclas `[` / `]` dentro del reproductor |
+| Margen seguro | 64 px | Alrededor de todo el contenido |
+| Inactividad antes de ocultar el cursor | 3000 ms | Solo con pantalla completa activa |
 
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 

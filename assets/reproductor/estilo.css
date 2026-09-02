@@ -2,8 +2,10 @@
   --color-fondo: __COLOR_FONDO__;
   --color-texto: __COLOR_TEXTO__;
   --color-texto-secundario: __COLOR_TEXTO_SECUNDARIO__;
+  --color-acento: __COLOR_ACENTO__;
   --tamano-base: __TAMANO_TEXTO_BASE_PX__px;
   --fuente-sistema: __PILA_TIPOGRAFICA__;
+  --margen-seguro: __MARGEN_SEGURO_PX__px;
 }
 
 * {
@@ -24,7 +26,13 @@ body {
 #app {
   max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 6rem;
+  padding: var(--margen-seguro);
+}
+
+/* Cursor oculto tras inactividad en pantalla completa (T-21, requisito 4). */
+#app.cursor-oculto,
+#app.cursor-oculto * {
+  cursor: none;
 }
 
 h1 {
@@ -68,7 +76,7 @@ h1 {
 
 /* Foco visible en todo elemento navegable (T-19, requisito 3). */
 button:focus-visible {
-  outline: 3px solid #f5c542;
+  outline: 3px solid var(--color-acento);
   outline-offset: 2px;
 }
 
@@ -159,19 +167,35 @@ button:focus-visible {
   min-width: 5.5em;
 }
 
+.tamano-texto {
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+  min-width: 4em;
+}
+
 .estado-pausa {
-  color: #f5c542;
+  color: var(--color-acento);
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75em;
   letter-spacing: 0.03em;
 }
 
-/* Bloque activo del motor de avance (T-20). Tratamiento minimo a proposito:
-   el resaltado/atenuado de contexto con gradiente configurable es T-21. */
+/* Resaltado del bloque activo (T-20) y atenuacion del contexto (T-21,
+   requisito 1). La opacidad de cada bloque de contexto la calcula
+   `guion.js` bloque a bloque segun su distancia al activo (gradiente
+   configurable, `atenuacion_niveles`/`atenuacion_minima`); aqui solo se
+   deja la transicion suave y el tratamiento del bloque activo, que
+   mantiene siempre el color de texto de alto contraste (--color-texto)
+   sin perderlo bajo el fondo o el borde de realce. */
+.bloque {
+  transition: opacity 0.2s ease-in-out;
+}
+
 .bloque--activo {
+  opacity: 1;
   background: rgba(255, 255, 255, 0.08);
-  border-left: 3px solid #f5c542;
+  border-left: 3px solid var(--color-acento);
   padding-left: 0.75em;
   font-weight: 600;
 }
