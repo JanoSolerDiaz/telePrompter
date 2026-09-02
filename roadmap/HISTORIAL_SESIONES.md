@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-02 — Decisiones del dueño sobre T-24 y T-29, sesión local (sin código)
+**Tarea(s):** T-24, T-24b (nueva), T-29 — ninguna implementada; solo se fija su alcance
+**Estado resultante:** T-24 PENDIENTE con alcance reducido · T-24b BLOQUEADA · T-29 PENDIENTE, confirmada como NO bloqueada
+**Commits a develop:** — (pendiente de commit al cierre de esta sesión)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera, bloque «PARA EL DUEÑO», §1 filas T-24/T-24b/T-29, §3 bloqueos 2 y 5, §6 preguntas 9 y 10, §7 dos desviaciones; de paso se recompone la tabla de §6 como un solo bloque contiguo, que venía partida por líneas en blanco y desordenaba las filas 7 y 8), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** no aplica — no se ha tocado ni una línea de código ni de test
+**Health check post-deploy:** no aplica
+**Decisiones tomadas:** son decisiones **del dueño**, no del agente, así que van a §6 de `SEGUIMIENTO.md` (preguntas 9 y 10) y no a `DECISIONES_TECNICAS.md`. (1) **T-24 se parte:** el dueño no dispone de clicker Bluetooth; el mando se identifica como un teclado corriente, de modo que el mapa completo, el antirrebote y la ayuda `?` son implementables y testeables sin hardware y solo la calibración «qué botón manda qué tecla» lo exige. T-24 conserva los requisitos 1, 3, 4 y la mitad software del 2; la verificación física sale a **T-24b, BLOQUEADA hasta nuevo aviso**. Se evita bloquear en cascada T-25 y T-26 y parar toda FASE B4. (2) **T-29 no se bloquea** pese a seguir sin el paquete de `480-branded-pptx`: su propio requisito 4 y su criterio de aceptación ya exigen entregar `tarjetas.json` y el brief con la skill de marca ausente, dejando latente solo la generación real del `.pptx`. Se evita bloquear en cascada T-30, T-31, T-32 y T-33.
+**Hallazgos del auditor atendidos:** ninguno
+**Hallazgos:** la nota «**Bloqueo humano**» del cuerpo de T-29 en `HOJA_DE_RUTA.md` se contradice en apariencia con el requisito 4 y el criterio de aceptación de esa misma tarea; podía inducir a una sesión futura a marcarla BLOQUEADA por error. Aclarado en §1, §3.2 y §7 de `SEGUIMIENTO.md` (la hoja de ruta es inmutable y no se toca).
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** **T-24 con alcance reducido** (mapa de teclado, antirrebote configurable, prevención del desplazamiento nativo, ayuda `?` con el mapa vigente). **No intentar T-24b** ni verificar ningún mando físico: se da por bueno el criterio de aceptación recorriendo la escena entera con `Espacio`, `PageUp` y `PageDown` desde el teclado. Después, T-25 y T-26 como estaba previsto.
+
+---
+
 ### Sesión 2026-09-02 — T-23 (ayudas de grabación), sesión de nube
 **Tarea(s):** T-23
 **Estado resultante:** T-23 COMPLETADA
