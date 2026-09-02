@@ -22,7 +22,12 @@
 | #5 | 2026-08-31 | Producto | media | ABIERTO | T-26 asume que `localStorage` persiste al abrir el reproductor desde `file://`. No está verificado en el navegador de grabación; el `try/catch` evita el error pero no salva la promesa de «retomar entre sesiones». | T-26 |
 | #6 | 2026-08-31 | Coherencia | baja | ABIERTO | Nomenclatura arrastrada del nombre anterior: la carpeta de salida es `<nombre-guion>-tarjetas/` con el proyecto ya llamado `teleprompter`. Además `assets/` mezcla dos cosas distintas (logotipos de marca y, en el futuro, plantillas del reproductor). | T-07, T-18, T-28 |
 | #7 | 2026-08-31 | Trazabilidad | baja | **RESUELTO** | Los tres logs estaban vacíos con el proyecto ya commiteado. **Cerrado:** la sesión de T-00 dejó 7 decisiones en `DECISIONES_TECNICAS.md`, su entrada en `HISTORIAL_SESIONES.md` y tres desviaciones en §7 (dos ya cerradas al resolverse §6.7). El cambio a v1.2 sí está registrado en los tres sitios. | §0.4 |
-| #8 | 2026-08-31 | Documentación | baja | ABIERTO | `DEVELOPERS.md` se referencia en §0.4 y en T-32 pero todavía no existe. Esperable a esta altura; se registra para que no se pierda. | T-32 |
+| #8 | 2026-08-31 | Documentación | baja | **RESUELTO** | `DEVELOPERS.md` se referencia en §0.4 y en T-32 pero todavía no existía. **Cerrado por acumulación:** existe ya con 934 líneas y una sección por cada tarea completada (T-00 a T-21), mantenida sesión a sesión como parte del cierre de cada una — cumple de sobra lo que T-32 le exige, con antelación sobre esa tarea. | T-32 |
+| #9 | 2026-09-02 | Invariantes / revalidación | **alta** | ABIERTO | Si en una misma revalidación coinciden una edición manual del dueño y la aceptación de una partición de respiración sobre ese mismo bloque, la identidad usada para localizar la edición (`indice_original`, `None`) no se traduce a las identidades resultantes de la partición (`indice_original`, `'a'`/`'b'`): la edición manual se pierde en silencio, sin aviso ni test que lo cubra, en favor del texto derivado de la partición. Rompe el invariante (c) («la edición manual manda») en este cruce concreto; ningún guion real lo ha disparado todavía. | `revalidacion.py` · invariante (c) |
+| #10 | 2026-09-02 | Configuración / calidad | baja | ABIERTO | Dos colores de estado del índice del reproductor (`.escena-estado--grabada` `#4ade80`, `.escena-estado--revisada` `#60a5fa`, de T-19) están escritos a mano en `estilo.css` en vez de vivir en `Configuracion` — la misma deuda de «sin números mágicos» que T-21 cerró para el color de acento del reproductor sin tocar estos dos. | T-19, T-21 · §0.2 |
+| #11 | 2026-09-02 | Documentación / coherencia | baja | ABIERTO | `PROYECTO.md` (documento estable, «cambia poco») sigue describiendo en su glosario el ritmo como «por defecto 120, propio de locución didáctica y pausada» — la decisión anterior a T-12, ya sustituida en §0.2: el ritmo base es el deducido del propio guión, con 120 ppm solo de respaldo. | PROYECTO.md · T-12 |
+| #12 | 2026-09-02 | Infraestructura | baja | ABIERTO | `pyproject.toml` exige Python ≥3.12 (`requires-python`, `target-version = "py312"`), pero el intérprete real de las sesiones de nube es 3.11.15. Ya mitigado evitando deliberadamente sintaxis exclusiva de 3.12 (decisión de T-06), pero el desajuste de fondo sigue sin corregirse ni vigilarse fuera de una nota suelta en `DECISIONES_TECNICAS.md`. | pyproject.toml · DECISIONES_TECNICAS (T-06) |
+| #13 | 2026-09-02 | Robustez del validador | baja | ABIERTO | El validador de auto-contención (`verificar_salidas.py`) cubre `http(s)://`, `//cdn`, `<link>` remoto, `@import`, `fetch`/`XMLHttpRequest` y `src=` externo, pero no contempla `<object>`/`<embed src>`/`<base href>`/`WebSocket`/`EventSource`/`sendBeacon` ni `url(...)` de CSS fuera de `@import`. Hoy ninguna plantilla los usa; la regla dura solo se sostiene mientras nadie los introduzca sin ampliar el validador. | `verificar_salidas.py` · regla «salida autocontenida» |
 
 ---
 
@@ -31,6 +36,105 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-02 — primera revisión de código real (T-00 a T-21)
+
+**Alcance.** Desde la última pasada (31-08, antes de que existiera código) el equipo ha completado
+T-00 a T-21: todo el núcleo de análisis del guion (parser, clasificador, convención, troceo,
+tiempos, normalización, detección, reescrituras), el ciclo de validación completo (documento de
+revisión + revalidación) y las primeras cuatro tareas del reproductor (esqueleto, índice, avance
+híbrido, resaltado/tema). Esta pasada audita ese código real —arquitectura, invariantes, robustez—,
+no solo el andamiaje documental de la pasada anterior.
+
+**Verificación objetiva de las cuatro redes.** Ejecuté `python scripts/ci.py` de forma
+independiente, sin fiarme del resumen de SEGUIMIENTO: `mypy` limpio sobre 44 archivos, `ruff`
+limpio, `pytest` en **288 passed, 1 skipped** (recontado a mano, coincide exacto con lo que narra
+SEGUIMIENTO), y `verificar_salidas.py --fixture` en verde con las tres etapas aún NO APLICABLE
+correctamente justificadas. Los 21 commits de tareas son atómicos, con prefijo `T-XX:`, uno por
+tarea, ninguno en `master`. El relato de SEGUIMIENTO.md se corresponde con el estado real del
+repositorio, no es una narrativa optimista.
+
+**Invariantes de datos (a)-(d) — el núcleo del producto, verificado contra el código, no contra
+la documentación.**
+- **(a) cobertura total:** sostenida — test de reconstrucción real contra los tres guiones de
+  calibración (`tests/test_clasificador.py`), sin huecos.
+- **(b) original recuperable:** sostenida — el registro de reescrituras es append-only de verdad;
+  un rechazo nunca toca `original`.
+- **(d) sin borrado destructivo:** sostenida — `.bak-<marca_de_tiempo>` antes de cada sobrescritura
+  de `guion-escenas.md`, probado en el ciclo de tres revalidaciones encadenadas.
+- **(c) edición manual manda:** sostenida en el ciclo normal (tres pasadas encadenadas sin perder
+  ninguna edición), pero **aparece un hueco real** en el cruce menos frecuente entre una edición
+  manual y una partición de respiración aceptada sobre el mismo bloque, dentro de la misma
+  revalidación: la identidad que localiza la edición del dueño no sobrevive a la materialización de
+  la partición, y la edición se descarta en silencio en favor del texto derivado, sin aviso ni test
+  que lo detecte. Es exactamente el tipo de fallo que este invariante existe para prevenir —el
+  dueño perdería una corrección de texto sin saberlo—, aunque el disparador es estrecho y ningún
+  guion real lo ha provocado todavía. → **#9**, severidad alta por tratarse del invariante que es
+  la razón de ser del ciclo de validación, no por su frecuencia observada.
+
+**Autocontención y cero red.** Sostenidas sin excepción: cero `urllib`/`requests`/`socket` en
+`scripts/`, cero CDN/`@import`/`src=` externo en las plantillas del reproductor,
+`dependencies = []` en `pyproject.toml`. El validador de auto-contención es real y forma parte de
+la CI, no decorativo. Su cobertura de patrones tiene margen de mejora (no contempla
+`<object>`/`<base href>`/`WebSocket`) que hoy no importa porque nada los usa, pero conviene
+cerrarlo antes de que T-22 a T-26 —que van a seguir tocando `guion.js`— lo hagan sin querer.
+→ **#13**.
+
+**Sin números mágicos.** Sostenida en general: `config.py` es de verdad el único sitio con valores
+por defecto, y T-19/T-20/T-21 han ido cerrando sus propios huecos sesión a sesión (el color de
+acento del reproductor pasó de literal a `Configuracion` en la propia T-21, según consta en
+`DECISIONES_TECNICAS.md`). Encontré dos colores de estado del índice (`grabada`/`revisada`) que
+quedaron fuera de ese barrido — deuda menor, del mismo tipo que el propio proyecto ya sabe
+identificar y cerrar. → **#10**.
+
+**`SKILL.md` sigue siendo un borrador, como declara su propia cabecera.** Cerca de la mitad de los
+campos de `Configuracion` (pausas por puntuación, umbrales de detección, límites de velocidad,
+calibración manual de ppm) no están todavía en su tabla de valores por defecto. **No es un hallazgo
+nuevo:** es exactamente el hueco que T-31 existe para cerrar, y `SKILL.md` lo declara honestamente
+desde su primera línea («BORRADOR (T-00)»). Se deja constancia aquí solo para confirmar que la
+brecha tiene el tamaño esperado a esta altura del backlog y no ha crecido de forma descontrolada.
+
+**Coherencia documental.** Contrasté varias decisiones citadas en `DECISIONES_TECNICAS.md` (T-06,
+T-12, T-14, T-18, T-20) contra el código real: las cinco coinciden exactamente, sin ninguna
+narrativa que se aparte de lo implementado. El único documento que se ha quedado atrás es
+`PROYECTO.md`, que se declara a sí mismo «cambia poco» pero no siguió a T-12 cuando el ritmo dejó
+de ser «120 ppm por defecto» para pasar a «deducido del guion, 120 de respaldo» — inconsistencia de
+redacción, no de comportamiento (el código y `SKILL.md` sí están al día). → **#11**. También
+localicé que `pyproject.toml` pide Python ≥3.12 mientras el intérprete real de las sesiones de nube
+es 3.11.15; ya está mitigado (T-06 evitó a propósito sintaxis exclusiva de 3.12) pero el desajuste
+de fondo sigue sin corregirse. → **#12**.
+
+**Arquitectura y calidad de código.** El pipeline está bien factorizado y cada módulo respeta su
+frontera: `tiempos.calcular_tiempos` sigue siendo la única fuente de tiempos (T-12), nadie
+recalcula por su cuenta; `config.py` centraliza de verdad los valores por defecto sin lógica de
+negocio dispersa. El punto más cargado es `revalidacion.py`: una función de 371 líneas que
+reconcilia identidades de bloque entre pasadas, con solo 8 tests frente a los 25-28 de módulos de
+complejidad comparable (`normalizacion.py`, `reproductor.py`) — la cobertura más fina de todo el
+pipeline es, no por casualidad, donde apareció el hallazgo #9. Manejo de errores consistente
+(una excepción por módulo con mensaje ya accionable en español); no hay `TODO`/`FIXME` sueltos ni
+`print()` fuera de `presentacion.py`. `entrada.py` está genuinamente blindado contra entradas
+hostiles (codificación no UTF-8, guiones vacíos o desmesurados, rutas con traversal, tiempo de
+proceso acotado sin `SIGALRM` por portabilidad a Windows).
+
+**Cierro #8.** `DEVELOPERS.md` existe, con 934 líneas y una sección por cada tarea completada
+(arquitectura, decisiones de diseño, cómo tocar cada módulo) — cumple de sobra lo que T-32 le pedía,
+con antelación sobre esa tarea porque cada sesión ya lo actualiza al cerrar.
+
+**Lo que sigue abierto y por qué no preocupa todavía.** #5 (persistencia en `file://`) y #6
+(nomenclatura de `assets/`/carpeta de salida) siguen sin poder verificarse hasta T-26 y
+T-32/R-06 respectivamente; ambos ya están enrutados a R-01 y R-06. Nada de severidad alta salvo
+el nuevo #9, que sí debería tratarse como P-XX urgente antes de seguir con T-22 en adelante, por
+tocar directamente el invariante que el propio encargo de esta auditoría señala como razón de ser
+del proyecto.
+
+**Conclusión general.** El proyecto mantiene, veintiuna tareas después, el mismo nivel de rigor que
+impresionó en la auditoría de arranque: cada decisión no trivial está registrada con sus
+alternativas descartadas y por qué, los cuatro invariantes de datos son el criterio real de diseño
+—no una frase de la hoja de ruta—, y las cuatro redes de verificación son ciertas, no teatro. La
+única grieta real que esta pasada encontró (#9) es precisamente el tipo de caso límite —dos
+decisiones del dueño coincidiendo sobre el mismo bloque en la misma sesión— que es más difícil de
+ver desde dentro del propio proyecto que desde la distancia de un auditor externo. El resto son
+deudas menores, ya del tamaño y tipo que el propio equipo sabe reconocer y cerrar sin ayuda.
 
 ### Auditoría 2026-08-31 (segunda pasada) — reevaluación tras la sesión de T-00
 
