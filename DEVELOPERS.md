@@ -1812,6 +1812,44 @@ solo en el código: `tests/test_skill_md.py` falla si añades un campo a
   se marca como desviación (nunca como error) vía `detectar_desviaciones` de
   `convencion.py`.
 
+## Encaje con la cadena de montaje de vídeo (T-33)
+
+Tarea puramente de **contrato y verificación**: no añade ninguna salida nueva, solo
+documenta y comprueba que las dos que ya existen (`.srt` de T-27, `tarjetas.json` de
+T-29) son suficientes y consistentes entre sí para que una skill de montaje externa
+las consuma sin ambigüedad. El contrato completo vive en
+`references/contrato-montaje.md`; el resumen operativo, en la sección «Donde encaja»
+de `SKILL.md`.
+
+- **Numeración de escena estable y predecible (requisito 2):** hasta esta tarea,
+  `parser.py` aceptaba el `numero` capturado del encabezado `## BLOQUE N — <título>`
+  tal cual, sin comprobar que fuera único ni creciente — un guion con dos escenas
+  `BLOQUE 2` habría generado igual, sin ningún aviso, dos tarjetas con el mismo
+  número en `tarjetas.json`. `convencion._desviaciones_numero_escena` (nueva,
+  llamada desde `detectar_desviaciones`) recorre `resultado.escenas` en orden de
+  documento (ya vienen ordenadas por `linea_inicio`, T-08) y añade dos tipos de
+  `Desviacion` — `numero_escena_duplicado` (el número ya apareció antes) y
+  `numero_escena_no_creciente` (es menor o igual que el de la escena anterior, sin
+  ser un duplicado exacto) — sin bloquear el proceso, mismo patrón que el resto de
+  `detectar_desviaciones` (T-10): la escena se sigue generando con su número tal
+  cual, solo se informa.
+- **`tests/test_integracion_montaje.py`** (requisito 3) es el primer test que genera
+  `.srt` y `tarjetas.json` a partir del **mismo** `ResultadoTiempos` de un guion real
+  y comprueba que son consistentes entre sí, no solo que cada uno pasa su propio
+  validador por separado (eso ya lo cubrían `test_srt.py`/`test_pptx.py`): cero
+  desviaciones de numeración de escena, el `.srt` se valida sin avisos (criterio de
+  aceptación literal), `tarjetas.json` cumple su esquema, el fin del último subtítulo
+  coincide exactamente con `duracion_total_segundos` de `tarjetas.json`, y el orden
+  de `numero` en ambas salidas es el mismo que en el guion de origen.
+- **Por qué no se añadió un `inicio_segundos`/`fin_segundos` absoluto por escena a
+  `tarjetas.json`:** ver la fila correspondiente de `DECISIONES_TECNICAS.md` — es
+  derivable sin ambigüedad sumando `duracion_estimada_segundos` en orden, así que
+  añadirlo habría sido una segunda fuente de verdad sobre el mismo dato que ya
+  calcula `tiempos.calcular_tiempos` (T-12).
+- Esta tarea **no** implementa tomas por escena, recalibrado con tiempos reales de
+  grabación ni alineación real del `.srt` con la toma buena — eso es `R-02`, `R-04` y
+  `R-05` de `roadmap/ROADMAP_PRODUCTO.md`, los tres todavía `PENDIENTE`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -1841,7 +1879,7 @@ parte de su propio criterio de aceptación — no lo dejes como nota aparte.
   ejemplo del paquete distribuible y su versión anotada esperada, T-32), ambos
   usados por `verificar_salidas.py --fixture`.
 - `assets/` — logotipos de marca 480, `assets/reproductor/` (plantillas del reproductor: `plantilla.html`, `estilo.css`, `guion.js`) y `assets/pdf/` (plantillas del HTML de impresión).
-- `references/` — documentación de referencia: marca 480 (`marca-480.md`), contrato `tarjetas.json` (`contrato-tarjetas.md`), convención de marcado del guion (`convencion-guion.md`), formato de `guion-escenas.md` (`formato-guion-escenas.md`) y mapa de teclas del reproductor (`mapa-teclas.md`).
+- `references/` — documentación de referencia: marca 480 (`marca-480.md`), contrato `tarjetas.json` (`contrato-tarjetas.md`), contrato de encaje con la cadena de montaje (`contrato-montaje.md`, T-33), convención de marcado del guion (`convencion-guion.md`), formato de `guion-escenas.md` (`formato-guion-escenas.md`) y mapa de teclas del reproductor (`mapa-teclas.md`).
 - `roadmap/` — el registro de gobierno del proyecto: `SEGUIMIENTO.md` es el hub.
 
 ## Convenciones de rama

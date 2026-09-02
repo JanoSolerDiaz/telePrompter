@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-02 — T-33 (encaje con la cadena de montaje de vídeo), sesión de nube
+**Tarea(s):** T-33
+**Estado resultante:** T-33 **COMPLETADA**; tercera tarea de FASE B6. No queda ninguna T-XX PENDIENTE en §1 — la próxima sesión pasa a la cola de R-XX salvo reordenación del dueño
+**Commits a develop:** `T-33: encaje con la cadena de montaje de vídeo` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (`Migración: No` en la spec de T-33; tarea de contrato y verificación, sin cambio de esquema de `estado.json` ni de `tarjetas.json`)
+**Archivos creados/modificados:** `references/contrato-montaje.md` (nuevo: carpeta y nombres de archivo, qué archivos consume de verdad la cadena de montaje, garantías de numeración/orden de escena, fórmula para derivar el rango de tiempo de cada escena desde `tarjetas.json`, qué queda fuera para R-02/R-04/R-05), `SKILL.md` (sección «Donde encaja: la cadena de montaje de vídeo (T-33)» sustituye el stub que ya apuntaba a esta tarea), `scripts/convencion.py` (`_desviaciones_numero_escena`, nueva, llamada desde `detectar_desviaciones`: dos tipos de `Desviacion` nuevos, `numero_escena_duplicado` y `numero_escena_no_creciente`), `tests/test_convencion.py` (2 tests nuevos), `tests/test_integracion_montaje.py` (nuevo, 1 test: `.srt` + `tarjetas.json` del mismo `ResultadoTiempos` sobre los tres guiones reales, consistentes entre sí), `DEVELOPERS.md` (sección «Encaje con la cadena de montaje de vídeo (T-33)»), `roadmap/SEGUIMIENTO.md` (cabecera, §1 fila T-33), `roadmap/DECISIONES_TECNICAS.md` (3 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ (`ruff check` + `ruff format`) · tests ✅ (402 passed, 0 skipped; antes 399) · build ✅ (`verificar_salidas.py --fixture`: las diez etapas en OK, ninguna NO APLICABLE)
+**Health check post-deploy:** no aplica — T-33 no toca la instalación de la skill (T-32), que sigue con su bloqueo #6 de §3 sin cambios
+**Decisiones tomadas:** 3 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-02, T-33): (1) señalar la numeración de escena ambigua como `Desviacion` (avisa, no bloquea) en vez de lanzar excepción o renumerar en silencio; (2) no añadir `inicio_segundos`/`fin_segundos` absoluto a `tarjetas.json` porque ya es derivable sin ambigüedad sumando `duracion_estimada_segundos`; (3) el test de integración va en un archivo nuevo, no ampliando `test_srt.py`/`test_pptx.py`, porque cruza dos módulos a propósito
+**Hallazgos del auditor atendidos:** ninguno nuevo; sin hallazgos ABIERTOS de severidad alta al empezar (el #9 sigue corregido en código por P-02, pendiente solo de que el auditor lo reevalúe y lo cierre en su propio documento)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** no queda ninguna T-XX `PENDIENTE` en §1 de `SEGUIMIENTO.md`. La siguiente sesión pasa a la cola de producto (`R-01`, oleada v2, `roadmap/ROADMAP_PRODUCTO.md`), salvo que el dueño reordene la prioridad o aparezca un hallazgo ABIERTO de severidad alta que atender primero (§0.3). Los tres bloqueos de §3 siguen abiertos sin urgencia (paquete `480-branded-pptx`, clicker Bluetooth real, instalación real de T-32) y ninguno frena el backlog.
+
 ### Sesión 2026-09-02 — T-32 (instalación de la skill y guion de ejemplo), sesión de nube
 **Tarea(s):** T-32
 **Estado resultante:** T-32 **BLOQUEADA solo en su último tramo** — las tres partes no dependientes de la máquina real del dueño están entregadas y probadas; la instalación real y su health check quedan como bloqueo #6 de §3. Segunda tarea de FASE B6. T-33 no queda bloqueada en cascada (ver «Próximo paso»)

@@ -285,7 +285,50 @@ def detectar_desviaciones(
             )
         )
 
+    desviaciones.extend(_desviaciones_numero_escena(resultado))
+
     return sorted(desviaciones, key=lambda desviacion: desviacion.linea)
+
+
+def _desviaciones_numero_escena(resultado: ResultadoParseo) -> list[Desviacion]:
+    """Requisito 2 de T-33: el numero de escena (`## BLOQUE N — <titulo>`) es lo
+    unico que la cadena de montaje tiene para casar una toma con su escena sin
+    ambiguedad (`references/contrato-montaje.md`), asi que debe ser unico y
+    creciente en el mismo orden que ya usa `resultado.escenas` (orden del
+    documento, `Escena.linea_inicio`). Nunca bloquea el proceso -- el guion se
+    sigue procesando con el numero tal cual viene del encabezado -- solo se
+    informa, mismo patron que el resto de `detectar_desviaciones`."""
+    desviaciones: list[Desviacion] = []
+    numeros_vistos: set[int] = set()
+    numero_anterior: int | None = None
+    for escena in resultado.escenas:
+        if escena.numero in numeros_vistos:
+            desviaciones.append(
+                Desviacion(
+                    tipo="numero_escena_duplicado",
+                    descripcion=(
+                        f"Escena {escena.numero} ('{escena.titulo}') repite un numero de "
+                        "escena ya usado antes en el guion: no permite casar tomas con "
+                        "escenas sin ambiguedad."
+                    ),
+                    linea=escena.linea_inicio,
+                )
+            )
+        elif numero_anterior is not None and escena.numero <= numero_anterior:
+            desviaciones.append(
+                Desviacion(
+                    tipo="numero_escena_no_creciente",
+                    descripcion=(
+                        f"Escena {escena.numero} ('{escena.titulo}') no es mayor que el "
+                        f"numero de la escena anterior en el guion ({numero_anterior}): el "
+                        "orden de escenas deja de ser predecible para la cadena de montaje."
+                    ),
+                    linea=escena.linea_inicio,
+                )
+            )
+        numeros_vistos.add(escena.numero)
+        numero_anterior = escena.numero
+    return desviaciones
 
 
 def generar_convencion_guiones(configuracion: Configuracion | None = None) -> str:

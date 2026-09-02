@@ -127,17 +127,89 @@ def test_escena_sin_rotulo_se_procesa_y_se_senala_como_desviacion() -> None:
     assert "Seccion rara sin marcar" in auxiliar.descripcion
 
 
+_GUION_CON_NUMERO_ESCENA_DUPLICADO = """# Guion de prueba
+
+## BLOQUE 0 — Arranque (0:00 - 0:10)
+
+**LOCUCIÓN**
+> Primera frase citada.
+
+---
+
+## BLOQUE 0 — Numero repetido (0:10 - 0:20)
+
+**LOCUCIÓN**
+> Segunda frase citada.
+"""
+
+_GUION_CON_NUMERO_ESCENA_NO_CRECIENTE = """# Guion de prueba
+
+## BLOQUE 0 — Arranque (0:00 - 0:10)
+
+**LOCUCIÓN**
+> Primera frase citada.
+
+---
+
+## BLOQUE 2 — Intermedio (0:10 - 0:20)
+
+**LOCUCIÓN**
+> Segunda frase citada.
+
+---
+
+## BLOQUE 1 — Numero no creciente (0:20 - 0:30)
+
+**LOCUCIÓN**
+> Tercera frase citada.
+"""
+
+
+def test_numero_de_escena_repetido_se_procesa_y_se_senala() -> None:
+    """Requisito 2 de T-33: un numero de escena duplicado no bloquea el proceso
+    (las dos escenas se siguen procesando) pero queda senalado, porque rompe el
+    emparejamiento sin ambiguedad de tomas con escenas que exige la cadena de
+    montaje (`references/contrato-montaje.md`)."""
+    resultado = parsear_guion(_GUION_CON_NUMERO_ESCENA_DUPLICADO)
+    clasificacion = clasificar_guion(resultado)
+    assert len(resultado.escenas) == 2
+
+    desviaciones = detectar_desviaciones(resultado, clasificacion)
+    tipos = [d.tipo for d in desviaciones]
+    assert tipos.count("numero_escena_duplicado") == 1
+    assert "numero_escena_no_creciente" not in tipos
+
+    duplicado = next(d for d in desviaciones if d.tipo == "numero_escena_duplicado")
+    assert "Numero repetido" in duplicado.descripcion
+
+
+def test_numero_de_escena_no_creciente_se_procesa_y_se_senala() -> None:
+    """Un numero de escena menor o igual que el de la escena anterior, sin ser
+    un duplicado exacto, tambien rompe el orden predecible y se senala aparte."""
+    resultado = parsear_guion(_GUION_CON_NUMERO_ESCENA_NO_CRECIENTE)
+    clasificacion = clasificar_guion(resultado)
+    assert len(resultado.escenas) == 3
+
+    desviaciones = detectar_desviaciones(resultado, clasificacion)
+    tipos = [d.tipo for d in desviaciones]
+    assert tipos.count("numero_escena_no_creciente") == 1
+    assert "numero_escena_duplicado" not in tipos
+
+    no_creciente = next(d for d in desviaciones if d.tipo == "numero_escena_no_creciente")
+    assert "Numero no creciente" in no_creciente.descripcion
+
+
 def test_subtitulo_entrecomillado_no_es_una_desviacion() -> None:
     """El subtitulo tras el titulo del guion (evidencia de T-08) es una
     categoria de seccion auxiliar reconocida, no una desviacion cada vez."""
     texto = (
-        '# Titulo del guion\n\n'
+        "# Titulo del guion\n\n"
         '## "Subtitulo entre comillas"\n\n'
-        'Contenido de portada.\n\n'
-        '---\n\n'
-        '## BLOQUE 0 — Arranque (0:00 - 0:10)\n\n'
-        '**LOCUCIÓN**\n'
-        '> Frase citada.\n'
+        "Contenido de portada.\n\n"
+        "---\n\n"
+        "## BLOQUE 0 — Arranque (0:00 - 0:10)\n\n"
+        "**LOCUCIÓN**\n"
+        "> Frase citada.\n"
     )
     resultado = parsear_guion(texto)
     clasificacion = clasificar_guion(resultado)

@@ -411,10 +411,20 @@ de normalización más arriba.
 | `pptx_ancho_logo_contenido_pulgadas` | 0,7" | — |
 | `pptx_ancho_logo_cierre_pulgadas` | 2,8" | — |
 
-## Donde encaja
+## Donde encaja: la cadena de montaje de vídeo (T-33)
 
-Es el **paso previo al montaje**. Entrega un `.srt` borrador estandar (consumible por ffmpeg) y
-`tarjetas.json`, para que la fase de edicion de video no empiece de cero. Ver T-33.
+Esta skill es el **paso previo limpio** de la skill de montaje con ffmpeg — no la sustituye ni graba nada, solo le deja preparado lo que necesita para no empezar de cero. El contrato completo, con ejemplos y las garantías exactas sobre orden y numeración de escenas, vive en `references/contrato-montaje.md`; aquí solo el resumen operativo.
+
+De toda la carpeta de salida (`<nombre-guion>-tarjetas/`), la fase de montaje solo necesita leer **dos archivos**:
+
+- **`guion.srt`** — subtítulos borrador (T-27), un único archivo para el guion completo, ya validado con las mismas reglas que aplica un lector estricto tipo ffmpeg (índice secuencial, marca de tiempo bien formada, sin solapes). Los tiempos son **estimados** a partir del ritmo deducido del guion (T-12), no de una toma grabada real — alinear el `.srt` con la toma buena es trabajo futuro (`R-05`, todavía `PENDIENTE`).
+- **`tarjetas.json`** — contrato de intercambio con la generación del `.pptx` (T-29, `references/contrato-tarjetas.md`), pero reutilizable por cualquier consumidor: trae `duracion_estimada_segundos` por escena en el mismo orden que el guion, con lo que la fase de montaje puede calcular el instante de inicio/fin de cada escena sumando duraciones (el `.srt` no lleva ninguna marca de escena en su propio texto).
+
+**Nombres y orden de escenas, estables y predecibles (requisito 2 de T-33):** el `numero` de cada escena (`## BLOQUE N — <título>`) es la única clave para casar una toma grabada con su escena sin ambigüedad. Debe ser único y estrictamente creciente en el orden del documento — el mismo orden en que aparecen en `tarjetas.json` y en el que se generan los subtítulos del `.srt`. `convencion.detectar_desviaciones` (T-10, ampliada en T-33) señala `numero_escena_duplicado` y `numero_escena_no_creciente` sin bloquear el proceso; si aparecen, la cadena de montaje no debe fiarse del número de escena hasta corregir el guion de origen.
+
+Lo que la cadena de montaje **todavía no puede asumir** de esta skill: tomas por escena (`R-02`), recalibrado con tiempos reales de grabación (`R-04`) ni un `.srt` alineado con la toma buena (`R-05`) — las tres siguen `PENDIENTE` en `roadmap/ROADMAP_PRODUCTO.md`.
+
+**Ver también:** `references/contrato-montaje.md` (contrato completo, con la fórmula para derivar el rango de tiempo de cada escena) y `references/contrato-tarjetas.md` (forma exacta de `tarjetas.json`).
 
 ## Verificacion
 
