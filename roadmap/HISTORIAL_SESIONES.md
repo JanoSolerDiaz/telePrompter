@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-02 — T-27 (exportador `.srt` borrador), sesión de nube
+**Tarea(s):** T-27
+**Estado resultante:** T-27 **COMPLETADA**; primera tarea de FASE B5
+**Commits a develop:** `T-27: exportador .srt borrador` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/srt.py` (nuevo: `EntradaSrt`, `formatear_marca_tiempo`, `generar_entradas_srt`, `formatear_srt`, `exportar_srt`, `guardar_srt`, `validar_srt`), `scripts/config.py` (`SRT_DURACION_MINIMA_SEGUNDOS`, `SRT_LINEAS_MAX_POR_SUBTITULO`, `SRT_CON_BOM`, `NOMBRE_ARCHIVO_SRT` y sus campos espejo en `Configuracion` con validación en `__post_init__`), `scripts/tiempos.py` (los cinco tipos de pausa pasan de privados a públicos, `PAUSA_*`, mismo valor), `scripts/verificar_salidas.py` (`generar_srt_fixture`/`verificar_srt` sustituyen el `NO APLICABLE` fijo de T-00), `tests/test_srt.py` (nuevo, 14 tests), `tests/test_logica_pendiente.py` (se retira el talón de T-27, ya cubierto), `pyproject.toml` (per-file-ignore `RUF001` para `tests/test_srt.py`, mismo motivo que el resto de tests con guiones reales), `SKILL.md` (sección «Exportador `.srt` borrador (T-27)» y su fila en la tabla de valores por defecto), `DEVELOPERS.md` (sección T-27), `roadmap/SEGUIMIENTO.md` (cabecera, §1 fila T-27), `roadmap/DECISIONES_TECNICAS.md` (6 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (337 passed, 0 skipped; antes 323+1) · build ✅ (`verificar_salidas.py --fixture`: reproductor + auto-contención + generación y validez del `.srt` en OK, 2 etapas NO APLICABLE justificadas hasta T-30/T-32)
+**Health check post-deploy:** No aplica — sesión de nube, sin instalación local de la skill (T-32 sigue pendiente y fuera del alcance de una sesión de nube)
+**Decisiones tomadas:** 6 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-02, T-27): (1) `srt.py` no distingue el origen del `ResultadoTiempos` que recibe — quien orquesta (futura T-30) decide si pasa el de un guion sin editar o el de una revalidación con reescrituras materializadas, mismo reparto que ya usan `reproductor.py`/`documento_revision.py`; (2) los cinco tipos de pausa de `tiempos.py` pasan de privados a públicos porque son parte del contrato de `BloqueConTiempo.tipo_pausa` y T-27 es su primer consumidor externo; (3) la agrupación de bloques cortos se mide en duración (segundos), no en palabras, con el umbral a `0` como forma de desactivarla sin un booleano aparte; (4) la partición limpia reparte el tiempo por peso de palabras entre páginas, forzando el fin exacto de la última página al `fin_segundos` del grupo para evitar deriva de coma flotante; (5) `validar_srt` implementa un lector estricto propio en vez de replicar la tolerancia real de ffmpeg, porque el objetivo es que la salida sea un `.srt` bien formado, no que "cuele" por la permisividad de un lector concreto; (6) las nuevas etapas de `verificar_salidas.py` reutilizan el mismo guion real que ya usa el reproductor, sin esperar a T-30/T-32
+**Hallazgos del auditor atendidos:** ninguno nuevo; sin hallazgos ABIERTOS de severidad alta al empezar (el #9 sigue corregido en código por P-02, pendiente solo de que el auditor lo reevalúe y lo cierre en su propio documento)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-28 (exportador `.pdf` con identidad 480), segunda de FASE B5. Depende de T-16 (`guion-escenas.md`); Chrome/Edge headless para convertir a PDF, con fallback documentado si no está disponible; una escena por página, marca 480 (Poppins, logotipo con ratio medido del PNG) y modo `--para-terceros`
+
 ### Sesión 2026-09-02 — T-26 (persistencia local de preferencias), sesión de nube
 **Tarea(s):** T-26
 **Estado resultante:** T-26 **COMPLETADA**; **FASE B4 (reproductor) queda cerrada**

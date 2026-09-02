@@ -4,15 +4,16 @@ Sustituye al `build` de un proyecto convencional. Ejecuta la skill sobre el guio
 ejemplo y comprueba que lo generado es valido; sobre todo, que el reproductor `.html`
 es **autocontenido** (regla dura de §0.2).
 
-ESTADO ACTUAL (T-18): el reproductor ya existe (`scripts/reproductor.py`), asi que
-"Generación del reproductor" y "Auto-contención del reproductor" dejan de ser
-NO APLICABLE: se genera de verdad, sobre el primer guion real de calibracion a falta
-de `fixtures/guion-ejemplo.md` (T-32), y se valida a nivel de bytes. "Guion de
-ejemplo" y "Generación de salidas" (la canalizacion completa con `.srt`/`.pdf`/
-`.pptx`) siguen NO APLICABLE hasta T-32 y T-30 respectivamente. Cada etapa se declara
-NO APLICABLE nombrando la tarea que la implementara, para que la cuarta red diga
-siempre algo verdadero y vaya cobrando sentido sola segun avanza el backlog. Responde
-al hallazgo #4 del auditor.
+ESTADO ACTUAL (T-18, T-27): el reproductor y el exportador de `.srt` ya existen
+(`scripts/reproductor.py`, `scripts/srt.py`), asi que "Generación del reproductor",
+"Auto-contención del reproductor", "Generación del .srt" y "Validez del .srt" dejan
+de ser NO APLICABLE: se generan de verdad, sobre el primer guion real de calibracion
+a falta de `fixtures/guion-ejemplo.md` (T-32), y se validan (a nivel de bytes el
+`.html`, con las reglas de ffmpeg el `.srt`). "Guion de ejemplo" y "Generación de
+salidas" (la canalizacion completa con `.pdf`/`.pptx`) siguen NO APLICABLE hasta T-32
+y T-30 respectivamente. Cada etapa se declara NO APLICABLE nombrando la tarea que la
+implementara, para que la cuarta red diga siempre algo verdadero y vaya cobrando
+sentido sola segun avanza el backlog. Responde al hallazgo #4 del auditor.
 """
 
 from __future__ import annotations
@@ -25,10 +26,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from config import NOMBRE_ARCHIVO_SRT
 from logger import configurar_logger
 from parser import parsear_guion
 from presentacion import Nivel, mostrar, titulo
 from reproductor import generar_reproductor_html, guardar_reproductor
+from srt import exportar_srt, guardar_srt, validar_srt
 from tiempos import calcular_tiempos
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -36,6 +39,7 @@ FIXTURE_EJEMPLO = RAIZ / "fixtures" / "guion-ejemplo.md"
 CARPETA_SALIDA_FIXTURE = RAIZ / "fixtures" / "salida"
 CARPETA_GUIONES_REALES = RAIZ / "fixtures" / "reales"
 RUTA_REPRODUCTOR_FIXTURE = CARPETA_SALIDA_FIXTURE / "reproductor.html"
+RUTA_SRT_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_SRT
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
 PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
@@ -146,9 +150,47 @@ def verificar_generacion() -> Resultado:
     )
 
 
-def verificar_srt() -> Resultado:
-    """Valida el .srt generado con las mismas reglas que aplica ffmpeg."""
-    return Resultado("Validez del .srt", "NO APLICABLE", "el exportador de subtitulos es T-27.")
+def generar_srt_fixture() -> Resultado:
+    """Genera el .srt borrador (T-27) sobre el mismo guion real que usa el reproductor.
+
+    Mismo criterio que `generar_reproductor_fixture`: a falta de
+    `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
+    `fixtures/reales/`."""
+    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
+    if not guiones:
+        return Resultado(
+            "Generación del .srt",
+            "NO APLICABLE",
+            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+        )
+    ruta_guion = guiones[0]
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        contenido = exportar_srt(tiempos)
+        guardar_srt(contenido, CARPETA_SALIDA_FIXTURE)
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación del .srt",
+            "FALLO",
+            f"no se pudo generar el .srt sobre {ruta_guion.name}: {excepcion}",
+        )
+    return Resultado("Generación del .srt", "OK", f"generado sobre {ruta_guion.name}.")
+
+
+def verificar_srt(ruta_srt: Path) -> Resultado:
+    """Valida el .srt generado con las mismas reglas que aplica ffmpeg (T-27, requisito 5)."""
+    if not ruta_srt.exists():
+        return Resultado(
+            "Validez del .srt",
+            "NO APLICABLE",
+            f"no se ha generado ningun .srt en {ruta_srt}.",
+        )
+    problemas = validar_srt(ruta_srt.read_text(encoding="utf-8"))
+    if problemas:
+        return Resultado("Validez del .srt", "FALLO", "; ".join(problemas))
+    return Resultado("Validez del .srt", "OK", f"{ruta_srt.name} pasa el validador estricto.")
 
 
 def main() -> int:
@@ -179,7 +221,8 @@ def main() -> int:
         verificar_generacion(),
         generar_reproductor_fixture(),
         verificar_autocontencion(RUTA_REPRODUCTOR_FIXTURE),
-        verificar_srt(),
+        generar_srt_fixture(),
+        verificar_srt(RUTA_SRT_FIXTURE),
     ]
 
     for resultado in resultados:

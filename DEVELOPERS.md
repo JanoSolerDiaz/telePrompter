@@ -1368,6 +1368,73 @@ desde T-18/T-20/T-21 — todo el trabajo vive en `guion.js`/`estilo.css`.
   más cerca del guardado, no el mismo índice. Sin errores de consola en
   ningún paso.
 
+## Exportador `.srt` borrador (T-27)
+
+`scripts/srt.py` arranca los subtítulos en la fase de montaje sin partir de cero.
+No calcula ningún tiempo por su cuenta: consume `tiempos.ResultadoTiempos.bloques`
+tal cual — la única fuente de tiempos del proyecto (T-12, requisito 4) — igual que
+ya hace `reproductor.py`. Es una librería pura, sin punto de entrada de CLI todavía
+(mismo patrón que `tiempos.py`/`normalizacion.py`: T-30 orquestará cuándo se llama).
+
+- **Texto locutado final, no el original (requisito 4).** `exportar_srt` recibe el
+  `ResultadoTiempos` que quien llama ya tenga a mano. Si viene de
+  `tiempos.calcular_tiempos` sobre el guion sin editar, el texto es el de origen;
+  si viene de `revalidacion.revalidar_guion().resultado_tiempos` — el caso real
+  tras un ciclo de revisión —, ya trae las reescrituras aceptadas materializadas
+  (T-17). `srt.py` no distingue el origen a propósito: es quien orquesta la
+  generación de salidas (T-30) quien decide sobre qué `ResultadoTiempos` exportar,
+  el mismo reparto de responsabilidades que ya usan `reproductor.py` y
+  `documento_revision.py`.
+- **Un subtítulo por bloque, agrupable si es muy corto (requisito 1).**
+  `_agrupar_bloques_cortos` funde bloques consecutivos de una misma escena
+  mientras la duración acumulada del grupo (`fin_segundos - inicio_segundos`,
+  que ya incluye cualquier pausa intermedia) no llegue a
+  `Configuracion.srt_duracion_minima_segundos` (1.2 s por defecto) — nunca cruza
+  un fin de escena, reconocido por `tiempos.PAUSA_FIN_ESCENA` (promovida de
+  privada a pública en esta tarea: es parte del contrato público de
+  `BloqueConTiempo.tipo_pausa`, y `srt.py` es su primer consumidor real fuera de
+  `tiempos.py`). Con el umbral a `0` cada bloque cierra su propio grupo de
+  inmediato: no hace falta un interruptor aparte para desactivar la agrupación.
+- **Partición limpia cuando el texto no cabe (requisito 3).** Cada grupo se
+  envuelve con `textwrap.wrap(..., break_long_words=False)` — nunca corta una
+  palabra a la mitad — en líneas de `Configuracion.srt_caracteres_por_linea_max`
+  caracteres (42 por defecto, ya reservada desde T-00) y se pagina en bloques de
+  `Configuracion.srt_lineas_max_por_subtitulo` líneas (2 por defecto). Si salen
+  más páginas que una, cada página se convierte en su propio subtítulo — nunca se
+  trunca ni se descarta una palabra (invariante (a), §0.2) —, y el tiempo del
+  grupo se reparte entre las páginas en proporción a sus palabras; la última
+  página siempre cierra exactamente en el `fin_segundos` del grupo, sin deriva de
+  coma flotante.
+- **Formato estándar y consumible por ffmpeg (requisitos 2 y 5).**
+  `formatear_marca_tiempo` compone `HH:MM:SS,mmm`; `formatear_srt` serializa
+  índice + marca de tiempo + texto + línea en blanco. `guardar_srt` escribe en
+  UTF-8 (`utf-8-sig` si `Configuracion.srt_con_bom=True`, pensado para editores de
+  subtítulos en Windows que lo prefieren) dentro de la carpeta de salida del guion
+  (`guion.srt`, regla de aislamiento). `validar_srt` aplica las mismas reglas que
+  un lector estricto tipo ffmpeg — índice secuencial desde 1, marca de tiempo bien
+  formada con el fin posterior al inicio, sin solapes ni tiempos decrecientes
+  entre subtítulos consecutivos, ninguna línea por encima del límite configurado —
+  y es la misma función que usan tanto la suite (`tests/test_srt.py`) como la
+  cuarta red (`verificar_salidas.py`, ver más abajo).
+- **Verificación.** `tests/test_srt.py` cubre: formato de la marca de tiempo
+  (incluido el redondeo al milisegundo); el `.srt` de los tres guiones reales pasa
+  `validar_srt` sin ningún problema, no solapa y su último subtítulo termina
+  exactamente en `duracion_total_segundos` (criterio de aceptación de T-27);
+  ninguna línea supera `srt_caracteres_por_linea_max` en los tres guiones reales
+  (reemplaza al talón de T-03 en `test_logica_pendiente.py`); casos unitarios de
+  `validar_srt` (índice no secuencial, marca mal formada, solape, fin anterior al
+  inicio); agrupación de bloques cortos sin cruzar un fin de escena, a un ritmo
+  deliberadamente rápido y sin pausas para aislar el efecto; partición limpia de
+  un bloque que no cabe en el límite de líneas/caracteres, verificando que la
+  reconstrucción de todas las palabras de todas las entradas coincide exactamente
+  con el texto de origen y que los tiempos no solapan; el caso completo de
+  requisito 4 (una cifra con una reescritura de forma dicha aceptada vía
+  `revalidacion.revalidar_guion`: el `.srt` lleva "dos mil veintiséis", nunca
+  "2026"); escritura a disco con y sin BOM. `verificar_salidas.py --fixture`
+  genera y valida el `.srt` de verdad sobre el mismo guion real que usa el
+  reproductor (`generar_srt_fixture`/`verificar_srt`, activadas en esta tarea:
+  antes eran NO APLICABLE a la espera de T-27).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

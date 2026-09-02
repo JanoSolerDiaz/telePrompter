@@ -165,6 +165,17 @@ En vez de relanzar automáticamente el reproductor al cargar la página (que fal
 | Preferencias persistidas | tamaño de texto, velocidad por escena, modo espejo, indicadores, última escena vista | Clave `teleprompter:<guion>:<preferencia>` |
 | Restablecer preferencias | botón en la ayuda (`?`) | Borra solo las claves de este guión |
 
+## Exportador `.srt` borrador (T-27)
+
+Arranca los subtítulos en la fase de montaje sin partir de cero: un subtítulo por bloque de respiración, con los tiempos ya calculados por el motor de tiempos, sobre el **texto locutado final** (con las reescrituras aceptadas ya aplicadas, nunca el original del guión). Un bloque muy corto se funde con el siguiente de la misma escena para no parpadear en pantalla — nunca funde bloques de escenas distintas —, y un bloque cuyo texto no cabe en el límite de líneas configurado se reparte en varios subtítulos consecutivos sin cortar ninguna palabra ni perder texto. Formato `.srt` estándar (índice, marca de tiempo, texto), UTF-8, validado con las mismas reglas que aplica ffmpeg.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Duración mínima de un subtítulo | 1,2 s | Por debajo, se funde con el siguiente bloque de la misma escena; `0` desactiva la agrupación |
+| Caracteres por línea | 42 | — |
+| Líneas por subtítulo | 2 | Un bloque que no cabe se reparte en varios subtítulos, con el tiempo repartido según las palabras de cada reparto |
+| BOM (marca de orden de bytes) | No | `srt_con_bom=True` antepone el BOM; UTF-8 sin él por defecto |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

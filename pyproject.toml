@@ -42,6 +42,7 @@ select = [
 "tests/test_revalidacion.py" = ["RUF001"]
 "tests/test_logica_pendiente.py" = ["RUF001"]
 "tests/test_reproductor.py" = ["RUF001"]
+"tests/test_srt.py" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.12"

@@ -43,11 +43,14 @@ from config import Configuracion
 from parser import Escena, ResultadoParseo, rango_segundos_titulo
 from troceo import BloqueRespiracion, categoria_puntuacion_final, trocear_bloque_locucion
 
-_PAUSA_NINGUNA = "ninguna"
-_PAUSA_COMA = "coma"
-_PAUSA_PUNTO = "punto"
-_PAUSA_FIN_PARRAFO = "fin_parrafo"
-_PAUSA_FIN_ESCENA = "fin_escena"
+# Publicas (no `_`): el tipo de pausa es parte del contrato publico de `BloqueConTiempo`
+# (campo `tipo_pausa`), y T-27 (`srt.py`) necesita reconocer `PAUSA_FIN_ESCENA` para no
+# fundir en un mismo subtitulo dos bloques de escenas distintas.
+PAUSA_NINGUNA = "ninguna"
+PAUSA_COMA = "coma"
+PAUSA_PUNTO = "punto"
+PAUSA_FIN_PARRAFO = "fin_parrafo"
+PAUSA_FIN_ESCENA = "fin_escena"
 
 ORIGEN_DEDUCIDO = "deducido"
 ORIGEN_RESPALDO = "respaldo"
@@ -172,24 +175,24 @@ def bloques_respiracion_marcados(
 
 def _tipo_pausa(texto: str, es_fin_de_parrafo: bool, es_fin_de_escena: bool) -> str:
     if es_fin_de_escena:
-        return _PAUSA_FIN_ESCENA
+        return PAUSA_FIN_ESCENA
     if es_fin_de_parrafo:
-        return _PAUSA_FIN_PARRAFO
+        return PAUSA_FIN_PARRAFO
     categoria = categoria_puntuacion_final(texto)
     if categoria == "fuerte":
-        return _PAUSA_PUNTO
+        return PAUSA_PUNTO
     if categoria == "debil":
-        return _PAUSA_COMA
-    return _PAUSA_NINGUNA
+        return PAUSA_COMA
+    return PAUSA_NINGUNA
 
 
 def _pausa_segundos(tipo_pausa: str, configuracion: Configuracion) -> float:
     return {
-        _PAUSA_NINGUNA: 0.0,
-        _PAUSA_COMA: configuracion.pausa_coma_segundos,
-        _PAUSA_PUNTO: configuracion.pausa_punto_segundos,
-        _PAUSA_FIN_PARRAFO: configuracion.pausa_fin_parrafo_segundos,
-        _PAUSA_FIN_ESCENA: configuracion.pausa_fin_escena_segundos,
+        PAUSA_NINGUNA: 0.0,
+        PAUSA_COMA: configuracion.pausa_coma_segundos,
+        PAUSA_PUNTO: configuracion.pausa_punto_segundos,
+        PAUSA_FIN_PARRAFO: configuracion.pausa_fin_parrafo_segundos,
+        PAUSA_FIN_ESCENA: configuracion.pausa_fin_escena_segundos,
     }[tipo_pausa]
 
 

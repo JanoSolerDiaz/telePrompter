@@ -51,6 +51,26 @@ RESPALDO_TIPOGRAFICO: tuple[str, ...] = ("Montserrat", "Calibri", "sans-serif")
 INCLUIR_NOTAS_INTERNAS: bool = True  # `--para-terceros` lo pone en False
 SRT_CARACTERES_POR_LINEA_MAX: int = 42
 
+# --- Exportador .srt borrador (T-27) -----------------------------------------------
+# Un subtitulo por bloque de respiracion por defecto (requisito 1); un bloque cuya
+# duracion total (palabras + pausa) no llega a este minimo se funde con el siguiente
+# de la misma escena, para no parpadear un subtitulo en pantalla un instante. Nunca
+# cruza un fin de escena. `0` desactiva la agrupacion: cada bloque es siempre su
+# propio subtitulo.
+SRT_DURACION_MINIMA_SEGUNDOS: float = 1.2
+# Cuantas lineas caben como maximo en un unico subtitulo (requisito 3, junto a
+# `SRT_CARACTERES_POR_LINEA_MAX` de arriba). Un grupo que no cabe se reparte en varios
+# subtitulos consecutivos -- "particion limpia", nunca a mitad de palabra ni con texto
+# descartado -- con el tiempo del grupo repartido segun el peso en palabras de cada
+# reparto.
+SRT_LINEAS_MAX_POR_SUBTITULO: int = 2
+# Codificacion (requisito 2): UTF-8 sin marca de orden de bytes (BOM) por defecto;
+# algunos editores/reproductores de subtitulos en Windows la prefieren para detectar
+# la codificacion sin ambiguedad. `True` antepone el BOM (`﻿`) al fichero.
+SRT_CON_BOM: bool = False
+# Nombre del .srt dentro de la carpeta de salida del guion.
+NOMBRE_ARCHIVO_SRT: str = "guion.srt"
+
 # --- Normalizacion a forma dicha (T-13) --------------------------------------------
 # Diccionario de excepciones editable por el dueno (requisito 3), con prioridad sobre
 # toda regla automatica de `normalizacion.py`. Vive dentro de la carpeta de salida del
@@ -346,6 +366,10 @@ class Configuracion:
         default=MAPA_TECLAS_REPRODUCTOR
     )
     espejo_incluye_indicadores: bool = ESPEJO_INCLUYE_INDICADORES
+    srt_caracteres_por_linea_max: int = SRT_CARACTERES_POR_LINEA_MAX
+    srt_lineas_max_por_subtitulo: int = SRT_LINEAS_MAX_POR_SUBTITULO
+    srt_duracion_minima_segundos: float = SRT_DURACION_MINIMA_SEGUNDOS
+    srt_con_bom: bool = SRT_CON_BOM
 
     def __post_init__(self) -> None:
         if self.palabras_por_bloque_min > self.palabras_por_bloque_max:
@@ -480,3 +504,21 @@ class Configuracion:
                     f"La accion '{accion}' del mapa de teclas no tiene ninguna tecla asignada."
                 )
                 raise ValueError(mensaje)
+        if self.srt_caracteres_por_linea_max <= 0:
+            mensaje = (
+                "Los caracteres maximos por linea del .srt deben ser un entero positivo "
+                f"({self.srt_caracteres_por_linea_max})."
+            )
+            raise ValueError(mensaje)
+        if self.srt_lineas_max_por_subtitulo <= 0:
+            mensaje = (
+                "Las lineas maximas por subtitulo del .srt deben ser un entero positivo "
+                f"({self.srt_lineas_max_por_subtitulo})."
+            )
+            raise ValueError(mensaje)
+        if self.srt_duracion_minima_segundos < 0:
+            mensaje = (
+                "La duracion minima de un subtitulo del .srt no puede ser negativa "
+                f"({self.srt_duracion_minima_segundos})."
+            )
+            raise ValueError(mensaje)
