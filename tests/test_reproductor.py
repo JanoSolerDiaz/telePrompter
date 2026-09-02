@@ -454,6 +454,75 @@ def test_pausa_congela_el_cronometro_de_la_toma() -> None:
     assert "cronometroMsAcumulados += Date.now() - cronometroInicioMarca" in pagina
 
 
+# --- Atajos de teclado y clicker Bluetooth (T-24) -----------------------------------
+
+
+def test_datos_incrustados_incluyen_antirrebote_espacio_y_mapa_de_teclas() -> None:
+    configuracion = Configuracion(antirrebote_clicker_ms=200, espacio_avanza_bloque=True)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    datos = _extraer_datos(pagina)
+    assert datos["antirrebote_clicker_ms"] == 200
+    assert datos["espacio_avanza_bloque"] is True
+    # El mapa viaja como objeto JSON (accion -> lista de teclas), no como el
+    # array de pares que usa `Configuracion.mapa_teclas_reproductor` en Python.
+    assert datos["mapa_teclas"]["bloque_siguiente"] == ["ArrowRight", "PageDown"]
+    assert datos["mapa_teclas"]["bloque_anterior"] == ["ArrowLeft", "PageUp"]
+    assert datos["mapa_teclas"]["pausa_avanza"] == [" ", "Spacebar"]
+    assert datos["mapa_teclas"]["salir_pantalla_completa"] == ["Escape"]
+    assert datos["mapa_teclas"]["ayuda"] == ["?"]
+
+
+def test_mapa_de_teclas_es_configurable_en_la_generacion() -> None:
+    configuracion = Configuracion(
+        mapa_teclas_reproductor=(("bloque_siguiente", ("PageDown",)),)
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    datos = _extraer_datos(pagina)
+    assert datos["mapa_teclas"] == {"bloque_siguiente": ["PageDown"]}
+
+
+def test_guion_js_resuelve_las_teclas_a_traves_del_mapa_configurable() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # El switch de acciones reemplaza al switch de teclas literales de T-20/T-21:
+    # ninguna tecla se compara a mano dentro de `manejarTeclaReproductor`.
+    assert "var accion = teclaAAccion[evento.key]" in pagina
+    assert "case \"bloque_siguiente\":" in pagina
+    assert "case \"salir_pantalla_completa\":" in pagina
+    assert "case \"ayuda\":" in pagina
+    assert "function salirPantallaCompleta" in pagina
+
+
+def test_guion_js_aplica_antirrebote_por_accion() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function pulsacionPermitida" in pagina
+    assert "antirrebote_clicker_ms" in pagina
+
+
+def test_guion_js_expone_la_ayuda_de_teclado_construida_desde_el_mapa_vigente() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function construirListaAyudaTeclado" in pagina
+    assert "function alternarAyuda" in pagina
+    assert "ayuda-teclado-lista" in pagina
+    # Requisito 3: la ayuda lee `datos.mapa_teclas`, nunca una copia aparte.
+    assert "datos.mapa_teclas[accion]" in pagina
+
+
+def test_estilo_define_el_panel_de_ayuda_de_teclado() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert ".ayuda-teclado" in pagina
+    assert ".ayuda-teclado-panel" in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 

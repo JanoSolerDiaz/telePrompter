@@ -136,6 +136,16 @@ Grabar sin ayudante ni cronómetro externo: al pulsar play, una cuenta atrás 3-
 | Duración de la cuenta atrás | 3 s | Desactivable con `cuenta_atras_activada` |
 | Cuenta atrás activada | Sí | `False` la omite: el automático arranca al instante |
 
+## Atajos de teclado y clicker Bluetooth (T-24)
+
+Toda la escena se puede recorrer solo con `Espacio`, `Re Pág` y `Av Pág` — las tres teclas que un clicker Bluetooth de presentaciones envía (se identifica ante el sistema como un teclado corriente). El mapa completo: `Espacio` pausa/reanuda (o avanza el bloque, según configuración), `→`/`Av Pág` y `←`/`Re Pág` avanzan y retroceden un bloque, `↑`/`↓` cambian de escena, `+`/`-` ajustan la velocidad, `[`/`]` el tamaño de texto, `R` reinicia la escena, `H` oculta los indicadores, `Esc` sale de pantalla completa y `?` muestra u oculta la ayuda con el mapa vigente. Ninguna tecla depende de un modificador (`Ctrl`/`Alt`/`Mayús`), porque un clicker no puede enviarlos. El mapa completo es configurable en la generación (`mapa_teclas_reproductor`) y la ayuda en pantalla se construye leyendo ese mismo mapa, nunca una copia aparte.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| `Espacio` pausa/reanuda o avanza | Pausa/reanuda | `espacio_avanza_bloque=True` lo cambia a "avanzar", para clickers cuyo botón principal envía `Espacio` |
+| Antirrebote del clicker | 120 ms | Descarta una repetición de la misma acción antes de este tiempo; `0` lo desactiva |
+| Mapa de teclas | ver arriba | `mapa_teclas_reproductor`: nombre de acción → teclas que la disparan |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

@@ -218,6 +218,73 @@ button:focus-visible {
   z-index: 10;
 }
 
+/* Ayuda de teclado (T-24, requisito 3): overlay a pantalla completa que centra
+   un panel acotado -- igual que la cuenta atras, pero con contenido que puede
+   crecer con el numero de acciones del mapa, asi que el panel (no el overlay)
+   es el que limita altura y hace scroll si hiciera falta. */
+.ayuda-teclado {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  padding: var(--margen-seguro);
+  z-index: 20;
+}
+
+.ayuda-teclado-panel {
+  max-width: 32em;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 1.5em 2em;
+  border-radius: 0.5em;
+  background: var(--color-fondo);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.6em;
+}
+
+.ayuda-teclado-panel h2 {
+  margin-top: 0;
+  font-size: 1.3em;
+}
+
+.ayuda-teclado-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ayuda-teclado-lista li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1em;
+  padding: 0.5em 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ayuda-teclado-lista li:last-child {
+  border-bottom: none;
+}
+
+.ayuda-teclado-teclas {
+  color: var(--color-acento);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ayuda-teclado-accion {
+  color: var(--color-texto-secundario);
+  text-align: right;
+}
+
+.ayuda-teclado-cierre {
+  margin-bottom: 0;
+  margin-top: 1em;
+  color: var(--color-texto-secundario);
+}
+
 /* Indicadores ocultables con una tecla (requisito 4): un unico interruptor
    sobre la cabecera y la barra de progreso, sin tocar el guion en si. */
 #vista-reproductor.indicadores-ocultos .reproductor-cabecera,

@@ -1067,6 +1067,111 @@ en `Configuracion`, sin números mágicos).
   real; `H` oculta la cabecera y la barra y una segunda pulsación las
   devuelve -- sin errores de consola en ningún paso.
 
+## Atajos de teclado y clicker Bluetooth (T-24)
+
+Cierra el mapa de teclas del reproductor (T-19 a T-23 ya habían ido reservando
+teclas sueltas sobre la marcha) y le añade dos piezas nuevas: un antirrebote
+configurable y una ayuda en pantalla. Cambios en tres archivos: `config.py`
+(cablea `ANTIRREBOTE_CLICKER_MS`, ya reservada desde T-20 sin usar, y suma
+`ESPACIO_AVANZA_BLOQUE`/`MAPA_TECLAS_REPRODUCTOR`), `reproductor.py` (las
+lleva al JSON incrustado) y `guion.js` (el propio motor de teclado).
+
+- **El mapa de teclas deja de estar escrito a mano en el `switch` de
+  `manejarTeclaReproductor` (requisito 3, "configurable en la generación").**
+  Antes, cada `case` comparaba directamente un literal de tecla
+  (`case "ArrowRight":`); ahora compara el NOMBRE DE UNA ACCIÓN
+  (`case "bloque_siguiente":`), resuelto a partir de `evento.key` con una
+  tabla `teclaAAccion` construida una vez, al cargar la página, recorriendo
+  `datos.mapa_teclas` (que a su vez viene de
+  `Configuracion.mapa_teclas_reproductor`, una tupla de pares
+  `(accion, teclas)` -- tupla y no `dict`, para que el valor por defecto siga
+  siendo inmutable como exige el dataclass congelado de `Configuracion`;
+  `reproductor.py` la convierte a `dict()` una sola vez al construir el JSON,
+  porque un objeto es más cómodo de recorrer desde `guion.js` que un array de
+  pares). Remapear una tecla, o añadir una nueva, es cambiar
+  `MAPA_TECLAS_REPRODUCTOR` en `config.py`; `guion.js` no cambia.
+- **`Espacio` pausa/reanuda por defecto, pero puede avanzar el bloque en su
+  lugar (requisito 1, "según configuración").** Decisión del dueño, no una
+  heurística: no hay forma de saber desde el navegador qué botón físico de
+  un clicker Bluetooth envió la tecla, y algunos mandos de presentaciones
+  usan su botón principal para enviar `Espacio` con el significado de
+  "avanzar", no de "pausar". `Configuracion.espacio_avanza_bloque` (`False`
+  por defecto, sin tocar el comportamiento que ya tenían T-20 a T-23) decide
+  cuál de las dos ramas toma la acción `pausa_avanza` dentro del `switch`.
+- **Antirrebote por acción, no global (requisito 2, "tolerar pulsaciones
+  repetidas rápidas... configurable").** `ultimaPulsacionPorAccion` guarda,
+  por nombre de acción, la marca de `Date.now()` de la última pulsación
+  ACEPTADA; `pulsacionPermitida(accion)` descarta una pulsación nueva si
+  llega antes de que pasen `antirrebote_clicker_ms` (120 ms por defecto,
+  `0` lo desactiva) desde esa marca. Es por acción y no un único cronómetro
+  global para que pulsar rápido dos teclas DISTINTAS (p. ej. `PageDown`
+  seguido de `+`) nunca se descarte por error -- solo se protege la MISMA
+  acción contra el rebote de contacto de un clicker barato, que es el caso
+  real que el requisito describe.
+- **`evento.preventDefault()` se aplica a toda tecla reconocida ANTES del
+  antirrebote (requisito 2, "evitar el desplazamiento nativo de la
+  página").** Si el antirrebote descartara la pulsación antes de cancelar la
+  acción por defecto, una repetición rápida de `PageDown` desplazaría la
+  página igual, aunque la acción del reproductor se ignorara. El orden
+  importa: primero se decide si la tecla pertenece al mapa (si no, se deja
+  que el navegador haga lo que le corresponda con cualquier otra tecla),
+  después se cancela su acción nativa, y solo entonces se aplica el
+  antirrebote sobre la acción resuelta.
+- **`Esc` sale de pantalla completa de forma explícita, además de lo que ya
+  hace el propio navegador.** Los navegadores ya interceptan `Escape` para
+  salir de pantalla completa sin que ningún script pueda evitarlo
+  (`preventDefault` no tiene efecto sobre esa acción por defecto en
+  concreto); `salirPantallaCompleta()` (ya existía desde T-19, la usa
+  `volverAlIndice`) se llama aquí también, de forma explícita, para que el
+  atajo quede documentado en el mapa configurable y en la ayuda `?` en vez
+  de depender de un comportamiento implícito del navegador que el propio
+  mapa no reflejaría. Es una llamada inocua si el navegador ya ha salido de
+  pantalla completa por su cuenta (`salirPantallaCompleta` comprueba
+  `document.fullscreenElement` antes de hacer nada).
+- **Ayuda `?` construida leyendo el mismo `datos.mapa_teclas` que usa
+  `manejarTeclaReproductor` (requisito 3, "visible... el mapa VIGENTE").**
+  `construirListaAyudaTeclado()` recorre `Object.keys(datos.mapa_teclas)` y
+  genera una fila por acción con sus teclas (pasadas por `ETIQUETAS_TECLA`
+  para mostrar "Espacio"/"→"/"Re Pág" en vez de literales crudos como `" "`
+  o `"PageUp"`) y su descripción (`ETIQUETAS_ACCION_TECLADO`, texto de
+  interfaz fijo en español, no configurable -- a diferencia de las teclas,
+  no tiene sentido que el dueño lo reconfigure). No hay una lista paralela
+  escrita a mano que pudiera desincronizarse del mapa real: cambiar
+  `MAPA_TECLAS_REPRODUCTOR` cambia la ayuda sin tocar `guion.js`.
+  `alternarAyuda()` solo alterna `hidden` en el overlay (mismo patrón que
+  `.cuenta-atras`, `position: fixed`), reconstruido en cada
+  `renderizarReproductor` -- barato (una docena de elementos) y evita
+  preocuparse de que sobreviva al vaciado de `vistaReproductor.textContent`.
+- **Ningún atajo nuevo depende de una combinación con modificador
+  (requisito 4).** Todas las entradas de `MAPA_TECLAS_REPRODUCTOR` son teclas
+  sueltas (`evento.key` tal cual, sin comprobar `ctrlKey`/`shiftKey`/`altKey`
+  en ningún punto del código); `Configuracion.__post_init__` valida que el
+  mapa no esté vacío y que ninguna acción se quede sin ninguna tecla
+  asignada, pero no impone la regla de "sin modificadores" en tiempo de
+  ejecución -- es una convención de diseño, no una propiedad que el código
+  pueda verificar sin inventar una sintaxis de combinación que hoy nadie usa.
+- **Verificación.** `tests/test_reproductor.py` comprueba (como texto sobre
+  el HTML/JS generado) las tres claves nuevas del JSON
+  (`antirrebote_clicker_ms`, `espacio_avanza_bloque`, `mapa_teclas`), que el
+  mapa configurado por el dueño se refleja tal cual en el JSON, la presencia
+  de `pulsacionPermitida`/`construirListaAyudaTeclado`/`alternarAyuda` y las
+  reglas CSS del panel de ayuda; `tests/test_esqueleto.py` cubre el rechazo
+  de un antirrebote negativo (`0` sí se acepta: lo desactiva), de un mapa
+  vacío y de una acción sin ninguna tecla asignada. El comportamiento real se
+  verificó a mano con Playwright headless (Chromium, no es una dependencia
+  del proyecto) sobre `fixtures/salida/reproductor.html` (guion real de 7
+  escenas): con `Espacio` se pausa y se reanuda, `PageDown` recorre los 4
+  bloques de la primera escena hasta el último y `PageUp` retrocede uno --
+  las tres teclas del criterio de aceptación, sin tocar ninguna otra; dos
+  `PageUp` pegados (sin esperar entre ellos) solo retroceden un bloque, no
+  dos, confirmando el antirrebote; `?` abre un panel con las trece acciones
+  del mapa por defecto (comprobado el texto: "Espacio", "Re Pág", "Av Pág",
+  "Esc" aparecen legibles) y una segunda pulsación lo cierra; `Escape` sale
+  de pantalla completa sin ocultar el reproductor. Con
+  `espacio_avanza_bloque=True` en un reproductor generado aparte, `Espacio`
+  avanza al bloque siguiente en vez de pausar -- verificado que NO deja
+  "En pausa" en el indicador. Sin errores de consola en ningún paso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

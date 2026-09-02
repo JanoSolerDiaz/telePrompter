@@ -80,6 +80,28 @@ def test_configuracion_rechaza_duracion_de_cuenta_atras_no_positiva() -> None:
         Configuracion(cuenta_atras_segundos=0)
 
 
+def test_configuracion_rechaza_antirrebote_de_clicker_negativo() -> None:
+    with pytest.raises(ValueError, match="antirrebote"):
+        Configuracion(antirrebote_clicker_ms=-1)
+
+
+def test_configuracion_acepta_antirrebote_de_clicker_desactivado() -> None:
+    # `0` desactiva el antirrebote (T-24, requisito 2); a diferencia del resto
+    # de umbrales de tiempo del reproductor, no tiene que ser estrictamente
+    # positivo.
+    assert Configuracion(antirrebote_clicker_ms=0).antirrebote_clicker_ms == 0
+
+
+def test_configuracion_rechaza_mapa_de_teclas_vacio() -> None:
+    with pytest.raises(ValueError, match="mapa de teclas"):
+        Configuracion(mapa_teclas_reproductor=())
+
+
+def test_configuracion_rechaza_accion_sin_ninguna_tecla_asignada() -> None:
+    with pytest.raises(ValueError, match="ninguna tecla asignada"):
+        Configuracion(mapa_teclas_reproductor=(("bloque_siguiente", ()),))
+
+
 def test_html_autocontenido_no_dispara_hallazgos() -> None:
     html = """<!doctype html><html><head><style>body{color:#fff}</style></head>
     <body><script>const escenas=[];</script></body></html>"""
