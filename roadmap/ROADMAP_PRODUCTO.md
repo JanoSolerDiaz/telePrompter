@@ -8,7 +8,7 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-01
+**Última actualización:** 2026-09-02
 
 ---
 
@@ -64,7 +64,7 @@ R-07.
 
 ### Fase transversal F-D — Deuda y coherencia
 
-Lo que el auditor levanta y no encaja en una oleada de producto. Contiene R-06.
+Lo que el auditor levanta y no encaja en una oleada de producto. Contiene R-06, R-08 y R-09.
 
 ---
 
@@ -210,6 +210,54 @@ estimadas y la primera línea del archivo lo advierte.
 
 **Criterio de aceptación:** un proyecto de guión creado antes del cambio se abre después sin
 pérdidas; ninguna ruta del código mezcla marca y plantillas.
+
+### R-08 — Deuda técnica menor: números mágicos, documentación desactualizada y versión de Python
+**Oleada / Fase:** F-D · **Migración:** No · **Depende de:** —
+**Origen:** auditoría #10, #11, #12
+
+**Objetivo:** cerrar tres deudas menores de la auditoría de 2026-09-02 que no piden rediseño,
+solo disciplina de mantenimiento — quedarían fosilizadas si nadie las agenda explícitamente.
+
+**Requisitos:**
+1. Los dos colores de estado del índice del reproductor que quedaron fuera del barrido de T-21
+   (`.escena-estado--grabada` `#4ade80`, `.escena-estado--revisada` `#60a5fa`, hoy literales en
+   `estilo.css`) pasan a `Configuracion`, documentados en la tabla de `SKILL.md` (T-31), mismo
+   patrón que el color de acento ya migrado.
+2. El glosario de `PROYECTO.md` deja de decir «ritmo por defecto 120 ppm»: el ritmo base es el
+   deducido de las duraciones objetivo del propio guión, 120 ppm es solo el respaldo (§0.2, T-12).
+3. Resolver el desajuste entre `pyproject.toml` (`requires-python`/`target-version = "py312"`) y
+   el intérprete real de las sesiones de nube (3.11.15, ya documentado en `DECISIONES_TECNICAS.md`
+   desde T-06): o se baja la versión declarada a la real, o —si el dueño prefiere mantener 3.12
+   como objetivo deliberado— se dice explícitamente y se añade una comprobación en `scripts/ci.py`
+   que avise cuando el intérprete real diverja, en vez de dejarlo solo en una nota suelta.
+
+**Criterio de aceptación:** ningún color de estado del índice queda fuera de `Configuracion`;
+`PROYECTO.md` coincide con §0.2; el desajuste de versión de Python queda resuelto o vigilado por
+la CI, nunca solo anotado.
+
+### R-09 — Endurecer el validador de auto-contención
+**Oleada / Fase:** F-D · **Migración:** No · **Depende de:** —
+**Origen:** auditoría #13
+
+**Objetivo:** «salida autocontenida» (§0.2) es uno de los invariantes más sensibles del producto
+—un único archivo `.html`, cero red— pero el validador de `verificar_salidas.py` no cubre todos
+los vectores por los que un HTML puede llamar a una red. Hoy ninguna plantilla los usa: es un
+cierre preventivo, antes de que un cambio futuro en `guion.js`/`estilo.css` cuele uno sin que la
+CI lo note.
+
+**Requisitos:**
+1. Ampliar el validador para detectar, con el mismo criterio de bloqueo que ya aplica a
+   `http(s)://`/`@import`/`fetch`, seis patrones adicionales: `<object>`, `<embed src>`,
+   `<base href>`, `WebSocket`, `EventSource`/`sendBeacon` y `url(...)` de CSS fuera de `@import`.
+2. Un test que confirme que un HTML de prueba con cada uno de los seis patrones falla el
+   validador, y que el reproductor real generado (fixture) sigue pasando sin ninguno de ellos.
+3. Documentar la lista completa de patrones vigilados (los ya existentes más estos seis) en
+   `DECISIONES_TECNICAS.md` o en la referencia técnica que corresponda, para que quien amplíe el
+   reproductor sepa qué evitar sin tener que leer el código del validador.
+
+**Criterio de aceptación:** los seis patrones nuevos hacen fallar el validador sobre un HTML de
+prueba construido para cada uno; el reproductor real (`fixtures/guion-ejemplo.md`) sigue
+validando en verde sin ninguno de ellos.
 
 ---
 

@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-02 — Ciclo de Product Manager (sin sesión de código)
+**Tarea(s):** Gestión de `roadmap/ROADMAP_PRODUCTO.md` (rutina 2, PM)
+**Estado resultante:** Sin cambio de estado de ninguna T-XX. Dos R-XX nuevas registradas PENDIENTE en §1: `R-08`, `R-09`. No queda ninguna T-XX PENDIENTE (sin cambios desde la sesión de T-33); la cola de producto sigue en `R-01`, oleada v2
+**Commits a develop:** `PM: incorporar hallazgos #10-#13 de la auditoría al roadmap (R-08, R-09)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (ciclo de gestión de roadmap, sin tocar código ni `estado.json`)
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (cabecera de fecha; Fase F-D pasa a "Contiene R-06, R-08 y R-09"; fichas nuevas `R-08` y `R-09` con requisitos y criterio de aceptación), `roadmap/SEGUIMIENTO.md` (cabecera con el resumen de este ciclo; §1 gana las filas `R-08`/`R-09`), `roadmap/DECISIONES_TECNICAS.md` (3 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** no aplica — ciclo de PM, sin cambios de código; no se ejecutan mypy/ruff/pytest/`verificar_salidas.py` porque ningún archivo de `scripts/`, `tests/`, `assets/` ni `references/` cambia
+**Health check post-deploy:** no aplica — no hay instalación que verificar en este ciclo
+**Decisiones tomadas:** 3 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-02, PM): (1) agrupar los hallazgos `#10`/`#11`/`#12` en una sola `R-08` en vez de una ficha por hallazgo, reservando `R-09` propia para `#13` por ser de otro orden de esfuerzo (lógica y tests nuevos en el validador); (2) no mover la oleada v1 a `ROADMAP_HISTORICO.md` todavía porque su propio criterio de salida (grabar un curso entero con la skill, que conmuta el modo a PRODUCCIÓN) no se ha cumplido, aunque todo su código esté ya entregado
+**Hallazgos del auditor atendidos:** `#10`, `#11`, `#12` (agrupados en `R-08`, PENDIENTE) y `#13` (en `R-09`, PENDIENTE) quedan enrutados a tarea por primera vez; ninguno se cierra todavía (eso corresponde al programador y, después, al auditor). `#5` y `#6` ya estaban enrutados (a `R-01` y `R-06`) desde antes de este ciclo, sin cambios. Sin hallazgos ABIERTOS de severidad alta al empezar (`#9` sigue cerrado en código por P-02, pendiente solo de que el auditor lo reevalúe)
+**Hallazgos:** ninguno nuevo — revisión de gestión de roadmap, no de código
+**Tareas autopropuestas (P-XX):** ninguna (el PM no programa; corresponde al programador si decide implementar `R-08`/`R-09` como tal, aunque al tener spec propia en `ROADMAP_PRODUCTO.md` se ejecutan como R-XX normales, no como P-XX)
+**Próximo paso:** el programador sigue la cola de §1 en orden: `R-01` (persistencia verificada, oleada v2) es la siguiente PENDIENTE, con `R-08`/`R-09` (Fase F-D, sin dependencias) disponibles para intercalarse cuando convenga por ser trabajo pequeño y aislado. `FEEDBACK.md` sigue sin entradas `nuevo` reales — se revisará de nuevo en el próximo ciclo de PM, con más motivo en cuanto exista una primera grabación real que la genere.
+
 ### Sesión 2026-09-02 — T-33 (encaje con la cadena de montaje de vídeo), sesión de nube
 **Tarea(s):** T-33
 **Estado resultante:** T-33 **COMPLETADA**; tercera tarea de FASE B6. No queda ninguna T-XX PENDIENTE en §1 — la próxima sesión pasa a la cola de R-XX salvo reordenación del dueño
