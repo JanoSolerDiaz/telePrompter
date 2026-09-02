@@ -70,6 +70,11 @@ def test_configuracion_rechaza_margen_seguro_negativo() -> None:
         Configuracion(margen_seguro_px=-1)
 
 
+def test_configuracion_rechaza_duracion_de_autoscroll_no_positiva() -> None:
+    with pytest.raises(ValueError, match="duracion_autoscroll_ms"):
+        Configuracion(duracion_autoscroll_ms=0)
+
+
 def test_html_autocontenido_no_dispara_hallazgos() -> None:
     html = """<!doctype html><html><head><style>body{color:#fff}</style></head>
     <body><script>const escenas=[];</script></body></html>"""

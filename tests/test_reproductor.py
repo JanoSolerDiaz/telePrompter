@@ -366,6 +366,34 @@ def test_guion_js_oculta_el_cursor_tras_inactividad_en_pantalla_completa() -> No
     assert "fullscreenchange" in pagina
 
 
+# --- Autoscroll con bloque centrado (T-22) ------------------------------------------
+
+
+def test_datos_incrustados_incluyen_duracion_de_autoscroll() -> None:
+    configuracion = Configuracion(duracion_autoscroll_ms=750)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    datos = _extraer_datos(pagina)
+    assert datos["duracion_autoscroll_ms"] == 750
+
+
+def test_guion_js_centra_el_bloque_activo_con_scroll_cancelable() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function centrarBloqueActivo" in pagina
+    assert "cancelAnimationFrame" in pagina
+    assert "requestAnimationFrame" in pagina
+    assert "duracion_autoscroll_ms" in pagina
+
+
+def test_guion_js_recentra_al_redimensionar_la_ventana() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert '"resize"' in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 

@@ -119,6 +119,14 @@ El bloque activo se lee a distancia y el contexto no compite con él: el bloque 
 | Margen seguro | 64 px | Alrededor de todo el contenido |
 | Inactividad antes de ocultar el cursor | 3000 ms | Solo con pantalla completa activa |
 
+## Autoscroll con bloque centrado (T-22)
+
+El bloque activo se mantiene siempre visible sin que quien graba tenga que tocar el ratón ni la rueda: si el texto de la escena no cabe entero en pantalla, la página se desplaza para dejarlo centrado en vertical, con una transición suave (nunca un salto brusco). Si el texto cabe entero, no se desplaza nada. Avanzar rápido a mano no produce rebotes: cada nuevo desplazamiento cancela el anterior y continúa desde la posición real en ese instante, nunca desde el objetivo antiguo. Se recentra también tras cambiar el tamaño de texto en vivo (`[`/`]`) y al redimensionar la ventana (este último, sin animación).
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Duración del desplazamiento suave | 400 ms | Avance/retroceso y cambio de tamaño de texto; el redimensionado recentra al instante |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

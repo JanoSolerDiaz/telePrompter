@@ -900,6 +900,81 @@ de velocidad. El resto vive en `assets/reproductor/guion.js` y
   `fixtures/salida/reproductor.html` (Chromium, no es una dependencia del
   proyecto).
 
+## Autoscroll con bloque centrado (T-22)
+
+Tampoco toca `reproductor.py` en lo esencial más allá de sumar una clave nueva
+al JSON incrustado (`duracion_autoscroll_ms`, config, sin números mágicos).
+Todo el trabajo vive en `assets/reproductor/guion.js`:
+
+- **El documento entero es el contenedor de scroll.** `#app` no tiene
+  `overflow` propio (crece con la altura natural de la página), así que
+  centrar el bloque activo es mover `window.scrollY`, no el `scrollTop` de un
+  div interno. `centrarBloqueActivo(animado)` calcula el centro vertical del
+  bloque activo (`getBoundingClientRect().top + window.scrollY +
+  rect.height / 2`) y lo compara con el centro del viewport
+  (`document.documentElement.clientHeight / 2`), acotando el resultado entre
+  `0` y `scrollMaximo()` (`scrollHeight - clientHeight`, nunca negativo).
+- **Requisito 3 (si cabe entero, no se desplaza) sale gratis del cálculo, sin
+  rama aparte.** Cuando el contenido cabe en el viewport, `scrollMaximo()` es
+  `0`, así que el objetivo siempre coincide con el origen (`0`) y la propia
+  guarda `Math.abs(objetivo - origen) < 1` evita animar o saltar a ningún
+  sitio. No hace falta comprobar "¿cabe entero?" como caso especial.
+- **Animación propia con `requestAnimationFrame`, no
+  `scrollIntoView({behavior:'smooth'})` (requisito 2).** Con el método nativo,
+  dos llamadas seguidas (p. ej. avanzar dos bloques a mano muy rápido) se
+  encolan o se interrumpen sin control sobre el punto de partida real -- el
+  origen de la segunda animación podría no ser la posición visible en ese
+  instante, produciendo un salto perceptible. La interpolación manual guarda
+  `animacionScroll` (el identificador de `requestAnimationFrame` en curso);
+  cada llamada nueva primero `cancelAnimationFrame` la anterior y calcula
+  `origen = window.scrollY` en ESE momento -- la posición real, sea cual sea
+  --, así que un avance rápido a mano nunca rebota ni retrocede: cada
+  petición nueva continúa desde donde el scroll estaba de verdad. El
+  suavizado es un ease-in-out cuadrático simétrico (`suavizarProgreso`), sin
+  overshoot.
+- **Instantáneo vs. animado, según qué lo dispara.** `centrarBloqueActivo`
+  recibe un booleano: `true` (con transición, `duracion_autoscroll_ms`,
+  400 ms por defecto) para el avance automático (`avanzarAutomatico`), el
+  avance/retroceso manual y el reinicio de escena (todos pasan por
+  `irABloque`), y el cambio de tamaño de texto en vivo (`ajustarTamanoTexto`,
+  porque el reflow del bloque activo a otra altura de página sí debe
+  notarse como un desplazamiento suave, no un tirón). `false` (sin
+  transición, salto directo) para el arranque de una escena (`iniciarMotor`,
+  no hay "posición anterior" que abandonar suavemente) y el listener de
+  `resize` (redimensionar la ventana es un cambio estructural del lienzo, no
+  un gesto de lectura -- animarlo mientras el usuario aún arrastra el borde
+  de la ventana solo añadiría un desfase visible).
+- **Bug real encontrado y corregido en la misma sesión: el foco de T-19 le
+  ganaba la partida al centrado.** `solicitarPantallaCompleta` (T-19) refoca
+  el botón "Volver al índice" dentro del `.then()` de la promesa de
+  `requestFullscreen()`, porque Chromium vacía el foco al completar la
+  transición. Verificado con Playwright (headless Chromium, la pantalla
+  completa SÍ se concede en ese entorno): ese foco diferido llegaba DESPUÉS
+  del centrado inicial de `iniciarMotor` y disparaba el scroll-into-view por
+  defecto del navegador al enfocar un botón situado arriba de la página,
+  devolviendo el scroll a `0` en cada entrada a una escena -- deshaciendo el
+  trabajo de T-22 en el caso más común (pantalla completa concedida). Se
+  corrige con `elemento.focus({ preventScroll: true })` en las dos llamadas
+  de `solicitarPantallaCompleta` (la síncrona y la del `.then()`): el foco se
+  sigue moviendo (el recorrido de teclado de T-19 no se pierde), pero ya no
+  arrastra el scroll consigo. No se detectó escribiendo el código, sino
+  verificando a mano contra el fixture real -- ver más abajo.
+- **Verificación.** `tests/test_reproductor.py` comprueba (como texto sobre
+  el HTML/JS generado) la clave nueva del JSON y la presencia de
+  `centrarBloqueActivo`/`cancelAnimationFrame`/`requestAnimationFrame`/el
+  listener de `resize`; `tests/test_esqueleto.py` cubre el rechazo de una
+  duración de autoscroll no positiva. El comportamiento real se verificó a
+  mano con Playwright headless (Chromium, no es una dependencia del
+  proyecto) sobre `fixtures/salida/reproductor.html` (guion real de 7
+  escenas, 4-21 bloques cada una): una escena de 4 bloques en un viewport
+  donde cabe entera no se desplaza (`scrollY` permanece en `0`); en la
+  escena de 21 bloques, el bloque activo permanece dentro del tercio central
+  de la pantalla en las 20 transiciones manuales, tras dos aumentos y
+  varias reducciones de tamaño de texto, tras cinco avances manuales
+  seguidos sin esperar a que termine la animación anterior (sin rebote:
+  termina exactamente centrado, sin oscilar) y tras redimensionar la
+  ventana de 500 a 700 px de alto -- sin errores de consola en ningún paso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
