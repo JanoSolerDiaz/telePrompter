@@ -1684,6 +1684,134 @@ en la sección «Valores por defecto — tabla completa (T-31)».
   sesión. `configuracion_efectiva` dentro de `estado.json` (T-07) ya cumple el papel
   de "configuración del proyecto de guion" sin necesitar nada nuevo.
 
+## Instalación de la skill y guion de ejemplo (T-32)
+
+El "deploy" de este proyecto (§0.1): no hay servidor que reiniciar, hay una carpeta
+de skill que sincronizar en `~/.claude/skills/teleprompter/`.
+
+- **`scripts/instalar_skill.py`** copia el paquete distribuible —`SKILL.md`,
+  `scripts/`, `assets/`, `references/` y `fixtures/guion-ejemplo.md`, la constante
+  `ENTRADAS_PAQUETE`— al destino (`--destino`, por defecto
+  `config.RUTA_INSTALACION_SKILL`, `~/.claude/skills/teleprompter`). Fuera del
+  paquete queda todo lo de desarrollo/gobierno del propio repositorio (`tests/`,
+  `roadmap/`, `.github/`, `DEVELOPERS.md`): no tiene sentido en una copia instalada
+  y ningún dueño lo ejecuta. Si `--destino` ya existe (una instalación previa), se
+  renombra primero a `<nombre>.bak-<marca_de_tiempo>` en vez de sobrescribirse in
+  situ (invariante (d) de §0.2, mismo patrón que
+  `documento_revision.guardar_documento_revision`), y la copia nueva se escribe
+  desde cero: **actualizar es respaldar y reinstalar completo, nunca un sync
+  incremental** (más simple y sin estados intermedios que auditar).
+- `RUTA_INSTALACION_SKILL` (`config.py`) es una constante de módulo, no un campo de
+  `Configuracion`: no afecta al procesado de ningún guion, y ya es configurable con
+  `--destino`. Mismo tratamiento que los `NOMBRE_ARCHIVO_*` — no todo default pasa
+  por el dataclass ni por el test de completitud de T-31.
+- **Nota de entorno (v1.3): una sesión de nube no alcanza el `~/.claude/skills/`
+  real del dueño.** `tests/test_instalar_skill.py` prueba el mecanismo de verdad
+  —qué copia, que hace copia de seguridad en vez de sobrescribir, y que la copia
+  resultante ejecuta su propio health check como subproceso aislado
+  (`test_health_check_funciona_ejecutado_desde_la_copia_instalada`, requisito 3 de
+  T-32 literal)— pero siempre contra un `tmp_path`, nunca contra la ruta real. Una
+  sesión local o el propio dueño son quienes ejecutan
+  `python scripts/instalar_skill.py` de verdad; hacerlo aquí contra la ruta real no
+  sería una instalación, solo su apariencia.
+- **`fixtures/guion-ejemplo.md`** es el guion de curso sintético (locución + `EN
+  PANTALLA` + `NOTA` interna + B-roll + timestamps) que usan tanto el health check
+  como los tests de regresión, para no depender de los guiones reales de
+  calibración del dueño (que son suyos, no un ejemplo público del paquete). Está
+  calibrado a propósito para que su `Duración objetivo` no dispare el aviso de
+  desviación de T-12: un fixture pensado para enseñar el formato de salida no debe
+  arrastrar ruido de un aviso que ya prueba `tests/test_tiempos.py` por su cuenta.
+  `fixtures/guion-ejemplo-esperado.md` es su versión anotada esperada (el
+  `guion-escenas.md` que produce hoy la canalización completa de T-08 a T-16):
+  `tests/test_fixture_ejemplo.py::test_guion_ejemplo_genera_exactamente_la_version_esperada`
+  es un test de regresión byte a byte — si cambias a propósito el formato del
+  documento de revisión, regenera este archivo en la misma sesión ejecutando la
+  canalización a mano (ver el docstring del test para la receta exacta), nunca
+  edites el test para que pase sin mirar el diff.
+- **`verificar_salidas.py` usa ahora `fixtures/guion-ejemplo.md` como guion de
+  verificación** (`_ruta_guion_para_verificar`), con el primer guion real de
+  `fixtures/reales/` como respaldo si el de ejemplo no existiera. Antes de esta
+  tarea usaba siempre el primer guion real porque `guion-ejemplo.md` no existía
+  todavía (T-32 es quien lo crea); la etapa "Guion de ejemplo" pasa de NO
+  APLICABLE a OK con este mismo cambio.
+
+### Arquitectura y mapa de módulos
+
+El pipeline es una cadena de funciones puras sobre dataclasses, sin clases con
+estado ni un orquestador central: cada tarea añadió su propio módulo en
+`scripts/` y el siguiente consume el resultado del anterior sin recalcular nada.
+En orden real de dependencia:
+
+```
+entrada.py        valida ruta/tamaño/codificación del .md, deriva la carpeta de salida
+estado.py         estado.json (persistencia entre sesiones, hash del guion, migraciones)
+parser.py         separa el .md en Escena (encabezados ## BLOQUE N, secciones auxiliares)
+clasificador.py   separa cada escena en locución / no-locución (rótulos + inferencia)
+troceo.py         trocea la locución en BloqueRespiracion (bloques de respiración)
+  ├── tiempos.py       calcula inicio/fin/pausa de cada bloque (ppm deducido o manual)
+  ├── deteccion.py     avisa problemas de lectura en voz alta, por bloque
+  └── normalizacion.py propone la forma dicha (cardinales, monedas, siglas...)
+reescrituras.py   une detección + normalización en Reescritura (id estable, aceptar/rechazar)
+documento_revision.py  compone todo lo anterior en guion-escenas.md (una sola pasada)
+revalidacion.py   relee guion-escenas.md, respeta ediciones manuales, recalcula tiempos
+reproductor.py / srt.py / pdf.py / pptx.py   generan cada salida a partir de
+                                              ResultadoParseo + ResultadoTiempos
+salidas.py        selector: las cuatro salidas a la vez, fallo/latencia aislados por salida
+```
+
+`config.py` es el único módulo sin lógica de negocio: todo valor por defecto vive
+ahí (regla "sin números mágicos", §0.2), y `Configuracion` es el dataclass
+congelado que viaja por toda la cadena. `presentacion.py` es la única capa
+autorizada a escribir en la salida estándar; `logger.py` y `monitorizacion.py` son
+infraestructura transversal (log a archivo, captura y resumen de excepciones), no
+parte de la cadena de datos. `verificar_salidas.py` no es un módulo de la skill:
+es la cuarta red de verificación, ejecuta la cadena completa sobre
+`fixtures/guion-ejemplo.md` y comprueba las salidas.
+
+### Cómo añadir una regla nueva
+
+Las tres familias de "regla" del proyecto —clasificación, normalización, aviso de
+detección— siguen el mismo patrón general: **constante(s) de comportamiento en
+`config.py`, función pura que las aplica, y su fila nueva en la tabla de
+`SKILL.md`** (o en la tabla dedicada de `references/` si la familia ya tiene su
+propia tabla, como las de normalización y detección). Nunca una regla nueva vive
+solo en el código: `tests/test_skill_md.py` falla si añades un campo a
+`Configuracion` sin documentarlo.
+
+- **Regla de normalización nueva** (`normalizacion.py`, familia `FAMILIA_*`): añade
+  el patrón/tabla de sustitución como constante en `config.py` (mismo patrón que
+  `SIMBOLOS_MONEDA`/`UNIDADES_ABREVIADAS`/`ANGLICISMOS_COMUNES`), define su
+  constante `FAMILIA_<NOMBRE>` y añade un bloque numerado nuevo dentro de
+  `normalizar_texto` —respetando el orden de prioridad ya documentado en su
+  docstring: diccionario del dueño primero, después las familias automáticas, las
+  conjunciones al final— que llame a `agregar(inicio, fin, familia, motivo,
+  propuesta)`; `agregar` ya descarta solapes con lo que una familia anterior
+  ocupó, así que una regla nueva no puede pisar a una con más prioridad. Añade la
+  fila a la tabla de `SKILL.md` (sección de normalización) y tests con un caso
+  positivo y un contraejemplo que no debe dispararla.
+- **Regla de aviso/detección nueva** (`deteccion.py`, familia `FAMILIA_*`): añade
+  sus umbrales a `config.py` y como campos de `Configuracion` (documentados en la
+  tabla de `SKILL.md`), escribe una función `_detectar_<nombre>(bloque:
+  BloqueRespiracion, configuracion: Configuracion) -> list[Aviso]` que **solo
+  avisa, nunca reescribe** (alcance decidido por el dueño en §0.2 — la única
+  excepción histórica es "sin punto de respiración", que puede sugerir partición
+  porque afecta al troceo), añádela a la lista de `detectar_problemas_bloque`, y
+  documenta la familia en la tabla de detección de `SKILL.md`. Criterio de
+  aceptación de T-14, todavía vigente para cualquier familia nueva: un test que la
+  detecta y un contraejemplo que no dispara falso positivo.
+- **Regla de clasificación nueva** (`clasificador.py`): si es un **rótulo nuevo**
+  explícito (como `**LOCUCIÓN**`/`**EN PANTALLA**`/`**NOTA**`), añádelo a
+  `ROTULOS_NO_LOCUCION` (o crea su propia constante si necesita tratamiento
+  distinto) en `config.py` y cablea su reconocimiento en `_localizar_rotulos`/
+  `_clasificar_seccion_locucion`; documenta el rótulo en la tabla de convención de
+  `SKILL.md` y en `references/convencion-guion.md`. Si es una **heurística de
+  inferencia** nueva (para cuando el guion no trae rótulo explícito), extiende
+  `_inferir_tipo_parrafo` sin romper la decisión permanente del dueño (§0.2,
+  pregunta 3 de `SEGUIMIENTO.md`): los rótulos mandan siempre que existan, la
+  inferencia solo entra en su ausencia, y una escena que se sale de la convención
+  se marca como desviación (nunca como error) vía `detectar_desviaciones` de
+  `convencion.py`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
@@ -1706,8 +1834,12 @@ parte de su propio criterio de aceptación — no lo dejes como nota aparte.
 - `scripts/` — código de la skill (biblioteca estándar únicamente).
 - `scripts/hooks/` — plantillas de git hooks versionadas; instálalas con `instalar_hooks.py`.
 - `scripts/migraciones/` — migraciones idempotentes del esquema de `estado.json`.
+- `scripts/instalar_skill.py` — instala/actualiza la skill en `~/.claude/skills/teleprompter/` (T-32).
 - `tests/` — suite de pytest.
-- `fixtures/` — guiones de calibración y de ejemplo para las verificaciones.
+- `fixtures/` — `fixtures/reales/` (guiones de calibración del dueño) y
+  `fixtures/guion-ejemplo.md` + `fixtures/guion-ejemplo-esperado.md` (guion de
+  ejemplo del paquete distribuible y su versión anotada esperada, T-32), ambos
+  usados por `verificar_salidas.py --fixture`.
 - `assets/` — logotipos de marca 480, `assets/reproductor/` (plantillas del reproductor: `plantilla.html`, `estilo.css`, `guion.js`) y `assets/pdf/` (plantillas del HTML de impresión).
 - `references/` — documentación de referencia: marca 480 (`marca-480.md`), contrato `tarjetas.json` (`contrato-tarjetas.md`), convención de marcado del guion (`convencion-guion.md`), formato de `guion-escenas.md` (`formato-guion-escenas.md`) y mapa de teclas del reproductor (`mapa-teclas.md`).
 - `roadmap/` — el registro de gobierno del proyecto: `SEGUIMIENTO.md` es el hub.

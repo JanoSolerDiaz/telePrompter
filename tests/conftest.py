@@ -15,6 +15,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 RAIZ = Path(__file__).resolve().parent.parent
 CARPETA_GUIONES_REALES = RAIZ / "fixtures" / "reales"
+RUTA_GUION_EJEMPLO = RAIZ / "fixtures" / "guion-ejemplo.md"
+RUTA_GUION_EJEMPLO_ESPERADO = RAIZ / "fixtures" / "guion-ejemplo-esperado.md"
 
 
 @pytest.fixture
@@ -34,3 +36,22 @@ def guiones_reales() -> list[Path]:
 def texto_guiones_reales(guiones_reales: list[Path]) -> dict[str, str]:
     """Contenido de cada guion real, indexado por nombre de archivo."""
     return {ruta.name: ruta.read_text(encoding="utf-8") for ruta in guiones_reales}
+
+
+@pytest.fixture
+def texto_guion_ejemplo() -> str:
+    """Contenido de `fixtures/guion-ejemplo.md` (T-32): guion de curso sintetico,
+    con locucion mezclada con indicaciones de pantalla, B-roll, una nota interna
+    y timestamps, usado como fixture estable de `verificar_salidas.py --fixture`
+    y de la instalacion de la skill."""
+    assert RUTA_GUION_EJEMPLO.exists(), f"no existe {RUTA_GUION_EJEMPLO}"
+    return RUTA_GUION_EJEMPLO.read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def texto_guion_ejemplo_esperado() -> str:
+    """Version anotada esperada (`guion-escenas.md` de referencia) de
+    `fixtures/guion-ejemplo.md`, regenerada a mano cuando cambie deliberadamente
+    el pipeline de T-08 a T-15 -- nunca a ciegas para hacer pasar un test."""
+    assert RUTA_GUION_EJEMPLO_ESPERADO.exists(), f"no existe {RUTA_GUION_EJEMPLO_ESPERADO}"
+    return RUTA_GUION_EJEMPLO_ESPERADO.read_text(encoding="utf-8")

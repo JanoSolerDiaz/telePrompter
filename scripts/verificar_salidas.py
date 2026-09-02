@@ -4,32 +4,32 @@ Sustituye al `build` de un proyecto convencional. Ejecuta la skill sobre el guio
 ejemplo y comprueba que lo generado es valido; sobre todo, que el reproductor `.html`
 es **autocontenido** (regla dura de §0.2).
 
-ESTADO ACTUAL (T-18, T-27, T-28, T-29, T-30): el reproductor, el exportador de
-`.srt`, el exportador `.pdf`, el adaptador `.pptx` y el selector de salidas ya
-existen (`scripts/reproductor.py`, `scripts/srt.py`, `scripts/pdf.py`,
-`scripts/pptx.py`, `scripts/salidas.py`), asi que "Generación del reproductor",
-"Auto-contención del reproductor", "Generación del .srt", "Validez del .srt",
-"Generación del HTML de impresión (.pdf)", "Auto-contención del HTML de
-impresión", "Generación de tarjetas.json y brief (.pptx)", "Validez de
-tarjetas.json" y "Generación de salidas" dejan de ser NO APLICABLE: se generan de
-verdad, sobre el primer guion real de calibracion a falta de
-`fixtures/guion-ejemplo.md` (T-32), y se validan (a nivel de bytes el `.html` del
-reproductor y el de impresion, con las reglas de ffmpeg el `.srt`, contra el
-contrato de `references/contrato-tarjetas.md` el `tarjetas.json`). La conversion
-a `.pdf` de verdad depende de que haya un Chrome/Edge instalado en la maquina que
-ejecuta la verificacion (T-28, requisito 4): cuando no lo hay, la etapa de
-generacion sigue en OK (el HTML de impresion se genera igual, sin fallar) y lo
-dice en el detalle. La generacion real del `.pptx` nunca la hace este codigo
-(T-29: la delega Claude en `480-branded-pptx` dentro de la sesion), asi que su
-etapa de generacion sigue en OK con la salida `.pptx` LATENTE mientras esa skill
-no este instalada -- nunca falla por su ausencia. "Generación de salidas" (T-30)
-ejecuta la canalizacion completa con las cuatro salidas seleccionadas a la vez y
-refleja esa misma latencia del `.pptx` sin fallar por ella (requisito 3: el fallo
-o la latencia de una salida no impide las demas). "Guion de ejemplo" sigue NO
-APLICABLE hasta T-32. Cada etapa aun pendiente se declara NO APLICABLE nombrando
-la tarea que la implementara, para que la cuarta red diga siempre algo verdadero
-y vaya cobrando sentido sola segun avanza el backlog. Responde al hallazgo #4 del
-auditor.
+ESTADO ACTUAL (T-18, T-27, T-28, T-29, T-30, T-32): el reproductor, el
+exportador de `.srt`, el exportador `.pdf`, el adaptador `.pptx` y el selector
+de salidas ya existen (`scripts/reproductor.py`, `scripts/srt.py`,
+`scripts/pdf.py`, `scripts/pptx.py`, `scripts/salidas.py`), asi que
+"Generación del reproductor", "Auto-contención del reproductor", "Generación
+del .srt", "Validez del .srt", "Generación del HTML de impresión (.pdf)",
+"Auto-contención del HTML de impresión", "Generación de tarjetas.json y brief
+(.pptx)", "Validez de tarjetas.json" y "Generación de salidas" dejan de ser NO
+APLICABLE: se generan de verdad, sobre `fixtures/guion-ejemplo.md` (T-32) --
+o, si no existiera, sobre el primer guion real de calibracion, mismo respaldo
+que usaban todas estas etapas antes de T-32 --, y se validan (a nivel de bytes
+el `.html` del reproductor y el de impresion, con las reglas de ffmpeg el
+`.srt`, contra el contrato de `references/contrato-tarjetas.md` el
+`tarjetas.json`). La conversion a `.pdf` de verdad depende de que haya un
+Chrome/Edge instalado en la maquina que ejecuta la verificacion (T-28,
+requisito 4): cuando no lo hay, la etapa de generacion sigue en OK (el HTML de
+impresion se genera igual, sin fallar) y lo dice en el detalle. La generacion
+real del `.pptx` nunca la hace este codigo (T-29: la delega Claude en
+`480-branded-pptx` dentro de la sesion), asi que su etapa de generacion sigue
+en OK con la salida `.pptx` LATENTE mientras esa skill no este instalada --
+nunca falla por su ausencia. "Generación de salidas" (T-30) ejecuta la
+canalizacion completa con las cuatro salidas seleccionadas a la vez y refleja
+esa misma latencia del `.pptx` sin fallar por ella (requisito 3: el fallo o la
+latencia de una salida no impide las demas). "Guion de ejemplo" (T-32) ya es
+OK: `fixtures/guion-ejemplo.md` existe y tiene contenido. Responde al hallazgo
+#4 del auditor.
 """
 
 from __future__ import annotations
@@ -133,21 +133,31 @@ def verificar_fixture() -> Resultado:
     return Resultado("Guion de ejemplo", "OK", "presente y con contenido.")
 
 
-def generar_reproductor_fixture() -> Resultado:
-    """Genera el reproductor (T-18) sobre el primer guion real de calibracion.
-
-    A falta de `fixtures/guion-ejemplo.md` (T-32, todavia no existe), usa el mismo
-    material de `fixtures/reales/` que ya calibra T-08 a T-17, para que la
-    comprobacion de auto-contencion tenga un archivo de verdad que validar en vez
-    de quedarse NO APLICABLE indefinidamente."""
+def _ruta_guion_para_verificar() -> Path | None:
+    """El guion sobre el que corren todas las etapas de generacion de mas abajo:
+    `fixtures/guion-ejemplo.md` (T-32) si existe -- es el pensado para esto,
+    estable y versionado como parte del paquete de la skill --, si no el primer
+    guion real de `fixtures/reales/` (calibracion del dueno, disponible desde
+    antes de T-32). `None` solo si no hay ninguno de los dos, que no deberia
+    llegar a pasar nunca en este repositorio (ver
+    `tests/test_instalar_skill.py::test_paquete_declarado_existe_realmente_en_el_repositorio`)."""
+    if FIXTURE_EJEMPLO.exists():
+        return FIXTURE_EJEMPLO
     guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
-    if not guiones:
+    return guiones[0] if guiones else None
+
+
+def generar_reproductor_fixture() -> Resultado:
+    """Genera el reproductor (T-18) sobre el guion de verificacion (T-32:
+    `fixtures/guion-ejemplo.md`, o el primer guion real de calibracion como
+    respaldo)."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
         return Resultado(
             "Generación del reproductor",
             "NO APLICABLE",
-            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
         )
-    ruta_guion = guiones[0]
     try:
         texto = ruta_guion.read_text(encoding="utf-8")
         resultado = parsear_guion(texto)
@@ -165,19 +175,16 @@ def generar_reproductor_fixture() -> Resultado:
 
 def verificar_generacion() -> Resultado:
     """Ejecuta la canalizacion completa del selector de salidas (T-30) sobre
-    el mismo guion real que usan las demas etapas: las cuatro salidas
-    seleccionadas a la vez, generacion independiente (el fallo de una no
-    impide las demas) y el resumen final. A falta de
-    `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
-    `fixtures/reales/`, igual que las demas etapas de generacion."""
-    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
-    if not guiones:
+    el mismo guion de verificacion que usan las demas etapas: las cuatro
+    salidas seleccionadas a la vez, generacion independiente (el fallo de una
+    no impide las demas) y el resumen final."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
         return Resultado(
             "Generación de salidas",
             "NO APLICABLE",
-            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
         )
-    ruta_guion = guiones[0]
     try:
         texto = ruta_guion.read_text(encoding="utf-8")
         resultado = parsear_guion(texto)
@@ -211,19 +218,15 @@ def verificar_generacion() -> Resultado:
 
 
 def generar_srt_fixture() -> Resultado:
-    """Genera el .srt borrador (T-27) sobre el mismo guion real que usa el reproductor.
-
-    Mismo criterio que `generar_reproductor_fixture`: a falta de
-    `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
-    `fixtures/reales/`."""
-    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
-    if not guiones:
+    """Genera el .srt borrador (T-27) sobre el mismo guion de verificacion que
+    usa el reproductor."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
         return Resultado(
             "Generación del .srt",
             "NO APLICABLE",
-            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
         )
-    ruta_guion = guiones[0]
     try:
         texto = ruta_guion.read_text(encoding="utf-8")
         resultado = parsear_guion(texto)
@@ -241,21 +244,17 @@ def generar_srt_fixture() -> Resultado:
 
 def generar_pdf_fixture() -> Resultado:
     """Genera el HTML de impresion y, si hay Chrome/Edge, el `.pdf` (T-28) sobre
-    el mismo guion real que usan el reproductor y el .srt.
-
-    Mismo criterio que `generar_reproductor_fixture`/`generar_srt_fixture`: a
-    falta de `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
-    `fixtures/reales/`. La ausencia de Chrome/Edge en la maquina de
-    verificacion no es un fallo (requisito 4 de T-28: la skill nunca falla
-    por su ausencia), asi que esta etapa sigue en OK sin el `.pdf` real."""
-    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
-    if not guiones:
+    el mismo guion de verificacion que usan el reproductor y el .srt. La
+    ausencia de Chrome/Edge en la maquina de verificacion no es un fallo
+    (requisito 4 de T-28: la skill nunca falla por su ausencia), asi que esta
+    etapa sigue en OK sin el `.pdf` real."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
         return Resultado(
             "Generación del HTML de impresión (.pdf)",
             "NO APLICABLE",
-            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
         )
-    ruta_guion = guiones[0]
     try:
         texto = ruta_guion.read_text(encoding="utf-8")
         resultado = parsear_guion(texto)
@@ -275,22 +274,18 @@ def generar_pdf_fixture() -> Resultado:
 
 def generar_pptx_fixture() -> Resultado:
     """Genera `tarjetas.json` y el brief de invocacion (T-29) sobre el mismo
-    guion real que usan el reproductor, el .srt y el HTML de impresion.
-
-    Mismo criterio que las demas etapas: a falta de
-    `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
-    `fixtures/reales/`. La ausencia de la skill de marca `480-branded-pptx`
-    en la maquina de verificacion no es un fallo (requisito 4 de T-29: la
-    skill nunca falla por su ausencia), asi que esta etapa sigue en OK con
-    la salida .pptx marcada como latente en el detalle."""
-    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
-    if not guiones:
+    guion de verificacion que usan el reproductor, el .srt y el HTML de
+    impresion. La ausencia de la skill de marca `480-branded-pptx` en la
+    maquina de verificacion no es un fallo (requisito 4 de T-29: la skill
+    nunca falla por su ausencia), asi que esta etapa sigue en OK con la
+    salida .pptx marcada como latente en el detalle."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
         return Resultado(
             "Generación de tarjetas.json y brief (.pptx)",
             "NO APLICABLE",
-            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
         )
-    ruta_guion = guiones[0]
     try:
         texto = ruta_guion.read_text(encoding="utf-8")
         resultado = parsear_guion(texto)

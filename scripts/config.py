@@ -366,6 +366,13 @@ NOMBRE_ARCHIVO_ESTADO: str = "estado.json"
 # cada migracion nueva (`scripts/migraciones/NNN_<nombre>.py`); nunca se decrementa.
 VERSION_ESQUEMA_ESTADO: int = 1
 
+# --- Instalacion de la skill (T-32) -------------------------------------------------
+# Carpeta donde Claude Code busca las skills instaladas. No es un campo de
+# `Configuracion` (no afecta al procesado de ningun guion, y `instalar_skill.py`
+# ya la hace configurable con `--destino`), mismo tratamiento que los
+# `NOMBRE_ARCHIVO_*` de arriba: constante centralizada, no dataclass.
+RUTA_INSTALACION_SKILL: str = "~/.claude/skills/teleprompter"
+
 
 @dataclass(frozen=True)
 class Configuracion:
