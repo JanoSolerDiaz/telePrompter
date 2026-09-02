@@ -213,6 +213,16 @@ Si `480-branded-pptx` o su dependencia, la skill `pptx`, no están instaladas en
 | Rutas de las skills de marca | `~/.claude/skills/480-branded-pptx` y `~/.claude/skills/pptx` | Solo se comprueba que la carpeta existe; ausentes → salida `.pptx` latente, nunca falla |
 | Notas internas en `tarjetas.json` | incluidas | `--para-terceros` las vacía del propio JSON, no solo del deck |
 
+## Selector de salidas por validación (T-30)
+
+Cada vez que se valida, la skill pregunta cuáles de las cuatro salidas generar (reproductor `.html`, `.pptx`, `.pdf`, `.srt`) en una única pregunta de opción múltiple — nunca decide en silencio. La última selección se recuerda en `estado.json` como **sugerencia** marcada en la propia pregunta, no como una decisión que se aplica sola; sin ninguna selección previa, sugiere las cuatro.
+
+Las salidas seleccionadas se generan de forma independiente: el fallo o la latencia de una (Chrome/Edge ausente para el `.pdf` real, la skill de marca ausente para el `.pptx` real) nunca impide las demás. El resumen final lista la ruta y el tamaño de cada archivo generado, y el motivo de cada salida omitida (no seleccionada, o fallida) o latente (seleccionada, con lo generable ya en disco, pendiente de una dependencia externa).
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Salidas seleccionadas | pregunta cada vez | Sin selección previa, sugiere las cuatro; con histórico, sugiere la última selección registrada en `estado.json` |
+
 ## Valores por defecto (extracto — la tabla completa la cierra T-31)
 
 Todos viven en `scripts/config.py`, unico lugar del codigo donde puede haber un valor por defecto.

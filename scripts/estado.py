@@ -36,7 +36,11 @@ class EstadoError(Exception):
     """
 
 
-def _marca_de_tiempo() -> str:
+def marca_de_tiempo() -> str:
+    """Marca de tiempo ISO-8601 en UTC. Publica desde T-30, que la reutiliza
+    para fechar cada entrada de `EstadoProyecto.salidas_generadas` con el
+    mismo formato que `creado_en`/`actualizado_en`, en vez de duplicar la
+    misma linea (mismo patron que `tiempos.PAUSA_FIN_ESCENA` en T-27)."""
     return datetime.now(UTC).isoformat()
 
 
@@ -85,8 +89,8 @@ class EstadoProyecto:
     reescrituras: list[dict[str, Any]] = field(default_factory=list)
     validacion: dict[str, Any] = field(default_factory=dict)
     salidas_generadas: list[dict[str, Any]] = field(default_factory=list)
-    creado_en: str = field(default_factory=_marca_de_tiempo)
-    actualizado_en: str = field(default_factory=_marca_de_tiempo)
+    creado_en: str = field(default_factory=marca_de_tiempo)
+    actualizado_en: str = field(default_factory=marca_de_tiempo)
 
     def a_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -110,7 +114,7 @@ class EstadoProyecto:
 
 def estado_inicial(ruta_guion: Path, configuracion: Configuracion) -> EstadoProyecto:
     """Construye el estado de partida para un guion que aun no tiene `estado.json`."""
-    ahora = _marca_de_tiempo()
+    ahora = marca_de_tiempo()
     return EstadoProyecto(
         version_esquema=VERSION_ESQUEMA_ESTADO,
         guion=InfoGuion(
@@ -140,7 +144,7 @@ def guardar_estado(estado: EstadoProyecto, carpeta_salida: Path) -> Path:
     reemplazo, el `estado.json` anterior queda intacto y el temporal se limpia.
     """
     carpeta_salida.mkdir(parents=True, exist_ok=True)
-    estado.actualizado_en = _marca_de_tiempo()
+    estado.actualizado_en = marca_de_tiempo()
     destino = ruta_estado(carpeta_salida)
     temporal = destino.with_name(destino.name + ".tmp")
     try:

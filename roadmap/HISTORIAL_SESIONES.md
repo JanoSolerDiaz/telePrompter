@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-02 — T-30 (selector de salidas por validación), sesión de nube
+**Tarea(s):** T-30
+**Estado resultante:** T-30 **COMPLETADA**; cuarta y última tarea de FASE B5 (FASE B5 queda cerrada)
+**Commits a develop:** `T-30: selector de salidas por validación` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (el enunciado de T-30 fija literalmente "Migración: No"; la sugerencia reutiliza `estado.salidas_generadas`, contenedor genérico ya reservado desde T-07)
+**Archivos creados/modificados:** `scripts/salidas.py` (nuevo: `TipoSalida`, `OpcionSalida`, `PreguntaSeleccionSalidas`, `construir_pregunta_salidas`, `SeleccionSalidas`, `ArchivoGenerado`, `SalidaOmitida`, `SalidaLatente`, `ResumenSalidas`, `generar_salidas_seleccionadas`, `registrar_generacion`), `scripts/estado.py` (`_marca_de_tiempo` pasa de privada a pública, `marca_de_tiempo`, reutilizada por `salidas.py`), `scripts/verificar_salidas.py` (`verificar_generacion` deja de ser NO APLICABLE: ejecuta la canalización completa de `salidas.py` sobre el mismo guion real que usan las demás etapas), `tests/test_salidas.py` (nuevo, 9 tests), `pyproject.toml` (per-file-ignore `RUF001` para `tests/test_salidas.py`), `SKILL.md` (sección «Selector de salidas por validación (T-30)»), `DEVELOPERS.md` (sección T-30), `roadmap/SEGUIMIENTO.md` (cabecera, §1 fila T-30), `roadmap/DECISIONES_TECNICAS.md` (6 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (386 passed, 0 skipped; antes 377) · build ✅ (`verificar_salidas.py --fixture`: las nueve etapas de generación/validación en OK, incluida la nueva "Generación de salidas"; el `.pptx` y el `.pdf` real quedan LATENTES en el detalle —skill de marca y Chrome/Edge ausentes en esta máquina— sin que la etapa falle; 1 etapa NO APLICABLE justificada hasta T-32)
+**Health check post-deploy:** No aplica — sesión de nube, sin instalación local de la skill (T-32 sigue pendiente y fuera del alcance de una sesión de nube)
+**Decisiones tomadas:** 6 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-02, T-30): (1) la pregunta de opción múltiple se modela como datos (`PreguntaSeleccionSalidas`), no como un `input()` de terminal, mismo patrón que `parser.DeteccionEscenasAmbiguaError`; (2) la sugerencia lee `estado.salidas_generadas` en vez de añadir un campo nuevo a `EstadoProyecto` — sin migración, tal como exige el enunciado; (3) la independencia entre salidas se resuelve con un `try`/`except` por tipo, sin aislar en procesos separados; (4) `ResumenSalidas` distingue "omitida" de "latente" como categorías separadas, y un mismo tipo puede aparecer en `generadas` y en `latentes` a la vez (el caso real del `.pdf`/`.pptx`); (5) `estado._marca_de_tiempo` pasa a pública y se reutiliza en vez de duplicarla
+**Hallazgos del auditor atendidos:** ninguno nuevo; sin hallazgos ABIERTOS de severidad alta al empezar (el #9 sigue corregido en código por P-02, pendiente solo de que el auditor lo reevalúe y lo cierre en su propio documento)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** T-31 (`SKILL.md` y configuración completa), primera tarea de FASE B6 (empaquetado como skill e integración). Depende de T-30 (ya completa): frontmatter con disparadores, tabla completa de valores por defecto (comparada por test contra `Configuracion`), precedencia de configuración documentada, referencias extensas movidas a `references/`.
+
 ### Sesión 2026-09-02 — T-29 (adaptador `.pptx`, delegación en `480-branded-pptx`), sesión de nube
 **Tarea(s):** T-29
 **Estado resultante:** T-29 **COMPLETADA**; tercera tarea de FASE B5

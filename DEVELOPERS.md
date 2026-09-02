@@ -1592,6 +1592,64 @@ archivos. Mismo patrón de entrada que `srt.py`/`pdf.py`: consume `ResultadoPars
   (`generar_pptx_fixture`), y valida el JSON contra el contrato
   (`verificar_tarjetas_json`).
 
+## Selector de salidas por validación (T-30)
+
+`scripts/salidas.py` ata en una sola canalización los cuatro generadores ya
+completos (`reproductor.py` T-18, `srt.py` T-27, `pdf.py` T-28, `pptx.py`
+T-29) sin duplicar ni una línea de lo que cada uno ya hace — ni siquiera
+recibe el guion en bruto: consume `ResultadoParseo` + `ResultadoTiempos` tal
+cual, igual que los cuatro módulos que orquesta.
+
+- **La pregunta es datos, no un `input()`.** `construir_pregunta_salidas`
+  devuelve una `PreguntaSeleccionSalidas` (cuatro `OpcionSalida`, cada una con
+  su `sugerida`) para que Claude la formule al dueño dentro de la sesión —
+  mismo patrón que `parser.DeteccionEscenasAmbiguaError` (T-08): la
+  ambigüedad/pregunta se deja como estructura de datos, nunca como una espera
+  bloqueante de terminal, porque esta skill no tiene ni tendrá una CLI
+  interactiva propia. La respuesta vuelve ya decidida como `SeleccionSalidas`.
+- **La sugerencia lee el histórico, nunca decide en su lugar (requisito 2).**
+  `_ultima_seleccion` recorre `estado.salidas_generadas` (contenedor genérico
+  reservado desde T-07: T-30 no necesita migración) de atrás hacia delante
+  buscando la última entrada con clave `"seleccion"`; sin ninguna, sugiere las
+  cuatro salidas. Ignora sin romperse cualquier entrada ajena sin esa clave —
+  el contenedor es compartido y su forma interna la va fijando cada tarea que
+  lo usa.
+- **Generación independiente (requisito 3): un `try`/`except` por salida.**
+  `generar_salidas_seleccionadas` recorre las cuatro en orden fijo; la que no
+  está en la selección queda `SalidaOmitida` con motivo neutro, y cualquier
+  excepción real de un generador se captura y también se convierte en
+  `SalidaOmitida` (con el mensaje de la excepción) en vez de propagarse y
+  tumbar las demás. La latencia que ya devuelven `pdf.exportar_pdf`
+  (`ruta_pdf is None`) y `pptx.exportar_pptx` (`skill_disponible=False`) se
+  traduce en `SalidaLatente`, una categoría aparte que nunca se confunde con
+  un fallo: el HTML de impresión y `tarjetas.json`/el brief son archivos
+  reales ya en disco aunque el `.pdf`/`.pptx` final quede pendiente.
+- **`ResumenSalidas` es el resumen final (requisito 4).** Tres listas —
+  `generadas` (`ArchivoGenerado`: tipo, ruta, tamaño ya leído de disco),
+  `omitidas` y `latentes` (ambas con motivo) — más `como_dict()` para anexar
+  a `estado.salidas_generadas` (`registrar_generacion`, append-only) y
+  `mostrar_resumen()` para pintarlo por `presentacion.py`. Un mismo `TipoSalida`
+  puede aparecer a la vez en `generadas` y en `latentes` (el `.pdf` y el
+  `.pptx` son los dos casos reales): son listas independientes, no una
+  máquina de estados con un único resultado por tipo.
+- **`verificar_salidas.py` gana la etapa "Generación de salidas" (antes NO
+  APLICABLE, ver T-00/hallazgo #4).** Selecciona las cuatro salidas sobre el
+  mismo guion real que usan las demás etapas; el detalle incluye cuántos
+  archivos se generaron y, si las hay, las latencias con su motivo — nunca
+  falla por una latencia esperada (Chrome/Edge o la skill de marca ausentes
+  en la máquina de verificación), solo por un `SalidaOmitida` real (fallo de
+  código) entre las cuatro seleccionadas.
+- **Verificación.** `tests/test_salidas.py` cubre: la sugerencia por defecto
+  (las cuatro) y tras un histórico; una entrada de estado sin clave
+  `"seleccion"` no rompe la búsqueda; las no seleccionadas quedan omitidas sin
+  generar archivo; el fallo simulado de un generador (monkeypatch) no impide
+  las demás; el criterio de aceptación literal (con el `.pptx` latente, las
+  otras tres se generan igualmente y el resumen lo refleja); dos validaciones
+  seguidas sobre el mismo `estado.json` en disco (`guardar_estado`/
+  `cargar_estado` de por medio) preguntan las dos veces, cada una sugiriendo
+  la selección de la pasada anterior; y `registrar_generacion` como
+  append-only sobre varias pasadas.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

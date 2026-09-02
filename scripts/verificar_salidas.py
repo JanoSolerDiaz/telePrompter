@@ -4,28 +4,32 @@ Sustituye al `build` de un proyecto convencional. Ejecuta la skill sobre el guio
 ejemplo y comprueba que lo generado es valido; sobre todo, que el reproductor `.html`
 es **autocontenido** (regla dura de §0.2).
 
-ESTADO ACTUAL (T-18, T-27, T-28, T-29): el reproductor, el exportador de `.srt`, el
-exportador `.pdf` y el adaptador `.pptx` ya existen (`scripts/reproductor.py`,
-`scripts/srt.py`, `scripts/pdf.py`, `scripts/pptx.py`), asi que "Generación del
-reproductor", "Auto-contención del reproductor", "Generación del .srt", "Validez del
-.srt", "Generación del HTML de impresión (.pdf)", "Auto-contención del HTML de
-impresión", "Generación de tarjetas.json y brief (.pptx)" y "Validez de
-tarjetas.json" dejan de ser NO APLICABLE: se generan de verdad, sobre el primer
-guion real de calibracion a falta de `fixtures/guion-ejemplo.md` (T-32), y se
-validan (a nivel de bytes el `.html` del reproductor y el de impresion, con las
-reglas de ffmpeg el `.srt`, contra el contrato de `references/contrato-tarjetas.md`
-el `tarjetas.json`). La conversion a `.pdf` de verdad depende de que haya un
-Chrome/Edge instalado en la maquina que ejecuta la verificacion (T-28, requisito
-4): cuando no lo hay, la etapa de generacion sigue en OK (el HTML de impresion se
-genera igual, sin fallar) y lo dice en el detalle. La generacion real del `.pptx`
-nunca la hace este codigo (T-29: la delega Claude en `480-branded-pptx` dentro de
-la sesion), asi que su etapa de generacion sigue en OK con la salida `.pptx`
-LATENTE mientras esa skill no este instalada -- nunca falla por su ausencia.
-"Guion de ejemplo" y "Generación de salidas" (la canalizacion completa) siguen NO
-APLICABLE hasta T-32 y T-30 respectivamente. Cada etapa se declara NO APLICABLE
-nombrando la tarea que la implementara, para que la cuarta red diga siempre algo
-verdadero y vaya cobrando sentido sola segun avanza el backlog. Responde al
-hallazgo #4 del auditor.
+ESTADO ACTUAL (T-18, T-27, T-28, T-29, T-30): el reproductor, el exportador de
+`.srt`, el exportador `.pdf`, el adaptador `.pptx` y el selector de salidas ya
+existen (`scripts/reproductor.py`, `scripts/srt.py`, `scripts/pdf.py`,
+`scripts/pptx.py`, `scripts/salidas.py`), asi que "Generación del reproductor",
+"Auto-contención del reproductor", "Generación del .srt", "Validez del .srt",
+"Generación del HTML de impresión (.pdf)", "Auto-contención del HTML de
+impresión", "Generación de tarjetas.json y brief (.pptx)", "Validez de
+tarjetas.json" y "Generación de salidas" dejan de ser NO APLICABLE: se generan de
+verdad, sobre el primer guion real de calibracion a falta de
+`fixtures/guion-ejemplo.md` (T-32), y se validan (a nivel de bytes el `.html` del
+reproductor y el de impresion, con las reglas de ffmpeg el `.srt`, contra el
+contrato de `references/contrato-tarjetas.md` el `tarjetas.json`). La conversion
+a `.pdf` de verdad depende de que haya un Chrome/Edge instalado en la maquina que
+ejecuta la verificacion (T-28, requisito 4): cuando no lo hay, la etapa de
+generacion sigue en OK (el HTML de impresion se genera igual, sin fallar) y lo
+dice en el detalle. La generacion real del `.pptx` nunca la hace este codigo
+(T-29: la delega Claude en `480-branded-pptx` dentro de la sesion), asi que su
+etapa de generacion sigue en OK con la salida `.pptx` LATENTE mientras esa skill
+no este instalada -- nunca falla por su ausencia. "Generación de salidas" (T-30)
+ejecuta la canalizacion completa con las cuatro salidas seleccionadas a la vez y
+refleja esa misma latencia del `.pptx` sin fallar por ella (requisito 3: el fallo
+o la latencia de una salida no impide las demas). "Guion de ejemplo" sigue NO
+APLICABLE hasta T-32. Cada etapa aun pendiente se declara NO APLICABLE nombrando
+la tarea que la implementara, para que la cuarta red diga siempre algo verdadero
+y vaya cobrando sentido sola segun avanza el backlog. Responde al hallazgo #4 del
+auditor.
 """
 
 from __future__ import annotations
@@ -46,6 +50,7 @@ from pdf import exportar_pdf
 from pptx import exportar_pptx, validar_tarjetas
 from presentacion import Nivel, mostrar, titulo
 from reproductor import generar_reproductor_html, guardar_reproductor
+from salidas import TODAS_LAS_SALIDAS, SeleccionSalidas, generar_salidas_seleccionadas
 from srt import exportar_srt, guardar_srt, validar_srt
 from tiempos import calcular_tiempos
 
@@ -155,18 +160,54 @@ def generar_reproductor_fixture() -> Resultado:
             "FALLO",
             f"no se pudo generar el reproductor sobre {ruta_guion.name}: {excepcion}",
         )
-    return Resultado(
-        "Generación del reproductor", "OK", f"generado sobre {ruta_guion.name}."
-    )
+    return Resultado("Generación del reproductor", "OK", f"generado sobre {ruta_guion.name}.")
 
 
 def verificar_generacion() -> Resultado:
-    """Ejecuta la skill sobre el guion de ejemplo. Pendiente hasta que exista la canalizacion."""
-    return Resultado(
-        "Generacion de salidas",
-        "NO APLICABLE",
-        "la canalizacion completa se cierra en T-30; se activara aqui sin tocar el protocolo.",
-    )
+    """Ejecuta la canalizacion completa del selector de salidas (T-30) sobre
+    el mismo guion real que usan las demas etapas: las cuatro salidas
+    seleccionadas a la vez, generacion independiente (el fallo de una no
+    impide las demas) y el resumen final. A falta de
+    `fixtures/guion-ejemplo.md` (T-32), usa el primer guion real de
+    `fixtures/reales/`, igual que las demas etapas de generacion."""
+    guiones = sorted(CARPETA_GUIONES_REALES.glob("*.md"))
+    if not guiones:
+        return Resultado(
+            "Generación de salidas",
+            "NO APLICABLE",
+            "no hay guiones reales en fixtures/reales/ con los que generarlo.",
+        )
+    ruta_guion = guiones[0]
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        resumen = generar_salidas_seleccionadas(
+            SeleccionSalidas(TODAS_LAS_SALIDAS),
+            resultado,
+            tiempos,
+            CARPETA_SALIDA_FIXTURE,
+            nombre_guion=ruta_guion.stem,
+        )
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación de salidas",
+            "FALLO",
+            f"no se pudo ejecutar la canalizacion sobre {ruta_guion.name}: {excepcion}",
+        )
+    if resumen.omitidas:
+        motivos = "; ".join(f"{o.tipo.value}: {o.motivo}" for o in resumen.omitidas)
+        return Resultado(
+            "Generación de salidas",
+            "FALLO",
+            f"con las cuatro salidas seleccionadas, alguna fallo: {motivos}",
+        )
+    detalle = f"{len(resumen.generadas)} archivo(s) generados sobre {ruta_guion.name}."
+    if resumen.latentes:
+        detalle += " Latentes: " + "; ".join(
+            f"{latente.tipo.value} ({latente.motivo})" for latente in resumen.latentes
+        )
+    return Resultado("Generación de salidas", "OK", detalle)
 
 
 def generar_srt_fixture() -> Resultado:
