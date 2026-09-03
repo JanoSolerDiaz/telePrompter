@@ -1482,6 +1482,131 @@ archivo Python cambia.
   sigue funcionando, y "Exportar preferencias" sigue produciendo un `.json`
   completo leyendo solo de memoria. Sin errores de consola en ningún paso.
 
+## Registro de tomas por escena (R-02)
+
+`origen: roadmap`, primera tarea de la oleada v2 tras R-01. El índice deja de
+ser solo un estado por escena (T-19) y pasa a ser el parte de rodaje real:
+número de tomas, duración real de cada una y cuál es la buena (requisito 1),
+nota rápida sin salir del modo de grabación (requisito 2), volcado a un
+archivo legible por el dueño y por la fase de montaje (requisito 3), e índice
+que refleja de un vistazo qué falta, qué se repitió y qué está resuelto
+(requisito 4). Casi entera en `guion.js`/`estilo.css`; el lado Python
+(`scripts/tomas.py`) solo entra en juego cuando el dueño entrega de vuelta el
+archivo exportado.
+
+- **Cuándo se cierra una toma.** No hay un botón "empezar/parar toma" nuevo:
+  la toma en curso se cierra sola cuando el presentador hace algo que ya
+  hacía antes de esta tarea. `finalizarTomaActual()` centraliza el cálculo
+  (mismo tiempo de reloj real que ya usaba `actualizarCronometro()` de T-23,
+  congelado en pausa) y se llama desde tres sitios: `volverAlIndice()` (salir
+  al índice), `reproducirEscena()` — ANTES de `detenerMotor()`, porque este
+  reinicia `escenaActual` a `-1` y `finalizarTomaActual()` necesita leerlo
+  todavía — para cubrir `escenaAdyacente()` (cambiar de escena con
+  flechas arriba/abajo sin pasar por el índice), y `reiniciarEscenaActual()`
+  (tecla `R`). Este último es el cambio de comportamiento deliberado: antes
+  `R` solo volvía al bloque 0 sin tocar el cronómetro; ahora cierra la toma
+  que se abandona (con el tiempo que llevaba) y arranca el cronómetro de cero
+  para la siguiente — "repetir" es, literalmente, cerrar una toma y abrir
+  otra, no seguir sumando tiempo a la que fracasó.
+- **Marcar la buena y la nota, sin salir de grabación (requisito 2).** Dos
+  teclas nuevas en `Configuracion.mapa_teclas_reproductor`, `marcar_toma_buena`
+  (`G`/`g`) y `nota_toma` (`N`/`n`) — ningún campo nuevo en `Configuracion`,
+  solo dos entradas más en la tupla que ya existía, así que
+  `tests/test_skill_md.py` no necesita una fila nueva. `alternarTomaBuena()`
+  solo cambia una variable en memoria (`tomaBuenaEnCurso`) y actualiza el
+  indicador; `pedirNotaToma()` usa `window.prompt()` (mismo mecanismo que el
+  plan B de R-01, reutilizado aquí por primera vez para algo que no es un
+  plan B) — un cuadro de diálogo bloqueante, pero que no obliga a salir de la
+  vista de reproducción ni a perder el sitio en el guion. Ninguno de los dos
+  campos se aplica a ninguna toma ya cerrada: solo se usan cuando
+  `finalizarTomaActual()` cierra la toma EN CURSO, y `iniciarMotor()` los
+  reinicia (`""`/`false`) al empezar cada toma nueva.
+- **Como mucho una toma buena por escena (requisito 1, "marca de CUÁL es la
+  buena").** `finalizarTomaActual()` desmarca cualquier toma anterior de la
+  misma escena antes de añadir la nueva si `tomaBuenaEnCurso` es `true` — no
+  hay ninguna interfaz para desmarcar sin marcar otra en su lugar, decisión
+  deliberada: si el dueño se equivocó, la corrección natural es marcar la
+  toma correcta, no un tercer estado "sin decidir todavía" para una escena
+  que ya se grabó.
+- **Persistencia y por qué "Restablecer preferencias" no lo toca.** Mismo
+  mecanismo que T-26: `localStorage` con clave
+  `teleprompter:<guion>:tomas_escena_<numero>` (por NÚMERO de escena, no
+  índice, mismo criterio que `velocidad_escena_<numero>`), `cargarTomasGuardadas()`
+  tolerante ante JSON corrupto o con forma inesperada (devuelve `[]`, nunca
+  rompe la carga de la página). Se descubrió, verificando a mano, que
+  `limpiarPreferenciasAlmacenadas()` (el botón "Restablecer preferencias" de
+  T-26) borra TODA clave con el prefijo `teleprompter:<guion>:` — que
+  habría incluido el registro de tomas por compartir el mismo espacio de
+  nombres, pese a no ser una "preferencia" en ningún sentido razonable
+  (perder el parte de rodaje real por pulsar un botón pensado para
+  "restablecer tamaño de texto y velocidad" habría sido una pérdida de datos
+  silenciosa y sorprendente). Corregido excluyendo explícitamente el prefijo
+  `tomas_escena_` de esa limpieza — cubierto por
+  `test_guion_js_restablecer_preferencias_no_borra_el_registro_de_tomas`.
+- **Estado de la escena, ahora con datos reales (requisito 4).** T-19 dejaba
+  "revisada" reservado sin ningún productor real; esta tarea lo cablea:
+  `calcularEstadoEscena()` deriva pendiente/grabada/revisada de
+  `tomasEscena[indice]` (sin tomas / con tomas sin ninguna buena / con una
+  toma buena) en vez del flip manual "pendiente → grabada al primer visitar"
+  que tenía `volverAlIndice()` antes. El resumen `N tomas · buena: X` se
+  añade como un `<span>` dentro de la fila de la escena — nunca un botón ni
+  ningún otro elemento interactivo anidado, porque la fila entera ya es un
+  `<button>` (T-19) y anidar controles dentro rompe la semántica HTML; marcar
+  la buena solo se hace por teclado, durante la grabación.
+- **Volcado a un archivo (requisito 3).** El reproductor no puede escribir en
+  la carpeta de salida del guion (cero red en tiempo de ejecución, `file://`);
+  el botón **"Exportar parte de rodaje"** (`exportarParteDeRodaje()`,
+  `construirParteDeRodaje()`) reutiliza el mismo patrón de descarga que
+  "Exportar preferencias" de R-01 (`Blob` + `URL.createObjectURL` +
+  `<a download>`, con `window.prompt()` como red de seguridad si la descarga
+  falla) — código duplicado a propósito en vez de refactorizado en una
+  función común: son dos formatos de exportación distintos con evoluciones
+  independientes (preferencias de UI vs. datos de rodaje), y forzar un
+  compartido antes de que un segundo caso real lo pida habría sido
+  abstracción prematura. Solo se incluyen escenas con al menos una toma. El
+  lado Python, `scripts/tomas.py` (`cargar_parte_de_rodaje`/
+  `registrar_tomas`), valida el archivo (JSON válido, mismo `guion`, tipos y
+  rangos de cada toma) y lo fusiona en `estado.json["tomas"]` — reemplazando
+  por escena con lo más reciente exportado, conservando intactas las escenas
+  que esa exportación concreta no menciona (una exportación parcial nunca
+  borra tomas de una sesión anterior). Contrato completo, con ejemplos:
+  `references/contrato-tomas.md`.
+- **Migración 002 (`estado.json` versión 2).** `EstadoProyecto` gana el
+  contenedor genérico `tomas: dict` (mismo tratamiento que `validacion`
+  en la migración 001): vacío hasta que `registrar_tomas` lo rellene. La
+  migración solo añade la clave si falta (`setdefault`), así que un
+  `estado.json` de un proyecto de guion ya existente la incorpora sin perder
+  nada; `VERSION_ESQUEMA_ESTADO` sube de 1 a 2.
+- **Verificación.** `tests/test_tomas.py` (nuevo, 15 tests) cubre
+  `cargar_parte_de_rodaje` (parte válido, archivo inexistente, JSON inválido,
+  guion distinto, escenas/tomas con forma o rangos inválidos, valores por
+  defecto de `nota`/`buena`) y `registrar_tomas` (fusiona, ignora escenas sin
+  tomas, reemplaza solo la escena exportada preservando el resto, sobrevive a
+  un `guardar_estado`/`cargar_estado` real). `tests/test_migraciones.py` gana
+  cinco tests para la migración 002 (mismo patrón que los de la 001:
+  añade el contenedor, no pierde lo que ya migró la 001, no pisa un `tomas`
+  ya presente, idempotente, no muta el dict original) y dos tests existentes
+  se actualizan para la nueva versión de esquema. `tests/test_reproductor.py`
+  gana nueve tests que comprueban, sobre el HTML generado: las teclas por
+  defecto, el registro y su cálculo de duración, la persistencia con clave
+  por escena, la regla de una sola toma buena, que reiniciar cierre la toma
+  en curso, el estado derivado de las tomas, el botón de exportación, que
+  "Restablecer preferencias" no borre las tomas, y el resumen junto a cada
+  escena. Verificado de punta a punta con Playwright headless (Chromium, no
+  es dependencia del proyecto) sobre un reproductor real generado de
+  `fixtures/guion-ejemplo.md`: dos tomas en la escena 1 (la segunda marcada
+  buena con la tecla `G` tras reiniciar con `R`), una toma sin marcar en la
+  escena 2, el resumen `"2 tomas · buena: 2"` y el badge "Revisada" correctos
+  en el índice, "Exportar parte de rodaje" descarga un `.json` válido con
+  exactamente esas dos escenas, y reabriendo el MISMO perfil de navegador
+  (cerrado y vuelto a abrir de verdad, no una recarga) el resumen de tomas
+  sigue intacto — sin errores de consola en ningún paso. El `.json`
+  descargado se volvió a cargar con `tomas.cargar_parte_de_rodaje` y a
+  fusionar con `tomas.registrar_tomas` sobre un `estado.json` real, confirmando
+  el extremo del contrato que la suite automática no puede cubrir sin un
+  navegador real: el archivo que exporta el reproductor de verdad es
+  aceptado tal cual por el lado Python.
+
 ## Exportador `.srt` borrador (T-27)
 
 `scripts/srt.py` arranca los subtítulos en la fase de montaje sin partir de cero.

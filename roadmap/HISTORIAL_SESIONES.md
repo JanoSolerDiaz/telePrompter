@@ -32,6 +32,24 @@
 
 ---
 
+### Sesión 2026-09-03 — R-02 (registro de tomas por escena) COMPLETADA. Sesión de nube
+**Tarea(s):** R-02, segunda de oleada v2 (depende de T-19, T-23, T-26, todas COMPLETADAS)
+**Estado resultante:** R-02 **COMPLETADA** (§1 de SEGUIMIENTO)
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** `scripts/migraciones/002_tomas.py` — añade el contenedor `tomas: {}` a `estado.json` (`VERSION_ESQUEMA_ESTADO` 1 → 2), preservando todo lo existente; verificada idempotente y no destructiva con `tests/test_migraciones.py`
+**Archivos creados/modificados:** `scripts/tomas.py` (nuevo), `scripts/migraciones/002_tomas.py` (nuevo), `scripts/estado.py`, `scripts/config.py`, `assets/reproductor/guion.js`, `assets/reproductor/estilo.css`, `references/contrato-tomas.md` (nuevo), `references/mapa-teclas.md`, `SKILL.md`, `DEVELOPERS.md`, `tests/test_tomas.py` (nuevo), `tests/test_migraciones.py`, `tests/test_estado.py`, `tests/test_reproductor.py`, `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (7 filas), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (61 archivos) · lint ✅ · tests ✅ 444 pasan + 0 skipped (antes 415; +29) · build ✅ `verificar_salidas.py --fixture` con las 11 etapas en OK
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` del dueño (nota de entorno del protocolo v1.3); la entrega es el push a `origin/develop`
+**Decisiones tomadas:** 7 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, prefijo R-02): dónde se cierra una toma (tres puntos ya existentes del flujo, ninguno nuevo); una sola toma "buena" por escena; dos teclas nuevas como entradas del mapa ya configurable, no como campos nuevos de `Configuracion`; exportación duplicada a propósito en vez de factorizada con la de R-01; "Restablecer preferencias" excluye el prefijo de las tomas; el contenedor `tomas` se reemplaza por escena completa, no se acumula toma a toma
+**Hallazgos del auditor atendidos:** ninguno — sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar, se procedió directo con la cola normal
+**Hallazgos:** uno propio, corregido en la misma sesión sin abrir P-XX (era parte directa del propio requisito 4 de R-02): "Restablecer preferencias" (T-26) habría borrado en silencio el registro de tomas por compartir prefijo de clave de `localStorage`; detectado verificando a mano antes de que llegara a ocurrir de verdad sobre una escena grabada real
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** R-03 (marcar tropiezos durante la toma), tercera de oleada v2, depende de R-02 (ya COMPLETADA). Antes de elegir tarea, revisar de nuevo `auditoriacontinua.md` por si el auditor abre un hallazgo nuevo sobre lo entregado aquí.
+
+**Nota de verificación — Playwright de esta sesión, no dependencia del proyecto.** Igual que R-01/T-24/T-25/T-26, se instaló temporalmente `playwright` (Python) y se usó el Chromium ya preinstalado en el contenedor (`/opt/pw-browsers/chromium`) para reproducir un rodaje simulado de verdad sobre un reproductor generado de `fixtures/guion-ejemplo.md`: dos tomas en la escena 1 (reiniciar con `R` cierra la primera y arranca la segunda; `G` la marca como buena), una toma sin marcar en la escena 2, el resumen `"2 tomas · buena: 2"` y el badge "Revisada" correctos en el índice tras volver, "Exportar parte de rodaje" descarga un `.json` con exactamente esas dos escenas, y — el criterio de aceptación literal — cerrar el contexto del navegador y reabrir el MISMO perfil de datos de usuario mantiene el registro intacto (un perfil nuevo lo habría dejado vacío, como ya documentó R-01 para `localStorage` en general). Se fue un paso más allá del criterio literal: el `.json` descargado se recargó de verdad con `scripts/tomas.cargar_parte_de_rodaje` y se fusionó con `registrar_tomas` sobre un `estado.json` real (`estado_inicial` + `guardar_estado` + `cargar_estado`), confirmando que el archivo que produce el reproductor de verdad es aceptado tal cual por el lado Python — el extremo del contrato que la suite automática (sin navegador) no puede ejercitar por sí sola. `playwright`/`pyee`/`greenlet` se desinstalaron al terminar; no quedan en `requirements-dev.txt`.
+
+---
+
 ### Sesión 2026-09-03 — T-32 desbloqueada + P-04 (endurecer el cierre de #14). Sesión LOCAL en la máquina del dueño
 **Tarea(s):** T-32 (cierre del tramo bloqueado) · P-04 (autopropuesta)
 **Estado resultante:** T-32 **COMPLETADA** (§1; bloqueo #6 de §3 RESUELTO) · P-04 **COMPLETADA** (§5)

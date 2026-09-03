@@ -89,6 +89,11 @@ class EstadoProyecto:
     reescrituras: list[dict[str, Any]] = field(default_factory=list)
     validacion: dict[str, Any] = field(default_factory=dict)
     salidas_generadas: list[dict[str, Any]] = field(default_factory=list)
+    # Registro de tomas por escena (R-02), fusionado desde el parte de rodaje que
+    # exporta el reproductor (`scripts/tomas.registrar_tomas`): clave = numero de
+    # escena en texto, valor = {"titulo": ..., "tomas": [...]}. Contenedor generico
+    # reservado en la migracion 002, mismo tratamiento que `validacion` en la 001.
+    tomas: dict[str, Any] = field(default_factory=dict)
     creado_en: str = field(default_factory=marca_de_tiempo)
     actualizado_en: str = field(default_factory=marca_de_tiempo)
 
@@ -107,6 +112,7 @@ class EstadoProyecto:
             reescrituras=datos["reescrituras"],
             validacion=datos["validacion"],
             salidas_generadas=datos["salidas_generadas"],
+            tomas=datos["tomas"],
             creado_en=datos["creado_en"],
             actualizado_en=datos["actualizado_en"],
         )

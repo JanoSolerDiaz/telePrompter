@@ -78,15 +78,69 @@
   }
   var almacenamientoDisponible = comprobarAlmacenamientoDisponible();
 
-  // Estado por escena (T-19, requisito 1). Solo en memoria: no persiste entre
-  // sesiones (eso es T-26/R-02, con su propio mecanismo). Aqui una escena pasa
-  // de "pendiente" a "grabada" en cuanto se ha abierto y cerrado el reproductor
-  // sobre ella al menos una vez; "revisada" queda definida para cuando R-02
-  // aporte un dato real de revision, pero ninguna interaccion de T-19 la activa
-  // todavia.
+  // Registro de tomas por escena (R-02, requisito 1): numero de tomas, duracion
+  // real de cada una (del cronometro de T-23) y cual es la buena. Persistido en
+  // `localStorage` con clave por escena (mismo mecanismo que T-26), asi que
+  // sobrevive a cerrar el navegador; se restaura aqui, antes de la primera
+  // renderizacion del indice.
+  function cargarTomasGuardadas(escena) {
+    var guardado = leerPreferencia("tomas_escena_" + escena.numero);
+    if (!guardado) {
+      return [];
+    }
+    try {
+      var lista = JSON.parse(guardado);
+      if (!Array.isArray(lista)) {
+        return [];
+      }
+      return lista
+        .filter(function (toma) {
+          return (
+            toma &&
+            typeof toma.numero === "number" &&
+            typeof toma.duracion_segundos === "number"
+          );
+        })
+        .map(function (toma) {
+          return {
+            numero: toma.numero,
+            duracion_segundos: toma.duracion_segundos,
+            nota: typeof toma.nota === "string" ? toma.nota : "",
+            buena: !!toma.buena
+          };
+        });
+    } catch (error) {
+      return [];
+    }
+  }
+  var tomasEscena = datos.escenas.map(cargarTomasGuardadas);
+
+  function guardarTomasEscena(indice) {
+    guardarPreferencia(
+      "tomas_escena_" + datos.escenas[indice].numero,
+      JSON.stringify(tomasEscena[indice])
+    );
+  }
+
+  // Estado por escena (T-19, requisito 1; datos reales desde R-02, requisito 4):
+  // "pendiente" sin ninguna toma registrada todavia, "grabada" con tomas pero
+  // ninguna marcada como la buena, "revisada" en cuanto una toma queda marcada
+  // como la buena -- asi el indice distingue de un vistazo que falta, que se
+  // repitio y que ya esta resuelto.
   var ETIQUETAS_ESTADO = { pendiente: "Pendiente", grabada: "Grabada", revisada: "Revisada" };
-  var estadosEscena = datos.escenas.map(function () {
-    return "pendiente";
+  function calcularEstadoEscena(indice) {
+    var tomas = tomasEscena[indice];
+    if (tomas.length === 0) {
+      return "pendiente";
+    }
+    return tomas.some(function (toma) {
+      return toma.buena;
+    })
+      ? "revisada"
+      : "grabada";
+  }
+  var estadosEscena = datos.escenas.map(function (escena, indice) {
+    return calcularEstadoEscena(indice);
   });
   // Velocidad recordada por escena (T-20, requisito 5): multiplicador sobre la
   // duracion estimada de cada bloque, 1.0 = sin acelerar ni frenar. Persistida
@@ -249,6 +303,24 @@
 
     vistaIndice.appendChild(accionesPreferencias);
 
+    // Parte de rodaje (R-02, requisito 3): vuelca a un archivo `.json`
+    // independiente el registro completo de tomas de todas las escenas, para
+    // que la fase de montaje y el dueno lo lean sin tener que reabrir el
+    // reproductor. Mismo mecanismo de descarga que "Exportar preferencias"
+    // (Blob + enlace temporal), boton propio porque son datos distintos.
+    var accionesTomas = document.createElement("div");
+    accionesTomas.className = "preferencias-acciones";
+
+    var botonExportarTomas = document.createElement("button");
+    botonExportarTomas.type = "button";
+    botonExportarTomas.className = "btn-preferencia";
+    botonExportarTomas.id = "btn-exportar-tomas";
+    botonExportarTomas.textContent = "Exportar parte de rodaje";
+    botonExportarTomas.addEventListener("click", exportarParteDeRodaje);
+    accionesTomas.appendChild(botonExportarTomas);
+
+    vistaIndice.appendChild(accionesTomas);
+
     mensajePreferencias = document.createElement("p");
     mensajePreferencias.className = "mensaje-preferencias";
     mensajePreferencias.id = "mensaje-preferencias";
@@ -284,6 +356,24 @@
       duracion.className = "escena-duracion";
       duracion.textContent = formatearTiempo(escena.duracion_estimada_segundos);
       fila.appendChild(duracion);
+
+      // Resumen de tomas (R-02, requisito 4: "el indice muestra de un vistazo
+      // que esta grabado, que se repitio y que falta"). Un `<span>`, nunca un
+      // elemento interactivo -- `fila` ya es un `<button>` y anidar controles
+      // dentro rompe la semantica; marcar la toma buena se hace por teclado
+      // durante la grabacion (`marcar_toma_buena`), no desde aqui.
+      var tomasDeEscena = tomasEscena[indice];
+      if (tomasDeEscena.length > 0) {
+        var resumenTomas = document.createElement("span");
+        resumenTomas.className = "escena-tomas";
+        var tomaBuena = tomasDeEscena.filter(function (toma) {
+          return toma.buena;
+        })[0];
+        resumenTomas.textContent =
+          tomasDeEscena.length + (tomasDeEscena.length === 1 ? " toma" : " tomas") +
+          (tomaBuena ? " · buena: " + tomaBuena.numero : "");
+        fila.appendChild(resumenTomas);
+      }
 
       fila.appendChild(crearBadgeEstado(indice));
 
@@ -379,6 +469,11 @@
     indicadorPausa.className = "estado-pausa";
     indicadorPausa.id = "estado-pausa";
     info.appendChild(indicadorPausa);
+
+    indicadorToma = document.createElement("span");
+    indicadorToma.className = "indicador-toma";
+    indicadorToma.id = "indicador-toma";
+    info.appendChild(indicadorToma);
 
     cabecera.appendChild(info);
 
@@ -488,6 +583,11 @@
   }
 
   function reproducirEscena(indice, bloqueInicial) {
+    // Cambiar de escena sin pasar por el indice (flechas arriba/abajo, T-20)
+    // tambien cierra la toma en curso de la escena que se abandona (R-02):
+    // `finalizarTomaActual` lee `escenaActual` antes de que `detenerMotor` lo
+    // reinicie a -1, asi que tiene que ir ANTES.
+    finalizarTomaActual();
     detenerMotor();
     var botonVolver = renderizarReproductor(indice);
     vistaIndice.hidden = true;
@@ -499,12 +599,13 @@
   }
 
   function volverAlIndice(indice) {
+    // Cierra la toma en curso (R-02) antes de `detenerMotor`, por la misma
+    // razon que en `reproducirEscena`. El estado de la escena (pendiente /
+    // grabada / revisada) ya no se decide aqui a mano: lo deriva
+    // `calcularEstadoEscena` de las tomas reales que acaba de registrar.
+    finalizarTomaActual();
     detenerMotor();
     salirPantallaCompleta();
-    if (estadosEscena[indice] === "pendiente") {
-      estadosEscena[indice] = "grabada";
-      actualizarBadgeEstado(indice);
-    }
     vistaReproductor.hidden = true;
     vistaIndice.hidden = false;
     var boton = botonesEscena[indice];
@@ -524,6 +625,7 @@
   var indicadorVelocidad = null;
   var indicadorTamano = null;
   var indicadorPausa = null;
+  var indicadorToma = null;
   var escenaActual = -1;
   var bloqueActual = 0;
   var pausado = false;
@@ -539,6 +641,13 @@
   var cronometroMsAcumulados = 0;
   var intervaloCronometro = null;
   var elementoBarraProgreso = null;
+
+  // --- Registro de tomas por escena (R-02) ------------------------------------
+  // Nota y marca de "buena" de la toma que se esta grabando ahora mismo: se
+  // aplican a la toma cuando termina (`finalizarTomaActual`), nunca antes --
+  // una toma solo existe de verdad cuando se cierra.
+  var notaTomaEnCurso = "";
+  var tomaBuenaEnCurso = false;
 
   // --- Atajos de teclado y clicker Bluetooth (T-24) --------------------------
   var elementoAyuda = null;
@@ -585,7 +694,9 @@
     ocultar_indicadores: "Mostrar / ocultar indicadores",
     salir_pantalla_completa: "Salir de pantalla completa",
     ayuda: "Mostrar / ocultar esta ayuda",
-    espejo: "Activar / desactivar modo espejo"
+    espejo: "Activar / desactivar modo espejo",
+    marcar_toma_buena: "Marcar esta toma como la buena",
+    nota_toma: "Anadir una nota a esta toma"
   };
 
   // Nombre legible de una tecla tal como la reporta `KeyboardEvent.key`
@@ -733,6 +844,88 @@
       clearInterval(intervaloCronometro);
       intervaloCronometro = null;
     }
+  }
+
+  // Registro de tomas por escena (R-02, requisito 1). El indicador de la
+  // cabecera muestra el numero de la toma EN CURSO (tomas ya cerradas + 1) y
+  // si ya esta marcada como la buena o lleva nota, para que quien graba sepa
+  // de un vistazo que va a quedar registrado si vuelve al indice ahora mismo.
+  function actualizarIndicadorToma() {
+    if (!indicadorToma || escenaActual === -1) {
+      return;
+    }
+    var numeroToma = tomasEscena[escenaActual].length + 1;
+    var extras = [];
+    if (tomaBuenaEnCurso) {
+      extras.push("buena");
+    }
+    if (notaTomaEnCurso) {
+      extras.push("con nota");
+    }
+    indicadorToma.textContent =
+      "Toma " + numeroToma + (extras.length ? " · " + extras.join(", ") : "");
+  }
+
+  // Marca/desmarca la toma EN CURSO como la buena (requisitos 1 y 2: sin salir
+  // del modo de grabacion, una sola tecla). El indicador de la cabecera lo
+  // refleja de inmediato; la marca solo se guarda de verdad cuando la toma se
+  // cierra (`finalizarTomaActual`).
+  function alternarTomaBuena() {
+    if (escenaActual === -1) {
+      return;
+    }
+    tomaBuenaEnCurso = !tomaBuenaEnCurso;
+    actualizarIndicadorToma();
+  }
+
+  // Nota rapida para la toma EN CURSO (requisito 2, "con el minimo de teclas"):
+  // una unica tecla abre el cuadro de dialogo del propio navegador, sin
+  // desmontar la vista de grabacion ni perder el sitio en el guion. `null`
+  // (cancelar) deja la nota tal como estaba.
+  function pedirNotaToma() {
+    if (escenaActual === -1) {
+      return;
+    }
+    var notaIngresada = window.prompt("Nota para esta toma:", notaTomaEnCurso);
+    if (notaIngresada !== null) {
+      notaTomaEnCurso = notaIngresada;
+      actualizarIndicadorToma();
+    }
+  }
+
+  // Cierra la toma en curso con el tiempo real transcurrido (mismo calculo que
+  // `actualizarCronometro`, congelado en pausa) y la anade al registro de la
+  // escena. No hace nada si no hay ninguna escena en reproduccion (llamar dos
+  // veces seguidas, p. ej. desde `volverAlIndice` y luego otra vez por error,
+  // es seguro). Solo puede haber una toma "buena" por escena (requisito 1,
+  // "marca de CUAL es la buena"): marcar una nueva desmarca cualquier otra.
+  function finalizarTomaActual() {
+    if (escenaActual === -1) {
+      return;
+    }
+    var indice = escenaActual;
+    var transcurridoMs = cronometroMsAcumulados;
+    if (!pausado) {
+      transcurridoMs += Date.now() - cronometroInicioMarca;
+    }
+    if (tomaBuenaEnCurso) {
+      tomasEscena[indice].forEach(function (toma) {
+        toma.buena = false;
+      });
+    }
+    tomasEscena[indice].push({
+      numero: tomasEscena[indice].length + 1,
+      duracion_segundos: Math.round((transcurridoMs / 1000) * 10) / 10,
+      nota: notaTomaEnCurso,
+      buena: tomaBuenaEnCurso
+    });
+    guardarTomasEscena(indice);
+    estadosEscena[indice] = calcularEstadoEscena(indice);
+    // Reconstruye el indice entero (mismo patron que `manejarArchivoImportado`
+    // en R-01): la insignia de estado, el resumen de tomas junto a la escena y
+    // el boton "Continuar" tienen que reflejar la toma recien cerrada, aunque
+    // el indice este oculto en este momento porque se sigue grabando.
+    renderizarIndice();
   }
 
   // Barra de progreso de la escena por bloques (requisito 3): progreso por
@@ -888,10 +1081,14 @@
   function limpiarPreferenciasAlmacenadas() {
     try {
       var prefijo = "teleprompter:" + datos.guion + ":";
+      // El registro de tomas (R-02) no es una "preferencia" -- es el parte de
+      // rodaje real, y "Restablecer preferencias" (T-26) no debe poder
+      // borrarlo de rebote solo por compartir el mismo prefijo de clave.
+      var prefijoTomas = prefijo + "tomas_escena_";
       var aEliminar = [];
       for (var i = 0; i < window.localStorage.length; i++) {
         var clave = window.localStorage.key(i);
-        if (clave && clave.indexOf(prefijo) === 0) {
+        if (clave && clave.indexOf(prefijo) === 0 && clave.indexOf(prefijoTomas) !== 0) {
           aEliminar.push(clave);
         }
       }
@@ -980,6 +1177,52 @@
       // Nunca en silencio (requisito 3): si el navegador no permite disparar
       // la descarga, se ofrece el mismo contenido para copiar a mano -- el
       // plan B no puede depender el mismo de una unica via.
+      window.prompt("Copia este texto y guardalo en un archivo .json:", contenido);
+    }
+  }
+
+  // Parte de rodaje (R-02, requisito 3): todas las tomas de todas las escenas,
+  // tal como estan en memoria en el momento de exportar -- no solo las de la
+  // escena que se este viendo ahora. Solo se incluyen escenas con al menos
+  // una toma para no llenar el archivo de escenas vacias.
+  function construirParteDeRodaje() {
+    return {
+      version: 1,
+      guion: datos.guion,
+      generado: new Date().toISOString(),
+      escenas: datos.escenas
+        .map(function (escena, indice) {
+          return { numero: escena.numero, titulo: escena.titulo, tomas: tomasEscena[indice] };
+        })
+        .filter(function (escena) {
+          return escena.tomas.length > 0;
+        })
+    };
+  }
+
+  function nombreArchivoParteDeRodaje() {
+    var base = String(datos.guion).replace(/[^a-zA-Z0-9._-]+/g, "-");
+    return "teleprompter-tomas-" + base + ".json";
+  }
+
+  function exportarParteDeRodaje() {
+    var contenido = JSON.stringify(construirParteDeRodaje(), null, 2);
+    var nombreArchivo = nombreArchivoParteDeRodaje();
+    try {
+      var blob = new Blob([contenido], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = nombreArchivo;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
+      mostrarMensajePreferencias('Parte de rodaje exportado a "' + nombreArchivo + '".', false);
+    } catch (error) {
+      // Mismo plan B que "Exportar preferencias": nunca en silencio.
       window.prompt("Copia este texto y guardalo en un archivo .json:", contenido);
     }
   }
@@ -1277,6 +1520,16 @@
     if (escenaActual === -1) {
       return;
     }
+    // Reiniciar la escena a mitad de toma es la forma natural de decir "esta
+    // toma no vale, repito" (R-02): cierra la toma en curso con el tiempo que
+    // llevaba y arranca el cronometro de cero para la siguiente, en vez de
+    // seguir sumando el tiempo de la toma fallida a la que viene.
+    finalizarTomaActual();
+    notaTomaEnCurso = "";
+    tomaBuenaEnCurso = false;
+    cronometroMsAcumulados = 0;
+    cronometroInicioMarca = Date.now();
+    actualizarIndicadorToma();
     irABloque(0);
   }
 
@@ -1336,9 +1589,14 @@
     escenaActual = indice;
     bloqueActual = bloqueInicial || 0;
     pausado = false;
+    // Nueva toma (R-02): sin nota ni marca de "buena" todavia -- las de la
+    // toma anterior ya quedaron cerradas en `finalizarTomaActual`.
+    notaTomaEnCurso = "";
+    tomaBuenaEnCurso = false;
     actualizarIndicadorVelocidad();
     actualizarIndicadorTamano();
     actualizarIndicadorPausa();
+    actualizarIndicadorToma();
     actualizarBarraProgreso();
     iniciarCronometro();
     if (bloquesEscenaActual().length > 0) {
@@ -1423,6 +1681,12 @@
         break;
       case "espejo":
         alternarEspejo();
+        break;
+      case "marcar_toma_buena":
+        alternarTomaBuena();
+        break;
+      case "nota_toma":
+        pedirNotaToma();
         break;
       default:
         break;

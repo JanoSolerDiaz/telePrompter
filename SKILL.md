@@ -182,6 +182,20 @@ T-26 confía en que `localStorage` sobrevive a cerrar el navegador y reabrir el 
 | Importar preferencias | botón en el índice | Selector de archivo `.json`; valida que sea del mismo guión antes de aplicar nada |
 | Aviso de almacenamiento no disponible | automático | Comprueba escritura/lectura real de `localStorage` al cargar la página |
 
+## Registro de tomas por escena (R-02)
+
+El índice deja de ser solo una lista y pasa a ser el parte de rodaje: cada escena recuerda cuántas tomas se grabaron, cuánto duró realmente cada una (el mismo cronómetro de las ayudas de grabación, congelado en pausa) y cuál quedó marcada como la buena. Una toma se cierra al volver al índice, al pasar a otra escena sin pasar por el índice (flechas arriba/abajo), o al reiniciar la escena en curso (`R`) — reiniciar es la forma natural de decir "esta toma no vale, repito": cierra la que se abandona y arranca el cronómetro de cero para la siguiente, sin heredarle tiempo de la fallida.
+
+Sin salir del modo de grabación y con una sola tecla cada vez (requisito de "mínimo de teclas"): `G` marca la toma en curso como la buena (como mucho una por escena; marcar otra desmarca la anterior) y `N` abre un cuadro de diálogo para una nota rápida. El estado de cada escena en el índice (Pendiente / Grabada / Revisada) se deriva de estos datos reales, no de si se visitó una vez: sin ninguna toma es Pendiente, con tomas pero ninguna marcada como buena es Grabada, con una toma buena es Revisada — así se ve de un vistazo qué falta, qué se repitió y qué ya está resuelto. Persistido en `localStorage` con clave por escena (mismo mecanismo que T-26): sobrevive a cerrar el navegador, y "Restablecer preferencias" (T-26) nunca lo borra, porque el registro de tomas no es una preferencia de lectura.
+
+El botón **"Exportar parte de rodaje"** del índice vuelca el registro completo (todas las escenas con al menos una toma) a un `.json` independiente — el reproductor no puede escribir directamente en la carpeta de salida del guión (cero red en tiempo de ejecución). Ese archivo es legible tal cual por el dueño y por la fase de montaje; cuando se entrega de vuelta, `scripts/tomas.py` (`cargar_parte_de_rodaje`/`registrar_tomas`) lo valida y lo fusiona en `estado.json` (contenedor `tomas`, esquema versión 2), para que quede disponible sin depender de reabrir el reproductor. Forma exacta del archivo y de `estado.json["tomas"]`: `references/contrato-tomas.md`.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Marcar toma buena / nota rápida | teclas `G` / `N` | Parte del mapa configurable, `mapa_teclas_reproductor` |
+| Exportar parte de rodaje | botón en el índice | Descarga `teleprompter-tomas-<guion>.json`; mismo plan B de copiar a mano si la descarga falla |
+| Fusión en `estado.json` | `scripts/tomas.registrar_tomas` | Reemplaza por escena con lo más reciente exportado; nunca borra tomas de una escena que la exportación no menciona |
+
 ## Exportador `.srt` borrador (T-27)
 
 Arranca los subtítulos en la fase de montaje sin partir de cero: un subtítulo por bloque de respiración, con los tiempos ya calculados por el motor de tiempos, sobre el **texto locutado final** (con las reescrituras aceptadas ya aplicadas, nunca el original del guión). Un bloque muy corto se funde con el siguiente de la misma escena para no parpadear en pantalla — nunca funde bloques de escenas distintas —, y un bloque cuyo texto no cabe en el límite de líneas configurado se reparte en varios subtítulos consecutivos sin cortar ninguna palabra ni perder texto. Formato `.srt` estándar (índice, marca de tiempo, texto), UTF-8, validado con las mismas reglas que aplica ffmpeg.

@@ -773,3 +773,92 @@ Nada que decir en esta escena.
     assert escena["bloques"] == []
     assert escena["duracion_estimada_segundos"] == 0.0
     assert escena["duracion_objetivo_segundos"] == pytest.approx(5.0)
+
+
+# --- Registro de tomas por escena (R-02) ----------------------------------------------
+
+
+def test_mapa_de_teclas_incluye_marcar_toma_buena_y_nota_toma_por_defecto() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    assert datos["mapa_teclas"]["marcar_toma_buena"] == ["g", "G"]
+    assert datos["mapa_teclas"]["nota_toma"] == ["n", "N"]
+
+
+def test_guion_js_registra_tomas_por_escena_con_duracion_real() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: numero de tomas y duracion real (del cronometro de T-23) de
+    # cada una, cerradas al salir de la escena o al reiniciarla.
+    assert "function finalizarTomaActual" in pagina
+    assert "function cargarTomasGuardadas" in pagina
+    assert "tomasEscena[indice].push({" in pagina
+    assert "duracion_segundos: Math.round((transcurridoMs / 1000) * 10) / 10" in pagina
+    assert "case \"marcar_toma_buena\":" in pagina
+    assert "case \"nota_toma\":" in pagina
+
+
+def test_guion_js_persiste_las_tomas_con_clave_derivada_del_guion_y_la_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Sobrevive al cierre del navegador (criterio de aceptacion): mismo mecanismo
+    # de `localStorage` por escena que T-26 ya uso para la velocidad.
+    assert "function guardarTomasEscena" in pagina
+    assert '"tomas_escena_" + datos.escenas[indice].numero' in pagina
+
+
+def test_guion_js_solo_permite_una_toma_buena_por_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "toma.buena = false;" in pagina
+
+
+def test_guion_js_reiniciar_escena_cierra_la_toma_en_curso_como_repeticion() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito de rodaje: "R" no solo reinicia el bloque, cierra la toma
+    # fallida y arranca el cronometro de cero para la siguiente (una toma no
+    # puede heredar tiempo de la que se acaba de descartar).
+    coincidencia = pagina.index("function reiniciarEscenaActual")
+    fragmento = pagina[coincidencia : coincidencia + 500]
+    assert "finalizarTomaActual();" in fragmento
+    assert "cronometroMsAcumulados = 0;" in fragmento
+
+
+def test_guion_js_estado_de_escena_se_deriva_de_las_tomas_registradas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: pendiente sin tomas, grabada con tomas sin ninguna buena,
+    # revisada en cuanto hay una toma marcada como la buena.
+    assert "function calcularEstadoEscena" in pagina
+    assert 'return "pendiente";' in pagina
+    assert '? "revisada"\n      : "grabada";' in pagina
+
+
+def test_guion_js_ofrece_exportar_el_parte_de_rodaje_en_el_indice() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: volcado a un archivo, legible por la fase de montaje y por
+    # el dueno, sin depender de reabrir el reproductor.
+    assert "btn-exportar-tomas" in pagina
+    assert "function construirParteDeRodaje" in pagina
+    assert "function exportarParteDeRodaje" in pagina
+    assert '"teleprompter-tomas-" + base' in pagina
+
+
+def test_guion_js_restablecer_preferencias_no_borra_el_registro_de_tomas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # "Restablecer preferencias" (T-26) comparte prefijo de clave de
+    # localStorage con el registro de tomas (R-02, sesion aparte): no debe
+    # poder borrarlo de rebote.
+    assert 'var prefijoTomas = prefijo + "tomas_escena_";' in pagina
+    assert "clave.indexOf(prefijoTomas) !== 0" in pagina
+
+
+def test_guion_js_muestra_resumen_de_tomas_junto_a_cada_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "escena-tomas" in pagina
+    assert '" · buena: " + tomaBuena.numero' in pagina

@@ -17,6 +17,7 @@ import migraciones
 from migraciones import aplicar_migraciones
 
 _m001 = importlib.import_module("migraciones.001_estado_inicial")
+_m002 = importlib.import_module("migraciones.002_tomas")
 
 
 def _estado_version_anterior_con_datos() -> dict[str, Any]:
@@ -69,13 +70,13 @@ def test_migracion_001_no_muta_el_dict_original() -> None:
 
 
 def test_aplicar_migraciones_deja_intacto_un_estado_ya_al_dia() -> None:
-    datos = _m001.aplicar(_estado_version_anterior_con_datos())
+    datos = aplicar_migraciones(_estado_version_anterior_con_datos())
     assert aplicar_migraciones(dict(datos)) == datos
 
 
 def test_aplicar_migraciones_desde_dict_vacio_produce_esquema_completo() -> None:
     migrado = aplicar_migraciones({})
-    assert migrado["version_esquema"] == 1
+    assert migrado["version_esquema"] == 2
     for clave in (
         "configuracion_efectiva",
         "separador_escena",
@@ -83,6 +84,7 @@ def test_aplicar_migraciones_desde_dict_vacio_produce_esquema_completo() -> None
         "reescrituras",
         "validacion",
         "salidas_generadas",
+        "tomas",
     ):
         assert clave in migrado
 
@@ -91,3 +93,40 @@ def test_hay_al_menos_una_migracion_registrada_en_el_paquete() -> None:
     carpeta = Path(migraciones.__file__).resolve().parent
     archivos_migracion = [p for p in carpeta.iterdir() if p.name[0].isdigit()]
     assert archivos_migracion, "no hay ninguna migracion NNN_<nombre>.py en el paquete"
+
+
+# --- Migracion 002: contenedor `tomas` (R-02) ---------------------------------------
+
+
+def test_migracion_002_anade_el_contenedor_tomas_vacio() -> None:
+    migrado = _m002.aplicar(_m001.aplicar(_estado_version_anterior_con_datos()))
+    assert migrado["tomas"] == {}
+    assert migrado["version_esquema"] == _m002.VERSION_DESTINO
+
+
+def test_migracion_002_no_pierde_nada_de_lo_que_ya_migro_001() -> None:
+    tras_001 = _m001.aplicar(_estado_version_anterior_con_datos())
+    migrado = _m002.aplicar(tras_001)
+    assert migrado["escenas"] == tras_001["escenas"]
+    assert migrado["reescrituras"] == tras_001["reescrituras"]
+    assert migrado["validacion"] == tras_001["validacion"]
+
+
+def test_migracion_002_no_pisa_un_contenedor_tomas_ya_presente() -> None:
+    datos = _m001.aplicar(_estado_version_anterior_con_datos())
+    datos["tomas"] = {"1": {"titulo": "Apertura", "tomas": []}}
+    migrado = _m002.aplicar(datos)
+    assert migrado["tomas"] == {"1": {"titulo": "Apertura", "tomas": []}}
+
+
+def test_migracion_002_es_idempotente() -> None:
+    una_vez = _m002.aplicar(_m001.aplicar(_estado_version_anterior_con_datos()))
+    dos_veces = _m002.aplicar(dict(una_vez))
+    assert una_vez == dos_veces
+
+
+def test_migracion_002_no_muta_el_dict_original() -> None:
+    original = _m001.aplicar(_estado_version_anterior_con_datos())
+    copia = dict(original)
+    _m002.aplicar(original)
+    assert original == copia

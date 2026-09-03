@@ -57,7 +57,7 @@ def test_estado_inicial_recoge_ruta_hash_y_tamano_del_guion(guion: Path) -> None
 
 def test_estado_inicial_usa_la_version_de_esquema_actual(guion: Path) -> None:
     estado = estado_inicial(guion, Configuracion())
-    assert estado.version_esquema == 1
+    assert estado.version_esquema == 2
 
 
 def test_estado_inicial_arranca_con_colecciones_vacias(guion: Path) -> None:
@@ -66,6 +66,7 @@ def test_estado_inicial_arranca_con_colecciones_vacias(guion: Path) -> None:
     assert estado.reescrituras == []
     assert estado.validacion == {}
     assert estado.salidas_generadas == []
+    assert estado.tomas == {}
     assert estado.separador_escena.nivel is None
 
 
@@ -113,7 +114,7 @@ def test_guardar_estado_escribe_json_legible_por_humanos(
 ) -> None:
     ruta = guardar_estado(estado_inicial(guion, Configuracion()), carpeta_salida)
     datos = json.loads(ruta.read_text(encoding="utf-8"))
-    assert datos["version_esquema"] == 1
+    assert datos["version_esquema"] == 2
     assert "guion" in datos
 
 

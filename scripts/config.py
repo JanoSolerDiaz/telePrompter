@@ -331,6 +331,11 @@ MAPA_TECLAS_REPRODUCTOR: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("salir_pantalla_completa", ("Escape",)),
     ("ayuda", ("?",)),
     ("espejo", ("m", "M")),
+    # Registro de tomas por escena (R-02, requisito 2, "minimo de teclas"): marcar
+    # la toma en curso como la buena y anadirle una nota rapida, sin salir del
+    # modo de grabacion. `G` de "grabacion buena/good take"; `N` de "nota".
+    ("marcar_toma_buena", ("g", "G")),
+    ("nota_toma", ("n", "N")),
 )
 
 # --- Modo espejo (T-25) -------------------------------------------------------------
@@ -364,7 +369,8 @@ LONGITUD_EXTRACTO_INDICACION_MAX: int = 120
 NOMBRE_ARCHIVO_ESTADO: str = "estado.json"
 # Version del esquema de `estado.json` que escribe esta version de la skill. Sube en
 # cada migracion nueva (`scripts/migraciones/NNN_<nombre>.py`); nunca se decrementa.
-VERSION_ESQUEMA_ESTADO: int = 1
+# Version 2 (R-02): anade el contenedor `tomas` (`scripts/migraciones/002_tomas.py`).
+VERSION_ESQUEMA_ESTADO: int = 2
 
 # --- Instalacion de la skill (T-32) -------------------------------------------------
 # Carpeta donde Claude Code busca las skills instaladas. No es un campo de
