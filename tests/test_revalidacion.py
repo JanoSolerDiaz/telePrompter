@@ -323,6 +323,101 @@ def test_edicion_manual_y_particion_aceptada_misma_pasada_no_pierde_edicion(
     assert texto_manual in doc2
 
 
+def test_revalidacion_posterior_al_conflicto_no_duplica_bloques(tmp_path: Path) -> None:
+    """Hallazgo #14 de `auditoriacontinua.md`: tras posponer una particion
+    por conflicto con una edicion manual (P-02/#9), una revalidacion
+    INMEDIATAMENTE POSTERIOR sin que el dueno toque nada mas no debe
+    desincronizar el esquema de anclas ni duplicar contenido -- la escena
+    debe seguir teniendo un unico bloque con la edicion intacta, no tres
+    bloques con el bloque siguiente repetido."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path)
+    resultado = parsear_guion(_GUION, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+    id_particion = _id_por_familia(estado_reescrituras(estado), FAMILIA_PARTICION_RESPIRACION)
+
+    texto_manual = "Texto editado a mano sobre el bloque completo de la escena uno."
+    doc1_editado = doc1.replace(
+        "Hemos revisado proyectos completos durante toda la semana pasada sin "
+        "parar ni un solo momento para descansar del todo.",
+        texto_manual,
+    )
+    doc1_editado = _marcar_decision(doc1_editado, id_particion, "ACEPTAR")
+
+    resultado_1 = revalidar_guion(resultado, doc1_editado, estado, configuracion)
+    doc2 = generar_documento_revision(
+        resultado,
+        resultado_1.resultado_tiempos,
+        resultado_1.detecciones,
+        resultado_1.reescrituras,
+        configuracion,
+        nombre_guion="prueba",
+    )
+
+    # Segunda revalidacion, SIN tocar el documento de nuevo.
+    resultado_2 = revalidar_guion(resultado, doc2, estado, configuracion)
+
+    bloques_2 = [b.bloque for b in resultado_2.resultado_tiempos.bloques]
+    escena_1_bloques_2 = [b for b in bloques_2 if b.numero_escena == 1]
+    assert len(escena_1_bloques_2) == 1  # sigue pospuesta: no se materializa ni se duplica
+    assert escena_1_bloques_2[0].texto == texto_manual  # la edicion sigue intacta
+
+    # Las otras tres escenas (2, 3, 4) no se ven arrastradas al conflicto.
+    otros_bloques_2 = [b for b in bloques_2 if b.numero_escena != 1]
+    assert len(otros_bloques_2) == 3
+    assert len({(b.numero_escena, b.texto) for b in otros_bloques_2}) == 3  # sin duplicados
+
+    assert any(
+        "edición manual" in incidencia.mensaje and "partición" in incidencia.mensaje
+        for incidencia in resultado_2.incidencias
+    )
+
+
+def test_particion_pospuesta_se_materializa_cuando_se_retira_la_edicion(tmp_path: Path) -> None:
+    """Complemento de #14: si el dueno retira su edicion -- el texto del
+    ancla vuelve a coincidir con lo que el sistema derivaria -- la particion
+    aceptada por fin se materializa en la revalidacion siguiente, sin
+    arrastrar ningun rastro de la edicion retirada."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path)
+    resultado = parsear_guion(_GUION, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+    id_particion = _id_por_familia(estado_reescrituras(estado), FAMILIA_PARTICION_RESPIRACION)
+
+    texto_original_escena_1 = (
+        "Hemos revisado proyectos completos durante toda la semana pasada sin "
+        "parar ni un solo momento para descansar del todo."
+    )
+    texto_manual = "Texto editado a mano sobre el bloque completo de la escena uno."
+    doc1_editado = doc1.replace(texto_original_escena_1, texto_manual)
+    doc1_editado = _marcar_decision(doc1_editado, id_particion, "ACEPTAR")
+
+    resultado_1 = revalidar_guion(resultado, doc1_editado, estado, configuracion)
+    doc2 = generar_documento_revision(
+        resultado,
+        resultado_1.resultado_tiempos,
+        resultado_1.detecciones,
+        resultado_1.reescrituras,
+        configuracion,
+        nombre_guion="prueba",
+    )
+    assert texto_manual in doc2
+    assert texto_original_escena_1 not in doc2
+
+    doc2_sin_edicion = doc2.replace(texto_manual, texto_original_escena_1)
+
+    resultado_2 = revalidar_guion(resultado, doc2_sin_edicion, estado, configuracion)
+
+    bloques_2 = [b.bloque for b in resultado_2.resultado_tiempos.bloques]
+    escena_1_bloques_2 = [b for b in bloques_2 if b.numero_escena == 1]
+    assert len(escena_1_bloques_2) == 2  # la particion aceptada por fin se materializa
+    assert texto_manual not in "".join(b.texto for b in escena_1_bloques_2)
+    assert not any(
+        "edición manual" in incidencia.mensaje and "partición" in incidencia.mensaje
+        for incidencia in resultado_2.incidencias
+    )
+
+
 # --- Informe de incidencias (requisito 3): solo lo roto -------------------------------
 
 

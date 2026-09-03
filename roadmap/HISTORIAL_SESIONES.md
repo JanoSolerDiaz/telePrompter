@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-03 — P-03 (hallazgo #14, severidad alta), sesión de nube
+**Tarea(s):** P-03 (urgente, atendida antes de la cola normal según §0.1/§0.3)
+**Estado resultante:** P-03 COMPLETADA. Hallazgo `#14` de `auditoriacontinua.md` pasa de ABIERTO a RESUELTO. Ninguna T-XX cambia de estado; sigue sin quedar ninguna PENDIENTE en §1. Próxima sesión de código retoma la cola normal en `R-01`
+**Commits a develop:** `P-03: cierra #14 (duplicación de contenido en revalidación posterior a un conflicto edición/partición pospuesto)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (`estado.validacion` es un contenedor genérico reservado desde T-07; la clave nueva `particiones_pospuestas` no exige esquema nuevo, mismo patrón que `estado.salidas_generadas` en T-30)
+**Archivos creados/modificados:** `scripts/revalidacion.py` (`_particiones_pospuestas_previas`/`_guardar_particiones_pospuestas` nuevas; `identidad_por_ancla` se calcula ahora con la posposición persistida de la pasada anterior), `tests/test_revalidacion.py` (2 tests nuevos), `DEVELOPERS.md` (sección T-17, sustituye el "límite conocido" por la corrección), `auditoriacontinua.md` (`#14` → RESUELTO), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva, P-03), `roadmap/SEGUIMIENTO.md` (cabecera, esta entrada de sesión, fila `P-03` en §5), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (404 pasan + 0 skipped, antes 402) · build ✅ (`verificar_salidas.py --fixture`, diez etapas OK)
+**Health check post-deploy:** NO APLICABLE — sesión de nube, sin acceso a `~/.claude/skills/` (nota de entorno, protocolo v1.3); esta P-XX no toca la instalación de la skill
+**Decisiones tomadas:** fila `P-03` en `roadmap/DECISIONES_TECNICAS.md` (2026-09-03): persistir el conjunto de particiones pospuestas entre pasadas en `estado.validacion["particiones_pospuestas"]`, con las tres alternativas descartadas (detección heurística por conteo de anclas, punto fijo sin memoria entre pasadas, revertir la decisión de partición en nombre del dueño) y por qué cada una fallaba
+**Hallazgos del auditor atendidos:** `#14` (severidad alta) — cerrado en código y en `auditoriacontinua.md`, con reproducción de regresión verificada (`git stash` del fix confirma que los tests nuevos fallan sin él)
+**Hallazgos:** ninguno nuevo descubierto durante la corrección
+**Tareas autopropuestas (P-XX):** `P-03` registrada y ejecutada en la misma sesión (urgencia de severidad alta, §0.3 permite registrar y ejecutar en la misma pasada cuando así lo exige el protocolo)
+**Próximo paso:** retomar la cola normal en `R-01` (persistencia verificada + plan B), primera tarea de la oleada v2 de `roadmap/ROADMAP_PRODUCTO.md`
+
 ### Sesión 2026-09-02 — Ciclo de Product Manager (sin sesión de código)
 **Tarea(s):** Gestión de `roadmap/ROADMAP_PRODUCTO.md` (rutina 2, PM)
 **Estado resultante:** Sin cambio de estado de ninguna T-XX. Dos R-XX nuevas registradas PENDIENTE en §1: `R-08`, `R-09`. No queda ninguna T-XX PENDIENTE (sin cambios desde la sesión de T-33); la cola de producto sigue en `R-01`, oleada v2

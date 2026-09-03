@@ -645,13 +645,32 @@ para el siguiente ciclo.
   partición esa pasada (la decisión de aceptarla se conserva en
   `estado.reescrituras`, solo se pospone su materialización), y
   `_incidencias_conflicto_edicion_particion` deja constancia en el informe.
-  Si nadie vuelve a editar el bloque a mano, una revalidación posterior
-  aplica la partición con normalidad. **Límite conocido y no cerrado:** en
-  esa revalidación posterior, el emparejamiento ancla→identidad puede
-  atribuir el texto editado íntegro a la mitad `'a'` en vez de reconocerlo
-  como "todavía sin partición", dejando la mitad `'b'` con un fragmento del
-  texto de origen sin editar -- no pierde texto, pero produce contenido
-  incorrecto visible. Ver la fila de P-02 en `DECISIONES_TECNICAS.md`.
+- **La posposición debe persistir entre pasadas, o la siguiente revalidación
+  duplica contenido (hallazgo #14, corregido por P-03).** El límite que P-02
+  dejó documentado ("revalidación posterior sin tocar el bloque, sin nuevo
+  test") resultó ser más grave de lo que su propia nota describía: sin
+  memoria de la posposición, la pasada SIGUIENTE recalculaba
+  `identidad_por_ancla` asumiendo que la partición aceptada YA estaba
+  materializada (dos anclas `'a'`/`'b'`) mientras el documento en disco
+  seguía teniendo una sola ancla (`None`, sin partir) -- el desajuste de
+  esquema atribuía el texto editado a la mitad `'a'` y el texto del bloque
+  SIGUIENTE de la escena a la mitad `'b'`, duplicando contenido sin ningún
+  aviso. `_particiones_pospuestas_previas`/`_guardar_particiones_pospuestas`
+  cierran el hueco: `estado.validacion["particiones_pospuestas"]` (contenedor
+  genérico ya reservado desde T-07, sin migración -- mismo patrón que
+  `estado.salidas_generadas` en T-30) guarda, al final de cada pasada, qué
+  índices de bloque quedaron pospuestos; la siguiente pasada usa ESE mismo
+  conjunto para calcular `identidad_por_ancla`, así que el esquema de anclas
+  con el que se interpreta el documento siempre coincide con el que tenía
+  cuando se escribió. Consecuencia deliberada: mientras la edición manual
+  siga en el documento, la partición queda pospuesta indefinidamente (nunca
+  se pierde ni se duplica nada); solo se materializa cuando el texto del
+  ancla vuelve a coincidir exactamente con lo que el sistema derivaría --
+  ver `test_particion_pospuesta_se_materializa_cuando_se_retira_la_edicion`
+  en `tests/test_revalidacion.py`, complementario de
+  `test_revalidacion_posterior_al_conflicto_no_duplica_bloques` (reproduce
+  #14 exactamente y confirma que ya no duplica). Ver la fila de P-03 en
+  `DECISIONES_TECNICAS.md`.
 
 ## Reproductor: esqueleto autocontenido (T-18)
 

@@ -103,6 +103,40 @@ def _marca_de_tiempo() -> str:
     return datetime.now(UTC).isoformat()
 
 
+def _particiones_pospuestas_previas(estado: EstadoProyecto) -> dict[int, frozenset[int]]:
+    """Lee de `estado.validacion` (contenedor generico reservado desde T-07,
+    sin migracion nueva -- mismo patron que `estado.salidas_generadas` en
+    T-30) el conjunto de bloques cuya particion quedo pospuesta por un
+    conflicto con una edicion manual (hallazgo #9/P-02) EN LA PASADA
+    ANTERIOR. Hace falta para interpretar el documento actual: si la pasada
+    anterior poospuso la particion, el `guion-escenas.md` vigente todavia
+    tiene un unico ancla `(indice_original, None)` para ese bloque, no dos
+    (`'a'`/`'b'`) -- sin este conjunto, `identidad_por_ancla` asumiria por
+    defecto que TODAS las particiones aceptadas ya se materializaron, lo que
+    desincroniza el esquema de anclas del calculado contra el real y produce
+    la duplicacion de contenido del hallazgo #14."""
+    crudo = estado.validacion.get("particiones_pospuestas", {})
+    return {
+        int(numero_escena): frozenset(int(indice) for indice in indices)
+        for numero_escena, indices in crudo.items()
+    }
+
+
+def _guardar_particiones_pospuestas(
+    estado: EstadoProyecto, pospuestas_por_escena: dict[int, frozenset[int]]
+) -> None:
+    """Persiste el conjunto de bloques pospuestos de ESTA pasada (requisito 2,
+    identidad estable entre pases) para que la PROXIMA pasada sepa como
+    interpretar las anclas del documento que esta misma pasada va a
+    regenerar. Sustituye el valor anterior por completo -- nunca se acumula
+    -- porque solo importa el estado vigente, igual que `estado.validacion["ultima"]`."""
+    estado.validacion["particiones_pospuestas"] = {
+        str(numero_escena): sorted(indices)
+        for numero_escena, indices in pospuestas_por_escena.items()
+        if indices
+    }
+
+
 def _con_texto(bloque: BloqueRespiracion, texto: str) -> BloqueRespiracion:
     return replace(bloque, texto=texto, num_palabras=len(texto.split()))
 
@@ -319,12 +353,19 @@ def revalidar_guion(
     # Estado "esperado" del documento actual: si el dueno no edito nada a
     # mano, el ancla (escena, indice) de guion-escenas.md deberia contener
     # exactamente este texto derivado. Cualquier diferencia es una edicion
-    # real (invariante (c)).
+    # real (invariante (c)). El esquema de anclas debe coincidir con el que
+    # tenia el documento cuando se escribio -- por eso se materializa con la
+    # MISMA posposicion de particiones que dejo la pasada anterior (#14),
+    # nunca asumiendo que toda particion aceptada ya esta materializada.
+    pospuestas_previas = _particiones_pospuestas_previas(estado)
     texto_esperado_por_ancla: dict[tuple[int, int], str] = {}
     identidad_por_ancla: dict[tuple[int, int], _Identidad] = {}
     for numero_escena, marcados in marcados_originales_por_escena.items():
         for indice, (bloque, _fp, _fe, identidad_local) in enumerate(
-            _materializar_marcados(marcados, reescrituras_previas), start=1
+            _materializar_marcados(
+                marcados, reescrituras_previas, pospuestas_previas.get(numero_escena, frozenset())
+            ),
+            start=1,
         ):
             ancla = (numero_escena, indice)
             texto_esperado_por_ancla[ancla] = _texto_derivado(bloque, reescrituras_previas)
@@ -346,6 +387,7 @@ def revalidar_guion(
 
     marcados_finales_por_escena: dict[int, list[_Marcado]] = {}
     incidencias_conflicto_particion: list[Incidencia] = []
+    pospuestas_de_esta_pasada: dict[int, frozenset[int]] = {}
     for escena in resultado.escenas:
         marcados = marcados_originales_por_escena[escena.numero]
         indices_con_edicion_previa_a_particion = frozenset(
@@ -374,6 +416,7 @@ def revalidar_guion(
             )
             finales.append((_con_texto(bloque, texto_final), fin_de_parrafo, fin_de_escena))
         marcados_finales_por_escena[escena.numero] = finales
+        pospuestas_de_esta_pasada[escena.numero] = indices_con_edicion_previa_a_particion
 
     resultado_tiempos = calcular_tiempos_desde_marcados(
         resultado, marcados_finales_por_escena, configuracion
@@ -396,6 +439,7 @@ def revalidar_guion(
 
     validado = marca_estado_documento == MARCA_ESTADO_VALIDADO
     guardar_en_estado(estado, reescrituras_actualizadas)
+    _guardar_particiones_pospuestas(estado, pospuestas_de_esta_pasada)
     _registrar_validacion(estado, validado=validado, incidencias=incidencias)
 
     return ResultadoRevalidacion(
