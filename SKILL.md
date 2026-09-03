@@ -417,6 +417,8 @@ de normalización más arriba.
 | `tamano_texto_minimo_px` | 24 px | — |
 | `tamano_texto_maximo_px` | 96 px | — |
 | `color_acento_reproductor` | `#f5c542` | Foco visible, indicador de pausa, borde del bloque activo |
+| `color_estado_grabada_reproductor` | `#4ade80` | Insignia de estado "Grabada" del índice (T-19) |
+| `color_estado_revisada_reproductor` | `#60a5fa` | Insignia de estado "Revisada" del índice (T-19) |
 | `margen_seguro_px` | 64 px | Alrededor de todo el contenido |
 | `tiempo_inactividad_cursor_ms` | 3000 ms | Antes de ocultar el cursor en pantalla completa |
 

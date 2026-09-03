@@ -3,6 +3,8 @@
   --color-texto: __COLOR_TEXTO__;
   --color-texto-secundario: __COLOR_TEXTO_SECUNDARIO__;
   --color-acento: __COLOR_ACENTO__;
+  --color-estado-grabada: __COLOR_ESTADO_GRABADA__;
+  --color-estado-revisada: __COLOR_ESTADO_REVISADA__;
   --tamano-base: __TAMANO_TEXTO_BASE_PX__px;
   --fuente-sistema: __PILA_TIPOGRAFICA__;
   --margen-seguro: __MARGEN_SEGURO_PX__px;
@@ -136,11 +138,11 @@ button:focus-visible {
 }
 
 .escena-estado--grabada {
-  color: #4ade80;
+  color: var(--color-estado-grabada);
 }
 
 .escena-estado--revisada {
-  color: #60a5fa;
+  color: var(--color-estado-revisada);
 }
 
 /* Resumen de tomas (R-02, requisito 4): mismo tratamiento discreto que el

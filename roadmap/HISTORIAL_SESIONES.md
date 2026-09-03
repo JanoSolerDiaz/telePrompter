@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-03 — R-08 (deuda técnica menor: colores de estado, `PROYECTO.md`, versión de Python) COMPLETADA. Sesión de nube
+**Tarea(s):** R-08, fase transversal F-D (`origen: auditoría #10, #11, #12`)
+**Estado resultante:** R-08 **COMPLETADA** (§1 de SEGUIMIENTO)
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** ninguna — ficha marcada "Migración: No", cumplida al pie de la letra
+**Archivos creados/modificados:** `scripts/config.py` (`COLOR_ESTADO_GRABADA_REPRODUCTOR`/`COLOR_ESTADO_REVISADA_REPRODUCTOR` y sus campos en `Configuracion`), `assets/reproductor/estilo.css` (dos variables CSS nuevas), `scripts/reproductor.py` (sustitución de los dos placeholders nuevos), `scripts/ci.py` (`version_minima_declarada`/`avisar_si_version_python_diverge`), `PROYECTO.md` (glosario de ritmo/ppm), `SKILL.md` (tabla de configuración), `tests/test_reproductor.py` (1 test nuevo), `tests/test_ci.py` (4 tests nuevos), `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (1 fila), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (531 pasan, antes 526) · build ✅ (`verificar_salidas.py --fixture`, 14 etapas OK)
+**Health check post-deploy:** N/D — sesión de nube, sin acceso a la instalación real del dueño (T-32); no aplica a R-08, que no toca ninguna salida generada
+**Decisiones tomadas:** una fila nueva en `DECISIONES_TECNICAS.md` (2026-09-03, R-08) — mantener `requires-python=">=3.12"` como objetivo deliberado y añadir un aviso no bloqueante en `ci.py` en vez de bajar la versión declarada o bloquear el CI con una quinta etapa
+**Hallazgos del auditor atendidos:** #10, #11, #12 (severidad baja, ahora RESUELTOS — pendiente de que el auditor los reevalúe y los marque como tal en `auditoriacontinua.md`)
+**Hallazgos:** ninguno nuevo. Nota operativa: al empezar la sesión, `develop` local apuntaba a un historial distinto del de `origin/develop` (una sesión anterior reescribió y forzó el historial remoto); realineado con `git checkout -B develop origin/develop` sin tocar el remoto ni perder trabajo (árbol de trabajo limpio antes de la operación)
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** R-09 (endurecer el validador de auto-contención), fase transversal F-D, siguiente en §1 de SEGUIMIENTO
+
+---
+
 ### Sesión 2026-09-03 — R-07 (capítulos de YouTube con marcas de tiempo reales) COMPLETADA. Sesión de nube
 **Tarea(s):** R-07, oleada v3 (`origen: roadmap`, depende de R-02 y T-08)
 **Estado resultante:** R-07 **COMPLETADA** (§1 de SEGUIMIENTO)

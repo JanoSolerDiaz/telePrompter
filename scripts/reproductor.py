@@ -187,6 +187,8 @@ def generar_reproductor_html(
         .replace("__COLOR_TEXTO__", configuracion.color_texto_reproductor)
         .replace("__COLOR_TEXTO_SECUNDARIO__", configuracion.color_texto_secundario_reproductor)
         .replace("__COLOR_ACENTO__", configuracion.color_acento_reproductor)
+        .replace("__COLOR_ESTADO_GRABADA__", configuracion.color_estado_grabada_reproductor)
+        .replace("__COLOR_ESTADO_REVISADA__", configuracion.color_estado_revisada_reproductor)
         .replace("__TAMANO_TEXTO_BASE_PX__", str(configuracion.tamano_texto_base_px))
         .replace("__MARGEN_SEGURO_PX__", str(configuracion.margen_seguro_px))
         .replace(

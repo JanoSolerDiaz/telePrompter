@@ -42,7 +42,7 @@ abriéndose con doble clic, sin depender de nada externo.
 - **Forma dicha** — la versión pronunciable de cifras, fechas, unidades, símbolos y siglas («2026» → «dos mil veintiséis»).
 - **Reescritura marcada** — propuesta de mejora de locutabilidad que muestra original y propuesta a la vez, y que el dueño acepta o rechaza una a una.
 - **Validación** — momento en que el dueño da por bueno el `guion-escenas.md`; dispara el recálculo y la generación de salidas.
-- **Ritmo (ppm)** — palabras por minuto de la locución. Por defecto 120, propio de locución didáctica y pausada.
+- **Ritmo (ppm)** — palabras por minuto de la locución. El ritmo base se deduce de las duraciones objetivo del propio guión; 120 ppm es solo el respaldo cuando el guión no las trae.
 
 ## Arquitectura de alto nivel
 

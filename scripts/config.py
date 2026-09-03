@@ -332,6 +332,11 @@ TAMANO_TEXTO_MAXIMO_PX: int = 96
 # bloque activo): antes escrito a mano tres veces en `estilo.css`, ahora
 # configurable como el resto del tema.
 COLOR_ACENTO_REPRODUCTOR: str = "#f5c542"
+# Colores de las insignias de estado del indice (T-19): "grabada" y "revisada"
+# (R-08, requisito 1). "pendiente" ya usaba `color_texto_secundario_reproductor`,
+# sin literal propio que migrar.
+COLOR_ESTADO_GRABADA_REPRODUCTOR: str = "#4ade80"
+COLOR_ESTADO_REVISADA_REPRODUCTOR: str = "#60a5fa"
 # Margen seguro entre el borde de la pantalla y el contenido (requisito 4): que
 # nada quede cortado por el marco de un cristal de teleprompter ni por el borde
 # de la pantalla de grabacion.
@@ -507,6 +512,8 @@ class Configuracion:
     tamano_texto_minimo_px: int = TAMANO_TEXTO_MINIMO_PX
     tamano_texto_maximo_px: int = TAMANO_TEXTO_MAXIMO_PX
     color_acento_reproductor: str = COLOR_ACENTO_REPRODUCTOR
+    color_estado_grabada_reproductor: str = COLOR_ESTADO_GRABADA_REPRODUCTOR
+    color_estado_revisada_reproductor: str = COLOR_ESTADO_REVISADA_REPRODUCTOR
     margen_seguro_px: int = MARGEN_SEGURO_PX
     tiempo_inactividad_cursor_ms: int = TIEMPO_INACTIVIDAD_CURSOR_MS
     duracion_autoscroll_ms: int = DURACION_AUTOSCROLL_MS

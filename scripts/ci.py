@@ -21,8 +21,10 @@ Uso: `python scripts/ci.py`
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,6 +33,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from presentacion import Nivel, mostrar, titulo
 
 RAIZ = Path(__file__).resolve().parent.parent
+
+# Patron del minimo de `requires-python` (p. ej. ">=3.12" -> (3, 12)). Solo se
+# reconoce la forma ">=X.Y"; cualquier otra forma se ignora sin avisar (R-08,
+# requisito 3: vigilar el desajuste conocido, no validar la sintaxis completa
+# del especificador de versiones).
+_PATRON_MINIMO_REQUIRES_PYTHON = re.compile(r">=\s*(\d+)\.(\d+)")
 
 
 @dataclass(frozen=True)
@@ -64,8 +72,45 @@ def codigo_salida_agregado(resultados: list[bool]) -> int:
     return 0 if all(resultados) else 1
 
 
+def version_minima_declarada(requires_python: str) -> tuple[int, int] | None:
+    """Extrae el minimo `(major, minor)` de un especificador `requires-python`.
+
+    Solo reconoce la forma `">=X.Y"` (la unica que usa `pyproject.toml` hoy);
+    cualquier otra forma devuelve `None` sin avisar (R-08, requisito 3: vigilar
+    el desajuste conocido, no validar la sintaxis completa del especificador).
+    """
+    coincidencia = _PATRON_MINIMO_REQUIRES_PYTHON.search(requires_python)
+    if coincidencia is None:
+        return None
+    return (int(coincidencia.group(1)), int(coincidencia.group(2)))
+
+
+def avisar_si_version_python_diverge(real: tuple[int, int] | None = None) -> None:
+    """Avisa (sin bloquear el CI) si el interprete real no cumple `requires-python`.
+
+    Objetivo deliberado (R-08, requisito 3): 3.12 se mantiene como version declarada
+    en `pyproject.toml` aunque las sesiones de nube corran hoy sobre 3.11.15 (nota de
+    T-06 en DECISIONES_TECNICAS.md) — vigilado aqui en vez de dejarlo solo en una nota
+    suelta, para que quien ejecute el CI sobre un interprete distinto se entere.
+    """
+    datos = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))
+    requires_python = datos.get("project", {}).get("requires-python", "")
+    minimo = version_minima_declarada(requires_python)
+    if minimo is None:
+        return
+    real = real if real is not None else sys.version_info[:2]
+    if real < minimo:
+        mostrar(
+            f"El interprete real (Python {real[0]}.{real[1]}) no cumple "
+            f"requires-python ({requires_python}, pyproject.toml) — desajuste conocido "
+            "desde T-06, ver DECISIONES_TECNICAS.md.",
+            Nivel.AVISO,
+        )
+
+
 def main() -> int:
     titulo("CI local (T-04) — HOJA_DE_RUTA.md §0.1")
+    avisar_si_version_python_diverge()
     resultados = [(etapa.nombre, ejecutar_etapa(etapa)) for etapa in ETAPAS]
 
     titulo("Resumen")

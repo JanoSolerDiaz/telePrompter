@@ -342,6 +342,21 @@ def test_estilo_usa_color_de_acento_y_margen_seguro_configurables() -> None:
     assert "80px" in pagina
 
 
+def test_estilo_usa_colores_de_estado_del_indice_configurables() -> None:
+    configuracion = Configuracion(
+        color_estado_grabada_reproductor="#00ff00",
+        color_estado_revisada_reproductor="#0000ff",
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    assert "#00ff00" in pagina
+    assert "#0000ff" in pagina
+    assert "__COLOR_ESTADO_GRABADA__" not in pagina
+    assert "__COLOR_ESTADO_REVISADA__" not in pagina
+
+
 def test_guion_js_calcula_atenuacion_de_contexto_por_distancia() -> None:
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")

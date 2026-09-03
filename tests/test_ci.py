@@ -5,9 +5,18 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from ci import ETAPAS, Etapa, codigo_salida_agregado, ejecutar_etapa
+from ci import (
+    ETAPAS,
+    Etapa,
+    avisar_si_version_python_diverge,
+    codigo_salida_agregado,
+    ejecutar_etapa,
+    version_minima_declarada,
+)
 
 
 def test_etapas_cubren_las_cuatro_verificaciones_del_protocolo() -> None:
@@ -42,3 +51,32 @@ def test_ejecutar_etapa_devuelve_true_si_el_comando_sale_con_cero() -> None:
 def test_ejecutar_etapa_devuelve_false_si_el_comando_falla() -> None:
     etapa = Etapa("etapa de prueba (fallo)", (sys.executable, "-c", "import sys; sys.exit(1)"))
     assert ejecutar_etapa(etapa) is False
+
+
+def test_version_minima_declarada_reconoce_el_especificador_de_pyproject() -> None:
+    assert version_minima_declarada(">=3.12") == (3, 12)
+    assert version_minima_declarada(">= 3.9") == (3, 9)
+
+
+def test_version_minima_declarada_ignora_especificadores_no_reconocidos() -> None:
+    assert version_minima_declarada("") is None
+    assert version_minima_declarada("==3.12.*") is None
+
+
+def test_avisar_si_version_python_diverge_avisa_cuando_el_real_no_alcanza(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """`pyproject.toml` real declara `>=3.12` (R-08, requisito 3, ver DECISIONES_TECNICAS.md):
+    un interprete real 3.11 no lo cumple y debe avisar sin lanzar excepcion."""
+    avisar_si_version_python_diverge(real=(3, 11))
+    salida = capsys.readouterr()
+    assert "AVISO" in salida.err
+    assert "3.11" in salida.err
+
+
+def test_avisar_si_version_python_diverge_no_avisa_cuando_el_real_cumple(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    avisar_si_version_python_diverge(real=(3, 99))
+    salida = capsys.readouterr()
+    assert salida.err == ""
