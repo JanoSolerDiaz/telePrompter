@@ -32,6 +32,24 @@
 
 ---
 
+### Sesión 2026-09-03 — R-04 (recalibrar el ritmo con tiempos reales) COMPLETADA. Sesión de nube
+**Tarea(s):** R-04, cuarta y última de oleada v2 (depende de R-02, COMPLETADA, y T-12, COMPLETADA)
+**Estado resultante:** R-04 **COMPLETADA** (§1 de SEGUIMIENTO) — oleada v2 (R-01 a R-04) queda cerrada por completo
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** ninguna — ficha marcada "Migración: No" en `ROADMAP_PRODUCTO.md`, cumplida al pie de la letra: el módulo solo lee `ResultadoTiempos` (T-12) y `EstadoProyecto.tomas` (R-02, migración 002 ya existente), `VERSION_ESQUEMA_ESTADO` sigue en 2
+**Archivos creados/modificados:** `scripts/calibracion.py` (nuevo), `scripts/config.py`, `SKILL.md`, `DEVELOPERS.md`, `tests/test_calibracion.py` (nuevo), `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (5 filas), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (64 archivos) · lint ✅ · tests ✅ 494 pasan + 0 skipped (antes 477; +17) · build ✅ `verificar_salidas.py --fixture` con las 11 etapas en OK
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` del dueño (nota de entorno del protocolo v1.3); la entrega es el push a `origin/develop`
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, prefijo R-04): la duración real sale exclusivamente de la toma marcada `buena`, nunca estimada ni promediada; el tipo de escena se clasifica por posición, no por título (verificado que `guion-09-proyectos.md` rompería una búsqueda por palabra clave); el ppm calibrado exige evidencia de ≥2 guiones y ≥150 palabras antes de proponerse; la propuesta nunca escribe `Configuracion.ppm_manual`, se devuelve como datos para que Claude se la formule al dueño
+**Hallazgos del auditor atendidos:** ninguno — sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar, se procedió directo con la cola normal
+**Hallazgos:** ninguno propio nuevo. Módulo enteramente en Python, sin tocar `guion.js`/`estilo.css` — a diferencia de R-01 a R-03, R-04 no necesita nada del navegador de grabación, así que no hizo falta verificación con Playwright
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** R-05 (`.srt` alineado con la toma buena), primera de oleada v3, depende de R-02 (COMPLETADA), T-27 (COMPLETADA) y T-33 (COMPLETADA). Antes de elegir tarea, revisar de nuevo `auditoriacontinua.md` por si el auditor abre un hallazgo nuevo sobre lo entregado aquí.
+
+**Nota de diseño — criterio de aceptación literal.** "Con dos guiones grabados, la skill propone un ppm calibrado y muestra la desviación por escena que lo justifica": cubierto con un test dedicado (`test_con_evidencia_de_dos_guiones_propone_ppm_calibrado`) sobre dos guiones sintéticos calibrados a 150 ppm cada uno (distinta cantidad de palabras y de duración real entre sí, para no depender de que ambos aporten lo mismo), que produce una propuesta de exactamente 150 ppm con la desviación por escena de ambos guiones disponible en el mismo `InformeCalibracion`.
+
+---
+
 ### Sesión 2026-09-03 — R-03 (marcar tropiezos durante la toma) COMPLETADA. Sesión de nube
 **Tarea(s):** R-03, tercera de oleada v2 (depende de R-02, COMPLETADA)
 **Estado resultante:** R-03 **COMPLETADA** (§1 de SEGUIMIENTO)

@@ -30,6 +30,13 @@ PAUSA_FIN_ESCENA_SEGUNDOS: float = 1.0
 # objetivo (por escena y en total) a partir del cual se avisa (requisito 6 de T-12).
 UMBRAL_DESVIACION_TIEMPOS: float = 0.15
 
+# --- Calibracion de ritmo con tiempos reales (R-04) -------------------------------
+# Evidencia minima antes de proponer un ppm calibrado (requisito 2 de R-04): evita
+# sobreajustar a un unico guion o a un punado de palabras. La propuesta nunca se
+# aplica sola -- pasa siempre por la aceptacion o el rechazo del dueno.
+CALIBRACION_GUIONES_MINIMOS: int = 2
+CALIBRACION_PALABRAS_MINIMAS: int = 150
+
 # --- Troceo en bloques de respiracion (T-11) --------------------------------------
 PALABRAS_POR_BLOQUE_MIN: int = 6
 PALABRAS_POR_BLOQUE_OBJETIVO: int = 9
@@ -411,6 +418,8 @@ class Configuracion:
     pausa_fin_parrafo_segundos: float = PAUSA_FIN_PARRAFO_SEGUNDOS
     pausa_fin_escena_segundos: float = PAUSA_FIN_ESCENA_SEGUNDOS
     umbral_desviacion_tiempos: float = UMBRAL_DESVIACION_TIEMPOS
+    calibracion_guiones_minimos: int = CALIBRACION_GUIONES_MINIMOS
+    calibracion_palabras_minimas: int = CALIBRACION_PALABRAS_MINIMAS
     palabras_por_bloque_min: int = PALABRAS_POR_BLOQUE_MIN
     palabras_por_bloque_objetivo: int = PALABRAS_POR_BLOQUE_OBJETIVO
     palabras_por_bloque_max: int = PALABRAS_POR_BLOQUE_MAX
@@ -546,6 +555,16 @@ class Configuracion:
                 f"(inclusive), como fraccion ({self.umbral_desviacion_tiempos})."
             )
             raise ValueError(mensaje)
+        if self.calibracion_guiones_minimos <= 0:
+            raise ValueError(
+                "El minimo de guiones para calibrar el ppm debe ser un entero positivo "
+                f"({self.calibracion_guiones_minimos})."
+            )
+        if self.calibracion_palabras_minimas <= 0:
+            raise ValueError(
+                "El minimo de palabras para calibrar el ppm debe ser un entero positivo "
+                f"({self.calibracion_palabras_minimas})."
+            )
         for nombre, valor_entero in (
             ("umbral_palabras_sin_puntuacion", self.umbral_palabras_sin_puntuacion),
             ("ventana_cacofonia_palabras", self.ventana_cacofonia_palabras),

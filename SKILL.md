@@ -211,6 +211,20 @@ Mientras una fila siga en estado `nuevo`, la siguiente vez que se regenere `guio
 | Volcado a `FEEDBACK.md` | `scripts/feedback.registrar_tropiezos_en_feedback` | Añade filas `nuevo`, nunca borra ni reescribe una fila existente; copia de seguridad `.bak-<marca>` si el archivo ya existía |
 | Destacado en la siguiente revisión | `scripts/feedback.tropiezos_marcados_por_escena` + `documento_revision.generar_documento_revision(..., tropiezos_por_escena=...)` | Casa por texto exacto del bloque, no por índice; solo mientras la fila siga en `nuevo` |
 
+## Recalibrar el ritmo con tiempos reales (R-04)
+
+Cierra el bucle del ritmo: T-12 deduce el ppm de las duraciones **objetivo** de cabecera (una intención del guionista) y calcula con ese ppm la duración **estimada** de cada bloque; R-02 aporta la duración **real** de la toma marcada como buena de cada escena. `scripts/calibracion.py` (`calcular_calibracion`) junta ambas fuentes — nunca recalcula tiempos por su cuenta, lee el `ResultadoTiempos` ya calculado y `estado.tomas` ya fusionado — y produce, por cada guion de entrada, un contraste escena a escena con las tres duraciones una al lado de otra. Una escena con tomas pero ninguna marcada buena no aporta evidencia real todavía: mezclar una toma fallida sin marcar habría contaminado la calibración con un tiempo que el dueño no validó como representativo.
+
+Cada escena se clasifica por **posición**, no por título — apertura (la primera de cada guion), cierre (la última), desarrollo (el resto) — porque el título de la última escena no siempre dice literalmente "Cierre" (mismo criterio posicional que ya usó T-10 para el subtítulo entrecomillado). El informe agrega la desviación real-frente-a-estimada por tipo entre todos los guiones de entrada, para decir de un vistazo en qué tipo de escena el locutor se acelera y en cuál se frena.
+
+Con la evidencia acumulada de **varios guiones** (nunca de uno solo, para no sobreajustar a sus particularidades) se propone un ppm calibrado — palabras reales entre minutos reales de toma buena, sujeto a la misma banda de plausibilidad que el ppm deducido de T-12 —, pero **nunca se aplica sola**: es una propuesta que Claude formula al dueño dentro de la sesión (mismo patrón que la pregunta de salidas de T-30), y solo si el dueño la acepta se fija `Configuracion.ppm_manual` en una próxima pasada. Sin evidencia suficiente (menos de `calibracion_guiones_minimos` guiones, menos de `calibracion_palabras_minimas` palabras, o un ppm deducido fuera de banda) no hay propuesta, con el motivo explícito.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Evidencia mínima | 2 guiones, 150 palabras | `calibracion_guiones_minimos` / `calibracion_palabras_minimas` |
+| Fuente de la duración real | toma marcada `buena` (R-02) | Una escena sin toma buena no aporta evidencia, nunca se estima |
+| Ppm calibrado propuesto | nunca automático | El dueño lo acepta o lo rechaza; se aplicaría a mano en `ppm_manual` |
+
 ## Exportador `.srt` borrador (T-27)
 
 Arranca los subtítulos en la fase de montaje sin partir de cero: un subtítulo por bloque de respiración, con los tiempos ya calculados por el motor de tiempos, sobre el **texto locutado final** (con las reescrituras aceptadas ya aplicadas, nunca el original del guión). Un bloque muy corto se funde con el siguiente de la misma escena para no parpadear en pantalla — nunca funde bloques de escenas distintas —, y un bloque cuyo texto no cabe en el límite de líneas configurado se reparte en varios subtítulos consecutivos sin cortar ninguna palabra ni perder texto. Formato `.srt` estándar (índice, marca de tiempo, texto), UTF-8, validado con las mismas reglas que aplica ffmpeg.
@@ -302,6 +316,8 @@ adelantarse al otro.
 | `pausa_fin_parrafo_segundos` | 0,6 s | Pausa al final de un párrafo |
 | `pausa_fin_escena_segundos` | 1,0 s | Pausa al final de una escena |
 | `umbral_desviacion_tiempos` | 0,15 (15 %) | A partir de aquí se avisa de la desviación entre duración estimada y objetivo |
+| `calibracion_guiones_minimos` | 2 | Guiones con al menos una toma buena necesarios para proponer un ppm calibrado (R-04) |
+| `calibracion_palabras_minimas` | 150 | Palabras de evidencia real mínimas para proponer un ppm calibrado (R-04) |
 
 ### Troceo en bloques de respiración (T-11)
 
@@ -465,7 +481,7 @@ De toda la carpeta de salida (`<nombre-guion>-tarjetas/`), la fase de montaje so
 
 **Nombres y orden de escenas, estables y predecibles (requisito 2 de T-33):** el `numero` de cada escena (`## BLOQUE N — <título>`) es la única clave para casar una toma grabada con su escena sin ambigüedad. Debe ser único y estrictamente creciente en el orden del documento — el mismo orden en que aparecen en `tarjetas.json` y en el que se generan los subtítulos del `.srt`. `convencion.detectar_desviaciones` (T-10, ampliada en T-33) señala `numero_escena_duplicado` y `numero_escena_no_creciente` sin bloquear el proceso; si aparecen, la cadena de montaje no debe fiarse del número de escena hasta corregir el guion de origen.
 
-Lo que la cadena de montaje **todavía no puede asumir** de esta skill: tomas por escena (`R-02`), recalibrado con tiempos reales de grabación (`R-04`) ni un `.srt` alineado con la toma buena (`R-05`) — las tres siguen `PENDIENTE` en `roadmap/ROADMAP_PRODUCTO.md`.
+Lo que la cadena de montaje **todavía no puede asumir** de esta skill: un `.srt` alineado con la toma buena (`R-05`, todavía `PENDIENTE`). Ni el registro de tomas por escena (`R-02`, en `estado.json`, fuera de los dos archivos de este contrato) ni el ppm calibrado que propone R-04 (evidencia entre guiones, nunca aplicado solo) cambian los tiempos de un `guion.srt` ya generado — eso sigue siendo trabajo de `R-05`.
 
 **Ver también:** `references/contrato-montaje.md` (contrato completo, con la fórmula para derivar el rango de tiempo de cada escena) y `references/contrato-tarjetas.md` (forma exacta de `tarjetas.json`).
 

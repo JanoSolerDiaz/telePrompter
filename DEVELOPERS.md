@@ -1719,6 +1719,84 @@ el archivo exportado y cuando se regenera `guion-escenas.md`.
   sobre el mismo guion real — cerrando el contrato de punta a punta, igual que
   hizo R-02 con el parte de rodaje.
 
+## Recalibrar el ritmo con tiempos reales (R-04)
+
+`origen: roadmap`, cuarta tarea de la oleada v2, depende de R-02 y T-12.
+Objetivo: cerrar el bucle del ritmo — T-12 deduce el ppm de las duraciones
+**objetivo** de cabecera (una intención del guionista) y calcula con ese ppm
+la duración **estimada** de cada bloque; R-02 aporta la duración **real** de
+la toma marcada como buena de cada escena. `scripts/calibracion.py` (nuevo,
+puro Python, sin tocar `guion.js`/`estilo.css`) junta ambas fuentes.
+
+- **No calcula tiempos por su cuenta.** `calcular_calibracion` recibe una
+  lista de `EvidenciaGuion` (nombre, `ResultadoTiempos` ya calculado por T-12,
+  `EstadoProyecto.tomas` ya fusionado por R-02) — mismo principio que "unica
+  fuente de tiempos" de T-12 (requisito 4): este módulo solo lee lo que ya
+  existe. La skill no lo invoca sola: es Claude quien reúne la evidencia de
+  los guiones ya grabados y llama a la función dentro de la sesión, mismo
+  patrón que `salidas.generar_salidas_seleccionadas` (T-30).
+- **Requisito 1 (comparar por escena y en total).** `_contraste_guion`
+  construye un `ContrasteEscena` por escena con las tres duraciones una al
+  lado de otra: estimada (`TiempoEscena.duracion_estimada_segundos`), objetivo
+  (`TiempoEscena.duracion_objetivo_segundos`) y real. La real sale
+  **exclusivamente** de la toma marcada `buena` en `estado.tomas`
+  (`_toma_buena_segundos`) — una escena con tomas pero ninguna marcada buena
+  se queda con `duracion_real_segundos=None`, nunca se estima ni se promedia
+  entre tomas sin marcar: mezclar una toma fallida habría contaminado la
+  calibración con un tiempo que el dueño no validó como representativo. Las
+  palabras de cada escena salen de `ResultadoTiempos.bloques` agrupando por
+  `bloque.bloque.numero_escena` (campo que `BloqueRespiracion` ya trae desde
+  T-11), sin recalcular nada con `troceo.py`/`clasificador.py`.
+- **Clasificación posicional, no por título.** `_tipo_escena` decide
+  apertura/desarrollo/cierre por la posición de la escena dentro de su propio
+  guion (primera / última / resto), mismo criterio que T-10 ya usó para el
+  subtítulo entrecomillado: la última escena de `guion-09-proyectos.md` no
+  dice literalmente "Cierre" ("Qué NO va en un proyecto"), así que buscar por
+  palabra clave habría fallado en un guion real de calibración. Un guion de
+  una sola escena es "apertura" por precedencia del primer `if` — caso límite
+  documentado, sin caso real que lo ejerza.
+- **Requisito 2 (ppm calibrado propuesto, nunca aplicado solo).**
+  `_propuesta_ppm` agrega palabras y duración real de **todas** las escenas
+  con toma buena de **todos** los guiones de entrada (`evidencia acumulada de
+  varios guiones`, literal del requisito) y deduce el ppm con la misma
+  fórmula que `tiempos._deducir_ritmo` (palabras entre minutos), reutilizando
+  tal cual `Configuracion.ppm_banda_plausible` como guardarraíl. Dos campos
+  nuevos en `Configuracion` (`calibracion_guiones_minimos=2`,
+  `calibracion_palabras_minimas=150`, con su propia validación en
+  `__post_init__`) evitan proponer un ppm a partir de un único guion o de un
+  puñado de palabras. Sin evidencia suficiente, `ppm_calibrado` es `None` con
+  un `motivo` explícito en español — nunca un número especulativo. Este
+  módulo **nunca escribe** `Configuracion.ppm_manual`: la propuesta es datos
+  para que Claude se la formule al dueño dentro de la sesión (mismo patrón
+  que `salidas.construir_pregunta_salidas`), y no hace falta un mecanismo de
+  persistencia nuevo porque `ppm_manual` ya viaja dentro de
+  `configuracion_efectiva` (decisión ya tomada en T-12).
+- **Requisito 3 (informe corto, qué tipo de escena acelera y cuál frena).**
+  `_resumen_por_tipo` agrega estimada/real por tipo entre todos los guiones
+  de entrada (solo con escenas que tienen evidencia real); la propiedad
+  `ResumenTipoEscena.desviacion_relativa` es negativa cuando el locutor va más
+  rápido que lo estimado y positiva cuando va más lento.
+  `InformeCalibracion.mostrar_informe()` lo vuelca por `presentacion.py`
+  (única capa autorizada a escribir en la salida estándar, T-02): contraste
+  por escena, ritmo por tipo y la propuesta de ppm — solo muestra, nunca
+  decide ni aplica nada.
+- **"Migración: No".** Este módulo solo lee `ResultadoTiempos` (T-12) y
+  `EstadoProyecto.tomas` (R-02, migración 002 ya existente); no añade ningún
+  contenedor nuevo a `estado.json`.
+- **Verificación.** `tests/test_calibracion.py` (nuevo, 17 tests) cubre: las
+  tres duraciones por escena, que una escena con tomas sin marcar buena no
+  aporta real, el título por defecto cuando no hay registro de tomas, la
+  clasificación posicional (incluido el caso de una sola escena), que sin
+  evidencia o con evidencia de un solo guion no hay propuesta, que pocas
+  palabras tampoco la producen, el criterio de aceptación literal (dos
+  guiones sintéticos calibrados a 150 ppm cada uno producen una propuesta de
+  150 ppm con la desviación por escena que la justifica), que un ppm deducido
+  fuera de banda no se propone, que `calcular_calibracion` nunca muta
+  `Configuracion.ppm_manual`, la agregación por tipo entre varios guiones, el
+  signo de la desviación relativa, que un tipo sin evidencia no aparece en el
+  resumen, que `mostrar_informe` no falla con o sin propuesta, y la
+  validación de los dos campos nuevos de `Configuracion`.
+
 ## Exportador `.srt` borrador (T-27)
 
 `scripts/srt.py` arranca los subtítulos en la fase de montaje sin partir de cero.
