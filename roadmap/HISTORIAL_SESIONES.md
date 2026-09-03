@@ -32,6 +32,24 @@
 
 ---
 
+### Sesión 2026-09-03 — R-06 (coherencia de nombres y `assets/`) COMPLETADA. Sesión de nube
+**Tarea(s):** R-06, fase transversal F-D (`origen: auditoría #6`, depende de T-32, COMPLETADA)
+**Estado resultante:** R-06 **COMPLETADA** (§1 de SEGUIMIENTO)
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** ninguna sobre `estado.json` — `VERSION_ESQUEMA_ESTADO` sigue en 2; la única migración de esta tarea es de sistema de ficheros (renombrado de carpeta), autoejecutable dentro de `entrada.carpeta_salida_para`, ver decisión de por qué no vive en `scripts/migraciones/`
+**Archivos creados/modificados:** `scripts/config.py` (`NOMBRE_SUFIJO_CARPETA_SALIDA`, `SUFIJOS_CARPETA_SALIDA_HEREDADOS`, rutas de logotipo actualizadas), `scripts/entrada.py` (`_migrar_carpeta_salida_heredada`, nueva), `assets/480_*.png` → `assets/marca/480_*.png` (`git mv`), `tests/test_entrada.py` (6 tests nuevos), `tests/test_pdf.py` (ruta del logotipo real), `tests/test_srt_alineado.py` (anotación de tipo corregida, efecto colateral no relacionado), `SKILL.md`, `PROYECTO.md`, `DEVELOPERS.md`, `references/contrato-montaje.md`, `references/marca-480.md`, `.gitignore`, `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (4 filas), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (66 archivos) · lint ✅ · tests ✅ 509 pasan + 0 skipped (antes 504; +6, más 1 corregido) · build ✅ `verificar_salidas.py --fixture` con las 12 etapas en OK, logotipo incrustado correctamente desde `assets/marca/`
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` del dueño (nota de entorno del protocolo v1.3); la entrega es el push a `origin/develop`
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, prefijo R-06): el sufijo nuevo es `-teleprompter` por coincidir con el nombre real del proyecto; la migración de carpetas heredadas vive en `entrada.py`, no en `scripts/migraciones/`, porque ese paquete migra el esquema de `estado.json`, no carpetas del sistema de ficheros; se copia a `.bak-<marca>` ANTES de renombrar porque el contenido de la carpeta antigua es único e irrepetible, a diferencia del paquete de `instalar_skill.py` que sí se puede regenerar; los logotipos se mueven a `assets/marca/` sin crear un nivel `assets/plantillas/` adicional, porque `reproductor/` y `pdf/` ya eran espacios propios separados de los logotipos
+**Hallazgos del auditor atendidos:** #6 (severidad baja) — código y documentación corregidos; queda a la espera de que el auditor lo reevalúe y lo marque RESUELTO en su propio documento (`auditoriacontinua.md`, que este agente no edita)
+**Hallazgos:** uno propio, sin relación con R-06 — `tests/test_srt_alineado.py::test_guardar_srt_alineado_escribe_en_su_propio_archivo` tenía el parámetro `tmp_path` sin anotar, error real bajo `mypy` estricto que la sesión de R-05 no detectó (aparentemente no corrió `mypy` sobre `tests/` completo antes de aquel cierre, pese a declarar las cuatro verificaciones en verde). Corregido en el mismo commit por ser un bloqueante literal del protocolo de verificación pre-push de esta sesión; no se abre P-XX por ser una anotación de tipo trivial y de bajo riesgo, mismo criterio que la corrección documental de la sesión de R-05
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** R-07 (capítulos de YouTube con marcas de tiempo reales), oleada v3 (une T-08 con R-02). Antes de elegir tarea, revisar de nuevo `auditoriacontinua.md` por si el auditor abre un hallazgo nuevo sobre lo entregado aquí.
+
+**Nota de diseño — verificación de la migración.** El criterio de aceptación literal de R-06 ("un proyecto de guión creado antes del cambio se abre después sin pérdidas") se verificó con un script manual end-to-end (no solo los tests unitarios): `estado.guardar_estado` sobre una carpeta con el sufijo antiguo más una edición manual en `guion-escenas.md`, seguido de una llamada normal a `carpeta_salida_para` con el sufijo vigente — la carpeta nueva aparece con `estado.json` cargable por `estado.cargar_estado` (incluida la cadena de migraciones de esquema) y la edición del dueño intacta, la antigua desaparece del todo y su copia de seguridad conserva el contenido exacto byte a byte.
+
+---
+
 ### Sesión 2026-09-03 — R-05 (`.srt` alineado con la toma buena) COMPLETADA. Sesión de nube
 **Tarea(s):** R-05, primera de oleada v3 (depende de R-02, T-27 y T-33, todas COMPLETADAS)
 **Estado resultante:** R-05 **COMPLETADA** (§1 de SEGUIMIENTO)

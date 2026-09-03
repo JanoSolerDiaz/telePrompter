@@ -21,7 +21,7 @@ from tiempos import ResultadoTiempos, calcular_tiempos
 from verificar_salidas import buscar_recursos_externos
 
 RAIZ = Path(__file__).resolve().parent.parent
-LOGO_REAL = RAIZ / "assets" / "480_Gris.png"
+LOGO_REAL = RAIZ / "assets" / "marca" / "480_Gris.png"
 CHROMIUM_SANDBOX = Path("/opt/pw-browsers/chromium")
 
 _GUION_DOS_ESCENAS = """# Guion de prueba

@@ -22,15 +22,19 @@ mostrarlo, nunca interpretar una traza cruda.
 from __future__ import annotations
 
 import re
+import shutil
 import unicodedata
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as ErrorTiempoAgotado
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
 from config import (
     ESCENAS_MAX,
+    NOMBRE_SUFIJO_CARPETA_SALIDA,
+    SUFIJOS_CARPETA_SALIDA_HEREDADOS,
     TAMANO_GUION_MAX_BYTES,
     TIEMPO_PROCESO_MAX_SEGUNDOS,
 )
@@ -135,12 +139,13 @@ def verificar_estructura_minima(texto: str, *, origen: Path | None = None) -> No
 def nombre_guion_seguro(ruta_guion: Path) -> str:
     """Deriva un nombre de proyecto seguro a partir del nombre del guion.
 
-    Se usa para construir `<carpeta-del-guion>/<nombre-guion>-tarjetas/` (T-07).
-    `Path.stem` ya descarta cualquier componente de carpeta (`../`) del nombre;
-    esta funcion, ademas, normaliza unicode y sustituye separadores de ruta y
-    caracteres de control por si el nombre de archivo en si fuera hostil, para que
-    la carpeta de salida derivada nunca pueda caer fuera de la carpeta del guion
-    (regla de aislamiento, §0.2).
+    Se usa para construir `<carpeta-del-guion>/<nombre-guion><sufijo>/` (T-07,
+    sufijo en `config.NOMBRE_SUFIJO_CARPETA_SALIDA`). `Path.stem` ya descarta
+    cualquier componente de carpeta (`../`) del nombre; esta funcion, ademas,
+    normaliza unicode y sustituye separadores de ruta y caracteres de control por
+    si el nombre de archivo en si fuera hostil, para que la carpeta de salida
+    derivada nunca pueda caer fuera de la carpeta del guion (regla de aislamiento,
+    §0.2).
     """
     base = unicodedata.normalize("NFC", ruta_guion.stem).strip()
     limpio = re.sub(r"[\\/\x00-\x1f]", "-", base)
@@ -149,21 +154,68 @@ def nombre_guion_seguro(ruta_guion: Path) -> str:
     return limpio or "guion"
 
 
-def carpeta_salida_para(ruta_guion: Path, *, sufijo: str = "-tarjetas") -> Path:
+def _migrar_carpeta_salida_heredada(
+    carpeta_base: Path, nombre: str, carpeta_nueva: Path
+) -> Path | None:
+    """Renombra en sitio la carpeta de salida heredada de este guion, si la hay
+    (R-06, requisito 2: "migracion que renombre las carpetas de proyectos de
+    guion ya existentes sin perder estado ni ediciones, con .bak previo").
+
+    Se dispara sola la primera vez que `carpeta_salida_para` procesa un guion
+    cuya carpeta de salida todavia lleva uno de `SUFIJOS_CARPETA_SALIDA_HEREDADOS`
+    (hoy solo "-tarjetas") -- no hace falta que el dueno ni Claude ejecuten nada
+    aparte, mismo principio "autoejecutable" que las migraciones de `estado.json`.
+
+    Nunca decide entre dos carpetas de salida distintas: si `carpeta_nueva` ya
+    existe (guion ya migrado, o procesado por primera vez con el sufijo vigente),
+    no toca nada y devuelve `None` sin mirar siquiera si hay una carpeta heredada.
+    Si la hay, antes de moverla se copia entera a un `.bak-<marca>` (invariante
+    (d), §0.2: sin borrado destructivo) -- a diferencia de
+    `instalar_skill.sincronizar_skill` (que aparta la version ANTERIOR y escribe
+    una copia NUEVA en su lugar), aqui no hay nada que generar de nuevo: el
+    contenido de la carpeta antigua ES el que debe acabar en la carpeta nueva, asi
+    que la copia de seguridad es una foto de respaldo tomada antes del `rename`,
+    no la carpeta que sustituye. Devuelve la ruta de la copia de seguridad, o
+    `None` si no habia ninguna carpeta heredada que migrar.
+    """
+    if carpeta_nueva.exists():
+        return None
+    for sufijo_antiguo in SUFIJOS_CARPETA_SALIDA_HEREDADOS:
+        carpeta_antigua = carpeta_base / f"{nombre}{sufijo_antiguo}"
+        if not carpeta_antigua.is_dir():
+            continue
+        marca = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        copia_seguridad = carpeta_base / f"{carpeta_antigua.name}.bak-{marca}"
+        shutil.copytree(carpeta_antigua, copia_seguridad)
+        carpeta_antigua.rename(carpeta_nueva)
+        return copia_seguridad
+    return None
+
+
+def carpeta_salida_para(ruta_guion: Path, *, sufijo: str = NOMBRE_SUFIJO_CARPETA_SALIDA) -> Path:
     """Carpeta de salida derivada del guion, siempre dentro de su propia carpeta.
 
     Defensa en profundidad: levanta `EntradaError` si, pese a la sanitizacion de
     `nombre_guion_seguro`, el resultado no quedara dentro de la carpeta del guion.
+
+    Con el sufijo por defecto (vigente), migra sola una carpeta de salida
+    heredada de este mismo guion si la encuentra -- ver
+    `_migrar_carpeta_salida_heredada`. Quien llame con un `sufijo` explicito
+    (los tests que fijan un sufijo propio) no dispara la migracion: solo tiene
+    sentido para la ruta de salida que de verdad va a usar esta version.
     """
     ruta_validada = validar_ruta_guion(ruta_guion)
     carpeta_base = ruta_validada.parent
-    carpeta = carpeta_base / f"{nombre_guion_seguro(ruta_validada)}{sufijo}"
+    nombre = nombre_guion_seguro(ruta_validada)
+    carpeta = carpeta_base / f"{nombre}{sufijo}"
     try:
         carpeta.resolve().relative_to(carpeta_base.resolve())
     except ValueError as excepcion:
         raise EntradaError(
             f"La carpeta de salida calculada queda fuera de la carpeta del guion: {carpeta}"
         ) from excepcion
+    if sufijo == NOMBRE_SUFIJO_CARPETA_SALIDA:
+        _migrar_carpeta_salida_heredada(carpeta_base, nombre, carpeta)
     return carpeta
 
 

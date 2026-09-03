@@ -12,7 +12,7 @@ carpeta del propio guion (`scripts/entrada.carpeta_salida_para`, regla de
 aislamiento, §0.2 de `HOJA_DE_RUTA.md`):
 
 ```
-<carpeta-del-guion>/<nombre-guion>-tarjetas/
+<carpeta-del-guion>/<nombre-guion>-teleprompter/
 ├── estado.json              # estado del proyecto (T-07); no lo consume el montaje
 ├── guion-escenas.md         # documento de revisión (T-16/T-17); no lo consume el montaje
 ├── reproductor.html         # teleprompter (T-18+); no lo consume el montaje
@@ -26,12 +26,17 @@ aislamiento, §0.2 de `HOJA_DE_RUTA.md`):
 └── teleprompter.log         # diagnóstico técnico (T-02); no lo consume el montaje
 ```
 
-El sufijo `-tarjetas` y el resto de nombres son los que produce hoy el código
-(`config.NOMBRE_ARCHIVO_*`); el hallazgo #6 de `auditoriacontinua.md` (severidad
-baja, abierto) ya deja constancia de que ese sufijo es un nombre heredado de
-antes de renombrar el proyecto a `teleprompter` — la skill de montaje no debe
-fijarse en el sufijo en sí, solo en que es la misma carpeta que contiene
-`guion.srt` y `tarjetas.json` de un mismo guion.
+El sufijo (`config.NOMBRE_SUFIJO_CARPETA_SALIDA`) y el resto de nombres
+(`config.NOMBRE_ARCHIVO_*`) son los que produce hoy el código — la skill de
+montaje no debe fijarse en el sufijo en sí, solo en que es la misma carpeta que
+contiene `guion.srt` y `tarjetas.json` de un mismo guion. **R-06** cerró el
+hallazgo #6 de `auditoriacontinua.md`: hasta esa tarea el sufijo era
+`-tarjetas`, heredado de antes de renombrar el proyecto a `teleprompter`.
+`entrada.carpeta_salida_para` migra sola, la primera vez que procesa un guion,
+cualquier carpeta de salida que todavía lleve el sufijo antiguo (con copia de
+seguridad `.bak-<marca>` previa, sin borrado destructivo) — una carpeta creada
+antes de R-06 no requiere ningún paso manual del dueño ni de la skill de
+montaje.
 
 De todo lo anterior, **la fase de montaje solo necesita leer dos archivos**:
 `guion.srt` y `tarjetas.json`. El resto es documentación y herramientas de

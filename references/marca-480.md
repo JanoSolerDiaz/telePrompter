@@ -114,7 +114,9 @@ Alturas para los anchos estándar **con los archivos actuales** (ratio 2,4758):
 
 ### Variantes disponibles
 
-Los cuatro archivos están en `assets/` del proyecto, PNG RGBA de 8 bits con transparencia real:
+Los cuatro archivos están en `assets/marca/` del proyecto (R-06: separado de
+`assets/reproductor/` y `assets/pdf/`, que llevan plantillas, no recursos de
+marca), PNG RGBA de 8 bits con transparencia real:
 
 | Variante | Archivo | Uso |
 |----------|---------|-----|

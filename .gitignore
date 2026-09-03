@@ -11,7 +11,9 @@ __pycache__/
 venv/
 
 # Salidas generadas por la propia skill al procesar un guión
+*-teleprompter/
 *-tarjetas/
+*-tarjetas.bak-*/
 *.bak
 diagnostico-*.log
 

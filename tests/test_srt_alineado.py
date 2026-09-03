@@ -7,6 +7,8 @@ mas un mapa `{numero_escena: duracion_real_segundos}` de tomas buenas.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from config import NOMBRE_ARCHIVO_SRT, NOMBRE_ARCHIVO_SRT_ALINEADO, Configuracion
@@ -69,9 +71,7 @@ def test_escena_con_toma_buena_se_reescala_a_su_duracion_real() -> None:
     assert escena_3.duracion_estimada_segundos == pytest.approx(20.0, abs=1e-6)
     # Escena 2 no tiene toma buena: conserva su estimacion original sin tocar.
     tiempos_originales = {e.numero: e.duracion_estimada_segundos for e in tiempos.escenas}
-    assert escena_2.duracion_estimada_segundos == pytest.approx(
-        tiempos_originales[2], abs=1e-6
-    )
+    assert escena_2.duracion_estimada_segundos == pytest.approx(tiempos_originales[2], abs=1e-6)
 
 
 def test_sin_ninguna_toma_buena_el_resultado_alineado_es_identico_al_estimado() -> None:
@@ -104,7 +104,7 @@ def test_nombres_de_archivo_del_srt_estimado_y_del_alineado_son_distintos() -> N
     assert NOMBRE_ARCHIVO_SRT_ALINEADO != NOMBRE_ARCHIVO_SRT
 
 
-def test_guardar_srt_alineado_escribe_en_su_propio_archivo(tmp_path) -> None:
+def test_guardar_srt_alineado_escribe_en_su_propio_archivo(tmp_path: Path) -> None:
     tiempos = _tiempos([10, 10])
     _contenido, alineacion = generar_srt_alineado(tiempos, _tomas_por_escena({1: 4.0}))
     contenido = exportar_srt_alineado(alineacion)

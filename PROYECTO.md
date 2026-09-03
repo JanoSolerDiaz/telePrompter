@@ -54,7 +54,7 @@ El reproductor es HTML/CSS/JS vanilla generado a partir de plantillas, en un ún
 servidor, ni servicio, ni repositorio remoto.
 
 **Aislamiento de datos:** por proyecto de guión. Todo se escribe en
-`<carpeta-del-guion>/<nombre-guion>-tarjetas/` y nunca fuera. Sin red, sin telemetría.
+`<carpeta-del-guion>/<nombre-guion>-teleprompter/` y nunca fuera. Sin red, sin telemetría.
 
 **Invariantes de datos:** cobertura total del guión (nada se descarta en silencio) · original de
 toda reescritura recuperable · las ediciones manuales del dueño mandan al revalidar · sin borrado

@@ -62,7 +62,7 @@ SRT_CARACTERES_POR_LINEA_MAX: int = 42
 # Variante "Gris" (fondo claro, requisito 3): ruta relativa a la raiz del proyecto,
 # configurable. Si el archivo no existe o no es un PNG valido, el PDF sale sin
 # logotipo y la generacion no falla.
-RUTA_LOGO_PDF: str = "assets/480_Gris.png"
+RUTA_LOGO_PDF: str = "assets/marca/480_Gris.png"
 # Anchos de referencia de `references/marca-480.md`; el alto se mide siempre del
 # PNG en tiempo de generacion (`ancho / ratio`), nunca se codifica una constante de
 # relacion de aspecto (regla dura de esa referencia).
@@ -149,7 +149,7 @@ PPTX_UMBRAL_INDICE_SECCIONES: int = 4
 # Variante del logotipo sobre fondo oscuro (portada y cierre, requisito 2 del brief).
 # La variante clara reutiliza `RUTA_LOGO_PDF` (T-28): mismo archivo "Gris" que ya usa
 # el `.pdf`, ambos sobre fondo claro.
-RUTA_LOGO_PPTX_OSCURO: str = "assets/480_Blanco.png"
+RUTA_LOGO_PPTX_OSCURO: str = "assets/marca/480_Blanco.png"
 # Anchos de referencia de `references/marca-480.md` para las diapositivas DARK; el
 # alto se mide siempre del PNG en tiempo de generacion (`dimensiones_png`, T-28),
 # nunca se codifica una relacion de aspecto (misma regla que el `.pdf`).
@@ -160,9 +160,9 @@ PPTX_ANCHO_LOGO_CIERRE_PULGADAS: float = 2.8
 # --- Normalizacion a forma dicha (T-13) --------------------------------------------
 # Diccionario de excepciones editable por el dueno (requisito 3), con prioridad sobre
 # toda regla automatica de `normalizacion.py`. Vive dentro de la carpeta de salida del
-# guion (regla de aislamiento, §0.2): "<carpeta-del-guion>/<nombre-guion>-tarjetas/
-# diccionario-locucion.json". Ausente por defecto: sin el, solo actuan las reglas
-# automaticas.
+# guion (regla de aislamiento, §0.2): "<carpeta-del-guion>/<nombre-guion><sufijo>/
+# diccionario-locucion.json" (sufijo en NOMBRE_SUFIJO_CARPETA_SALIDA). Ausente por
+# defecto: sin el, solo actuan las reglas automaticas.
 NOMBRE_ARCHIVO_DICCIONARIO_LOCUCION: str = "diccionario-locucion.json"
 # Simbolo de moneda -> (forma singular, forma plural). Cualquier entrada que el dueno
 # necesite y no este aqui se cubre con el diccionario de excepciones, que gana siempre.
@@ -229,7 +229,14 @@ ANGLICISMOS_COMUNES: dict[str, str] = {
 # "incisos anidados"; longitud minima (en palabras del bloque) para que una voz
 # pasiva detectada cuente como "larga".
 SUBORDINANTES: tuple[str, ...] = (
-    "que", "porque", "aunque", "cuando", "donde", "como", "si", "mientras",
+    "que",
+    "porque",
+    "aunque",
+    "cuando",
+    "donde",
+    "como",
+    "si",
+    "mientras",
 )
 UMBRAL_SUBORDINADAS_ENCADENADAS: int = 2
 NEGACIONES: tuple[str, ...] = ("no", "nunca", "jamás", "nadie", "ninguno", "ninguna", "tampoco")
@@ -278,6 +285,18 @@ ESCENAS_MAX: int = 200
 # Tope de tiempo (segundos) para una etapa de proceso arrancada sobre el guion. No hay
 # `signal.alarm` (el dueno trabaja en Windows, sin SIGALRM); ver `entrada.py`.
 TIEMPO_PROCESO_MAX_SEGUNDOS: float = 60.0
+
+# --- Carpeta de salida del guion (T-06/T-07, renombrada en R-06) ------------------
+# Sufijo de "<carpeta-del-guion>/<nombre-guion><sufijo>/" (regla de aislamiento,
+# §0.2). Hasta R-06 era "-tarjetas", heredado del nombre del proyecto antes de
+# renombrarlo a "teleprompter" (hallazgo #6 de `auditoriacontinua.md`); pasa a
+# coincidir con el nombre real del proyecto.
+NOMBRE_SUFIJO_CARPETA_SALIDA: str = "-teleprompter"
+# Sufijos usados por versiones anteriores de la skill (requisito 2 de R-06):
+# `entrada.carpeta_salida_para` migra sola, la primera vez que procesa un guion,
+# cualquier carpeta de salida que todavia lleve uno de estos sufijos al sufijo
+# vigente de arriba -- nunca al reves, y nunca borra nada (ver su docstring).
+SUFIJOS_CARPETA_SALIDA_HEREDADOS: tuple[str, ...] = ("-tarjetas",)
 
 # --- Diagnostico (T-02, T-05) ------------------------------------------------------
 # --- Resaltado, tipografia y tema de grabacion (T-21) -----------------------------
@@ -608,9 +627,7 @@ class Configuracion:
         if self.margen_seguro_px < 0:
             raise ValueError(f"El margen seguro no puede ser negativo ({self.margen_seguro_px}).")
         if not (
-            self.tamano_texto_minimo_px
-            <= self.tamano_texto_base_px
-            <= self.tamano_texto_maximo_px
+            self.tamano_texto_minimo_px <= self.tamano_texto_base_px <= self.tamano_texto_maximo_px
         ):
             mensaje = (
                 "El tamano de texto base debe estar entre el minimo y el maximo "
@@ -642,8 +659,7 @@ class Configuracion:
             raise ValueError(mensaje)
         if self.antirrebote_clicker_ms < 0:
             mensaje = (
-                "El antirrebote del clicker no puede ser negativo "
-                f"({self.antirrebote_clicker_ms})."
+                f"El antirrebote del clicker no puede ser negativo ({self.antirrebote_clicker_ms})."
             )
             raise ValueError(mensaje)
         if not self.mapa_teclas_reproductor:

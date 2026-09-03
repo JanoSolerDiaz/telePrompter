@@ -99,10 +99,13 @@ antes de que nada lo procese, delante del parser (`scripts/parser.py`, T-08):
   `ESCENAS_MAX`. No decide qué encabezado es escena — eso sigue siendo trabajo de
   T-08.
 - `nombre_guion_seguro(ruta)` / `carpeta_salida_para(ruta)` — derivan
-  `<carpeta-del-guion>/<nombre-guion>-tarjetas/` saneando el nombre (unicode NFC,
-  sin separadores de ruta ni secuencias de puntos) y comprobando con
-  `Path.relative_to` que el resultado nunca cae fuera de la carpeta del guion
-  (regla de aislamiento, §0.2).
+  `<carpeta-del-guion>/<nombre-guion><sufijo>/` (sufijo en
+  `config.NOMBRE_SUFIJO_CARPETA_SALIDA`, `-teleprompter` desde R-06) saneando el
+  nombre (unicode NFC, sin separadores de ruta ni secuencias de puntos) y
+  comprobando con `Path.relative_to` que el resultado nunca cae fuera de la
+  carpeta del guion (regla de aislamiento, §0.2). Ver «Renombrado de la carpeta
+  de salida y separación de `assets/` (R-06)» más abajo para la migración
+  automática de carpetas con el sufijo antiguo.
 - `ejecutar_con_limite_de_tiempo(funcion, segundos=...)` — tope de tiempo con
   `ThreadPoolExecutor` en vez de `signal.alarm` (no existe en Windows, la máquina
   del dueño). Si se agota el tiempo, el proceso principal recupera el control de
@@ -122,7 +125,7 @@ usarse). Por eso `entrada.py` evita la sintaxis de generics de PEP 695
 ## Estado del proyecto de guion (T-07)
 
 `scripts/estado.py` da al proceso memoria entre sesiones: `estado.json`, dentro de la
-carpeta de salida derivada del guion (`<carpeta-del-guion>/<nombre-guion>-tarjetas/`,
+carpeta de salida derivada del guion (`<carpeta-del-guion>/<nombre-guion><sufijo>/`,
 que deriva `entrada.carpeta_salida_para`). Piezas:
 
 - `EstadoProyecto` (dataclass) — el contrato de datos: versión de esquema, `InfoGuion`
@@ -2358,6 +2361,69 @@ de `SKILL.md`.
 - Esta tarea **no** implementa tomas por escena, recalibrado con tiempos reales de
   grabación ni alineación real del `.srt` con la toma buena — eso es `R-02`, `R-04` y
   `R-05` de `roadmap/ROADMAP_PRODUCTO.md`, los tres todavía `PENDIENTE`.
+
+## Renombrado de la carpeta de salida y separación de `assets/` (R-06)
+
+Cierra el hallazgo #6 de `auditoriacontinua.md` (severidad baja): la carpeta de
+salida de cada guion llevaba el sufijo `-tarjetas`, heredado del nombre del
+proyecto antes de renombrarlo a `teleprompter`, y `assets/` mezclaba los cuatro
+logotipos de marca con las plantillas del reproductor/`.pdf` en la misma
+carpeta raíz. Sin migración de `estado.json` (no toca su esquema, `version_esquema`
+sigue en 2): las dos partes de esta tarea operan sobre el sistema de archivos, no
+sobre el contenido del JSON.
+
+- **Nuevo sufijo (requisito 1):** `config.NOMBRE_SUFIJO_CARPETA_SALIDA = "-teleprompter"`,
+  módulo-constante (no campo de `Configuracion`) — mismo tratamiento que
+  `NOMBRE_ARCHIVO_ESTADO`/`NOMBRE_ARCHIVO_TARJETAS_JSON`: es un nombre estructural
+  que documenta `config.py`, no un dial que el dueño vaya a mover por ejecución.
+  `entrada.carpeta_salida_para` lo usa como valor por defecto del parámetro
+  `sufijo` en vez del literal `"-tarjetas"` de antes.
+- **Migración automática de carpetas ya existentes (requisito 2):** vive en
+  `entrada._migrar_carpeta_salida_heredada`, no en `scripts/migraciones/` — ese
+  paquete migra el **esquema de `estado.json`** (`VERSION_DESTINO`/`aplicar(dict)`,
+  descubierto por convención de nombre de archivo `NNN_*.py`); un renombrado de
+  carpeta en disco no encaja en ese contrato (no hay un `dict` que transformar) y
+  meter un archivo `00N_renombrado_salida.py` sin la forma esperada habría roto
+  `migraciones._migraciones_disponibles()`, que asume que todo archivo con ese
+  patrón de nombre expone `VERSION_DESTINO`. Se documenta aquí la desviación
+  frente a lo que sugería la ficha de `ROADMAP_PRODUCTO.md`. La función se
+  dispara sola dentro de `carpeta_salida_para` (solo cuando se llama con el
+  sufijo vigente, nunca si el llamador fija un `sufijo` explícito, como hacen
+  algunos tests): si la carpeta nueva no existe todavía y hay una carpeta con
+  alguno de `config.SUFIJOS_CARPETA_SALIDA_HEREDADOS` (hoy solo `-tarjetas`),
+  copia esa carpeta entera a `<nombre-antiguo>.bak-<marca>` (mismo formato de
+  marca de tiempo que `instalar_skill.sincronizar_skill`, T-32) y **después**
+  renombra la carpeta antigua a la nueva — nunca al revés, para que la copia de
+  seguridad exista siempre antes de tocar nada. Difiere a propósito del patrón de
+  `instalar_skill.py` (que aparta la instalación ANTERIOR y escribe una copia
+  NUEVA generada desde cero): aquí no hay nada que regenerar, el contenido de la
+  carpeta antigua (`estado.json`, `guion-escenas.md` con ediciones del dueño,
+  `FEEDBACK.md`...) ES el que debe acabar en la carpeta nueva. Si la carpeta
+  nueva ya existe, no se mira siquiera si hay una antigua (nunca se decide entre
+  dos carpetas de salida vivas). Cubierto por
+  `tests/test_entrada.py::test_carpeta_salida_para_migra_una_carpeta_heredada_con_sufijo_antiguo`
+  y los tests vecinos (copia de seguridad, sin carpeta heredada, carpeta nueva ya
+  existente, sufijo explícito no dispara nada).
+- **Separación de `assets/` (requisito 3):** los cuatro logotipos (`480_*.png`)
+  se mueven a `assets/marca/` (con `git mv`, historial conservado);
+  `assets/reproductor/` y `assets/pdf/` (plantillas) no se tocan, ya vivían
+  separados de los logotipos en sus propias carpetas. `config.RUTA_LOGO_PDF` y
+  `config.RUTA_LOGO_PPTX_OSCURO` pasan a apuntar a `assets/marca/480_Gris.png` y
+  `assets/marca/480_Blanco.png`; ninguna otra ruta de código mezcla marca y
+  plantillas (criterio de aceptación literal). `scripts/instalar_skill.py` no
+  necesita cambios: copia `assets/` entero recursivamente, así que la
+  subcarpeta nueva viaja sola.
+- Documentación actualizada para dejar de citar el sufijo/ruta antiguos:
+  `SKILL.md`, `PROYECTO.md`, `references/contrato-montaje.md`,
+  `references/marca-480.md`. `roadmap/HOJA_DE_RUTA.md` NO se toca (documento
+  inmutable, §0 de esa hoja de ruta): sus menciones de `-tarjetas` quedan como
+  registro histórico del enunciado original.
+- Efecto colateral corregido de paso, sin relación con R-06:
+  `tests/test_srt_alineado.py::test_guardar_srt_alineado_escribe_en_su_propio_archivo`
+  tenía el parámetro `tmp_path` sin anotar, lo que `mypy` marca como error de
+  tipo (`no-untyped-def`) en modo estricto — no se detectó en la sesión de R-05
+  porque aparentemente no se ejecutó `mypy` sobre `tests/` completo antes de
+  aquel cierre. Corregido con la anotación `tmp_path: Path` de vuelta a verde.
 
 ## Suite de tests (T-03)
 

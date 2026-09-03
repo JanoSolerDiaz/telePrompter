@@ -257,7 +257,7 @@ La conversión a `.pdf` usa Chrome o Edge en modo headless (`--print-to-pdf`), d
 | Opción | Por defecto | Nota |
 |--------|-------------|------|
 | Tipografía de marca | Poppins | Respaldo Montserrat → Calibri → sans del sistema (`respaldo_tipografico`), resuelto por nombre del sistema |
-| Ruta del logotipo | `assets/480_Gris.png` | Variante Gris (fondo claro); ausente → PDF sin logotipo, no falla |
+| Ruta del logotipo | `assets/marca/480_Gris.png` | Variante Gris (fondo claro); ausente → PDF sin logotipo, no falla |
 | Ancho del logotipo (portada / pie de página) | 2,4" / 0,7" | El alto se calcula siempre del ratio medido del PNG |
 | Márgenes (lateral / superior) | 0,6" / 0,5" | Mínimo de la guía de marca |
 | Interlineado del cuerpo | 1,4 | Dentro del rango 1,3–1,5 de la guía de marca |
@@ -276,7 +276,7 @@ Si `480-branded-pptx` o su dependencia, la skill `pptx`, no están instaladas en
 |--------|-------------|------|
 | Escenas por diapositiva de contenido | 1 | `pptx_escenas_por_diapositiva`: agrupación configurable |
 | Umbral de diapositiva de índice | 4 diapositivas de contenido | `pptx_umbral_indice_secciones`, según `references/marca-480.md` |
-| Logotipo sobre fondo oscuro | `assets/480_Blanco.png` | Portada y cierre; el de fondo claro reutiliza `ruta_logo_pdf` (T-28) |
+| Logotipo sobre fondo oscuro | `assets/marca/480_Blanco.png` | Portada y cierre; el de fondo claro reutiliza `ruta_logo_pdf` (T-28) |
 | Ancho del logotipo (portada / contenido / cierre) | 2,4" / 0,7" / 2,8" | El alto se calcula siempre del ratio medido del PNG, igual que el `.pdf` |
 | Rutas de las skills de marca | `~/.claude/skills/480-branded-pptx` y `~/.claude/skills/pptx` | Solo se comprueba que la carpeta existe; ausentes → salida `.pptx` latente, nunca falla |
 | Notas internas en `tarjetas.json` | incluidas | `--para-terceros` las vacía del propio JSON, no solo del deck |
@@ -451,7 +451,7 @@ de normalización más arriba.
 | `tipografia_marca` | Poppins | Compartida con el `.pptx`; el reproductor es neutro y no la usa |
 | `respaldo_tipografico` | Montserrat → Calibri → sans-serif | Si Poppins no está instalada en el sistema |
 | `incluir_notas_internas` | Sí | `False` es el modo `--para-terceros`; compartida con el `.pptx` |
-| `ruta_logo_pdf` | `assets/480_Gris.png` | Variante sobre fondo claro; ausente → PDF sin logotipo, no falla |
+| `ruta_logo_pdf` | `assets/marca/480_Gris.png` | Variante sobre fondo claro; ausente → PDF sin logotipo, no falla |
 | `pdf_ancho_logo_portada_pulgadas` | 2,4" | El alto se calcula siempre del ratio medido del PNG |
 | `pdf_ancho_logo_pie_pulgadas` | 0,7" | — |
 | `pdf_margen_lateral_pulgadas` | 0,6" | Mínimo de la guía de marca |
@@ -474,7 +474,7 @@ de normalización más arriba.
 | `ruta_skill_pptx_base` | `~/.claude/skills/pptx` | Dependencia de la anterior |
 | `pptx_escenas_por_diapositiva` | 1 | Agrupación configurable de escenas por diapositiva de contenido |
 | `pptx_umbral_indice_secciones` | 4 diapositivas de contenido | A partir de aquí el deck lleva diapositiva de índice |
-| `ruta_logo_pptx_oscuro` | `assets/480_Blanco.png` | Variante sobre fondo oscuro (portada y cierre) |
+| `ruta_logo_pptx_oscuro` | `assets/marca/480_Blanco.png` | Variante sobre fondo oscuro (portada y cierre) |
 | `pptx_ancho_logo_portada_pulgadas` | 2,4" | — |
 | `pptx_ancho_logo_contenido_pulgadas` | 0,7" | — |
 | `pptx_ancho_logo_cierre_pulgadas` | 2,8" | — |
@@ -483,13 +483,15 @@ de normalización más arriba.
 
 Esta skill es el **paso previo limpio** de la skill de montaje con ffmpeg — no la sustituye ni graba nada, solo le deja preparado lo que necesita para no empezar de cero. El contrato completo, con ejemplos y las garantías exactas sobre orden y numeración de escenas, vive en `references/contrato-montaje.md`; aquí solo el resumen operativo.
 
-De toda la carpeta de salida (`<nombre-guion>-tarjetas/`), la fase de montaje solo necesita leer **dos archivos**:
+De toda la carpeta de salida (`<nombre-guion><sufijo>/`, sufijo configurable en `config.NOMBRE_SUFIJO_CARPETA_SALIDA`, por defecto `-teleprompter` desde R-06 — antes `-tarjetas`, nombre heredado del proyecto anterior a renombrarlo), la fase de montaje solo necesita leer **dos archivos**:
 
 - **`guion.srt`** — subtítulos borrador (T-27), un único archivo para el guion completo, ya validado con las mismas reglas que aplica un lector estricto tipo ffmpeg (índice secuencial, marca de tiempo bien formada, sin solapes). Los tiempos son **estimados** a partir del ritmo deducido del guion (T-12), no de una toma grabada real.
 - **`guion-alineado.srt`** — mismo formato y misma validación, pero con los tiempos de cada escena ya reescalados a la duración real de su toma buena cuando existe (`.srt` alineado, R-05); una escena sin toma buena todavía conserva ahí su duración estimada. Archivo aparte, nunca sobrescribe a `guion.srt`.
 - **`tarjetas.json`** — contrato de intercambio con la generación del `.pptx` (T-29, `references/contrato-tarjetas.md`), pero reutilizable por cualquier consumidor: trae `duracion_estimada_segundos` por escena en el mismo orden que el guion, con lo que la fase de montaje puede calcular el instante de inicio/fin de cada escena sumando duraciones (el `.srt` no lleva ninguna marca de escena en su propio texto).
 
 **Nombres y orden de escenas, estables y predecibles (requisito 2 de T-33):** el `numero` de cada escena (`## BLOQUE N — <título>`) es la única clave para casar una toma grabada con su escena sin ambigüedad. Debe ser único y estrictamente creciente en el orden del documento — el mismo orden en que aparecen en `tarjetas.json` y en el que se generan los subtítulos del `.srt`. `convencion.detectar_desviaciones` (T-10, ampliada en T-33) señala `numero_escena_duplicado` y `numero_escena_no_creciente` sin bloquear el proceso; si aparecen, la cadena de montaje no debe fiarse del número de escena hasta corregir el guion de origen.
+
+**Proyectos creados antes de R-06:** si un guion ya tenía una carpeta de salida con el sufijo antiguo `-tarjetas`, la primera vez que esta versión la vuelve a procesar la renombra sola a `-teleprompter` — sin perder `estado.json`, `guion-escenas.md` ni ningún otro archivo, y dejando antes una copia de seguridad completa (`<nombre-guion>-tarjetas.bak-<marca>`, junto a la carpeta) por si hiciera falta consultar el estado previo a la migración. No hace falta ningún paso manual del dueño ni de la skill de montaje.
 
 **Ver también:** `references/contrato-montaje.md` (contrato completo, con la fórmula para derivar el rango de tiempo de cada escena) y `references/contrato-tarjetas.md` (forma exacta de `tarjetas.json`).
 

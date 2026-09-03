@@ -158,7 +158,7 @@ def test_carpeta_salida_para_queda_dentro_de_la_carpeta_del_guion(tmp_path: Path
     ruta.write_text(GUION_VALIDO, encoding="utf-8")
     carpeta = carpeta_salida_para(ruta)
     assert carpeta.parent == tmp_path.resolve()
-    assert carpeta.name == "mi guion-tarjetas"
+    assert carpeta.name == "mi guion-teleprompter"
 
 
 def test_carpeta_salida_para_con_acentos(tmp_path: Path) -> None:
@@ -167,6 +167,86 @@ def test_carpeta_salida_para_con_acentos(tmp_path: Path) -> None:
     carpeta = carpeta_salida_para(ruta)
     assert carpeta.parent == tmp_path.resolve()
     carpeta.relative_to(tmp_path.resolve())
+
+
+# --- migracion de la carpeta de salida heredada (R-06) ------------------------------
+
+
+def test_carpeta_salida_para_migra_una_carpeta_heredada_con_sufijo_antiguo(
+    tmp_path: Path,
+) -> None:
+    ruta = tmp_path / "mi guion.md"
+    ruta.write_text(GUION_VALIDO, encoding="utf-8")
+    carpeta_antigua = tmp_path / "mi guion-tarjetas"
+    carpeta_antigua.mkdir()
+    (carpeta_antigua / "estado.json").write_text('{"version_esquema": 2}', encoding="utf-8")
+    (carpeta_antigua / "guion-escenas.md").write_text("edicion del dueno", encoding="utf-8")
+
+    carpeta = carpeta_salida_para(ruta)
+
+    assert carpeta.name == "mi guion-teleprompter"
+    assert carpeta.is_dir()
+    assert (carpeta / "estado.json").read_text(encoding="utf-8") == '{"version_esquema": 2}'
+    assert (carpeta / "guion-escenas.md").read_text(encoding="utf-8") == "edicion del dueno"
+    assert not carpeta_antigua.exists()
+
+
+def test_carpeta_salida_para_migracion_deja_copia_de_seguridad(tmp_path: Path) -> None:
+    ruta = tmp_path / "mi guion.md"
+    ruta.write_text(GUION_VALIDO, encoding="utf-8")
+    carpeta_antigua = tmp_path / "mi guion-tarjetas"
+    carpeta_antigua.mkdir()
+    (carpeta_antigua / "estado.json").write_text('{"version_esquema": 2}', encoding="utf-8")
+
+    carpeta_salida_para(ruta)
+
+    copias = list(tmp_path.glob("mi guion-tarjetas.bak-*"))
+    assert len(copias) == 1
+    assert (copias[0] / "estado.json").read_text(encoding="utf-8") == '{"version_esquema": 2}'
+
+
+def test_carpeta_salida_para_sin_carpeta_heredada_no_migra_nada(tmp_path: Path) -> None:
+    ruta = tmp_path / "mi guion.md"
+    ruta.write_text(GUION_VALIDO, encoding="utf-8")
+
+    carpeta = carpeta_salida_para(ruta)
+
+    assert not carpeta.exists()
+    assert list(tmp_path.iterdir()) == [ruta]
+
+
+def test_carpeta_salida_para_no_pisa_una_carpeta_nueva_ya_existente(tmp_path: Path) -> None:
+    ruta = tmp_path / "mi guion.md"
+    ruta.write_text(GUION_VALIDO, encoding="utf-8")
+    carpeta_nueva = tmp_path / "mi guion-teleprompter"
+    carpeta_nueva.mkdir()
+    (carpeta_nueva / "estado.json").write_text(
+        '{"version_esquema": 2, "vivo": true}', encoding="utf-8"
+    )
+    carpeta_antigua = tmp_path / "mi guion-tarjetas"
+    carpeta_antigua.mkdir()
+    (carpeta_antigua / "estado.json").write_text('{"version_esquema": 1}', encoding="utf-8")
+
+    carpeta = carpeta_salida_para(ruta)
+
+    assert carpeta == carpeta_nueva
+    assert (carpeta / "estado.json").read_text(encoding="utf-8") == (
+        '{"version_esquema": 2, "vivo": true}'
+    )
+    assert carpeta_antigua.exists()
+
+
+def test_carpeta_salida_para_con_sufijo_explicito_no_dispara_migracion(tmp_path: Path) -> None:
+    ruta = tmp_path / "mi guion.md"
+    ruta.write_text(GUION_VALIDO, encoding="utf-8")
+    carpeta_antigua = tmp_path / "mi guion-tarjetas"
+    carpeta_antigua.mkdir()
+
+    carpeta = carpeta_salida_para(ruta, sufijo="-tarjetas")
+
+    assert carpeta == carpeta_antigua
+    assert carpeta_antigua.exists()
+    assert not (tmp_path / "mi guion-teleprompter").exists()
 
 
 # --- ejecutar_con_limite_de_tiempo ---------------------------------------------------
