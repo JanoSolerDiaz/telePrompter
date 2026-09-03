@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-03 — Ciclo de Product Manager (sin sesión de código)
+**Tarea(s):** Gestión de `roadmap/ROADMAP_PRODUCTO.md` y `roadmap/ROADMAP_HISTORICO.md` (rutina 2, PM)
+**Estado resultante:** Sin cambio de estado de ninguna T-XX. Oleadas v2 (R-01 a R-04), v3 (R-05, R-07) y fase F-D (R-06, R-08, R-09) movidas a `ROADMAP_HISTORICO.md`, sin tocar su estado en §1 (todas ya COMPLETADA). Una R-XX nueva registrada PENDIENTE en §1: `R-10`, fase transversal F-E nueva. La cola de producto pasa de "ninguna R-XX pendiente" a `R-10`
+**Commits a develop:** `PM: mover oleadas v2/v3/F-D a ROADMAP_HISTORICO.md y registrar R-10 (robustez en Windows)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (ciclo de gestión de roadmap, sin tocar código ni `estado.json`)
+**Archivos creados/modificados:** `roadmap/ROADMAP_HISTORICO.md` (nuevo: fichas completas de R-01 a R-09 con su "cómo se entregó"), `roadmap/ROADMAP_PRODUCTO.md` (cabecera de fecha; sección de oleadas reducida a la referencia de v1 más la nueva fase F-E; ficha nueva `R-10`), `roadmap/SEGUIMIENTO.md` (cabecera con el resumen de este ciclo; §1 gana la fila `R-10`; §3 gana la fila `7`, bloqueo de "grabar un curso completo"), `roadmap/DECISIONES_TECNICAS.md` (3 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** no aplica — ciclo de PM, sin cambios de código; no se ejecutan mypy/ruff/pytest/`verificar_salidas.py` porque ningún archivo de `scripts/`, `tests/`, `assets/` ni `references/` cambia
+**Health check post-deploy:** no aplica — no hay instalación que verificar en este ciclo
+**Decisiones tomadas:** 3 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, PM): (1) mover v2/v3/F-D a histórico y por qué v1 se queda (su criterio de salida de negocio sigue sin cumplirse, aunque el código esté entregado); (2) registrar `R-10` a partir de un hallazgo de sesión (no de auditoría) que llevaba ocho sesiones sin recogerse como tarea; (3) no abrir ninguna R-XX especulativa de producto más allá de `R-10`, a la espera de la primera grabación real
+**Hallazgos del auditor atendidos:** ninguno se cierra en este ciclo (el auditor es quien marca RESUELTO en su propio documento). Confirmado que los seis hallazgos ABIERTO restantes en `auditoriacontinua.md` (#5, #6, #10, #11, #12, #13) ya estaban todos enrutados a R-XX que ahora están COMPLETADA — ninguno necesita una R-XX nueva
+**Hallazgos:** uno propio — `roadmap/HISTORIAL_SESIONES.md` (sesión "T-32 desbloqueada + P-04", 2026-09-03) dejó constancia de un CRLF sin normalizar en `entrada.leer_guion`, real y con riesgo para el producto en la máquina Windows del dueño, marcado ahí mismo como "propuesta y no ejecutada" — ninguna de las ocho sesiones siguientes (todas centradas en R-01 a R-09) lo recogió como tarea. Registrado ahora como `R-10`, junto con los otros dos hallazgos de plataforma de menor riesgo de esa misma sesión (edge case de `nombre_guion_seguro` con nombres terminados en varios puntos; test del bit de ejecución POSIX en rojo sobre Windows)
+**Tareas autopropuestas (P-XX):** ninguna (el PM no programa; `R-10` se registra como R-XX normal, con spec propia en `ROADMAP_PRODUCTO.md`, no como P-XX)
+**Próximo paso:** el programador retoma la cola de §1 en `R-10` (fase transversal F-E, única R-XX PENDIENTE). `roadmap/FEEDBACK.md` sigue sin entradas `nuevo` — se revisará de nuevo en el próximo ciclo de PM, con más motivo en cuanto el dueño complete una primera grabación real (bloqueo #7 nuevo de §3, sin urgencia y sin bloquear la cola de código).
+
+---
+
 ### Sesión 2026-09-03 — R-09 (endurecer el validador de auto-contención) COMPLETADA. Sesión de nube
 **Tarea(s):** R-09, fase transversal F-D (`origen: auditoría #13`) — último pendiente de F-D
 **Estado resultante:** R-09 **COMPLETADA** (§1 de SEGUIMIENTO); F-D queda cerrada (R-06, R-08, R-09); ninguna T-XX ni R-XX PENDIENTE en §1
