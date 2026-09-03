@@ -125,6 +125,22 @@ SRT_ALINEADO_TOLERANCIA_SEGUNDOS: float = 0.05
 # alineado despues, y ninguno sobrescribe al otro.
 NOMBRE_ARCHIVO_SRT_ALINEADO: str = "guion-alineado.srt"
 
+# --- Capitulos de YouTube con marcas de tiempo reales (R-07) -----------------------
+# Titulo de la seccion auxiliar (T-08) que trae los capitulos, tal como la reconoce
+# `parser.py` en `configuracion.secciones_auxiliares` (comparacion por prefijo, mismo
+# criterio que `_en_lista_negra`). Campo propio en vez de asumir la primera entrada de
+# `SECCIONES_AUXILIARES` -- esa lista es la lista negra completa de T-08/T-10, no un
+# indice de "cual de estas es la de capitulos".
+TITULO_SECCION_CAPITULOS: str = "Capítulos"
+# Marca minima de la propia plataforma YouTube entre dos capitulos consecutivos
+# (requisito 3): por debajo de este umbral, YouTube deja de reconocer los capitulos
+# de la descripcion. Se deja como valor por defecto configurable, no como literal
+# fijo en `capitulos_youtube.py`, mismo criterio "sin numeros magicos" que el resto
+# del proyecto aunque el numero venga impuesto por un tercero.
+CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS: float = 10.0
+# Nombre del archivo de capitulos dentro de la carpeta de salida del guion.
+NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE: str = "capitulos-youtube.txt"
+
 # --- Adaptador .pptx via 480-branded-pptx (T-29) -----------------------------------
 # Version del contrato de intercambio `tarjetas.json` (requisito 1, documentado en
 # `references/contrato-tarjetas.md`): sube si el JSON cambia de forma incompatible,
@@ -507,6 +523,8 @@ class Configuracion:
     srt_duracion_minima_segundos: float = SRT_DURACION_MINIMA_SEGUNDOS
     srt_con_bom: bool = SRT_CON_BOM
     srt_alineado_tolerancia_segundos: float = SRT_ALINEADO_TOLERANCIA_SEGUNDOS
+    titulo_seccion_capitulos: str = TITULO_SECCION_CAPITULOS
+    capitulos_youtube_marca_minima_segundos: float = CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS
     ruta_logo_pdf: str = RUTA_LOGO_PDF
     pdf_ancho_logo_portada_pulgadas: float = PDF_ANCHO_LOGO_PORTADA_PULGADAS
     pdf_ancho_logo_pie_pulgadas: float = PDF_ANCHO_LOGO_PIE_PULGADAS
@@ -692,6 +710,14 @@ class Configuracion:
             mensaje = (
                 "La tolerancia del .srt alineado no puede ser negativa "
                 f"({self.srt_alineado_tolerancia_segundos})."
+            )
+            raise ValueError(mensaje)
+        if not self.titulo_seccion_capitulos.strip():
+            raise ValueError("El titulo de la seccion de capitulos no puede estar vacio.")
+        if self.capitulos_youtube_marca_minima_segundos < 0:
+            mensaje = (
+                "La marca minima entre capitulos de YouTube no puede ser negativa "
+                f"({self.capitulos_youtube_marca_minima_segundos})."
             )
             raise ValueError(mensaje)
         for nombre, valor_flotante in (

@@ -1947,6 +1947,98 @@ ya anotado como trabajo futuro en `references/contrato-montaje.md` (T-33).
   sigue en verde sin cambios: el comportamiento de `_toma_buena_segundos` no
   cambió, solo su ubicación.
 
+## Capítulos de YouTube con marcas de tiempo reales (R-07)
+
+`origen: roadmap`, oleada v3, depende de R-02 y T-08. Objetivo: T-08 ya detecta
+y conserva íntegra la sección auxiliar `## Capítulos (para la descripción del
+vídeo)` que traen los guiones reales, pero ese contenido no salía de ahí — el
+formador tenía que volver a cronometrar el vídeo ya montado a mano para pegar
+los capítulos en la descripción de YouTube. `scripts/capitulos_youtube.py`
+(nuevo) une dos datos que el producto ya tiene (los títulos de capítulo de
+T-08, la duración real de la toma buena de R-02) sin calcular tiempos ni
+reimplementar reglas de guion por su cuenta.
+
+- **Requisito 1 (emparejar títulos de capítulo con escenas, por orden).**
+  `_titulos_capitulos` lee las filas de la tabla Markdown (`| Marca |
+  Capítulo |`) de la sección auxiliar cuyo título empieza por
+  `Configuracion.titulo_seccion_capitulos` (`"Capítulos"` por defecto, campo
+  nuevo) — busca la columna por su cabecera («Capítulo», insensible a
+  mayúsculas/tildes vía `unicodedata.normalize("NFKD", ...)`, con la última
+  columna como respaldo si no la encuentra, el formato que traen los dos
+  guiones reales que tienen la sección). `calcular_capitulos` empareja esa
+  lista, **posicionalmente**, con `resultado_tiempos.escenas` (que conserva el
+  orden de `parser.py`) — nunca por texto ni por número de escena. Si las dos
+  listas no tienen la misma longitud, se empareja hasta la más corta en vez de
+  fallar: los dos guiones reales con sección cuadran 1:1 (7/7 y 8/8), pero
+  nada lo garantiza para un guion futuro.
+- **Requisito 2 (tiempo real si hay evidencia, estimado si no, nunca mezclado
+  en silencio).** Para cada escena, en orden, se usa la duración REAL de su
+  toma buena (`tomas.duracion_toma_buena`, R-02/R-04/R-05) si existe; si no, su
+  duración ESTIMADA de T-12 (`TiempoEscena.duracion_estimada_segundos`) — el
+  cursor se acumula de forma continua escena a escena, igual que
+  `srt_alineado.py` (R-05). Qué escenas cayeron a la estimación queda en
+  `ResultadoCapitulos.escenas_sin_toma_buena` (mismo nombre de campo que
+  `ResultadoAlineacion` de R-05, mismo criterio). En cuanto alguna de las
+  marcas realmente reportadas depende de la estimación,
+  `formatear_capitulos_youtube` antepone una nota (`"Nota: tiempos ESTIMADOS
+  ..."`) como **primera línea** del archivo — distingue además el caso "todo
+  estimado" (sin ninguna toma buena todavía) del caso mixto, citando qué
+  escenas concretas son estimadas en este último.
+- **Requisito 3 (formato exacto de YouTube).** La primera marca es siempre
+  `"0:00"` (la primera escena arranca en el cursor `0.0` por construcción, sin
+  caso especial). `formatear_capitulos_youtube` omite cualquier marca a menos
+  de `Configuracion.capitulos_youtube_marca_minima_segundos` (10 s por
+  defecto, el mínimo de la propia plataforma, campo nuevo) de la última marca
+  que sí se conservó — el capítulo no desaparece del guion, solo no se reporta
+  como marca propia en este archivo derivado. El filtrado compara los
+  segundos en coma flotante **antes** de redondear a `M:SS`: si la diferencia
+  real ya es ≥ el mínimo, la diferencia entre los `M:SS` redondeados hacia
+  abajo (`_formatear_mm_ss`, `int(segundos)`) también lo es — redondear hacia
+  abajo nunca puede acercar dos marcas más de lo que ya estaban (`floor(a) >
+  a - 1` para cada una, así que la diferencia entera nunca baja de `mínimo -
+  1`, es decir, nunca menos que `mínimo` entre enteros). `validar_capitulos_youtube`
+  es la doble comprobación independiente (mismo patrón que `srt.validar_srt`):
+  primera marca `0:00`, orden estrictamente creciente, ninguna por debajo del
+  mínimo configurado.
+- **Requisito 4 (sin sección `Capítulos`, no se genera nada en silencio).**
+  `calcular_capitulos` devuelve `capitulos=()` con `motivo_sin_generar`
+  explícito cuando el guion no trae la sección, o cuando la trae pero no se
+  pudo leer ninguna fila de su tabla (`guion-artefactos-lienzo.md`, el tercer
+  guion real, no trae la sección — evidencia real de este caso).
+  `formatear_capitulos_youtube` devuelve `None` en ese caso;
+  `guardar_capitulos_youtube` no se llama nunca con `contenido=None`.
+- **Requisito 5 (regenerable sin intervención manual).** El módulo no persiste
+  nada por sí mismo — es una función pura del `ResultadoParseo`/
+  `ResultadoTiempos` y `EstadoProyecto.tomas` que se le pasen, mismo patrón que
+  `srt_alineado.generar_srt_alineado`: Claude lo vuelve a llamar cada vez que
+  revalida el guion o el dueño cierra una tanda de tomas nueva.
+- **`verificar_salidas.py --fixture`.** Dos etapas nuevas, "Generación de
+  capítulos de YouTube" y "Validez de los capítulos de YouTube", sobre el
+  mismo guion de verificación que ya usan el reproductor y el `.srt`.
+  `fixtures/guion-ejemplo.md` sí trae sección `Capítulos` (4 filas para sus 4
+  escenas), así que esta etapa genera contenido real, no NO APLICABLE; sin
+  ningún parte de rodaje real en esta máquina, cae por completo a la
+  estimación de T-12 (nota de tiempos estimados incluida), latente de la misma
+  forma que el `.srt` alineado — sin que eso sea un fallo. No se integra en el
+  selector de T-30 (`salidas.py`): igual que el `.srt` alineado, depende de un
+  parte de rodaje que ese selector no pide.
+- **Verificación.** `tests/test_capitulos_youtube.py` (nuevo, 17 tests) cubre:
+  emparejamiento posicional de títulos y escenas (incluida una lista de
+  títulos más corta que el número de escenas); sin sección `Capítulos` (guion
+  sintético y `guion-artefactos-lienzo.md` real) no se genera nada; sección
+  presente sin ninguna fila de tabla legible tampoco genera nada; sin ninguna
+  toma buena se usa la duración estimada de cada escena y el cursor acumula
+  bien; con toma buena en una escena, la siguiente arranca donde terminó de
+  verdad esa toma (no donde habría terminado la estimación); primera marca
+  `0:00` sin nota cuando todas las escenas tienen toma buena; primera línea de
+  advertencia cuando no hay ninguna, y con el detalle de qué escenas concretas
+  cuando es una mezcla; una marca demasiado cercana a la anterior se omite y
+  el resultado sigue pasando `validar_capitulos_youtube`; los capítulos de los
+  dos guiones reales que traen la sección pasan el validador estricto; el
+  validador detecta una primera marca que no es `0:00` y una marca por debajo
+  del mínimo, e ignora la línea de nota; y `generar_capitulos_youtube`/
+  `guardar_capitulos_youtube` combinados escriben el archivo esperado.
+
 ## Exportador `.pdf` con identidad 480 (T-28)
 
 `scripts/pdf.py` genera el documento de repaso/entregable con la marca 480
@@ -2269,6 +2361,9 @@ revalidacion.py   relee guion-escenas.md, respeta ediciones manuales, recalcula 
 reproductor.py / srt.py / pdf.py / pptx.py   generan cada salida a partir de
                                               ResultadoParseo + ResultadoTiempos
 salidas.py        selector: las cuatro salidas a la vez, fallo/latencia aislados por salida
+tomas.py          registro de tomas por escena (estado.tomas); duracion_toma_buena
+  ├── srt_alineado.py      reescala srt.py a la duración real de la toma buena
+  └── capitulos_youtube.py empareja Capítulos (parser.py) con escenas, tiempo real o estimado
 ```
 
 `config.py` es el único módulo sin lógica de negocio: todo valor por defecto vive

@@ -244,6 +244,19 @@ El `.srt` de arriba es un borrador con tiempos **estimados** a partir del ritmo 
 |--------|-------------|------|
 | Tolerancia de duración | 0,05 s | Umbral documentado para comprobar que la escena alineada dura lo mismo que la toma buena (redondeo a milisegundos al serializar, no del reescalado en sí) |
 
+## Capítulos de YouTube con marcas de tiempo reales (R-07)
+
+`scripts/capitulos_youtube.py` cierra el ciclo entre lo que ya se escribe en el guion y lo que hay que pegar en la descripción del vídeo: T-08 ya conserva íntegra la sección auxiliar `## Capítulos (para la descripción del vídeo)` que traen los guiones reales (una tabla `| Marca | Capítulo |`); este módulo lee los títulos de su columna «Capítulo» y los empareja, **por orden de aparición** (nunca por texto ni por número de escena), con las escenas del guion.
+
+El tiempo acumulado de inicio de cada escena usa la duración **real** de su toma buena (registro de tomas, R-02) cuando existe; una escena sin toma buena todavía cae a su duración **estimada** de T-12 — el cursor se acumula de forma continua escena a escena, igual que el `.srt` alineado (R-05). Si alguna de las marcas del archivo depende de una duración estimada, la **primera línea** de `capitulos-youtube.txt` lo advierte explícitamente en vez de mezclar tiempos reales y estimados en silencio.
+
+Formato exacto de YouTube (requisito de la propia plataforma): la primera marca es siempre `0:00`, una línea `M:SS Título` por capítulo en orden creciente, y ninguna marca a menos del mínimo configurado de la anterior — la marca demasiado cercana se omite (el capítulo sigue íntegro en el guion, solo no aparece como marca propia en este archivo derivado). Si el guion no trae la sección `Capítulos`, no se genera ningún archivo y se informa del motivo — nunca se inventa contenido que el guionista no ha escrito.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Título de la sección de capítulos | `Capítulos` | Prefijo con el que se reconoce la sección auxiliar (T-08) que trae la tabla |
+| Marca mínima entre capítulos | 10 s | Mínimo de la propia plataforma YouTube; una marca más cercana a la anterior se omite |
+
 ## Exportador `.pdf` con identidad 480 (T-28)
 
 Documento de repaso antes de grabar y, llegado el caso, entregable presentable a terceros: el guion completo con la identidad visual de la casa (`references/marca-480.md`), una **escena por página** — título, duración objetivo y estimada, y el texto de locución **legible como prosa** (los límites de bloque se marcan de forma discreta, nunca como lista de tarjetas), con las indicaciones no recitables al pie. Portada con el título, la duración total y objetivo, el número de escenas y de palabras.
@@ -443,6 +456,13 @@ de normalización más arriba.
 | `srt_duracion_minima_segundos` | 1,2 s | Por debajo, el bloque se funde con el siguiente de la misma escena; `0` desactiva la agrupación |
 | `srt_con_bom` | No | `True` antepone la marca de orden de bytes (BOM) |
 | `srt_alineado_tolerancia_segundos` | 0,05 s | `.srt` alineado (R-05): tolerancia documentada para que la escena reescalada dure lo mismo que la toma buena |
+
+### Capítulos de YouTube (R-07)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `titulo_seccion_capitulos` | `Capítulos` | Prefijo con el que se reconoce la sección auxiliar (T-08) que trae la tabla de capítulos |
+| `capitulos_youtube_marca_minima_segundos` | 10 s | Mínimo de la propia plataforma YouTube entre dos marcas consecutivas; una marca más cercana a la anterior se omite |
 
 ### Exportador `.pdf` con identidad 480 (T-28)
 

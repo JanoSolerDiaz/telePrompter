@@ -32,6 +32,24 @@
 
 ---
 
+### Sesión 2026-09-03 — R-07 (capítulos de YouTube con marcas de tiempo reales) COMPLETADA. Sesión de nube
+**Tarea(s):** R-07, oleada v3 (`origen: roadmap`, depende de R-02 y T-08)
+**Estado resultante:** R-07 **COMPLETADA** (§1 de SEGUIMIENTO)
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** ninguna — ficha marcada "Migración: No", cumplida al pie de la letra: cero cambios en `estado.json` o sus migraciones
+**Archivos creados/modificados:** `scripts/capitulos_youtube.py` (nuevo), `scripts/config.py` (`TITULO_SECCION_CAPITULOS`, `CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS`, `NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE`, más `titulo_seccion_capitulos`/`capitulos_youtube_marca_minima_segundos` en `Configuracion` con su validación), `scripts/verificar_salidas.py` (dos etapas nuevas), `tests/test_capitulos_youtube.py` (nuevo, 17 tests), `SKILL.md`, `DEVELOPERS.md`, `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (3 filas), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (68 archivos) · lint ✅ · tests ✅ 526 pasan + 0 skipped (antes 509; +17) · build ✅ `verificar_salidas.py --fixture` con las 14 etapas en OK, capítulos generados sobre `fixtures/guion-ejemplo.md` (4 escenas, latente a estimado por no haber parte de rodaje en esta máquina)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` del dueño (nota de entorno del protocolo v1.3); la entrega es el push a `origin/develop`
+**Decisiones tomadas:** 3 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, prefijo R-07): mezcla de tiempo real/estimado por escena (no un fallback binario a todo-estimado), mismo criterio de honestidad que R-05; emparejamiento título-capítulo/escena estrictamente posicional, nunca por coincidencia de texto; `capitulos-youtube.txt` deliberadamente fuera del contrato de montaje de T-33 (`references/contrato-montaje.md`), por ser una salida para la descripción de YouTube, no un insumo del pipeline de ffmpeg
+**Hallazgos del auditor atendidos:** ninguno — sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar, se procedió directo con la cola normal
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** R-08 (deuda técnica menor: colores de estado, `PROYECTO.md`, versión de Python), fase transversal F-D. Antes de elegir tarea, revisar de nuevo `auditoriacontinua.md` por si el auditor abre un hallazgo nuevo sobre lo entregado aquí.
+
+**Nota de diseño — por qué la mezcla por escena en vez de un fallback binario.** El requisito 2 dice literalmente "sin R-02 o sin tomas registradas todavía, usar las duraciones estimadas... nunca mezclar tiempos reales y estimados sin avisar de cuál es cuál". Se leyó como una exigencia de DIVULGACIÓN (avisar cuál es cuál), no de PROHIBICIÓN de mezclar, siguiendo el precedente ya sentado por `srt_alineado.py` (R-05) — que sí mezcla real/estimado escena a escena dentro de la misma línea de tiempo continua, reportando cuáles son cuáles. Un fallback binario ("si falta una sola toma buena, todo el archivo cae a estimado") habría penalizado el caso más común en la práctica — un rodaje que avanza escena a escena, con las primeras ya grabadas y las últimas todavía no — tirando evidencia real ya disponible solo porque el rodaje no ha terminado. El criterio de aceptación literal (caso "sin tomas registradas, la primera línea del archivo lo advierte") sigue cumplido tal cual: es el caso particular en que TODAS las escenas reportadas caen a estimado, y la nota lo dice explícitamente en ese caso ("todavía no hay ninguna toma buena registrada") frente al caso mixto (que cita las escenas concretas).
+
+---
+
 ### Sesión 2026-09-03 — R-06 (coherencia de nombres y `assets/`) COMPLETADA. Sesión de nube
 **Tarea(s):** R-06, fase transversal F-D (`origen: auditoría #6`, depende de T-32, COMPLETADA)
 **Estado resultante:** R-06 **COMPLETADA** (§1 de SEGUIMIENTO)
