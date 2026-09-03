@@ -671,6 +671,26 @@ para el siguiente ciclo.
   `test_revalidacion_posterior_al_conflicto_no_duplica_bloques` (reproduce
   #14 exactamente y confirma que ya no duplica). Ver la fila de P-03 en
   `DECISIONES_TECNICAS.md`.
+- **Endurecimiento de ese cierre (P-04).** El mecanismo de P-03 es correcto;
+  P-04 tapa tres grietas alrededor. (1) `_particiones_pospuestas_previas` lee
+  un contenedor genérico que nadie valida al cargar, así que un `estado.json`
+  con basura en `particiones_pospuestas` tiraba la revalidación entera con
+  `AttributeError`/`ValueError`; ahora la entrada ilegible se ignora y la
+  pasada la recalcula. (2) Se persistía el conjunto **sin filtrar** de bloques
+  con edición manual, no el de particiones realmente pospuestas: mismo
+  resultado al materializar (`_materializar_marcados` ignora un índice sin
+  partición) pero `estado.json` acumulaba índices que nunca tuvieron nada que
+  posponer; `_indices_con_particion_pospuesta` lo acota y lo comparte con la
+  incidencia, que antes lo recalculaba. (3) `_incidencias_anclas_desajustadas`
+  es la red que faltaba: si las anclas leídas no son las previstas, avisa en
+  vez de emparejar a ciegas. Importa porque un `estado.json` anterior a P-03
+  **sin** la clave, justo en mitad de un conflicto, reproduce el #14 tal cual;
+  con el aviso, deja de ser silencioso. Y el mensaje del conflicto deja de
+  invitar a "revalidar sin tocar ese bloque" para que la partición se
+  materialice: eso es exactamente lo que **no** funciona -- lo materializa
+  retirar la edición, como demuestra el propio test de P-03 --, y un aviso que
+  promete algo que no ocurre enseña a ignorar el informe. Ver las filas de
+  P-04 en `DECISIONES_TECNICAS.md`.
 
 ## Reproductor: esqueleto autocontenido (T-18)
 

@@ -48,9 +48,9 @@ from reescrituras import (
     guardar_en_estado,
     recopilar_propuestas,
 )
-from revalidacion import Incidencia, revalidar_guion
+from revalidacion import Incidencia, ResultadoRevalidacion, revalidar_guion
 from tiempos import calcular_tiempos
-from troceo import trocear_guion
+from troceo import BloqueRespiracion, trocear_guion
 
 _GUION = """# Guion de prueba
 
@@ -81,6 +81,38 @@ _GUION = """# Guion de prueba
 """
 
 _TEXTO_MANUAL_ESCENA_3 = "Cierre muy breve de la escena, con calma."
+
+# Guion aparte para P-04. `_GUION` da un unico bloque por escena, y con un solo
+# bloque el desajuste de anclas del #14 se queda en "la escena acaba con dos
+# bloques y textos raros". La duplicacion literal que describia el hallazgo
+# -- un bloque de MAS con el texto del siguiente repetido -- solo aparece
+# cuando hay algo DETRAS del bloque desplazado dentro de la misma escena, y
+# eso exige una escena de dos bloques de origen (el primero candidato a
+# particion, el segundo intacto) y bajar `palabras_por_bloque_max` a 22 para
+# que el troceo no los funda en uno.
+_PRIMER_BLOQUE_ESCENA_1 = (
+    "Hemos revisado proyectos completos durante toda la semana pasada sin "
+    "parar ni un solo momento para descansar del todo."
+)
+_SEGUNDO_BLOQUE_ESCENA_1 = "Segundo bloque intacto que no se toca nunca."
+
+_GUION_ESCENA_DE_DOS_BLOQUES = f"""# Guion de prueba
+
+## BLOQUE 1 — Escena uno (0:00 – 0:30)
+
+**LOCUCIÓN**
+
+> Hemos revisado proyectos completos durante toda la semana pasada sin parar ni un
+> solo momento para descansar del todo.
+>
+> {_SEGUNDO_BLOQUE_ESCENA_1}
+
+## BLOQUE 2 — Escena dos (0:30 – 0:40)
+
+**LOCUCIÓN**
+
+> Cierre breve de la escena.
+"""
 
 
 def _configuracion() -> Configuracion:
@@ -416,6 +448,155 @@ def test_particion_pospuesta_se_materializa_cuando_se_retira_la_edicion(tmp_path
         "edición manual" in incidencia.mensaje and "partición" in incidencia.mensaje
         for incidencia in resultado_2.incidencias
     )
+
+
+
+def _conflicto_pospuesto(
+    tmp_path: Path,
+) -> tuple[ResultadoParseo, EstadoProyecto, Configuracion, str, str]:
+    """Monta el escenario del #14 sobre una escena de DOS bloques y devuelve
+    todo lo necesario para seguir revalidando: el conflicto edicion manual +
+    particion aceptada ya planteado en el documento, sin revalidar todavia."""
+    configuracion = dataclasses.replace(_configuracion(), palabras_por_bloque_max=22)
+    estado = _estado(tmp_path, _GUION_ESCENA_DE_DOS_BLOQUES)
+    resultado = parsear_guion(_GUION_ESCENA_DE_DOS_BLOQUES, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+    id_particion = _id_por_familia(estado_reescrituras(estado), FAMILIA_PARTICION_RESPIRACION)
+    texto_manual = "Texto editado a mano sobre el bloque completo de la escena uno."
+    documento = _marcar_decision(
+        doc1.replace(_PRIMER_BLOQUE_ESCENA_1, texto_manual), id_particion, "ACEPTAR"
+    )
+    return resultado, estado, configuracion, documento, texto_manual
+
+
+def _textos_de_escena(revalidacion: ResultadoRevalidacion, numero_escena: int) -> list[str]:
+    return [
+        b.bloque.texto
+        for b in revalidacion.resultado_tiempos.bloques
+        if b.bloque.numero_escena == numero_escena
+    ]
+
+
+def test_revalidacion_posterior_no_duplica_el_bloque_siguiente_de_la_escena(
+    tmp_path: Path,
+) -> None:
+    """Hallazgo #14 en su forma mas grave, la que la auditoria describio:
+    contenido DUPLICADO dentro de la escena, no solo mal atribuido.
+
+    Complementa a `test_revalidacion_posterior_al_conflicto_no_duplica_bloques`
+    (P-03), que corre sobre `_GUION`: alli la escena del conflicto es el ultimo
+    bloque de su escena, asi que el desplazamiento no tiene nada detras que
+    pisar. Aqui el bloque 1 va detras del bloque 0 pospuesto y es el que se
+    duplicaba: la escena pasaba de 2 a 3 bloques con el texto del bloque 1
+    repetido dos veces, una de ellas bajo la identidad de la mitad `'b'` de la
+    particion del bloque 0."""
+    resultado, estado, configuracion, doc1, texto_manual = _conflicto_pospuesto(tmp_path)
+
+    primera = revalidar_guion(resultado, doc1, estado, configuracion)
+    assert _textos_de_escena(primera, 1) == [texto_manual, _SEGUNDO_BLOQUE_ESCENA_1]
+
+    doc2 = generar_documento_revision(
+        resultado,
+        primera.resultado_tiempos,
+        primera.detecciones,
+        primera.reescrituras,
+        configuracion,
+        nombre_guion="prueba",
+    )
+    segunda = revalidar_guion(resultado, doc2, estado, configuracion)
+
+    assert _textos_de_escena(segunda, 1) == [texto_manual, _SEGUNDO_BLOQUE_ESCENA_1]
+
+
+def test_particion_pospuesta_es_estable_en_pasadas_encadenadas(tmp_path: Path) -> None:
+    """La misma situacion sostenida en el tiempo. El fallo del #14 era
+    acumulativo -- el emparejamiento erroneo se repetia indefinidamente
+    mientras el dueno no volviese a tocar el ancla --, asi que una sola pasada
+    posterior no basta como prueba de que esta cerrado: tres revalidaciones
+    encadenadas, regenerando el documento cada vez, deben dejar la escena
+    exactamente igual."""
+    resultado, estado, configuracion, doc, texto_manual = _conflicto_pospuesto(tmp_path)
+
+    for _pasada in range(3):
+        revalidacion = revalidar_guion(resultado, doc, estado, configuracion)
+        assert _textos_de_escena(revalidacion, 1) == [texto_manual, _SEGUNDO_BLOQUE_ESCENA_1]
+        doc = generar_documento_revision(
+            resultado,
+            revalidacion.resultado_tiempos,
+            revalidacion.detecciones,
+            revalidacion.reescrituras,
+            configuracion,
+            nombre_guion="prueba",
+        )
+
+
+def test_solo_se_persisten_como_pospuestos_los_bloques_con_particion_real(
+    tmp_path: Path,
+) -> None:
+    """La disposicion que se persiste describe particiones pospuestas, no
+    "bloques que el dueno edito". La escena 3 de `_GUION` no tiene ninguna
+    reescritura propuesta, asi que editarla a mano no pospone nada y no debe
+    aparecer en `estado.validacion["particiones_pospuestas"]`."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path)
+    resultado = parsear_guion(_GUION, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+
+    doc1_editado = doc1.replace("Cierre breve de la escena.", _TEXTO_MANUAL_ESCENA_3)
+    revalidar_guion(resultado, doc1_editado, estado, configuracion)
+
+    assert estado.validacion["particiones_pospuestas"] == {}
+
+
+def test_disposicion_persistida_ilegible_no_rompe_la_revalidacion(tmp_path: Path) -> None:
+    """`estado.validacion` es un contenedor generico que nadie valida al
+    cargar: si trae basura en `particiones_pospuestas` (editado a mano, o
+    escrito por una version futura), la revalidacion debe seguir funcionando
+    -- recalculando la disposicion desde cero -- en vez de reventar a mitad."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path)
+    resultado = parsear_guion(_GUION, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+
+    for basura in ("no soy un dict", {"escena uno": [0]}, {"1": ["primero"]}, {"1": None}):
+        estado.validacion["particiones_pospuestas"] = basura
+        revalidacion = revalidar_guion(resultado, doc1, estado, configuracion)
+        assert [b.numero_escena for b in _bloques_de(revalidacion)] == [1, 2, 3, 4]
+
+
+def test_incidencia_cuando_las_anclas_del_documento_no_son_las_previstas(
+    tmp_path: Path,
+) -> None:
+    """Defensa en profundidad de P-04: si el documento no trae las anclas que
+    la reconstruccion predice -- aqui se simula el caso real de un
+    `estado.json` anterior a P-03, borrando la disposicion persistida justo en
+    mitad de un conflicto --, la revalidacion sigue adelante pero lo dice. Sin
+    este aviso, ese emparejamiento a ciegas es exactamente el #14."""
+    resultado, estado, configuracion, doc1, _texto_manual = _conflicto_pospuesto(tmp_path)
+    primera = revalidar_guion(resultado, doc1, estado, configuracion)
+    doc2 = generar_documento_revision(
+        resultado,
+        primera.resultado_tiempos,
+        primera.detecciones,
+        primera.reescrituras,
+        configuracion,
+        nombre_guion="prueba",
+    )
+
+    # Un estado.json anterior a P-03 no tiene esta clave: la reconstruccion
+    # vuelve a ser optimista y predice un ancla mas de las que doc2 trae.
+    del estado.validacion["particiones_pospuestas"]
+
+    segunda = revalidar_guion(resultado, doc2, estado, configuracion)
+
+    assert any(
+        "bloque(s) anclado(s) y se esperaban" in incidencia.mensaje
+        for incidencia in segunda.incidencias
+    )
+
+
+def _bloques_de(revalidacion: ResultadoRevalidacion) -> list[BloqueRespiracion]:
+    return [b.bloque for b in revalidacion.resultado_tiempos.bloques]
 
 
 # --- Informe de incidencias (requisito 3): solo lo roto -------------------------------

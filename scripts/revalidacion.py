@@ -73,6 +73,10 @@ _Identidad = tuple[int, int, str | None]
 _Marcado = tuple[BloqueRespiracion, bool, bool]
 _MarcadoConIdentidad = tuple[BloqueRespiracion, bool, bool, tuple[int, str | None]]
 
+# Clave de `estado.validacion` donde vive la disposicion del documento vigente:
+# que particiones aceptadas quedaron sin aplicar. Ver `_particiones_pospuestas_previas`.
+_CLAVE_PARTICIONES_POSPUESTAS = "particiones_pospuestas"
+
 
 @dataclass(frozen=True)
 class Incidencia:
@@ -114,12 +118,27 @@ def _particiones_pospuestas_previas(estado: EstadoProyecto) -> dict[int, frozens
     (`'a'`/`'b'`) -- sin este conjunto, `identidad_por_ancla` asumiria por
     defecto que TODAS las particiones aceptadas ya se materializaron, lo que
     desincroniza el esquema de anclas del calculado contra el real y produce
-    la duplicacion de contenido del hallazgo #14."""
-    crudo = estado.validacion.get("particiones_pospuestas", {})
-    return {
-        int(numero_escena): frozenset(int(indice) for indice in indices)
-        for numero_escena, indices in crudo.items()
-    }
+    la duplicacion de contenido del hallazgo #14.
+
+    En P-04 se endurece la lectura: `estado.validacion` es un contenedor
+    generico que nadie valida al cargar (T-07 solo garantiza que existe), asi
+    que un `estado.json` editado a mano o de una version futura puede traer
+    aqui cualquier cosa. Antes, un valor que no fuera un dict de listas de
+    enteros levantaba `AttributeError`/`ValueError` en medio de
+    `revalidar_guion` y tiraba la revalidacion entera; ahora la entrada
+    ilegible se ignora y esta pasada la recalcula y la deja bien. Perder la
+    disposicion degrada a la reconstruccion optimista -- que es lo que
+    `_incidencias_anclas_desajustadas` detecta y avisa --, nunca a un fallo."""
+    crudo = estado.validacion.get(_CLAVE_PARTICIONES_POSPUESTAS)
+    if not isinstance(crudo, dict):
+        return {}
+    pospuestas: dict[int, frozenset[int]] = {}
+    for numero_escena, indices in crudo.items():
+        try:
+            pospuestas[int(numero_escena)] = frozenset(int(indice) for indice in indices)
+        except (TypeError, ValueError):
+            continue
+    return pospuestas
 
 
 def _guardar_particiones_pospuestas(
@@ -130,7 +149,7 @@ def _guardar_particiones_pospuestas(
     interpretar las anclas del documento que esta misma pasada va a
     regenerar. Sustituye el valor anterior por completo -- nunca se acumula
     -- porque solo importa el estado vigente, igual que `estado.validacion["ultima"]`."""
-    estado.validacion["particiones_pospuestas"] = {
+    estado.validacion[_CLAVE_PARTICIONES_POSPUESTAS] = {
         str(numero_escena): sorted(indices)
         for numero_escena, indices in pospuestas_por_escena.items()
         if indices
@@ -223,27 +242,96 @@ def _materializar_marcados(
     return resultado
 
 
-def _incidencias_conflicto_edicion_particion(
-    numero_escena: int,
+def _indices_con_particion_pospuesta(
     marcados: list[_Marcado],
     reescrituras: list[Reescritura],
     indices_con_edicion_previa_a_particion: frozenset[int],
+) -> frozenset[int]:
+    """Los bloques de origen de una escena cuya particion aceptada NO se
+    aplica en esta pasada por el cruce del hallazgo #9: hay ademas una
+    edicion manual sobre el bloque sin partir.
+
+    P-04 lo extrae a un helper porque el dato lo necesitan dos sitios a la vez
+    -- la incidencia que lo anuncia y la disposicion que se persiste para la
+    pasada siguiente -- y porque acota lo que se guarda: solo los bloques que
+    de verdad tienen una particion pospuesta, no todo bloque con una edicion
+    manual. Persistir el conjunto sin filtrar (P-03) daba el mismo resultado
+    al materializar, porque `_materializar_marcados` ignora un indice sin
+    particion, pero dejaba en `estado.json` una lista que dice "pospuesta"
+    de bloques que nunca tuvieron nada que posponer, y que crece con cada
+    bloque que el dueno edite a mano."""
+    return frozenset(
+        indice_original
+        for indice_original in indices_con_edicion_previa_a_particion
+        if _particion_aceptada_de(marcados[indice_original][0], reescrituras) is not None
+    )
+
+
+def _incidencias_conflicto_edicion_particion(
+    numero_escena: int, indices_con_particion_pospuesta: frozenset[int]
 ) -> list[Incidencia]:
     """Avisa (nunca en silencio) del cruce del hallazgo #9: una edicion
-    manual y una particion de respiracion aceptada coincidiendo sobre el
-    mismo bloque en la misma revalidacion. La particion no se aplica esta
-    vez; queda pendiente de una revalidacion posterior sin conflicto."""
+    manual y una particion de respiracion aceptada sobre el mismo bloque. La
+    particion no se aplica: sus dos mitades se calcularon sobre un texto que
+    el dueno ya sustituyo, asi que aplicarlas seria tirar su edicion.
+
+    P-04 corrige lo que el mensaje decia. Invitaba a "revalidar sin tocar ese
+    bloque" para que la particion se materializase, y es justo al contrario:
+    mientras la edicion manual siga en el documento se vuelve a detectar
+    pasada tras pasada y el conflicto no desaparece nunca. Lo que de verdad
+    la materializa es RETIRAR la edicion -- lo demuestra
+    `test_particion_pospuesta_se_materializa_cuando_se_retira_la_edicion`, el
+    test que dejo P-03 --, o rechazar la particion. Un aviso que promete algo
+    que no ocurre ensena al dueno a ignorar el informe (T-17, requisito 3)."""
     return [
         Incidencia(
             numero_escena,
             f"Escena {numero_escena}, bloque {indice_original}: hay una edición manual y una "
-            "partición de respiración aceptada sobre el mismo bloque en esta misma "
-            "revalidación; se conserva la edición manual (invariante (c) de §0.2) y la "
-            "partición no se aplica todavía. Vuelve a revalidar sin tocar ese bloque si "
-            "quieres que la partición se materialice.",
+            "partición de respiración aceptada sobre el mismo bloque; se conserva la edición "
+            "manual (invariante (c) de §0.2) y la partición no se aplica. Sus dos mitades se "
+            "calcularon sobre el texto anterior, que ya no existe, así que seguirá sin "
+            "aplicarse mientras esa edición esté ahí: si la quieres, restaura el texto "
+            "original del bloque, o rechaza la partición y parte el texto a mano.",
         )
-        for indice_original in sorted(indices_con_edicion_previa_a_particion)
-        if _particion_aceptada_de(marcados[indice_original][0], reescrituras) is not None
+        for indice_original in sorted(indices_con_particion_pospuesta)
+    ]
+
+
+def _incidencias_anclas_desajustadas(
+    identidad_por_ancla: dict[tuple[int, int], _Identidad],
+    texto_editado_por_ancla: dict[tuple[int, int], str],
+) -> list[Incidencia]:
+    """Defensa en profundidad de P-04 sobre el hallazgo #14: el documento
+    leido tiene que traer exactamente las anclas que la reconstruccion
+    predice. Si no coinciden, el emparejamiento ancla->identidad ha dejado de
+    ser de fiar y cualquier diferencia de texto se atribuiria al bloque
+    equivocado -- que es, literalmente, el mecanismo del #14.
+
+    Con la disposicion ya persistida (P-03) el caso conocido esta cerrado,
+    pero quedan dos que no: un `estado.json` anterior a P-03 que este justo en
+    mitad de un conflicto (no tiene `particiones_pospuestas`, asi que la
+    reconstruccion vuelve a ser optimista y el #14 reaparece) y un ancla que el
+    dueno borre al editar. En ambos, revalidar es lo correcto -- abortar
+    dejaria al dueno sin tiempos ni salidas por algo que puede ser cosmetico
+    -- pero hacerlo en silencio es lo que hacia dano."""
+    escenas_previstas: dict[int, set[int]] = {}
+    for numero_escena, indice in identidad_por_ancla:
+        escenas_previstas.setdefault(numero_escena, set()).add(indice)
+    escenas_leidas: dict[int, set[int]] = {}
+    for numero_escena, indice in texto_editado_por_ancla:
+        escenas_leidas.setdefault(numero_escena, set()).add(indice)
+
+    return [
+        Incidencia(
+            numero_escena,
+            f"Escena {numero_escena}: el documento trae {len(escenas_leidas[numero_escena])} "
+            f"bloque(s) anclado(s) y se esperaban {len(previstas)}. No se puede saber con "
+            "certeza a qué bloque pertenece cada texto, así que puede haber ediciones "
+            "manuales atribuidas al bloque equivocado. Revisa esta escena en "
+            "guion-escenas.md antes de dar por buena la revalidación.",
+        )
+        for numero_escena, previstas in sorted(escenas_previstas.items())
+        if numero_escena in escenas_leidas and previstas != escenas_leidas[numero_escena]
     ]
 
 
@@ -395,12 +483,12 @@ def revalidar_guion(
             for (numero_escena_edicion, indice_original, mitad) in ediciones_manuales
             if numero_escena_edicion == escena.numero and mitad is None
         )
+        indices_con_particion_pospuesta = _indices_con_particion_pospuesta(
+            marcados, reescrituras_actualizadas, indices_con_edicion_previa_a_particion
+        )
         incidencias_conflicto_particion.extend(
             _incidencias_conflicto_edicion_particion(
-                escena.numero,
-                marcados,
-                reescrituras_actualizadas,
-                indices_con_edicion_previa_a_particion,
+                escena.numero, indices_con_particion_pospuesta
             )
         )
         finales: list[_Marcado] = []
@@ -416,7 +504,7 @@ def revalidar_guion(
             )
             finales.append((_con_texto(bloque, texto_final), fin_de_parrafo, fin_de_escena))
         marcados_finales_por_escena[escena.numero] = finales
-        pospuestas_de_esta_pasada[escena.numero] = indices_con_edicion_previa_a_particion
+        pospuestas_de_esta_pasada[escena.numero] = indices_con_particion_pospuesta
 
     resultado_tiempos = calcular_tiempos_desde_marcados(
         resultado, marcados_finales_por_escena, configuracion
@@ -435,6 +523,7 @@ def revalidar_guion(
         *_incidencias_indicaciones_en_locucion(bloques_finales, configuracion),
         *_incidencias_duracion_disparada(resultado_tiempos),
         *incidencias_conflicto_particion,
+        *_incidencias_anclas_desajustadas(identidad_por_ancla, texto_editado_por_ancla),
     ]
 
     validado = marca_estado_documento == MARCA_ESTADO_VALIDADO
