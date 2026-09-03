@@ -4,19 +4,21 @@ Sustituye al `build` de un proyecto convencional. Ejecuta la skill sobre el guio
 ejemplo y comprueba que lo generado es valido; sobre todo, que el reproductor `.html`
 es **autocontenido** (regla dura de §0.2).
 
-ESTADO ACTUAL (T-18, T-27, T-28, T-29, T-30, T-32): el reproductor, el
-exportador de `.srt`, el exportador `.pdf`, el adaptador `.pptx` y el selector
-de salidas ya existen (`scripts/reproductor.py`, `scripts/srt.py`,
-`scripts/pdf.py`, `scripts/pptx.py`, `scripts/salidas.py`), asi que
-"Generación del reproductor", "Auto-contención del reproductor", "Generación
-del .srt", "Validez del .srt", "Generación del HTML de impresión (.pdf)",
-"Auto-contención del HTML de impresión", "Generación de tarjetas.json y brief
-(.pptx)", "Validez de tarjetas.json" y "Generación de salidas" dejan de ser NO
-APLICABLE: se generan de verdad, sobre `fixtures/guion-ejemplo.md` (T-32) --
-o, si no existiera, sobre el primer guion real de calibracion, mismo respaldo
-que usaban todas estas etapas antes de T-32 --, y se validan (a nivel de bytes
-el `.html` del reproductor y el de impresion, con las reglas de ffmpeg el
-`.srt`, contra el contrato de `references/contrato-tarjetas.md` el
+ESTADO ACTUAL (T-18, T-27, T-28, T-29, T-30, T-32, R-05): el reproductor, el
+exportador de `.srt`, el `.srt` alineado, el exportador `.pdf`, el adaptador
+`.pptx` y el selector de salidas ya existen (`scripts/reproductor.py`,
+`scripts/srt.py`, `scripts/srt_alineado.py`, `scripts/pdf.py`,
+`scripts/pptx.py`, `scripts/salidas.py`), asi que "Generación del
+reproductor", "Auto-contención del reproductor", "Generación del .srt",
+"Validez del .srt", "Generación del .srt alineado", "Validez del .srt
+alineado", "Generación del HTML de impresión (.pdf)", "Auto-contención del
+HTML de impresión", "Generación de tarjetas.json y brief (.pptx)", "Validez de
+tarjetas.json" y "Generación de salidas" dejan de ser NO APLICABLE: se generan
+de verdad, sobre `fixtures/guion-ejemplo.md` (T-32) -- o, si no existiera,
+sobre el primer guion real de calibracion, mismo respaldo que usaban todas
+estas etapas antes de T-32 --, y se validan (a nivel de bytes el `.html` del
+reproductor y el de impresion, con las reglas de ffmpeg el `.srt` y el `.srt`
+alineado, contra el contrato de `references/contrato-tarjetas.md` el
 `tarjetas.json`). La conversion a `.pdf` de verdad depende de que haya un
 Chrome/Edge instalado en la maquina que ejecuta la verificacion (T-28,
 requisito 4): cuando no lo hay, la etapa de generacion sigue en OK (el HTML de
@@ -24,12 +26,17 @@ impresion se genera igual, sin fallar) y lo dice en el detalle. La generacion
 real del `.pptx` nunca la hace este codigo (T-29: la delega Claude en
 `480-branded-pptx` dentro de la sesion), asi que su etapa de generacion sigue
 en OK con la salida `.pptx` LATENTE mientras esa skill no este instalada --
-nunca falla por su ausencia. "Generación de salidas" (T-30) ejecuta la
-canalizacion completa con las cuatro salidas seleccionadas a la vez y refleja
-esa misma latencia del `.pptx` sin fallar por ella (requisito 3: el fallo o la
-latencia de una salida no impide las demas). "Guion de ejemplo" (T-32) ya es
-OK: `fixtures/guion-ejemplo.md` existe y tiene contenido. Responde al hallazgo
-#4 del auditor.
+nunca falla por su ausencia. El `.srt` alineado (R-05) se genera aqui sin
+ningun parte de rodaje real (el guion de verificacion nunca se grabo): cae
+por completo a la duracion estimada de T-12, latente de la misma forma que el
+`.pptx` sin la skill de marca, sin que eso sea un fallo. "Generación de
+salidas" (T-30) ejecuta la canalizacion completa con las cuatro salidas
+seleccionadas a la vez y refleja esa misma latencia del `.pptx` sin fallar por
+ella (requisito 3: el fallo o la latencia de una salida no impide las demas)
+-- el `.srt` alineado no forma parte de esa canalizacion todavia porque
+depende de un parte de rodaje que el selector de T-30 no pide. "Guion de
+ejemplo" (T-32) ya es OK: `fixtures/guion-ejemplo.md` existe y tiene
+contenido. Responde al hallazgo #4 del auditor.
 """
 
 from __future__ import annotations
@@ -43,7 +50,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from config import NOMBRE_ARCHIVO_HTML_IMPRESION, NOMBRE_ARCHIVO_SRT, NOMBRE_ARCHIVO_TARJETAS_JSON
+from config import (
+    NOMBRE_ARCHIVO_HTML_IMPRESION,
+    NOMBRE_ARCHIVO_SRT,
+    NOMBRE_ARCHIVO_SRT_ALINEADO,
+    NOMBRE_ARCHIVO_TARJETAS_JSON,
+)
 from logger import configurar_logger
 from parser import parsear_guion
 from pdf import exportar_pdf
@@ -52,6 +64,7 @@ from presentacion import Nivel, mostrar, titulo
 from reproductor import generar_reproductor_html, guardar_reproductor
 from salidas import TODAS_LAS_SALIDAS, SeleccionSalidas, generar_salidas_seleccionadas
 from srt import exportar_srt, guardar_srt, validar_srt
+from srt_alineado import generar_srt_alineado, guardar_srt_alineado
 from tiempos import calcular_tiempos
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -60,6 +73,7 @@ CARPETA_SALIDA_FIXTURE = RAIZ / "fixtures" / "salida"
 CARPETA_GUIONES_REALES = RAIZ / "fixtures" / "reales"
 RUTA_REPRODUCTOR_FIXTURE = CARPETA_SALIDA_FIXTURE / "reproductor.html"
 RUTA_SRT_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_SRT
+RUTA_SRT_ALINEADO_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_SRT_ALINEADO
 RUTA_HTML_IMPRESION_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_HTML_IMPRESION
 RUTA_TARJETAS_JSON_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_TARJETAS_JSON
 
@@ -242,6 +256,40 @@ def generar_srt_fixture() -> Resultado:
     return Resultado("Generación del .srt", "OK", f"generado sobre {ruta_guion.name}.")
 
 
+def generar_srt_alineado_fixture() -> Resultado:
+    """Genera el .srt alineado con la toma buena (R-05) sobre el mismo guion de
+    verificacion que usa el .srt estimado. En esta maquina no hay ningun parte
+    de rodaje real (nunca se grabo el guion de ejemplo): se genera con
+    `tomas_por_escena={}`, y el resultado cae por completo a la estimacion de
+    T-12 -- ninguna escena aporta evidencia real todavia, tal como documenta
+    `ResultadoAlineacion.escenas_sin_toma_buena` -- sin que eso sea un fallo,
+    mismo criterio que la salida `.pptx` latente de T-29."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
+        return Resultado(
+            "Generación del .srt alineado",
+            "NO APLICABLE",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
+        )
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        contenido, alineacion = generar_srt_alineado(tiempos, {})
+        guardar_srt_alineado(contenido, CARPETA_SALIDA_FIXTURE)
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación del .srt alineado",
+            "FALLO",
+            f"no se pudo generar el .srt alineado sobre {ruta_guion.name}: {excepcion}",
+        )
+    detalle = (
+        f"generado sobre {ruta_guion.name}. {len(alineacion.escenas_sin_toma_buena)} "
+        "escena(s) sin toma buena todavia (latente: cae a la duración estimada)."
+    )
+    return Resultado("Generación del .srt alineado", "OK", detalle)
+
+
 def generar_pdf_fixture() -> Resultado:
     """Genera el HTML de impresion y, si hay Chrome/Edge, el `.pdf` (T-28) sobre
     el mismo guion de verificacion que usan el reproductor y el .srt. La
@@ -336,6 +384,23 @@ def verificar_srt(ruta_srt: Path) -> Resultado:
     return Resultado("Validez del .srt", "OK", f"{ruta_srt.name} pasa el validador estricto.")
 
 
+def verificar_srt_alineado(ruta_srt: Path) -> Resultado:
+    """Valida el .srt alineado (R-05) con las mismas reglas estrictas que el
+    .srt estimado (T-27, requisito 3 de R-05: ninguna regla nueva)."""
+    if not ruta_srt.exists():
+        return Resultado(
+            "Validez del .srt alineado",
+            "NO APLICABLE",
+            f"no se ha generado ningun .srt alineado en {ruta_srt}.",
+        )
+    problemas = validar_srt(ruta_srt.read_text(encoding="utf-8"))
+    if problemas:
+        return Resultado("Validez del .srt alineado", "FALLO", "; ".join(problemas))
+    return Resultado(
+        "Validez del .srt alineado", "OK", f"{ruta_srt.name} pasa el validador estricto."
+    )
+
+
 def main() -> int:
     analizador = argparse.ArgumentParser(
         description="Verificacion extremo a extremo de las salidas de la skill teleprompter.",
@@ -366,6 +431,8 @@ def main() -> int:
         verificar_autocontencion(RUTA_REPRODUCTOR_FIXTURE),
         generar_srt_fixture(),
         verificar_srt(RUTA_SRT_FIXTURE),
+        generar_srt_alineado_fixture(),
+        verificar_srt_alineado(RUTA_SRT_ALINEADO_FIXTURE),
         generar_pdf_fixture(),
         verificar_autocontencion(
             RUTA_HTML_IMPRESION_FIXTURE, etapa="Auto-contención del HTML de impresión"

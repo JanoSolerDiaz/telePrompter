@@ -17,6 +17,7 @@ aislamiento, §0.2 de `HOJA_DE_RUTA.md`):
 ├── guion-escenas.md         # documento de revisión (T-16/T-17); no lo consume el montaje
 ├── reproductor.html         # teleprompter (T-18+); no lo consume el montaje
 ├── guion.srt                # subtítulos borrador (T-27) — CONTRATO DE MONTAJE
+├── guion-alineado.srt       # subtítulos alineados con la toma buena (R-05), si existe parte de rodaje
 ├── guion-impresion.html     # HTML de impresión (T-28)
 ├── guion.pdf                # si hubo Chrome/Edge disponible (T-28)
 ├── tarjetas.json            # contrato de tarjetas (T-29) — CONTRATO DE MONTAJE
@@ -34,7 +35,10 @@ fijarse en el sufijo en sí, solo en que es la misma carpeta que contiene
 
 De todo lo anterior, **la fase de montaje solo necesita leer dos archivos**:
 `guion.srt` y `tarjetas.json`. El resto es documentación y herramientas de
-producción para el dueño, no entrada de la cadena de montaje.
+producción para el dueño, no entrada de la cadena de montaje. Cuando existe un
+parte de rodaje con al menos una toma buena (R-02/R-05), `guion-alineado.srt`
+es una tercera opción con tiempos más fieles a la toma real — sigue siendo
+opcional: si no existe, `guion.srt` (estimado) es la única fuente de tiempos.
 
 ## Nombres y orden de escenas (requisito 2 de T-33)
 
@@ -71,19 +75,23 @@ verificada.
   continua desde `00:00:00,000` (T-27, requisito 1-2): no hay un `.srt` por
   escena.
 - Los tiempos son **estimados** a partir del ritmo deducido del guion (T-12),
-  no del tiempo real de una toma grabada. Alinear el `.srt` con la toma buena
-  de verdad es trabajo de una fase posterior, todavía no implementada
-  (`R-05 — .srt alineado con la toma buena`, `roadmap/ROADMAP_PRODUCTO.md`).
+  no del tiempo real de una toma grabada. Una vez existe un parte de rodaje
+  con al menos una toma buena (R-02), `guion-alineado.srt` (R-05, ver más
+  abajo) trae esas mismas escenas con tiempos reescalados a la toma real; las
+  que aún no tienen toma buena siguen ahí con su duración estimada.
 - El propio texto del `.srt` **no lleva ninguna marca de escena** (ni número ni
   separador): un lector de subtítulos solo ve índice, marca de tiempo y texto.
   Para saber a qué escena pertenece un subtítulo concreto, la cadena de montaje
   debe cruzarlo con `tarjetas.json` (ver siguiente sección) — nunca intentar
-  adivinarlo por el contenido del texto.
+  adivinarlo por el contenido del texto. `guion-alineado.srt` comparte esta
+  misma limitación.
 - `srt.validar_srt` ya aplica las mismas reglas que un lector estricto tipo
   ffmpeg (índice secuencial desde 1, marca de tiempo bien formada, sin solapes
   ni tiempos decrecientes, ninguna línea por encima de
   `Configuracion.srt_caracteres_por_linea_max`): un `.srt` que pase esa
   validación es, por construcción, consumible por ffmpeg sin avisos.
+  `guion-alineado.srt` pasa exactamente el mismo validador (`srt_alineado.
+  validar_srt_alineado`, sin ninguna regla nueva).
 
 ## `tarjetas.json` — cómo derivar el tiempo de cada escena
 
@@ -108,17 +116,22 @@ fin_escena)` por escena, cualquier subtítulo del `.srt` cuyo intervalo cae
 dentro de él pertenece a esa escena, sin ambigüedad, mientras no haya
 desviaciones de numeración (sección anterior).
 
-## Qué queda fuera de esta tarea
+## Qué quedaba fuera de esta tarea (T-33), ya completado por sesiones posteriores
+
+Nota historica: en el momento de T-33 (2026-09-02), `R-02`, `R-04` y `R-05`
+estaban `PENDIENTE`. Las tres se completaron en sesiones posteriores (oleadas
+v2 y v3) y ya están reflejadas en el resto de este documento:
 
 - **Registro de tomas por escena** (grabar más de una toma, marcar cuál es la
-  buena): `R-02` del `ROADMAP_PRODUCTO.md`, todavía `PENDIENTE`.
-- **Recalibrar el ritmo con tiempos reales** una vez grabada la toma buena:
-  `R-04`, `PENDIENTE` — hoy el `.srt`/`tarjetas.json` solo tienen la duración
-  *estimada*, nunca la real.
-- **`.srt` alineado con la toma buena**: `R-05`, `PENDIENTE`, depende de R-02 y
-  R-04.
+  buena): `R-02`, `COMPLETADA` — `estado.json["tomas"]`,
+  `references/contrato-tomas.md`.
+- **Recalibrar el ritmo con tiempos reales**: `R-04`, `COMPLETADA` —
+  `scripts/calibracion.py`, informe en sesión, nunca aplicado solo sobre
+  `Configuracion.ppm_manual`.
+- **`.srt` alineado con la toma buena**: `R-05`, `COMPLETADA` —
+  `guion-alineado.srt`, ver arriba.
 
-T-33 no adelanta ninguna de esas tres: solo dejar documentado y verificado el
-contrato de lo que ya existe (`.srt` + `tarjetas.json` + estructura de
+T-33 no adelantó ninguna de las tres: solo dejó documentado y verificado el
+contrato de lo que existía entonces (`.srt` + `tarjetas.json` + estructura de
 carpetas), para que esas tareas futuras — y la skill de montaje que las
-consuma — no tengan que averiguarlo leyendo código.
+consuma — no tuvieran que averiguarlo leyendo código.

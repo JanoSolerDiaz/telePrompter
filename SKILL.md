@@ -236,6 +236,14 @@ Arranca los subtítulos en la fase de montaje sin partir de cero: un subtítulo 
 | Líneas por subtítulo | 2 | Un bloque que no cabe se reparte en varios subtítulos, con el tiempo repartido según las palabras de cada reparto |
 | BOM (marca de orden de bytes) | No | `srt_con_bom=True` antepone el BOM; UTF-8 sin él por defecto |
 
+## `.srt` alineado con la toma buena (R-05)
+
+El `.srt` de arriba es un borrador con tiempos **estimados** a partir del ritmo deducido del guion; una vez grabada la toma buena de cada escena (registro de tomas, R-02), `scripts/srt_alineado.py` (`generar_srt_alineado`) reescala los bloques de esa escena a su duración **real** — el mismo factor (`duración real / duración estimada`) se aplica a la palabra hablada y a la pausa de cada bloque, así que el reparto relativo entre ellos se conserva y solo cambia la escala. Una escena sin toma buena todavía conserva su duración estimada sin tocar: nunca se inventa un tiempo real que no existe, con el detalle disponible en `escenas_sin_toma_buena` para que quien lo lea sepa exactamente cuáles faltan. El `.srt` estimado sigue siendo una salida independiente (`guion.srt`); el alineado se escribe en un archivo aparte (`guion-alineado.srt`) — ni se genera uno solo a partir del otro ni se sobrescriben entre sí. Reutiliza tal cual la agrupación, partición limpia, formato y validador estricto de T-27: ninguna regla nueva de subtítulos.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Tolerancia de duración | 0,05 s | Umbral documentado para comprobar que la escena alineada dura lo mismo que la toma buena (redondeo a milisegundos al serializar, no del reescalado en sí) |
+
 ## Exportador `.pdf` con identidad 480 (T-28)
 
 Documento de repaso antes de grabar y, llegado el caso, entregable presentable a terceros: el guion completo con la identidad visual de la casa (`references/marca-480.md`), una **escena por página** — título, duración objetivo y estimada, y el texto de locución **legible como prosa** (los límites de bloque se marcan de forma discreta, nunca como lista de tarjetas), con las indicaciones no recitables al pie. Portada con el título, la duración total y objetivo, el número de escenas y de palabras.
@@ -434,6 +442,7 @@ de normalización más arriba.
 | `srt_lineas_max_por_subtitulo` | 2 | Un grupo que no cabe se reparte en varios subtítulos consecutivos |
 | `srt_duracion_minima_segundos` | 1,2 s | Por debajo, el bloque se funde con el siguiente de la misma escena; `0` desactiva la agrupación |
 | `srt_con_bom` | No | `True` antepone la marca de orden de bytes (BOM) |
+| `srt_alineado_tolerancia_segundos` | 0,05 s | `.srt` alineado (R-05): tolerancia documentada para que la escena reescalada dure lo mismo que la toma buena |
 
 ### Exportador `.pdf` con identidad 480 (T-28)
 
@@ -476,12 +485,11 @@ Esta skill es el **paso previo limpio** de la skill de montaje con ffmpeg — no
 
 De toda la carpeta de salida (`<nombre-guion>-tarjetas/`), la fase de montaje solo necesita leer **dos archivos**:
 
-- **`guion.srt`** — subtítulos borrador (T-27), un único archivo para el guion completo, ya validado con las mismas reglas que aplica un lector estricto tipo ffmpeg (índice secuencial, marca de tiempo bien formada, sin solapes). Los tiempos son **estimados** a partir del ritmo deducido del guion (T-12), no de una toma grabada real — alinear el `.srt` con la toma buena es trabajo futuro (`R-05`, todavía `PENDIENTE`).
+- **`guion.srt`** — subtítulos borrador (T-27), un único archivo para el guion completo, ya validado con las mismas reglas que aplica un lector estricto tipo ffmpeg (índice secuencial, marca de tiempo bien formada, sin solapes). Los tiempos son **estimados** a partir del ritmo deducido del guion (T-12), no de una toma grabada real.
+- **`guion-alineado.srt`** — mismo formato y misma validación, pero con los tiempos de cada escena ya reescalados a la duración real de su toma buena cuando existe (`.srt` alineado, R-05); una escena sin toma buena todavía conserva ahí su duración estimada. Archivo aparte, nunca sobrescribe a `guion.srt`.
 - **`tarjetas.json`** — contrato de intercambio con la generación del `.pptx` (T-29, `references/contrato-tarjetas.md`), pero reutilizable por cualquier consumidor: trae `duracion_estimada_segundos` por escena en el mismo orden que el guion, con lo que la fase de montaje puede calcular el instante de inicio/fin de cada escena sumando duraciones (el `.srt` no lleva ninguna marca de escena en su propio texto).
 
 **Nombres y orden de escenas, estables y predecibles (requisito 2 de T-33):** el `numero` de cada escena (`## BLOQUE N — <título>`) es la única clave para casar una toma grabada con su escena sin ambigüedad. Debe ser único y estrictamente creciente en el orden del documento — el mismo orden en que aparecen en `tarjetas.json` y en el que se generan los subtítulos del `.srt`. `convencion.detectar_desviaciones` (T-10, ampliada en T-33) señala `numero_escena_duplicado` y `numero_escena_no_creciente` sin bloquear el proceso; si aparecen, la cadena de montaje no debe fiarse del número de escena hasta corregir el guion de origen.
-
-Lo que la cadena de montaje **todavía no puede asumir** de esta skill: un `.srt` alineado con la toma buena (`R-05`, todavía `PENDIENTE`). Ni el registro de tomas por escena (`R-02`, en `estado.json`, fuera de los dos archivos de este contrato) ni el ppm calibrado que propone R-04 (evidencia entre guiones, nunca aplicado solo) cambian los tiempos de un `guion.srt` ya generado — eso sigue siendo trabajo de `R-05`.
 
 **Ver también:** `references/contrato-montaje.md` (contrato completo, con la fórmula para derivar el rango de tiempo de cada escena) y `references/contrato-tarjetas.md` (forma exacta de `tarjetas.json`).
 

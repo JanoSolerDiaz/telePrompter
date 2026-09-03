@@ -32,6 +32,24 @@
 
 ---
 
+### Sesión 2026-09-03 — R-05 (`.srt` alineado con la toma buena) COMPLETADA. Sesión de nube
+**Tarea(s):** R-05, primera de oleada v3 (depende de R-02, T-27 y T-33, todas COMPLETADAS)
+**Estado resultante:** R-05 **COMPLETADA** (§1 de SEGUIMIENTO)
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** ninguna — ficha marcada "Migración: No" en `ROADMAP_PRODUCTO.md`, cumplida al pie de la letra: el módulo solo lee `ResultadoTiempos` (T-12) y `EstadoProyecto.tomas` (R-02, migración 002 ya existente), `VERSION_ESQUEMA_ESTADO` sigue en 2
+**Archivos creados/modificados:** `scripts/srt_alineado.py` (nuevo), `scripts/tomas.py` (`duracion_toma_buena` promovida a pública), `scripts/calibracion.py` (reutiliza la función promovida en vez de su propia copia privada), `scripts/config.py`, `scripts/verificar_salidas.py` (dos etapas nuevas), `SKILL.md`, `DEVELOPERS.md`, `references/contrato-montaje.md`, `references/contrato-tomas.md`, `tests/test_srt_alineado.py` (nuevo), `tests/test_tomas.py`, `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (5 filas), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (32 archivos) · lint ✅ · tests ✅ 504 pasan + 0 skipped (antes 494; +10) · build ✅ `verificar_salidas.py --fixture` con las 12 etapas en OK (dos nuevas: "Generación del .srt alineado", "Validez del .srt alineado")
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` del dueño (nota de entorno del protocolo v1.3); la entrega es el push a `origin/develop`
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, prefijo R-05): `tomas.duracion_toma_buena` promovida de privada a pública para que R-04 y R-05 compartan un único criterio; el factor de reescalado se aplica a palabras Y pausa de cada bloque, no al bloque como unidad opaca; una escena sin toma buena conserva su estimación sin interpolar ni aplicar un ppm calibrado no aceptado; el `.srt` alineado se escribe en un archivo nuevo, nunca sobrescribe al estimado; la cuarta red genera el alineado con `tomas_por_escena={}` sobre el guion de ejemplo en vez de dejar la etapa en NO APLICABLE
+**Hallazgos del auditor atendidos:** ninguno — sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar, se procedió directo con la cola normal
+**Hallazgos:** ninguno propio nuevo. Al revisar `references/contrato-montaje.md` para documentar R-05 se encontraron menciones obsoletas a R-02/R-04 como `PENDIENTE` (quedaron así desde T-33, 2026-09-02, y ninguna sesión posterior las había corregido pese a completar ambas tareas); corregidas en la misma sesión por ser el mismo documento que R-05 tenía que tocar, sin abrir P-XX por ser una corrección de documentación trivial y de bajo riesgo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** R-06 (coherencia de nombres y `assets/`), fase transversal F-D (`origen: auditoría #6`). Antes de elegir tarea, revisar de nuevo `auditoriacontinua.md` por si el auditor abre un hallazgo nuevo sobre lo entregado aquí.
+
+**Nota de diseño — criterio de aceptación literal.** "Con una toma real cronometrada, el `.srt` alineado no tiene solapes y su duración total coincide con la de la toma dentro de la tolerancia documentada": cubierto por `test_srt_alineado_de_una_toma_real_no_tiene_solapes_y_dura_lo_que_la_toma` sobre un guion real de `fixtures/reales/`, con una toma buena sintética (1,4× la duración estimada de la primera escena) y `validar_srt`/`Configuracion.srt_alineado_tolerancia_segundos` (0,05 s) como umbral verificado, no inventado en el test.
+
+---
+
 ### Sesión 2026-09-03 — R-04 (recalibrar el ritmo con tiempos reales) COMPLETADA. Sesión de nube
 **Tarea(s):** R-04, cuarta y última de oleada v2 (depende de R-02, COMPLETADA, y T-12, COMPLETADA)
 **Estado resultante:** R-04 **COMPLETADA** (§1 de SEGUIMIENTO) — oleada v2 (R-01 a R-04) queda cerrada por completo

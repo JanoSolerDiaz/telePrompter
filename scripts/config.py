@@ -111,6 +111,20 @@ SRT_CON_BOM: bool = False
 # Nombre del .srt dentro de la carpeta de salida del guion.
 NOMBRE_ARCHIVO_SRT: str = "guion.srt"
 
+# --- `.srt` alineado con la toma buena (R-05) ---------------------------------------
+# Tolerancia (segundos) al comprobar que la duracion total del `.srt` alineado
+# coincide con la de la toma buena cronometrada (criterio de aceptacion literal de
+# R-05): el reescalado por escena es exacto en coma flotante, pero formatear cada
+# marca de tiempo a milisegundos (`srt.formatear_marca_tiempo`) introduce un redondeo
+# minimo. No se usa para decidir nada en el propio modulo, solo para que quien
+# verifique el resultado (tests, `verificar_salidas.py`) tenga un umbral documentado
+# en vez de inventarlo en cada sitio.
+SRT_ALINEADO_TOLERANCIA_SEGUNDOS: float = 0.05
+# Nombre del .srt alineado dentro de la carpeta de salida del guion -- independiente
+# del `.srt` estimado (requisito 2 de R-05): el estimado sirve antes de grabar, el
+# alineado despues, y ninguno sobrescribe al otro.
+NOMBRE_ARCHIVO_SRT_ALINEADO: str = "guion-alineado.srt"
+
 # --- Adaptador .pptx via 480-branded-pptx (T-29) -----------------------------------
 # Version del contrato de intercambio `tarjetas.json` (requisito 1, documentado en
 # `references/contrato-tarjetas.md`): sube si el JSON cambia de forma incompatible,
@@ -473,6 +487,7 @@ class Configuracion:
     srt_lineas_max_por_subtitulo: int = SRT_LINEAS_MAX_POR_SUBTITULO
     srt_duracion_minima_segundos: float = SRT_DURACION_MINIMA_SEGUNDOS
     srt_con_bom: bool = SRT_CON_BOM
+    srt_alineado_tolerancia_segundos: float = SRT_ALINEADO_TOLERANCIA_SEGUNDOS
     ruta_logo_pdf: str = RUTA_LOGO_PDF
     pdf_ancho_logo_portada_pulgadas: float = PDF_ANCHO_LOGO_PORTADA_PULGADAS
     pdf_ancho_logo_pie_pulgadas: float = PDF_ANCHO_LOGO_PIE_PULGADAS
@@ -655,6 +670,12 @@ class Configuracion:
             mensaje = (
                 "La duracion minima de un subtitulo del .srt no puede ser negativa "
                 f"({self.srt_duracion_minima_segundos})."
+            )
+            raise ValueError(mensaje)
+        if self.srt_alineado_tolerancia_segundos < 0:
+            mensaje = (
+                "La tolerancia del .srt alineado no puede ser negativa "
+                f"({self.srt_alineado_tolerancia_segundos})."
             )
             raise ValueError(mensaje)
         for nombre, valor_flotante in (

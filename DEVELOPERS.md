@@ -1740,7 +1740,9 @@ puro Python, sin tocar `guion.js`/`estilo.css`) junta ambas fuentes.
   lado de otra: estimada (`TiempoEscena.duracion_estimada_segundos`), objetivo
   (`TiempoEscena.duracion_objetivo_segundos`) y real. La real sale
   **exclusivamente** de la toma marcada `buena` en `estado.tomas`
-  (`_toma_buena_segundos`) — una escena con tomas pero ninguna marcada buena
+  (`tomas.duracion_toma_buena`, promovida a pública en R-05, que la reutiliza
+  tal cual en vez de reimplementar el mismo criterio) — una escena con tomas
+  pero ninguna marcada buena
   se queda con `duracion_real_segundos=None`, nunca se estima ni se promedia
   entre tomas sin marcar: mezclar una toma fallida habría contaminado la
   calibración con un tiempo que el dueño no validó como representativo. Las
@@ -1863,6 +1865,84 @@ ya hace `reproductor.py`. Es una librería pura, sin punto de entrada de CLI tod
   genera y valida el `.srt` de verdad sobre el mismo guion real que usa el
   reproductor (`generar_srt_fixture`/`verificar_srt`, activadas en esta tarea:
   antes eran NO APLICABLE a la espera de T-27).
+
+## `.srt` alineado con la toma buena (R-05)
+
+`origen: roadmap`, primera tarea de la oleada v3, depende de R-02, T-27 y T-33.
+Objetivo: que `guion.srt` (T-27) deje de ser el único `.srt` que produce la
+skill — sus tiempos son **estimados** a partir del ritmo deducido del guion,
+no del tiempo real de la toma que se grabó de verdad — y el montaje pueda
+empezar con subtítulos casi finales una vez existe una toma buena por escena
+(R-02). `scripts/srt_alineado.py` (nuevo) es el módulo que cierra ese hueco,
+ya anotado como trabajo futuro en `references/contrato-montaje.md` (T-33).
+
+- **No calcula tiempos ni reimplementa reglas de subtítulo por su cuenta.**
+  `reescalar_a_toma_buena` recibe un `ResultadoTiempos` ya calculado
+  (idealmente el de `revalidacion.revalidar_guion(...).resultado_tiempos`,
+  mismo criterio que T-27 para que el texto sea el locutado final) y
+  `EstadoProyecto.tomas` ya fusionado por R-02; solo REESCALA los tiempos que
+  ya trae. La generación de entradas, la agrupación de bloques cortos, la
+  partición limpia y el formato reutilizan `srt.generar_entradas_srt`/
+  `srt.formatear_srt` tal cual (requisito 3): el `ResultadoTiempos` reescalado
+  es, para esas dos funciones, indistinguible de cualquier otro. La duración
+  real de cada escena sale de `tomas.duracion_toma_buena` (R-02) — la misma
+  función que ahora también reutiliza `calibracion.py` (R-04), promovida de
+  privada a pública en esta tarea para que ambos módulos compartan un único
+  criterio en vez de reimplementarlo cada uno por su lado.
+- **Requisito 1 (reescalar a la duración real).** Para cada escena con toma
+  buena registrada, `reescalar_a_toma_buena` multiplica la duración de
+  palabras y la pausa de **cada uno** de sus bloques por el mismo factor
+  (`duración real / duración estimada`): el reparto relativo entre bloques (más
+  pausa tras un punto que tras una coma) se conserva, solo cambia la escala.
+  Una escena sin toma buena todavía conserva su duración **estimada** sin
+  tocar (factor `1.0`) — nunca se inventa un tiempo real que no existe, mismo
+  criterio de honestidad que R-04 con el ppm calibrado — y se reporta en
+  `ResultadoAlineacion.escenas_sin_toma_buena`, nunca en silencio. El cursor de
+  tiempo se acumula de forma continua escena a escena (igual que
+  `tiempos.calcular_tiempos_desde_marcados`), así que el resultado sigue siendo
+  una única línea de tiempo sin huecos ni solapes aunque solo algunas escenas
+  estén alineadas.
+- **Requisito 2 (el `.srt` estimado sigue siendo una salida independiente).**
+  `NOMBRE_ARCHIVO_SRT_ALINEADO` (`guion-alineado.srt`, nuevo en `config.py`) es
+  un archivo distinto de `NOMBRE_ARCHIVO_SRT` (`guion.srt`, T-27):
+  `guardar_srt_alineado` nunca sobrescribe al estimado ni viceversa, y generar
+  uno no exige regenerar el otro.
+- **Requisito 3 y criterio de aceptación (misma validación estricta, dentro de
+  tolerancia documentada).** `validar_srt_alineado` es literalmente
+  `srt.validar_srt` reexportado, sin ninguna regla nueva. El reescalado en sí
+  es exacto en coma flotante (el factor se calcula para que la suma dé
+  exactamente la duración real); el único margen de error es el redondeo a
+  milisegundos de `srt.formatear_marca_tiempo` al serializar, cubierto por
+  `Configuracion.srt_alineado_tolerancia_segundos` (0,05 s por defecto, campo
+  nuevo con su propia validación en `__post_init__`) — un umbral documentado
+  para quien compruebe el resultado, no algo que el propio módulo use para
+  decidir nada.
+- **`verificar_salidas.py --fixture`.** Dos etapas nuevas, "Generación del .srt
+  alineado" y "Validez del .srt alineado", sobre el mismo guion de
+  verificación que ya usa el `.srt` estimado. Como ese guion nunca se grabó de
+  verdad, se generan con `tomas_por_escena={}`: el resultado cae por completo
+  a la estimación de T-12 (todas las escenas en `escenas_sin_toma_buena`) sin
+  que eso sea un fallo — mismo criterio que la salida `.pptx` LATENTE de T-29
+  cuando la skill de marca no está instalada. No se integra en el selector de
+  T-30 (`salidas.py`): ese selector genera las cuatro salidas sin depender de
+  un parte de rodaje, y el `.srt` alineado solo tiene sentido una vez existe
+  al menos una toma buena — se genera aparte, cuando el dueño entrega ese
+  parte de rodaje.
+- **Verificación.** `tests/test_srt_alineado.py` (nuevo, 7 tests) cubre: una
+  escena con toma buena se reescala exactamente a esa duración; una escena sin
+  toma buena conserva su estimación original sin tocar; sin ninguna toma buena
+  el resultado alineado es idéntico al estimado; la línea de tiempo resultante
+  no tiene huecos ni solapes (bloque a bloque, `inicio_segundos` de cada uno
+  coincide con el `fin_segundos` del anterior); los nombres de archivo del
+  `.srt` estimado y el alineado son distintos y `guardar_srt_alineado` escribe
+  solo en el suyo; el criterio de aceptación literal sobre un guion real (una
+  toma real cronometrada produce un `.srt` sin solapes cuya escena alineada
+  dura lo mismo que la toma dentro de la tolerancia documentada); y que el
+  `.srt` alineado de los tres guiones reales pasa el validador estricto incluso
+  sin ninguna toma buena registrada todavía. `tests/test_tomas.py` gana 3 tests
+  para `tomas.duracion_toma_buena` (la función promovida), y `test_calibracion.py`
+  sigue en verde sin cambios: el comportamiento de `_toma_buena_segundos` no
+  cambió, solo su ubicación.
 
 ## Exportador `.pdf` con identidad 480 (T-28)
 

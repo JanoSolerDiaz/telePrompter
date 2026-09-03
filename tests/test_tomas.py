@@ -25,6 +25,7 @@ from tomas import (
     Toma,
     TomasEscena,
     cargar_parte_de_rodaje,
+    duracion_toma_buena,
     registrar_tomas,
 )
 
@@ -256,3 +257,29 @@ def test_registrar_tomas_es_el_dato_persistido_por_guardar_y_cargar_estado(
     recargado = cargar_estado(carpeta_salida)
 
     assert recargado.tomas == estado.tomas
+
+
+# --- `duracion_toma_buena`: criterio compartido por R-04 y R-05 --------------------
+
+
+def test_duracion_toma_buena_devuelve_la_marcada_buena() -> None:
+    tomas_escena = {
+        "titulo": "Apertura",
+        "tomas": [
+            {"numero": 1, "duracion_segundos": 24.1, "nota": "repetir", "buena": False},
+            {"numero": 2, "duracion_segundos": 26.3, "nota": "", "buena": True},
+        ],
+    }
+    assert duracion_toma_buena(tomas_escena) == 26.3
+
+
+def test_duracion_toma_buena_es_none_sin_ninguna_marcada() -> None:
+    tomas_escena = {
+        "titulo": "Apertura",
+        "tomas": [{"numero": 1, "duracion_segundos": 24.1, "nota": "", "buena": False}],
+    }
+    assert duracion_toma_buena(tomas_escena) is None
+
+
+def test_duracion_toma_buena_es_none_sin_escena_registrada() -> None:
+    assert duracion_toma_buena(None) is None

@@ -17,6 +17,14 @@ vez de tener que reparsear el archivo suelto. La skill no invoca esto sola: es
 Claude quien llama a `cargar_parte_de_rodaje`/`registrar_tomas` cuando el dueno
 entrega el archivo exportado tras una sesion de rodaje.
 
+`duracion_toma_buena` (publica, no `_`) es el criterio ya establecido por R-04
+para leer "la" duracion real de una escena a partir de `estado.tomas`: la de la
+toma marcada `buena`, `None` si ninguna lo esta todavia (una escena con tomas
+sin marcar no aporta evidencia real, nunca se estima ni se promedia entre
+tomas sin validar). R-04 (`calibracion.py`) y R-05 (`srt_alineado.py`)
+comparten esta misma funcion en vez de cada uno reimplementar el mismo
+criterio por su cuenta.
+
 Contrato del archivo exportado y de `estado.json["tomas"]`: `references/contrato-tomas.md`.
 """
 
@@ -164,6 +172,21 @@ def _toma_a_dict(toma: Toma) -> dict[str, Any]:
         "nota": toma.nota,
         "buena": toma.buena,
     }
+
+
+def duracion_toma_buena(tomas_escena: dict[str, Any] | None) -> float | None:
+    """Duracion real (segundos) de la toma marcada `buena` de una escena, tal
+    como viene fusionada en `EstadoProyecto.tomas` (claves de escena en texto,
+    ver `references/contrato-tomas.md`). `None` si la escena no tiene tomas
+    todavia o ninguna esta marcada `buena` -- nunca se elige una toma sin
+    marcar ni se promedia entre varias."""
+    if tomas_escena is None:
+        return None
+    for toma in tomas_escena.get("tomas", []):
+        if toma.get("buena"):
+            duracion = toma.get("duracion_segundos")
+            return float(duracion) if duracion is not None else None
+    return None
 
 
 def registrar_tomas(estado: EstadoProyecto, parte: ParteDeRodaje) -> EstadoProyecto:

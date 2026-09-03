@@ -12,10 +12,12 @@ fuente de tiempos, T-12 requisito 4) y el registro de tomas ya fusionado.
 Requisito 1 (comparar por escena y en total): `calcular_calibracion` construye
 un `ContrasteGuion` por guion de entrada, con un `ContrasteEscena` por escena
 que trae las tres duraciones -- estimada, objetivo, real -- una al lado de
-otra. La real es la de la toma marcada `buena` (R-02): una escena con tomas
-pero ninguna marcada `buena` no aporta evidencia real todavia, a proposito --
-mezclar una toma fallida o repetida sin marcar habria contaminado la
-calibracion con tiempos que el propio dueno no valido como representativos.
+otra. La real es la de la toma marcada `buena` (R-02, `tomas.duracion_toma_buena`
+-- publica desde R-05, que la reutiliza tal cual en vez de reimplementar el
+mismo criterio): una escena con tomas pero ninguna marcada `buena` no aporta
+evidencia real todavia, a proposito -- mezclar una toma fallida o repetida sin
+marcar habria contaminado la calibracion con tiempos que el propio dueno no
+valido como representativos.
 
 Requisito 2 (ppm calibrado propuesto, nunca aplicado solo): `_propuesta_ppm`
 agrega palabras y duracion real de TODAS las escenas con toma buena de TODOS
@@ -58,6 +60,7 @@ from typing import Any
 from config import Configuracion
 from presentacion import Nivel, mostrar, titulo
 from tiempos import ResultadoTiempos
+from tomas import duracion_toma_buena
 
 TIPO_APERTURA = "apertura"
 TIPO_DESARROLLO = "desarrollo"
@@ -221,16 +224,6 @@ def _tipo_escena(indice: int, total_escenas: int) -> str:
     return TIPO_DESARROLLO
 
 
-def _toma_buena_segundos(tomas_escena: dict[str, Any] | None) -> float | None:
-    if tomas_escena is None:
-        return None
-    for toma in tomas_escena.get("tomas", []):
-        if toma.get("buena"):
-            duracion = toma.get("duracion_segundos")
-            return float(duracion) if duracion is not None else None
-    return None
-
-
 def _contraste_guion(evidencia: EvidenciaGuion) -> ContrasteGuion:
     palabras_por_escena: dict[int, int] = defaultdict(int)
     for bloque_con_tiempo in evidencia.resultado_tiempos.bloques:
@@ -253,7 +246,7 @@ def _contraste_guion(evidencia: EvidenciaGuion) -> ContrasteGuion:
                 palabras=palabras_por_escena[tiempo_escena.numero],
                 duracion_estimada_segundos=tiempo_escena.duracion_estimada_segundos,
                 duracion_objetivo_segundos=tiempo_escena.duracion_objetivo_segundos,
-                duracion_real_segundos=_toma_buena_segundos(tomas_escena),
+                duracion_real_segundos=duracion_toma_buena(tomas_escena),
             )
         )
 
