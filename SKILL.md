@@ -527,3 +527,5 @@ python scripts/verificar_salidas.py --fixture  # extremo a extremo + auto-conten
 ```
 
 Las herramientas son **solo de desarrollo** (`requirements-dev.txt`): la skill se ejecuta sin ellas.
+
+**Ver también:** `references/validador-autocontencion.md` (lista completa de patrones que rechaza la comprobación de auto-contención, R-09) — consultarla antes de añadir a `assets/reproductor/` o `assets/pdf/` cualquier cosa que hable con una red.

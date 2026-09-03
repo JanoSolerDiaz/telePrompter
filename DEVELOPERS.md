@@ -2520,6 +2520,51 @@ sobre el contenido del JSON.
   porque aparentemente no se ejecutó `mypy` sobre `tests/` completo antes de
   aquel cierre. Corregido con la anotación `tmp_path: Path` de vuelta a verde.
 
+## Endurecer el validador de auto-contención (R-09)
+
+Cierra el hallazgo #13 de `auditoriacontinua.md` (severidad baja): el validador de
+auto-contención (`verificar_salidas.buscar_recursos_externos`, `PATRONES_RECURSO_EXTERNO`
+en `scripts/verificar_salidas.py`) cubría `http(s)://`, `//cdn`, `<link>` remoto,
+`@import`, `fetch`/`XMLHttpRequest` y `src=` externo, pero no `<object>`, `<embed src>`,
+`<base href>`, `WebSocket`, `EventSource`/`sendBeacon` ni `url(...)` de CSS fuera de
+`@import` — hoy ninguna plantilla los usa, es un cierre preventivo antes de que un cambio
+futuro en `guion.js`/`estilo.css` cuele uno sin que la CI lo note. Sin migración de
+`estado.json`: solo cambia el validador de desarrollo, ninguna salida generada cambia de
+comportamiento.
+
+- **Seis patrones nuevos (requisito 1):** añadidos a `PATRONES_RECURSO_EXTERNO` con el
+  mismo criterio de bloqueo que los ya existentes (coincide con `re.IGNORECASE` → falla
+  la etapa de auto-contención). `<embed src>` y `url(...)` de CSS permiten la misma
+  excepción `data:` que ya aplicaba a `src=` en `<script>`/`<img>`/etc. (una fuente o
+  imagen incrustada en base64 sigue siendo autocontenida); `<object>`, `<base href>`,
+  `WebSocket` y `EventSource`/`sendBeacon` se bloquean sin excepción, porque ningún uso
+  legítimo de esta skill los necesita.
+- **`\b` delante de `url\(` — falso positivo real, no hipotético:** la primera versión
+  del patrón (`url\(\s*(?!["']?data:)`, sin límite de palabra) hacía fallar
+  `test_reproductor_es_autocontenido_en_guiones_reales` sobre
+  `guion-08-busqueda-investigacion.md`: el reproductor (T-26) usa
+  `URL.createObjectURL(blob)`/`URL.revokeObjectURL(url)` (API nativa de Blob del
+  navegador, sin red, para las descargas de preferencias/parte de rodaje/tropiezos) y la
+  subcadena `ObjectURL(`/`objectURL(` coincide con `url\(` en may/minúsculas indistintas
+  por el `re.IGNORECASE` que ya aplica a todos los patrones. `\burl\(` exige que el
+  carácter anterior a la `u`/`U` no sea alfanumérico, lo que excluye `...ObjectURL(`
+  (precedido por la `t` de `Object`) sin dejar de detectar un `url(` real de CSS (siempre
+  precedido por `:`, espacio, `,` o el inicio de una regla). Ver la entrada de esta fecha
+  en `DECISIONES_TECNICAS.md`.
+- **Test por patrón, más el reproductor real (requisito 2):**
+  `tests/test_esqueleto.py::test_html_con_recurso_externo_se_detecta` gana un caso por
+  cada uno de los seis patrones nuevos (más los dos ya existentes), y dos tests nuevos
+  (`test_embed_incrustado_en_data_uri_esta_permitido`,
+  `test_css_url_con_data_uri_esta_permitida`) confirman la excepción `data:`; la suite ya
+  existente que genera el reproductor real sobre los tres guiones de calibración
+  (`test_reproductor_es_autocontenido_en_guiones_reales`) sigue en verde sin ninguno de
+  los seis patrones, y `verificar_salidas.py --fixture` reconfirma "Auto-contención del
+  reproductor: OK" sobre `fixtures/guion-ejemplo.md`.
+- **Documentación (requisito 3):** `references/validador-autocontencion.md` (nuevo) trae
+  la tabla completa de patrones vigilados (antiguos y nuevos), la excepción `data:` y los
+  huecos conocidos y deliberadamente fuera de alcance (el validador es léxico, no
+  interpreta JS/CSS). Enlazado desde la sección "Verificacion" de `SKILL.md`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

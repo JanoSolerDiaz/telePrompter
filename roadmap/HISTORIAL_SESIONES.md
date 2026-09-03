@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-03 — R-09 (endurecer el validador de auto-contención) COMPLETADA. Sesión de nube
+**Tarea(s):** R-09, fase transversal F-D (`origen: auditoría #13`) — último pendiente de F-D
+**Estado resultante:** R-09 **COMPLETADA** (§1 de SEGUIMIENTO); F-D queda cerrada (R-06, R-08, R-09); ninguna T-XX ni R-XX PENDIENTE en §1
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** ninguna — ficha marcada "Migración: No", cumplida al pie de la letra; solo cambia el validador de desarrollo
+**Archivos creados/modificados:** `scripts/verificar_salidas.py` (seis patrones nuevos en `PATRONES_RECURSO_EXTERNO`), `tests/test_esqueleto.py` (10 tests nuevos: 8 casos parametrizados + 2 de la excepción `data:`), `references/validador-autocontencion.md` (nuevo), `SKILL.md` (enlace desde "Verificacion"), `DEVELOPERS.md` (sección R-09), `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (2 filas), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (541 pasan, antes 531) · build ✅ (`verificar_salidas.py --fixture`, 14 etapas OK, incluida "Auto-contención del reproductor"/"Auto-contención del HTML de impresión")
+**Health check post-deploy:** N/D — sesión de nube, sin acceso a la instalación real del dueño (T-32); no aplica a R-09, que no toca ninguna salida generada
+**Decisiones tomadas:** dos filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, R-09) — límite de palabra (`\b`) delante de `url\(` para no confundir `URL.createObjectURL`/`URL.revokeObjectURL` (Blob nativo del reproductor) con CSS `url(...)`; documentación de la lista completa de patrones en un `references/` nuevo en vez de solo en `DECISIONES_TECNICAS.md`
+**Hallazgos del auditor atendidos:** #13 (severidad baja, ahora RESUELTO — pendiente de que el auditor lo reevalúe y lo marque como tal en `auditoriacontinua.md`)
+**Hallazgos:** propio, corregido antes de cerrar la tarea — la primera versión del patrón `url(...)` (sin `\b`) hacía fallar `test_reproductor_es_autocontenido_en_guiones_reales` sobre `guion-08-busqueda-investigacion.md` por un falso positivo con `URL.createObjectURL`/`URL.revokeObjectURL`; corregido y verificado que la suite completa y `verificar_salidas.py --fixture` quedan en verde. Nota operativa: al empezar la sesión, `develop` local (clon efímero) apuntaba a un historial huérfano de 4 commits, no ancestro de `origin/develop` (una sesión anterior reescribió y forzó el historial remoto); realineado con `git reset --hard origin/develop` (árbol de trabajo limpio antes de la operación, nada local que perder)
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** no queda ninguna T-XX ni R-XX PENDIENTE en §1 — corresponde un ciclo de Product Manager que abra la siguiente oleada o registre feedback de rodaje (`FEEDBACK.md`), salvo que el dueño indique otra prioridad
+
+---
+
 ### Sesión 2026-09-03 — R-08 (deuda técnica menor: colores de estado, `PROYECTO.md`, versión de Python) COMPLETADA. Sesión de nube
 **Tarea(s):** R-08, fase transversal F-D (`origen: auditoría #10, #11, #12`)
 **Estado resultante:** R-08 **COMPLETADA** (§1 de SEGUIMIENTO)

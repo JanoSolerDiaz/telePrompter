@@ -88,6 +88,9 @@ RUTA_TARJETAS_JSON_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_TARJETAS_JS
 RUTA_CAPITULOS_YOUTUBE_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
+# Lista completa documentada en `references/validador-autocontencion.md` (R-09):
+# quien amplie el reproductor/HTML de impresion debe consultarla antes de anadir
+# un vector de red nuevo que este validador todavia no vigile.
 PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
     (r"https?://", "referencia a una URL http(s)"),
     (r"//cdn\.", "referencia a un CDN"),
@@ -99,6 +102,15 @@ PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
         r"""<(?:script|img|iframe|video|audio|source)[^>]+src=["']?(?!data:)[a-zA-Z0-9./]""",
         "recurso externo en un atributo src",
     ),
+    (r"<object\b", "uso de <object>"),
+    (
+        r"""<embed[^>]+src=["']?(?!data:)[a-zA-Z0-9./]""",
+        "recurso externo en <embed src>",
+    ),
+    (r"""<base[^>]+href=""", "uso de <base href>"),
+    (r"\bWebSocket\b", "uso de WebSocket"),
+    (r"\bEventSource\b|\bsendBeacon\b", "uso de EventSource o sendBeacon"),
+    (r"""\burl\(\s*(?!["']?data:)""", "url(...) de CSS con referencia externa"),
 )
 
 

@@ -121,6 +121,14 @@ def test_html_autocontenido_no_dispara_hallazgos() -> None:
         "<script>fetch('/datos')</script>",
         "<script>new XMLHttpRequest()</script>",
         '<img src="logo.png">',
+        '<object data="informe.pdf"></object>',
+        '<embed src="video.swf">',
+        '<base href="https://ejemplo.com/">',
+        "<script>new WebSocket('wss://ejemplo.com')</script>",
+        "<script>new EventSource('/eventos')</script>",
+        "<script>navigator.sendBeacon('/analitica')</script>",
+        "<style>body{background:url(fondo.png)}</style>",
+        "<style>body{background:url(//cdn.ejemplo.com/fondo.png)}</style>",
     ],
 )
 def test_html_con_recurso_externo_se_detecta(html: str) -> None:
@@ -129,6 +137,15 @@ def test_html_con_recurso_externo_se_detecta(html: str) -> None:
 
 def test_imagen_incrustada_en_data_uri_esta_permitida() -> None:
     assert buscar_recursos_externos('<img src="data:image/png;base64,iVBORw0KGgo=">') == []
+
+
+def test_embed_incrustado_en_data_uri_esta_permitido() -> None:
+    assert buscar_recursos_externos('<embed src="data:image/png;base64,iVBORw0KGgo=">') == []
+
+
+def test_css_url_con_data_uri_esta_permitida() -> None:
+    html = "<style>@font-face{src:url(data:font/woff2;base64,AAAA)}</style>"
+    assert buscar_recursos_externos(html) == []
 
 
 def test_verificacion_sin_reproductor_es_no_aplicable(tmp_path: Path) -> None:
