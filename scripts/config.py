@@ -336,6 +336,11 @@ MAPA_TECLAS_REPRODUCTOR: tuple[tuple[str, tuple[str, ...]], ...] = (
     # modo de grabacion. `G` de "grabacion buena/good take"; `N` de "nota".
     ("marcar_toma_buena", ("g", "G")),
     ("nota_toma", ("n", "N")),
+    # Marcar el bloque EN PANTALLA como tropiezo (R-03, requisito 1, "sin
+    # interrumpir la toma"): a diferencia de `nota_toma`, no abre ningun dialogo
+    # -- es un interruptor inmediato, mismo patron que `marcar_toma_buena`. `T`
+    # de "tropiezo".
+    ("marcar_tropiezo", ("t", "T")),
 )
 
 # --- Modo espejo (T-25) -------------------------------------------------------------
@@ -363,6 +368,16 @@ NOMBRE_ARCHIVO_GUION_ESCENAS: str = "guion-escenas.md"
 # Longitud maxima del extracto de una indicacion no recitable mostrado al pie de cada
 # escena, para que una nota larga no desborde la lectura de una sola sentada.
 LONGITUD_EXTRACTO_INDICACION_MAX: int = 120
+
+# --- Feedback de grabacion (R-03) ---------------------------------------------------
+# Nombre del archivo de feedback dentro de la carpeta de salida del GUION (no
+# confundir con `roadmap/FEEDBACK.md`, la bandeja de historias de usuario del propio
+# proyecto teleprompter, que vive en otro sitio y con otro proposito). Este archivo
+# recoge los bloques marcados como tropiezo durante la grabacion (requisito 2 de
+# R-03): `scripts/feedback.registrar_tropiezos_en_feedback` lo crea o le anade filas;
+# `scripts/documento_revision.py` lo relee para destacar esos bloques en la siguiente
+# revision (requisito 3).
+NOMBRE_ARCHIVO_FEEDBACK: str = "FEEDBACK.md"
 
 # --- Estado del proyecto de guion (T-07) -------------------------------------------
 # Nombre del archivo de estado dentro de la carpeta de salida del guion.

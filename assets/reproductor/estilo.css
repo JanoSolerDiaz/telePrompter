@@ -153,6 +153,25 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+/* Resumen de tropiezos (R-03): mismo tratamiento discreto que el resumen de
+   tomas de arriba. */
+.escena-tropiezos {
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7em;
+  white-space: nowrap;
+}
+
+/* Indicador de tropiezo del bloque en pantalla (R-03): mismo tratamiento que
+   `.estado-pausa` (color de acento, discreto) -- solo visible mientras el
+   bloque activo este marcado. */
+.indicador-tropiezo {
+  color: var(--color-acento);
+  font-weight: 600;
+  font-size: 0.75em;
+  white-space: nowrap;
+}
+
 .reproductor-cabecera {
   display: flex;
   align-items: center;

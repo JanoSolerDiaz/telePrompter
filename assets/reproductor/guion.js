@@ -122,6 +122,48 @@
     );
   }
 
+  // Bloques marcados como tropiezo por escena (R-03, requisito 1). Mismo
+  // mecanismo de persistencia que el registro de tomas de R-02 (clave por
+  // escena, `localStorage` best-effort): sobrevive a cerrar el navegador
+  // hasta que se exporte con "Exportar tropiezos". Cada entrada guarda el
+  // indice del bloque TAL COMO ESTA en `datos.escenas[i].bloques` en este
+  // reproductor y su texto exacto en ese momento -- el lado Python (R-03,
+  // `scripts/feedback.py`) casa por texto, no por indice, para sobrevivir a
+  // que el troceo cambie entre la grabacion y la siguiente revision.
+  function cargarTropiezosGuardados(escena) {
+    var guardado = leerPreferencia("tropiezos_escena_" + escena.numero);
+    if (!guardado) {
+      return [];
+    }
+    try {
+      var lista = JSON.parse(guardado);
+      if (!Array.isArray(lista)) {
+        return [];
+      }
+      return lista
+        .filter(function (tropiezo) {
+          return (
+            tropiezo &&
+            typeof tropiezo.indice_bloque === "number" &&
+            typeof tropiezo.texto === "string"
+          );
+        })
+        .map(function (tropiezo) {
+          return { indice_bloque: tropiezo.indice_bloque, texto: tropiezo.texto };
+        });
+    } catch (error) {
+      return [];
+    }
+  }
+  var tropiezosEscena = datos.escenas.map(cargarTropiezosGuardados);
+
+  function guardarTropiezosEscena(indice) {
+    guardarPreferencia(
+      "tropiezos_escena_" + datos.escenas[indice].numero,
+      JSON.stringify(tropiezosEscena[indice])
+    );
+  }
+
   // Estado por escena (T-19, requisito 1; datos reales desde R-02, requisito 4):
   // "pendiente" sin ninguna toma registrada todavia, "grabada" con tomas pero
   // ninguna marcada como la buena, "revisada" en cuanto una toma queda marcada
@@ -321,6 +363,22 @@
 
     vistaIndice.appendChild(accionesTomas);
 
+    // Tropiezos marcados en grabacion (R-03, requisito 2): mismo mecanismo de
+    // descarga que "Exportar parte de rodaje", boton propio porque alimenta
+    // `FEEDBACK.md`, no `estado.json`.
+    var accionesTropiezos = document.createElement("div");
+    accionesTropiezos.className = "preferencias-acciones";
+
+    var botonExportarTropiezos = document.createElement("button");
+    botonExportarTropiezos.type = "button";
+    botonExportarTropiezos.className = "btn-preferencia";
+    botonExportarTropiezos.id = "btn-exportar-tropiezos";
+    botonExportarTropiezos.textContent = "Exportar tropiezos";
+    botonExportarTropiezos.addEventListener("click", exportarRegistroTropiezos);
+    accionesTropiezos.appendChild(botonExportarTropiezos);
+
+    vistaIndice.appendChild(accionesTropiezos);
+
     mensajePreferencias = document.createElement("p");
     mensajePreferencias.className = "mensaje-preferencias";
     mensajePreferencias.id = "mensaje-preferencias";
@@ -373,6 +431,18 @@
           tomasDeEscena.length + (tomasDeEscena.length === 1 ? " toma" : " tomas") +
           (tomaBuena ? " · buena: " + tomaBuena.numero : "");
         fila.appendChild(resumenTomas);
+      }
+
+      // Resumen de tropiezos (R-03): mismo "de un vistazo" que el resumen de
+      // tomas de arriba, para que el dueno vea desde el indice que escenas
+      // tienen bloques marcados sin tener que abrir `FEEDBACK.md`.
+      var tropiezosDeEscena = tropiezosEscena[indice];
+      if (tropiezosDeEscena.length > 0) {
+        var resumenTropiezos = document.createElement("span");
+        resumenTropiezos.className = "escena-tropiezos";
+        resumenTropiezos.textContent =
+          tropiezosDeEscena.length + (tropiezosDeEscena.length === 1 ? " tropiezo" : " tropiezos");
+        fila.appendChild(resumenTropiezos);
       }
 
       fila.appendChild(crearBadgeEstado(indice));
@@ -474,6 +544,11 @@
     indicadorToma.className = "indicador-toma";
     indicadorToma.id = "indicador-toma";
     info.appendChild(indicadorToma);
+
+    indicadorTropiezo = document.createElement("span");
+    indicadorTropiezo.className = "indicador-tropiezo";
+    indicadorTropiezo.id = "indicador-tropiezo";
+    info.appendChild(indicadorTropiezo);
 
     cabecera.appendChild(info);
 
@@ -626,6 +701,7 @@
   var indicadorTamano = null;
   var indicadorPausa = null;
   var indicadorToma = null;
+  var indicadorTropiezo = null;
   var escenaActual = -1;
   var bloqueActual = 0;
   var pausado = false;
@@ -696,7 +772,8 @@
     ayuda: "Mostrar / ocultar esta ayuda",
     espejo: "Activar / desactivar modo espejo",
     marcar_toma_buena: "Marcar esta toma como la buena",
-    nota_toma: "Anadir una nota a esta toma"
+    nota_toma: "Anadir una nota a esta toma",
+    marcar_tropiezo: "Marcar el bloque en pantalla como tropiezo"
   };
 
   // Nombre legible de una tecla tal como la reporta `KeyboardEvent.key`
@@ -893,6 +970,49 @@
     }
   }
 
+  // Tropiezos marcados en grabacion (R-03, requisito 1). Indicador de la
+  // cabecera: visible solo si el bloque EN PANTALLA ahora mismo esta marcado.
+  function actualizarIndicadorTropiezo() {
+    if (!indicadorTropiezo || escenaActual === -1) {
+      return;
+    }
+    var marcado = tropiezosEscena[escenaActual].some(function (tropiezo) {
+      return tropiezo.indice_bloque === bloqueActual;
+    });
+    indicadorTropiezo.textContent = marcado ? "⚠ Tropiezo" : "";
+  }
+
+  // Marca/desmarca el bloque EN PANTALLA como tropiezo (requisito 1: "sin
+  // interrumpir la toma"). A diferencia de `pedirNotaToma`, ni pausa ni abre
+  // ningun dialogo -- un interruptor inmediato, mismo patron que
+  // `alternarTomaBuena`, pero por BLOQUE, no por toma: no se cierra al volver
+  // al indice, sobrevive a toda la sesion de grabacion hasta que se exporte o
+  // se vuelva a pulsar sobre el mismo bloque.
+  function alternarTropiezoBloqueActual() {
+    if (escenaActual === -1) {
+      return;
+    }
+    var bloques = bloquesEscenaActual();
+    if (bloqueActual >= bloques.length) {
+      return;
+    }
+    var lista = tropiezosEscena[escenaActual];
+    var posicion = -1;
+    for (var i = 0; i < lista.length; i++) {
+      if (lista[i].indice_bloque === bloqueActual) {
+        posicion = i;
+        break;
+      }
+    }
+    if (posicion === -1) {
+      lista.push({ indice_bloque: bloqueActual, texto: bloques[bloqueActual].texto });
+    } else {
+      lista.splice(posicion, 1);
+    }
+    guardarTropiezosEscena(escenaActual);
+    actualizarIndicadorTropiezo();
+  }
+
   // Cierra la toma en curso con el tiempo real transcurrido (mismo calculo que
   // `actualizarCronometro`, congelado en pausa) y la anade al registro de la
   // escena. No hace nada si no hay ninguna escena en reproduccion (llamar dos
@@ -1013,6 +1133,7 @@
     });
     actualizarBarraProgreso();
     guardarUltimaEscenaVista(indice);
+    actualizarIndicadorTropiezo();
   }
 
   // Ultima escena vista (T-26, requisitos 1 y 5): se guarda el NUMERO de
@@ -1081,14 +1202,21 @@
   function limpiarPreferenciasAlmacenadas() {
     try {
       var prefijo = "teleprompter:" + datos.guion + ":";
-      // El registro de tomas (R-02) no es una "preferencia" -- es el parte de
-      // rodaje real, y "Restablecer preferencias" (T-26) no debe poder
-      // borrarlo de rebote solo por compartir el mismo prefijo de clave.
+      // El registro de tomas (R-02) y los tropiezos marcados (R-03) no son
+      // "preferencias" -- son datos de grabacion reales, y "Restablecer
+      // preferencias" (T-26) no debe poder borrarlos de rebote solo por
+      // compartir el mismo prefijo de clave.
       var prefijoTomas = prefijo + "tomas_escena_";
+      var prefijoTropiezos = prefijo + "tropiezos_escena_";
       var aEliminar = [];
       for (var i = 0; i < window.localStorage.length; i++) {
         var clave = window.localStorage.key(i);
-        if (clave && clave.indexOf(prefijo) === 0 && clave.indexOf(prefijoTomas) !== 0) {
+        if (
+          clave &&
+          clave.indexOf(prefijo) === 0 &&
+          clave.indexOf(prefijoTomas) !== 0 &&
+          clave.indexOf(prefijoTropiezos) !== 0
+        ) {
           aEliminar.push(clave);
         }
       }
@@ -1221,6 +1349,53 @@
         URL.revokeObjectURL(url);
       }, 1000);
       mostrarMensajePreferencias('Parte de rodaje exportado a "' + nombreArchivo + '".', false);
+    } catch (error) {
+      // Mismo plan B que "Exportar preferencias": nunca en silencio.
+      window.prompt("Copia este texto y guardalo en un archivo .json:", contenido);
+    }
+  }
+
+  // Registro de tropiezos (R-03, requisito 2): todos los bloques marcados de
+  // todas las escenas, tal como estan en memoria en el momento de exportar --
+  // mismo criterio que `construirParteDeRodaje` (R-02), nunca releido de
+  // `localStorage` en el momento del clic (decision de R-01, aplica igual
+  // aqui). Solo se incluyen escenas con al menos un tropiezo marcado.
+  function construirRegistroTropiezos() {
+    return {
+      version: 1,
+      guion: datos.guion,
+      generado: new Date().toISOString(),
+      escenas: datos.escenas
+        .map(function (escena, indice) {
+          return { numero: escena.numero, titulo: escena.titulo, tropiezos: tropiezosEscena[indice] };
+        })
+        .filter(function (escena) {
+          return escena.tropiezos.length > 0;
+        })
+    };
+  }
+
+  function nombreArchivoRegistroTropiezos() {
+    var base = String(datos.guion).replace(/[^a-zA-Z0-9._-]+/g, "-");
+    return "teleprompter-tropiezos-" + base + ".json";
+  }
+
+  function exportarRegistroTropiezos() {
+    var contenido = JSON.stringify(construirRegistroTropiezos(), null, 2);
+    var nombreArchivo = nombreArchivoRegistroTropiezos();
+    try {
+      var blob = new Blob([contenido], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = nombreArchivo;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
+      mostrarMensajePreferencias('Tropiezos exportados a "' + nombreArchivo + '".', false);
     } catch (error) {
       // Mismo plan B que "Exportar preferencias": nunca en silencio.
       window.prompt("Copia este texto y guardalo en un archivo .json:", contenido);
@@ -1687,6 +1862,9 @@
         break;
       case "nota_toma":
         pedirNotaToma();
+        break;
+      case "marcar_tropiezo":
+        alternarTropiezoBloqueActual();
         break;
       default:
         break;

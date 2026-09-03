@@ -33,6 +33,7 @@ hardware.
 | `espejo` | `M` | Activa/desactiva el modo espejo (T-25) |
 | `marcar_toma_buena` | `G` | Marca la toma en curso como la buena (R-02); como mucho una por escena |
 | `nota_toma` | `N` | Nota rápida para la toma en curso (R-02), sin salir del modo de grabación |
+| `marcar_tropiezo` | `T` | Marca/desmarca el bloque EN PANTALLA como tropiezo (R-03), sin interrumpir la toma ni abrir ningún diálogo |
 
 Ninguna acción depende de un modificador (`Ctrl`/`Alt`/`Mayús`): un clicker no puede
 enviarlos, así que ningún atajo los exige.

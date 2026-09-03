@@ -862,3 +862,77 @@ def test_guion_js_muestra_resumen_de_tomas_junto_a_cada_escena() -> None:
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     assert "escena-tomas" in pagina
     assert '" · buena: " + tomaBuena.numero' in pagina
+
+
+# --- Marcar tropiezos durante la toma (R-03) -------------------------------------------
+
+
+def test_mapa_de_teclas_incluye_marcar_tropiezo_por_defecto() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    assert datos["mapa_teclas"]["marcar_tropiezo"] == ["t", "T"]
+
+
+def test_guion_js_alterna_el_tropiezo_del_bloque_en_pantalla_sin_dialogo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: una tecla, sin interrumpir la toma -- a diferencia de
+    # `pedirNotaToma` (R-02), nunca abre `window.prompt`.
+    coincidencia = pagina.index("function alternarTropiezoBloqueActual")
+    fragmento = pagina[coincidencia : coincidencia + 700]
+    assert "window.prompt" not in fragmento
+    assert 'case "marcar_tropiezo":' in pagina
+    assert "alternarTropiezoBloqueActual();" in pagina
+
+
+def test_guion_js_persiste_los_tropiezos_con_clave_derivada_del_guion_y_la_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function cargarTropiezosGuardados" in pagina
+    assert "function guardarTropiezosEscena" in pagina
+    assert '"tropiezos_escena_" + datos.escenas[indice].numero' in pagina
+
+
+def test_guion_js_registra_indice_de_bloque_y_texto_exacto_del_tropiezo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: "escena, bloque y texto exacto" -- el texto se lee del
+    # mismo bloque activo, no se reescribe a mano en ningun sitio.
+    assert (
+        "lista.push({ indice_bloque: bloqueActual, texto: bloques[bloqueActual].texto });"
+        in pagina
+    )
+
+
+def test_guion_js_indicador_de_tropiezo_sigue_al_bloque_activo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "indicador-tropiezo" in pagina
+    coincidencia = pagina.index("function marcarBloqueActivo")
+    fragmento = pagina[coincidencia : coincidencia + 400]
+    assert "actualizarIndicadorTropiezo();" in fragmento
+
+
+def test_guion_js_ofrece_exportar_los_tropiezos_en_el_indice() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: volcado a un archivo, del que el lado Python (R-03,
+    # `scripts/feedback.py`) alimenta `FEEDBACK.md`.
+    assert "btn-exportar-tropiezos" in pagina
+    assert "function construirRegistroTropiezos" in pagina
+    assert "function exportarRegistroTropiezos" in pagina
+    assert '"teleprompter-tropiezos-" + base' in pagina
+
+
+def test_guion_js_restablecer_preferencias_no_borra_los_tropiezos_marcados() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert 'var prefijoTropiezos = prefijo + "tropiezos_escena_";' in pagina
+    assert "clave.indexOf(prefijoTropiezos) !== 0" in pagina
+
+
+def test_guion_js_muestra_resumen_de_tropiezos_junto_a_cada_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "escena-tropiezos" in pagina

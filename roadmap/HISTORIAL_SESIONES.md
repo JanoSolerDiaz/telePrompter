@@ -32,6 +32,24 @@
 
 ---
 
+### Sesión 2026-09-03 — R-03 (marcar tropiezos durante la toma) COMPLETADA. Sesión de nube
+**Tarea(s):** R-03, tercera de oleada v2 (depende de R-02, COMPLETADA)
+**Estado resultante:** R-03 **COMPLETADA** (§1 de SEGUIMIENTO)
+**Commits a develop:** uno, ver `git log` de esta fecha
+**Migraciones ejecutadas:** ninguna — ficha marcada "Migración: No" en `ROADMAP_PRODUCTO.md`, cumplida al pie de la letra: cero cambios en `estado.json`, `VERSION_ESQUEMA_ESTADO` sigue en 2
+**Archivos creados/modificados:** `scripts/feedback.py` (nuevo), `scripts/config.py`, `scripts/documento_revision.py`, `assets/reproductor/guion.js`, `assets/reproductor/estilo.css`, `references/contrato-tropiezos.md` (nuevo), `references/mapa-teclas.md`, `SKILL.md`, `DEVELOPERS.md`, `tests/test_feedback.py` (nuevo), `tests/test_documento_revision.py`, `tests/test_reproductor.py`, `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md` (5 filas), `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (62 archivos) · lint ✅ · tests ✅ 477 pasan + 0 skipped (antes 444; +33) · build ✅ `verificar_salidas.py --fixture` con las 11 etapas en OK
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/teleprompter/` del dueño (nota de entorno del protocolo v1.3); la entrega es el push a `origin/develop`
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-03, prefijo R-03): `FEEDBACK.md` vive en la carpeta de salida del guion, no en `roadmap/`; sin migración, `FEEDBACK.md` es en sí mismo el registro persistente; el destacado casa por texto exacto del bloque, no por índice; el ciclo de vida de una fila es "una palabra que el dueño sobrescribe"; deduplicación y no-toque del archivo cuando no hay filas nuevas
+**Hallazgos del auditor atendidos:** ninguno — sin hallazgos ABIERTOS de severidad alta en `auditoriacontinua.md` al empezar, se procedió directo con la cola normal
+**Hallazgos:** ninguno propio nuevo; se resolvió una ambigüedad de diseño no trivial (¿el `FEEDBACK.md` de la ficha es `roadmap/FEEDBACK.md` o uno por guion?) antes de escribir código, documentada como decisión en vez de asumida — ver `DECISIONES_TECNICAS.md`
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** R-04 (recalibrar el ritmo con tiempos reales), cuarta de oleada v2, depende de R-02 (COMPLETADA) y T-12 (COMPLETADA). Antes de elegir tarea, revisar de nuevo `auditoriacontinua.md` por si el auditor abre un hallazgo nuevo sobre lo entregado aquí.
+
+**Nota de verificación — Playwright de esta sesión, no dependencia del proyecto.** Igual que R-01/R-02, se instaló temporalmente `playwright` (Python) y se usó el Chromium ya preinstalado en el contenedor (`/opt/pw-browsers/chromium-1194`) para reproducir una sesión de grabación real sobre un reproductor generado de `fixtures/guion-ejemplo.md`: marcar el bloque activo con `T` muestra el indicador "⚠ Tropiezo" en la cabecera, avanzar de bloque lo oculta y retroceder lo vuelve a mostrar (el indicador sigue al bloque activo, no a la toma), desmarcar con la misma tecla lo quita, el índice refleja "2 tropiezos" tras marcar dos bloques, "Exportar tropiezos" descarga un `.json` con exactamente esos dos bloques (`indice_bloque` y `texto` correctos), y "Restablecer preferencias" no borra la marca. Se fue un paso más allá: el `.json` descargado se recargó de verdad con `scripts/feedback.cargar_registro_tropiezos` y se fusionó con `registrar_tropiezos_en_feedback` sobre `fixtures/salida/` (creando `FEEDBACK.md` con la fila `nuevo` correspondiente), y al regenerar `guion-escenas.md` con `generar_documento_revision(..., tropiezos_por_escena=feedback.tropiezos_marcados_por_escena(...))` sobre el MISMO guion real, el bloque marcado apareció destacado con la línea `🎬 **Tropiezo marcado en grabación**` — cerrando el contrato de punta a punta, igual que hizo R-02 con el parte de rodaje. `playwright`/`pyee`/`greenlet` se desinstalaron al terminar; no quedan en `requirements-dev.txt`.
+
+---
+
 ### Sesión 2026-09-03 — R-02 (registro de tomas por escena) COMPLETADA. Sesión de nube
 **Tarea(s):** R-02, segunda de oleada v2 (depende de T-19, T-23, T-26, todas COMPLETADAS)
 **Estado resultante:** R-02 **COMPLETADA** (§1 de SEGUIMIENTO)

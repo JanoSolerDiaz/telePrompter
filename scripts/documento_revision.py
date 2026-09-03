@@ -169,17 +169,34 @@ def formatear_aviso(aviso: Aviso) -> str:
     return f"> ⚠ **Aviso ({aviso.familia}):** {aviso.mensaje} {aviso.recomendacion}"
 
 
+def formatear_tropiezo_marcado() -> str:
+    """Aviso de que este bloque se marco como tropiezo durante una grabacion
+    (R-03, requisito 3): misma linea de cita que un aviso de T-14 -- se senala,
+    no se reescribe solo -- para que el dueno lo reescriba a mano o pida a la
+    skill una propuesta, dentro del alcance permitido en §0.2."""
+    return "> 🎬 **Tropiezo marcado en grabación:** revisar y reescribir (ver `FEEDBACK.md`)."
+
+
 def formatear_bloque_respiracion(
     numero_escena: int,
     indice: int,
     bloque_con_tiempo: BloqueConTiempo,
     reescrituras: list[Reescritura],
     detecciones: list[ResultadoDeteccionBloque],
+    tropiezos_por_escena: dict[int, frozenset[str]] | None = None,
 ) -> str:
     """Un bloque de respiracion numerado (requisito 2), con su franja horaria,
     sus reescrituras marcadas (T-15) y sus avisos localizados (T-14, requisito
     3). El ancla HTML delimita el texto editable para una futura revalidacion
-    (T-17, requisito 7): tolera cualquier edicion dentro de ella."""
+    (T-17, requisito 7): tolera cualquier edicion dentro de ella.
+
+    `tropiezos_por_escena` (R-03, requisito 3; ver `scripts/feedback.py`) es el
+    conjunto de textos de bloque marcados como tropiezo durante la grabacion,
+    por numero de escena -- casado por texto EXACTO, nunca por indice: es el
+    mismo criterio de verdad que ya usa `_reescrituras_de_bloque` mas abajo, y
+    el que sobrevive a que el troceo cambie de indice entre la grabacion y esta
+    revision (a diferencia del indice, que puede desplazarse si se acepta una
+    particion de por medio)."""
     bloque = bloque_con_tiempo.bloque
     rango = _rango_mmss(bloque_con_tiempo.inicio_segundos, bloque_con_tiempo.fin_segundos)
     aviso_corte = " *(corte forzado, sin puntuación natural cerca)*" if bloque.corte_forzado else ""
@@ -192,6 +209,9 @@ def formatear_bloque_respiracion(
         partes.append(formatear_reescritura(reescritura))
     for aviso in _avisos_visibles(_deteccion_de_bloque(bloque, detecciones)):
         partes.append(formatear_aviso(aviso))
+    textos_marcados = (tropiezos_por_escena or {}).get(numero_escena, frozenset())
+    if bloque.texto in textos_marcados:
+        partes.append(formatear_tropiezo_marcado())
     partes.append("<!-- /bloque -->")
     return "\n\n".join(partes)
 
@@ -298,6 +318,7 @@ def formatear_escena(
     bloques_clasificados: list[BloqueClasificado],
     reescrituras: list[Reescritura],
     detecciones: list[ResultadoDeteccionBloque],
+    tropiezos_por_escena: dict[int, frozenset[str]] | None = None,
 ) -> str:
     """Una escena completa del documento de revision: cabecera (requisito 1),
     bloques de respiracion numerados (requisito 2) con sus reescrituras y
@@ -313,7 +334,9 @@ def formatear_escena(
     aviso_texto = f"\n> ⚠ {tiempo_escena.aviso}" if tiempo_escena.aviso else ""
 
     cuerpo_bloques = "\n\n".join(
-        formatear_bloque_respiracion(escena.numero, indice, bloque, reescrituras, detecciones)
+        formatear_bloque_respiracion(
+            escena.numero, indice, bloque, reescrituras, detecciones, tropiezos_por_escena
+        )
         for indice, bloque in enumerate(bloques_escena, start=1)
     )
     if not cuerpo_bloques:
@@ -341,11 +364,18 @@ def generar_documento_revision(
     reescrituras: list[Reescritura],
     configuracion: Configuracion | None = None,
     nombre_guion: str = "guion",
+    tropiezos_por_escena: dict[int, frozenset[str]] | None = None,
 ) -> str:
     """Genera el `.md` de revision completo de una sola pasada (T-16): todas
     las escenas del guion, en orden, con cobertura total de sus bloques de
     respiracion (criterio de aceptacion literal). No recalcula nada por su
-    cuenta -- compone los resultados que ya calcularon T-08 a T-15."""
+    cuenta -- compone los resultados que ya calcularon T-08 a T-15.
+
+    `tropiezos_por_escena` (R-03, requisito 3) es opcional y por defecto no
+    destaca nada -- quien llama lo obtiene con
+    `feedback.tropiezos_marcados_por_escena(carpeta_salida)` antes de esta
+    llamada, mismo patron que ya documenta `revalidacion.ResultadoRevalidacion`
+    para encadenar con esta funcion."""
     configuracion = configuracion or Configuracion()
     clasificacion = clasificar_guion(resultado, configuracion)
 
@@ -374,6 +404,7 @@ def generar_documento_revision(
                 clasificacion.bloques,
                 reescrituras,
                 detecciones,
+                tropiezos_por_escena,
             )
         )
 

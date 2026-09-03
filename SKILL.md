@@ -196,6 +196,21 @@ El botón **"Exportar parte de rodaje"** del índice vuelca el registro completo
 | Exportar parte de rodaje | botón en el índice | Descarga `teleprompter-tomas-<guion>.json`; mismo plan B de copiar a mano si la descarga falla |
 | Fusión en `estado.json` | `scripts/tomas.registrar_tomas` | Reemplaza por escena con lo más reciente exportado; nunca borra tomas de una escena que la exportación no menciona |
 
+## Marcar tropiezos durante la toma (R-03)
+
+Una tecla marca el bloque EN PANTALLA como problemático sin interrumpir la toma: `T` alterna la marca del bloque activo, sin abrir ningún diálogo ni pausar el automático — a diferencia de `nota_toma` (R-02), es un interruptor inmediato. El indicador de la cabecera ("⚠ Tropiezo") y el resumen junto a cada escena del índice muestran de un vistazo qué hay marcado, sin tener que abrir ningún archivo.
+
+El botón **"Exportar tropiezos"** del índice vuelca todos los bloques marcados (todas las escenas con al menos uno) a un `.json` independiente, mismo mecanismo de descarga que "Exportar parte de rodaje". Cuando se entrega de vuelta, `scripts/feedback.py` (`cargar_registro_tropiezos`/`registrar_tropiezos_en_feedback`) lo valida y añade una fila `nuevo` por cada tropiezo a `FEEDBACK.md` **dentro de la carpeta de salida del guion** — no confundir con `roadmap/FEEDBACK.md`, la bandeja de historias de usuario del propio proyecto teleprompter, que vive en otro sitio con otro propósito. R-03 no añade ningún contenedor a `estado.json` (migración: no): `FEEDBACK.md` ya es en sí mismo el registro persistente.
+
+Mientras una fila siga en estado `nuevo`, la siguiente vez que se regenere `guion-escenas.md` (`documento_revision.generar_documento_revision(..., tropiezos_por_escena=feedback.tropiezos_marcados_por_escena(carpeta_salida))`) ese bloque aparece destacado con una línea `🎬 **Tropiezo marcado en grabación**`, para reescribirlo a mano o pedir una propuesta a la skill. El emparejamiento es por **texto exacto del bloque**, no por índice — sobrevive a que una partición de respiración desplace los índices posteriores entre la grabación y la revisión; si el dueño reescribe el bloque, deja de coincidir y el aviso desaparece solo. Cambiar la palabra `nuevo` de una fila por cualquier otra (p. ej. `resuelto`) también apaga el aviso sin tocar el texto — útil cuando el problema era la lectura de esa toma, no el guion.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Marcar/desmarcar tropiezo | tecla `T` | Parte del mapa configurable, `mapa_teclas_reproductor` |
+| Exportar tropiezos | botón en el índice | Descarga `teleprompter-tropiezos-<guion>.json`; mismo plan B de copiar a mano si la descarga falla |
+| Volcado a `FEEDBACK.md` | `scripts/feedback.registrar_tropiezos_en_feedback` | Añade filas `nuevo`, nunca borra ni reescribe una fila existente; copia de seguridad `.bak-<marca>` si el archivo ya existía |
+| Destacado en la siguiente revisión | `scripts/feedback.tropiezos_marcados_por_escena` + `documento_revision.generar_documento_revision(..., tropiezos_por_escena=...)` | Casa por texto exacto del bloque, no por índice; solo mientras la fila siga en `nuevo` |
+
 ## Exportador `.srt` borrador (T-27)
 
 Arranca los subtítulos en la fase de montaje sin partir de cero: un subtítulo por bloque de respiración, con los tiempos ya calculados por el motor de tiempos, sobre el **texto locutado final** (con las reescrituras aceptadas ya aplicadas, nunca el original del guión). Un bloque muy corto se funde con el siguiente de la misma escena para no parpadear en pantalla — nunca funde bloques de escenas distintas —, y un bloque cuyo texto no cabe en el límite de líneas configurado se reparte en varios subtítulos consecutivos sin cortar ninguna palabra ni perder texto. Formato `.srt` estándar (índice, marca de tiempo, texto), UTF-8, validado con las mismas reglas que aplica ffmpeg.

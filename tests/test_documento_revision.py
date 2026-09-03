@@ -231,6 +231,74 @@ def test_aviso_sin_punto_respiracion_no_se_repite_junto_a_su_reescritura() -> No
     assert "Aviso (sin_punto_respiracion)" not in texto
 
 
+# --- Tropiezos marcados en grabacion (R-03, requisito 3) -----------------------------
+
+
+def test_bloque_marcado_como_tropiezo_se_destaca() -> None:
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_DOS_ESCENAS)
+    texto_bloque_0 = next(
+        b.bloque.texto for b in tiempos.bloques if b.bloque.numero_escena == 0
+    )
+    tropiezos_por_escena = {0: frozenset({texto_bloque_0})}
+
+    documento = generar_documento_revision(
+        resultado,
+        tiempos,
+        detecciones,
+        reescrituras,
+        tropiezos_por_escena=tropiezos_por_escena,
+    )
+
+    assert "🎬 **Tropiezo marcado en grabación:**" in documento
+
+
+def test_sin_tropiezos_por_escena_no_destaca_nada() -> None:
+    """Comportamiento por defecto (parametro opcional): identico al de antes
+    de R-03, sin ninguna linea nueva en el documento."""
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_DOS_ESCENAS)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+    assert "Tropiezo marcado en grabación" not in documento
+
+
+def test_tropiezo_de_otra_escena_no_destaca_bloques_de_esta() -> None:
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_DOS_ESCENAS)
+    texto_bloque_0 = next(
+        b.bloque.texto for b in tiempos.bloques if b.bloque.numero_escena == 0
+    )
+    # Mismo texto, pero asociado a una escena que no lo contiene: no debe
+    # destacar nada -- el emparejamiento es (escena, texto), no solo texto.
+    tropiezos_por_escena = {99: frozenset({texto_bloque_0})}
+
+    documento = generar_documento_revision(
+        resultado,
+        tiempos,
+        detecciones,
+        reescrituras,
+        tropiezos_por_escena=tropiezos_por_escena,
+    )
+
+    assert "Tropiezo marcado en grabación" not in documento
+
+
+def test_tropiezo_con_texto_que_ya_no_coincide_no_destaca_nada() -> None:
+    """El emparejamiento es por texto EXACTO (`references/contrato-tropiezos.md`):
+    si el bloque se reescribio entre la grabacion y esta revision, el aviso
+    desaparece solo -- no queda una marca obsoleta sobre texto que ya no
+    existe."""
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_DOS_ESCENAS)
+    tropiezos_por_escena = {0: frozenset({"Este texto ya no esta en ningun bloque."})}
+
+    documento = generar_documento_revision(
+        resultado,
+        tiempos,
+        detecciones,
+        reescrituras,
+        tropiezos_por_escena=tropiezos_por_escena,
+    )
+
+    assert "Tropiezo marcado en grabación" not in documento
+
+
 # --- Indicaciones no recitables al pie de escena (requisito 4) ----------------------
 
 

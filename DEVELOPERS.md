@@ -1607,6 +1607,118 @@ archivo exportado.
   navegador real: el archivo que exporta el reproductor de verdad es
   aceptado tal cual por el lado Python.
 
+## Marcar tropiezos durante la toma (R-03)
+
+`origen: roadmap`, tercera tarea de la oleada v2, depende de R-02. Objetivo:
+capturar en caliente dónde se traba el locutor (requisito 1), volcarlo a
+`FEEDBACK.md` (requisito 2) y destacarlo en la siguiente revisión (requisito
+3) — conocimiento que hoy se perdía entre la grabación y la revisión. Igual
+que R-02, casi entera en `guion.js`/`estilo.css`; el lado Python nuevo,
+`scripts/feedback.py`, solo entra en juego cuando el dueño entrega de vuelta
+el archivo exportado y cuando se regenera `guion-escenas.md`.
+
+- **Un interruptor inmediato, no un diálogo (requisito 1, "sin interrumpir la
+  toma").** `alternarTropiezoBloqueActual()` marca/desmarca el bloque EN
+  PANTALLA (`bloqueActual`) en `tropiezosEscena[escenaActual]`, sin pausar el
+  automático ni abrir `window.prompt()` — a diferencia de `pedirNotaToma()`
+  (R-02), que sí lo hace. Tecla `marcar_tropiezo` (`T`/`t`) nueva en
+  `Configuracion.mapa_teclas_reproductor`, mismo patrón que `marcar_toma_buena`/
+  `nota_toma`: ningún campo nuevo en `Configuracion`, así que
+  `tests/test_skill_md.py` no necesita fila nueva.
+- **Por bloque, no por toma.** A diferencia del registro de tomas (que se
+  cierra al salir de la escena), un tropiezo marcado vive mientras dure la
+  sesión del navegador — no se "cierra" en ningún punto del flujo, solo se
+  persiste. El indicador de la cabecera (`#indicador-tropiezo`, "⚠ Tropiezo")
+  se recalcula en `actualizarIndicadorTropiezo()`, llamada desde
+  `marcarBloqueActivo()` — así sigue al bloque activo: al avanzar a un bloque
+  sin marcar desaparece, al volver a uno marcado reaparece, sin estado
+  duplicado en ningún otro sitio.
+- **Persistencia y por qué "Restablecer preferencias" tampoco lo toca.** Mismo
+  mecanismo exacto que R-02: `localStorage` con clave
+  `teleprompter:<guion>:tropiezos_escena_<numero>` (por número de escena),
+  `cargarTropiezosGuardados()` tolerante ante JSON corrupto o con forma
+  inesperada. `limpiarPreferenciasAlmacenadas()` gana un segundo prefijo
+  excluido (`prefijoTropiezos`, junto al `prefijoTomas` ya existente de R-02)
+  — mismo razonamiento: son datos de grabación reales, no una preferencia de
+  interfaz.
+- **Resumen en el índice.** Un `<span class="escena-tropiezos">` junto a la
+  fila de cada escena (mismo patrón que `.escena-tomas` de R-02), "N
+  tropiezo(s)" — no forma parte de ningún requisito literal de R-03, pero es
+  el mismo espíritu "de un vistazo" que ya pedía el requisito 4 de R-02;
+  decisión de bajo riesgo documentada en `DECISIONES_TECNICAS.md`.
+- **Volcado a un archivo (requisito 2), y a un `FEEDBACK.md` que NO es
+  `roadmap/FEEDBACK.md`.** El botón **"Exportar tropiezos"**
+  (`exportarRegistroTropiezos()`/`construirRegistroTropiezos()`) reutiliza el
+  mismo patrón de descarga que R-01/R-02 (`Blob` + `URL.createObjectURL` +
+  `<a download>` + `window.prompt()` de red de seguridad), duplicado a
+  propósito por el mismo motivo que R-02 documentó (dos formatos de
+  exportación con evoluciones independientes). El lado Python,
+  `scripts/feedback.py` (`cargar_registro_tropiezos`/
+  `registrar_tropiezos_en_feedback`), valida el archivo y añade filas `nuevo`
+  a `FEEDBACK.md` **dentro de la carpeta de salida del guion** — un archivo
+  distinto de `roadmap/FEEDBACK.md` (la bandeja de historias de usuario del
+  propio proyecto teleprompter, gestionada por el ciclo de PM) pese a
+  compartir nombre; ver el aviso explícito en
+  `references/contrato-tropiezos.md` y en el docstring del módulo. Nunca
+  borra ni reescribe una fila existente, solo añade las que faltan (dedup por
+  `(escena, indice_bloque, texto)`); copia de seguridad `.bak-<marca>` si el
+  archivo ya existía, antes de tocarlo — mismo tratamiento que
+  `documento_revision.guardar_documento_revision` con `guion-escenas.md`.
+- **"Migración: No" — decisión deliberada de no tocar `estado.json`.** A
+  diferencia de R-02 (migración 002, contenedor `tomas`), R-03 no añade nada
+  al esquema de estado: `FEEDBACK.md` (carpeta de salida) ES el registro
+  persistente, igual que `guion-escenas.md` no necesita una copia en
+  `estado.json` para sobrevivir entre sesiones. Ver la entrada correspondiente
+  en `DECISIONES_TECNICAS.md` para las alternativas descartadas.
+- **Destacado en la siguiente revisión (requisito 3), casado por texto exacto,
+  no por índice.** `feedback.tropiezos_marcados_por_escena(carpeta_salida)`
+  lee `FEEDBACK.md` y devuelve, por escena, el conjunto de textos todavía en
+  estado `nuevo`. `documento_revision.generar_documento_revision` gana el
+  parámetro opcional `tropiezos_por_escena` (por defecto `None`, sin cambiar
+  el comportamiento de nadie que no lo pase), que se propaga a
+  `formatear_escena`/`formatear_bloque_respiracion`: si `bloque.texto`
+  coincide con alguno de los marcados de esa escena, se añade una línea
+  `> 🎬 **Tropiezo marcado en grabación:**` (mismo tratamiento visual que un
+  aviso de T-14, se señala, no se reescribe solo). Casar por texto, no por el
+  índice `indice_bloque` que trae el `.json` exportado, es deliberado: el
+  índice de un bloque puede desplazarse entre la grabación y la revisión si de
+  por medio se acepta una partición de respiración (T-15) — el texto no
+  cambia salvo que alguien lo reescriba a propósito, y si ya se reescribió,
+  dejar de destacarlo es lo correcto, no un fallo. Cambiar la palabra `nuevo`
+  de una fila por cualquier otra en `FEEDBACK.md` (mismo patrón "una palabra
+  que el dueño sobrescribe" de T-15/T-16) también apaga el aviso sin tocar el
+  texto del bloque.
+- **Verificación.** `tests/test_feedback.py` (nuevo, 21 tests) cubre
+  `cargar_registro_tropiezos` (registro válido, archivo inexistente, JSON
+  inválido, guion distinto, tropiezos con forma o valores inválidos —
+  incluido texto con `|` o vacío), `registrar_tropiezos_en_feedback` (crea el
+  archivo con cabecera, no duplica en una segunda pasada, añade solo las
+  filas nuevas, copia de seguridad si ya existía, no toca el archivo si no
+  hay filas nuevas) y `tropiezos_marcados_por_escena` (agrupa por escena, una
+  fila resuelta deja de destacarse, una fila añadida a mano por el dueño
+  también se respeta). `tests/test_documento_revision.py` gana cuatro tests
+  (bloque marcado se destaca, sin `tropiezos_por_escena` no cambia nada,
+  tropiezo de otra escena no destaca esta, texto que ya no coincide no
+  destaca nada). `tests/test_reproductor.py` gana ocho tests sobre el HTML
+  generado (tecla por defecto, alterna sin diálogo, persistencia con clave
+  por escena, índice y texto exacto registrados, el indicador sigue al bloque
+  activo, botón de exportación, "Restablecer preferencias" no lo borra,
+  resumen junto a cada escena). Verificado de punta a punta con Playwright
+  headless (Chromium, no es dependencia del proyecto) sobre un reproductor
+  real generado de `fixtures/guion-ejemplo.md`: marcar con `T` muestra "⚠
+  Tropiezo", avanzar de bloque lo oculta, retroceder lo muestra de nuevo,
+  desmarcar con la misma tecla lo quita, el índice muestra "2 tropiezos" tras
+  marcar dos bloques, "Exportar tropiezos" descarga un `.json` con
+  exactamente esos dos bloques (`indice_bloque` y `texto` correctos), y
+  "Restablecer preferencias" no borra la marca — sin errores de consola en
+  ningún paso. El `.json` descargado se volvió a cargar con
+  `feedback.cargar_registro_tropiezos` y a fusionar con
+  `feedback.registrar_tropiezos_en_feedback` sobre `fixtures/salida/`, y el
+  bloque marcado apareció destacado al regenerar `guion-escenas.md` con
+  `generar_documento_revision(..., tropiezos_por_escena=feedback.tropiezos_marcados_por_escena(...))`
+  sobre el mismo guion real — cerrando el contrato de punta a punta, igual que
+  hizo R-02 con el parte de rodaje.
+
 ## Exportador `.srt` borrador (T-27)
 
 `scripts/srt.py` arranca los subtítulos en la fase de montaje sin partir de cero.
