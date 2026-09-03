@@ -23,11 +23,12 @@
 | #6 | 2026-08-31 | Coherencia | baja | ABIERTO | Nomenclatura arrastrada del nombre anterior: la carpeta de salida es `<nombre-guion>-tarjetas/` con el proyecto ya llamado `teleprompter`. Además `assets/` mezcla dos cosas distintas (logotipos de marca y, en el futuro, plantillas del reproductor). | T-07, T-18, T-28 |
 | #7 | 2026-08-31 | Trazabilidad | baja | **RESUELTO** | Los tres logs estaban vacíos con el proyecto ya commiteado. **Cerrado:** la sesión de T-00 dejó 7 decisiones en `DECISIONES_TECNICAS.md`, su entrada en `HISTORIAL_SESIONES.md` y tres desviaciones en §7 (dos ya cerradas al resolverse §6.7). El cambio a v1.2 sí está registrado en los tres sitios. | §0.4 |
 | #8 | 2026-08-31 | Documentación | baja | **RESUELTO** | `DEVELOPERS.md` se referencia en §0.4 y en T-32 pero todavía no existía. **Cerrado por acumulación:** existe ya con 934 líneas y una sección por cada tarea completada (T-00 a T-21), mantenida sesión a sesión como parte del cierre de cada una — cumple de sobra lo que T-32 le exige, con antelación sobre esa tarea. | T-32 |
-| #9 | 2026-09-02 | Invariantes / revalidación | **alta** | ABIERTO | Si en una misma revalidación coinciden una edición manual del dueño y la aceptación de una partición de respiración sobre ese mismo bloque, la identidad usada para localizar la edición (`indice_original`, `None`) no se traduce a las identidades resultantes de la partición (`indice_original`, `'a'`/`'b'`): la edición manual se pierde en silencio, sin aviso ni test que lo cubra, en favor del texto derivado de la partición. Rompe el invariante (c) («la edición manual manda») en este cruce concreto; ningún guion real lo ha disparado todavía. | `revalidacion.py` · invariante (c) |
+| #9 | 2026-09-02 | Invariantes / revalidación | **alta** | **RESUELTO** | Si en una misma revalidación coincidían una edición manual del dueño y la aceptación de una partición de respiración sobre ese mismo bloque, la identidad usada para localizar la edición no se traducía a las identidades resultantes de la partición y la edición se perdía en silencio. **Cerrado por P-02** (2026-09-02): `revalidacion.py` pospone la partición ese mismo pase cuando hay conflicto y deja una incidencia explícita; test de regresión (`test_edicion_manual_y_particion_aceptada_misma_pasada_no_pierde_edicion`) reproduce exactamente este escenario. Verificado de nuevo en esta pasada (2026-09-03): sigue en verde. El propio cierre documentó un límite distinto, no cubierto por esta corrección → **#14**. | `revalidacion.py` · invariante (c) |
 | #10 | 2026-09-02 | Configuración / calidad | baja | ABIERTO | Dos colores de estado del índice del reproductor (`.escena-estado--grabada` `#4ade80`, `.escena-estado--revisada` `#60a5fa`, de T-19) están escritos a mano en `estilo.css` en vez de vivir en `Configuracion` — la misma deuda de «sin números mágicos» que T-21 cerró para el color de acento del reproductor sin tocar estos dos. | T-19, T-21 · §0.2 |
 | #11 | 2026-09-02 | Documentación / coherencia | baja | ABIERTO | `PROYECTO.md` (documento estable, «cambia poco») sigue describiendo en su glosario el ritmo como «por defecto 120, propio de locución didáctica y pausada» — la decisión anterior a T-12, ya sustituida en §0.2: el ritmo base es el deducido del propio guión, con 120 ppm solo de respaldo. | PROYECTO.md · T-12 |
 | #12 | 2026-09-02 | Infraestructura | baja | ABIERTO | `pyproject.toml` exige Python ≥3.12 (`requires-python`, `target-version = "py312"`), pero el intérprete real de las sesiones de nube es 3.11.15. Ya mitigado evitando deliberadamente sintaxis exclusiva de 3.12 (decisión de T-06), pero el desajuste de fondo sigue sin corregirse ni vigilarse fuera de una nota suelta en `DECISIONES_TECNICAS.md`. | pyproject.toml · DECISIONES_TECNICAS (T-06) |
-| #13 | 2026-09-02 | Robustez del validador | baja | ABIERTO | El validador de auto-contención (`verificar_salidas.py`) cubre `http(s)://`, `//cdn`, `<link>` remoto, `@import`, `fetch`/`XMLHttpRequest` y `src=` externo, pero no contempla `<object>`/`<embed src>`/`<base href>`/`WebSocket`/`EventSource`/`sendBeacon` ni `url(...)` de CSS fuera de `@import`. Hoy ninguna plantilla los usa; la regla dura solo se sostiene mientras nadie los introduzca sin ampliar el validador. | `verificar_salidas.py` · regla «salida autocontenida» |
+| #13 | 2026-09-02 | Robustez del validador | baja | ABIERTO | El validador de auto-contención (`verificar_salidas.py`) cubre `http(s)://`, `//cdn`, `<link>` remoto, `@import`, `fetch`/`XMLHttpRequest` y `src=` externo, pero no contempla `<object>`/`<embed src>`/`<base href>`/`WebSocket`/`EventSource`/`sendBeacon` ni `url(...)` de CSS fuera de `@import`. Hoy ninguna plantilla los usa; la regla dura solo se sostiene mientras nadie los introduzca sin ampliar el validador. Ya recogido en `R-09` (PENDIENTE), sin cambios en esta pasada. | `verificar_salidas.py` · regla «salida autocontenida» · R-09 |
+| #14 | 2026-09-03 | Invariantes / revalidación | **alta** | ABIERTO | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
 
 ---
 
@@ -36,6 +37,107 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-03 — backlog T-XX cerrado (T-22 a T-33), primera pasada tras el ciclo de PM
+
+**Alcance.** Desde la pasada anterior (2026-09-02, T-00 a T-21) el equipo ha completado **todo el
+backlog de tareas conocido**: T-22 a T-26 (reproductor: autoscroll, ayudas de grabación, atajos y
+clicker, espejo, persistencia), T-27 a T-30 (salidas secundarias: `.srt`, `.pdf`, `.pptx`, selector
+unificado), T-31 (`SKILL.md` y configuración completa) y T-33 (encaje con la cadena de montaje).
+T-32 (instalación real) queda BLOQUEADA solo en su último tramo, que exige la máquina del dueño —
+correctamente marcada así, no simulada. Además hubo un ciclo de **Product Manager** (sin código)
+que revisó `auditoriacontinua.md` y creó `R-08`/`R-09` para los hallazgos #10-#13. Esta pasada
+audita ese tramo completo: no solo relee lo que el equipo dice haber hecho, también lo verifica de
+forma independiente y reproduce en código el límite que P-02 había dejado documentado como
+pendiente.
+
+**Verificación objetiva de las cuatro redes, repetida de forma independiente.** `python -m mypy
+scripts/ tests/` → limpio sobre 57 archivos. `python -m ruff check scripts/ tests/` → limpio.
+`python -m pytest` → **402 passed**, coincide exacto con lo que narra SEGUIMIENTO (402, antes 399).
+`python scripts/verificar_salidas.py --fixture` → las diez etapas en `OK`, incluidas las seis que
+ya no son NO APLICABLE desde T-27 a T-30 (`.srt`, HTML de impresión, `tarjetas.json`/brief, cada una
+con su auto-contención o validez donde aplica); `.pptx` y `.pdf` reales quedan LATENTES por falta de
+la skill de marca y de Chrome/Edge en esta máquina, exactamente como predicen sus propios requisitos
+— no es un fallo, es la degradación documentada. No queda ninguna etapa NO APLICABLE: el hallazgo
+#4 de la primera auditoría (31-08) está completamente cerrado, no solo parcialmente.
+
+**Hallazgo nuevo — #14, severidad alta: el límite de P-02 es peor de lo que su propia nota dice.**
+Al cerrar P-02 (2026-09-02), el equipo dejó escrito en `DECISIONES_TECNICAS.md` un "límite conocido,
+no cerrado por esta P-XX", **verificado a mano**: en una revalidación posterior sin nuevo toque del
+dueño, la mitad `'a'` de una partición podía quedarse con el texto editado completo y la mitad `'b'`
+con "un fragmento del texto de ORIGEN sin editar". Esta pasada no se conformó con leer esa nota:
+construí una reproducción de código independiente (guion sintético de dos bloques en la escena 1,
+edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto) y encadené dos
+revalidaciones reales sobre `revalidacion.revalidar_guion`. El resultado es más grave que la nota:
+la escena pasa de 2 a **3 bloques**, con el texto del bloque 1 **duplicado** (aparece intacto bajo
+su propia identidad y una segunda vez, mal atribuido, como la mitad `'b'` de la partición del bloque
+0) y la partición que el dueño aceptó **nunca llega a materializarse en dos mitades reales** — ni
+en esta pasada ni en ninguna posterior, porque el mismo emparejamiento erróneo se repite indefinidamente
+mientras el dueño no vuelva a tocar ese ancla a mano. Es exactamente el tipo de corrupción silenciosa
+que el invariante (c) existe para impedir: el dueño abriría `guion-escenas.md` y vería un bloque de
+más con texto repetido, sin ninguna incidencia que se lo señale — a diferencia de #9/P-02, aquí no
+hay ni siquiera un aviso. Severidad alta por ser el mismo invariante central, no por la frecuencia
+(el disparador requiere el mismo cruce estrecho que #9, más una segunda revalidación sin editar el
+ancla en medio). Recomiendo tratarlo como P-XX urgente, igual que #9: la solución probablemente
+pase por materializar la partición en la MISMA pasada donde deja de haber conflicto en vez de
+esperar a que el emparejamiento por ancla la reconstruya sola, que es donde se cuela el error.
+
+**El resto de hallazgos ABIERTO, reevaluados contra el código de esta pasada, sin cambios.** #5
+(persistencia en `file://`, T-26) y #6 (nomenclatura de `assets/`/carpeta de salida) siguen
+esperando a R-01 y R-06 (oleada v2, ninguna de las dos tocada todavía). #10 (colores de estado sin
+migrar a `Configuracion`), #11 (`PROYECTO.md` con el ritmo antiguo) y #12 (desajuste de versión de
+Python) verificados de nuevo uno a uno contra el código real: los tres literalmente intactos —
+`estilo.css:139/143` sigue con los dos colores en literal, `PROYECTO.md:45` sigue diciendo «por
+defecto 120», `pyproject.toml` sigue en `>=3.12`/`py312` con el intérprete real en 3.11.15 — ahora
+correctamente agrupados en `R-08` (PENDIENTE) por el PM, coherente con el propio hallazgo. #13
+(huecos del validador de auto-contención) también intacto, sin ningún patrón nuevo cubierto en
+`verificar_salidas.py`, y correctamente en `R-09` (PENDIENTE). Ninguno de los cinco ha crecido ni se
+ha visto agravado por el trabajo de T-22 a T-33: el equipo no ha tocado ninguna de esas áreas
+todavía, como corresponde mientras R-08/R-09 sigan sin empezar.
+
+**Coherencia entre lo decidido y lo ejecutado (T-22 a T-33 contra `DECISIONES_TECNICAS.md`).**
+Contrasté una muestra amplia de decisiones —el mecanismo de scroll manual de T-22 en vez de
+`scrollIntoView` nativo, el reparto de responsabilidades T-28/T-29 (el PDF y el `.pptx` reutilizan
+`dimensiones_png`/`es_nota_interna`/`indicaciones_no_recitables` en vez de duplicar el criterio de
+qué es nota interna), el uso de tuplas en vez de `dict` para `mapa_teclas_reproductor` (T-24) para
+no romper la inmutabilidad del `Configuracion` congelado, y la detección de `--no-sandbox` para
+Chrome solo cuando `os.geteuid() == 0` (T-28)— contra el código real: las cinco coinciden
+exactamente. Ninguna reescribe la historia ni maquilla un resultado distinto al narrado.
+
+**Invariantes de datos, verificados de nuevo contra el código, no solo releídos.**
+- **(a) cobertura total:** sostenida, y ahora también verificada de extremo a extremo entre
+  salidas: `tests/test_integracion_montaje.py` (T-33) confirma que `.srt` y `tarjetas.json`
+  numeran las escenas de forma idéntica entre sí y contra el guion de origen, cerrando el hueco de
+  que cada salida solo se validaba contra sí misma.
+- **(b) original recuperable:** sostenida, sin cambios en esta pasada.
+- **(d) sin borrado destructivo:** sostenida, y extendida correctamente a la nueva superficie de
+  escritura fuera de la carpeta de salida del guion: `instalar_skill.sincronizar_skill` renombra
+  cualquier instalación previa a `<nombre>.bak-<marca>` antes de escribir la nueva, mismo patrón
+  que `documento_revision.guardar_documento_revision` usa para `guion-escenas.md`. Revisé también
+  que ninguna de las nuevas funciones de escritura (`pdf.py`, `pptx.py`, `srt.py`, `convencion.py`)
+  decide su propio `destino`: todas lo reciben del llamador, que sigue derivándolo de
+  `entrada.carpeta_salida_para` — el único punto que verifica contención de ruta. Aislamiento
+  intacto.
+- **(c) la edición manual manda:** parcialmente sostenida — ver #14 arriba, el hallazgo central de
+  esta pasada.
+
+**Salida autocontenida y cero red.** Sostenidas en las diez etapas de `verificar_salidas.py
+--fixture`: el HTML de impresión del PDF incrusta el logotipo como `data:image/png;base64,...`
+(nunca una ruta relativa, que el propio validador rechazaría) y ninguna de las nuevas plantillas
+introduce `http(s)://`/CDN/`fetch`. Cero `print()` fuera de `presentacion.py`, cero `console.log`
+en `guion.js`, cero `TODO`/`FIXME` sueltos en todo `scripts/` (barrido completo, no solo del código
+tocado esta sesión).
+
+**Conclusión general.** El proyecto cerró la totalidad de su backlog de tareas conocido en esta
+franja sin introducir ninguna deuda nueva de las categorías que esta auditoría vigila —números
+mágicos, escritura fuera de la carpeta de salida, autocontención, documentación desincronizada—: los
+cinco hallazgos menores que quedaban abiertos siguen exactamente donde estaban, ahora con oleada
+asignada (R-08, R-09) en vez de sueltos. La única grieta real es #14, y es una grieta seria: nace de
+la propia honestidad del equipo (P-02 documentó el límite en vez de ocultarlo) pero esta pasada
+confirma que el límite es más profundo que "un fragmento de texto sin editar" — es duplicación de
+contenido en el documento que el dueño revisa, sin aviso. Recomiendo que sea la primera P-XX urgente
+de la próxima sesión de código, antes de empezar R-01, exactamente el mismo tratamiento que recibió
+#9.
 
 ### Auditoría 2026-09-02 — primera revisión de código real (T-00 a T-21)
 
