@@ -48,6 +48,12 @@ def test_sincronizar_skill_hace_copia_de_seguridad_en_vez_de_sobrescribir(
 
     assert resultado.copia_seguridad is not None
     assert resultado.copia_seguridad.name.startswith("teleprompter.bak-")
+    # P-05: la copia NUNCA queda dentro de la carpeta de skills, o Claude Code
+    # la registra como una skill duplicada que compite con la real.
+    assert resultado.copia_seguridad.parent != destino.parent
+    assert not any(
+        hermana.name.startswith("teleprompter.bak-") for hermana in destino.parent.iterdir()
+    )
     # La version anterior completa (con el archivo marcador) sigue intacta.
     assert (resultado.copia_seguridad / "marca-de-version-anterior.txt").read_text(
         encoding="utf-8"
@@ -55,6 +61,31 @@ def test_sincronizar_skill_hace_copia_de_seguridad_en_vez_de_sobrescribir(
     # La nueva instalacion es un paquete fresco, sin el marcador de la anterior.
     assert not (destino / "marca-de-version-anterior.txt").exists()
     assert (destino / "SKILL.md").is_file()
+
+
+def test_copia_de_seguridad_no_queda_dentro_de_la_carpeta_de_skills(tmp_path: Path) -> None:
+    """P-05, el caso real: con el destino dentro de una carpeta `skills/`
+    (`~/.claude/skills/teleprompter`), la copia de seguridad debe salir de ahi.
+
+    Claude Code registra como skill toda subcarpeta de `skills/` que tenga un
+    `SKILL.md`: dejar la copia dentro daba de alta una skill duplicada, con el
+    mismo nombre y la misma descripcion que la real. Ocurrio de verdad en la
+    maquina del dueno al reinstalar."""
+    skills = tmp_path / ".claude" / "skills"
+    destino = skills / "teleprompter"
+    sincronizar_skill(destino)
+
+    resultado = sincronizar_skill(destino)
+
+    assert resultado.copia_seguridad is not None
+    assert skills not in resultado.copia_seguridad.parents
+    # En `skills/` solo queda la skill de verdad, ni un SKILL.md de mas.
+    assert [entrada.name for entrada in skills.iterdir()] == ["teleprompter"]
+    assert (
+        resultado.copia_seguridad.parent
+        == tmp_path / ".claude" / "teleprompter-copias-de-seguridad"
+    )
+    assert (resultado.copia_seguridad / "SKILL.md").is_file()
 
 
 def test_sincronizar_skill_falla_si_falta_algo_del_paquete_en_el_origen(

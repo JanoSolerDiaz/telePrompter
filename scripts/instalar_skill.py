@@ -66,12 +66,34 @@ def _copiar_entrada(origen: Path, destino: Path) -> None:
         shutil.copyfile(origen, destino)
 
 
+def carpeta_copias_de_seguridad(destino: Path) -> Path:
+    """Donde van las copias de seguridad de instalaciones anteriores: FUERA de
+    la carpeta de skills, en `<padre-de-skills>/teleprompter-copias-de-seguridad`.
+
+    P-05: antes se dejaban como hermanas del destino, es decir DENTRO de
+    `~/.claude/skills/`. Claude Code registra como skill toda subcarpeta de ahi
+    que tenga un `SKILL.md`, asi que cada reinstalacion daba de alta una skill
+    duplicada -- mismo nombre y misma descripcion que la real, compitiendo con
+    ella en la seleccion. Detectado en la maquina del dueno tras la segunda
+    instalacion: `teleprompter` y `teleprompter.bak-<marca>` aparecian las dos
+    en la lista de skills disponibles.
+
+    Si el destino no esta dentro de una carpeta llamada `skills` (rutas de
+    prueba, `--destino` a mano), se usa su carpeta hermana igualmente: el
+    objetivo es no plantar nunca un `SKILL.md` de mas junto al bueno."""
+    padre = destino.parent
+    raiz = padre.parent if padre.name == "skills" else padre
+    return raiz / "teleprompter-copias-de-seguridad"
+
+
 def sincronizar_skill(destino: Path, raiz_origen: Path = RAIZ) -> ResultadoInstalacion:
     """Copia el paquete actual de `raiz_origen` a `destino`.
 
-    Si `destino` ya existe (una instalacion previa), se renombra primero a
-    `<nombre>.bak-<marca_de_tiempo>` en la misma carpeta padre -- nunca se
-    sobrescribe in situ ni se borra -- y la copia nueva se escribe desde cero.
+    Si `destino` ya existe (una instalacion previa), se aparta primero a
+    `<carpeta-de-copias>/<nombre>.bak-<marca_de_tiempo>` -- nunca se sobrescribe
+    in situ ni se borra -- y la copia nueva se escribe desde cero. La carpeta de
+    copias vive fuera de la de skills a proposito; ver
+    `carpeta_copias_de_seguridad`.
     """
     faltantes = [e for e in ENTRADAS_PAQUETE if not (raiz_origen / e).exists()]
     if faltantes:
@@ -83,7 +105,9 @@ def sincronizar_skill(destino: Path, raiz_origen: Path = RAIZ) -> ResultadoInsta
     copia_seguridad: Path | None = None
     if destino.exists():
         marca = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-        copia_seguridad = destino.with_name(f"{destino.name}.bak-{marca}")
+        carpeta_copias = carpeta_copias_de_seguridad(destino)
+        carpeta_copias.mkdir(parents=True, exist_ok=True)
+        copia_seguridad = carpeta_copias / f"{destino.name}.bak-{marca}"
         destino.rename(copia_seguridad)
 
     destino.mkdir(parents=True)
