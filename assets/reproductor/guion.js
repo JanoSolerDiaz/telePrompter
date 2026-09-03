@@ -52,6 +52,32 @@
     }
   }
 
+  // Aviso honesto de persistencia (R-01, requisito 3; origen: auditoria #5).
+  // T-25/T-26 ya envuelven cada lectura/escritura en `try/catch`, pero hasta
+  // ahora un fallo se ignoraba en silencio -- el dueno perdia sus ajustes
+  // entre sesiones sin ningun aviso. Esta comprobacion se hace UNA vez, al
+  // cargar la pagina, escribiendo y releyendo una clave de prueba: detecta
+  // con certeza el caso "`localStorage` no funciona aqui" (navegacion
+  // privada, cuota agotada, `file://` restringido), que es distinto -- y si
+  // se detecta, mas grave -- que el limite ya conocido de si sobrevive a
+  // CERRAR Y REABRIR el archivo (eso no se puede comprobar dentro de una
+  // sola carga de pagina; ver la verificacion real documentada en
+  // `DECISIONES_TECNICAS.md`). En ambos casos el plan B (exportar/importar
+  // preferencias como archivo, mas abajo) cubre la promesa de "retomar entre
+  // sesiones" sin depender de que `localStorage` sobreviva a nada.
+  function comprobarAlmacenamientoDisponible() {
+    try {
+      var clave = claveAlmacenamiento("prueba_disponibilidad");
+      window.localStorage.setItem(clave, "1");
+      var vale = window.localStorage.getItem(clave) === "1";
+      window.localStorage.removeItem(clave);
+      return vale;
+    } catch (error) {
+      return false;
+    }
+  }
+  var almacenamientoDisponible = comprobarAlmacenamientoDisponible();
+
   // Estado por escena (T-19, requisito 1). Solo en memoria: no persiste entre
   // sesiones (eso es T-26/R-02, con su propio mecanismo). Aqui una escena pasa
   // de "pendiente" a "grabada" en cuanto se ha abierto y cerrado el reproductor
@@ -92,6 +118,10 @@
   contenedor.appendChild(vistaIndice);
   contenedor.appendChild(vistaReproductor);
 
+  // Mensaje de resultado de exportar/importar preferencias (R-01): un unico
+  // parrafo en el indice, reconstruido en cada `renderizarIndice`.
+  var mensajePreferencias = null;
+
   function crearBadgeEstado(indice) {
     var badge = document.createElement("span");
     badge.className = "escena-estado escena-estado--" + estadosEscena[indice];
@@ -127,6 +157,13 @@
   }
 
   function renderizarIndice() {
+    // Reconstruible (R-01): `manejarArchivoImportado` vuelve a llamar a esta
+    // funcion tras aplicar una importacion, para que el boton "Continuar"
+    // refleje la ultima escena importada sin recargar la pagina -- mismo
+    // motivo por el que `renderizarReproductor` ya se limpia con
+    // `vistaReproductor.textContent = ""` en cada cambio de escena.
+    vistaIndice.textContent = "";
+
     var titulo = document.createElement("h1");
     titulo.textContent = datos.guion;
     vistaIndice.appendChild(titulo);
@@ -163,6 +200,60 @@
       });
       vistaIndice.appendChild(botonContinuar);
     }
+
+    // Aviso honesto (R-01, requisito 3): visible en el punto de entrada,
+    // antes de que el dueno empiece a ajustar nada que pudiera perderse.
+    if (!almacenamientoDisponible) {
+      var aviso = document.createElement("p");
+      aviso.className = "aviso-almacenamiento";
+      aviso.textContent =
+        "Este navegador no esta guardando las preferencias entre sesiones. " +
+        "Usa «Exportar preferencias» antes de cerrar y «Importar " +
+        "preferencias» al volver a abrir este archivo.";
+      vistaIndice.appendChild(aviso);
+    }
+
+    // Plan B sin red ni dependencias (R-01, requisito 2): exportar/importar
+    // las preferencias como un archivo `.json`, para que retomar sea un
+    // gesto tanto si `localStorage` sobrevive a cerrar el navegador como si
+    // no. Vive en el indice, el mismo punto de entrada/salida de una sesion
+    // de grabacion que ya usa el boton "Continuar".
+    var accionesPreferencias = document.createElement("div");
+    accionesPreferencias.className = "preferencias-acciones";
+
+    var botonExportar = document.createElement("button");
+    botonExportar.type = "button";
+    botonExportar.className = "btn-preferencia";
+    botonExportar.id = "btn-exportar-preferencias";
+    botonExportar.textContent = "Exportar preferencias";
+    botonExportar.addEventListener("click", exportarPreferencias);
+    accionesPreferencias.appendChild(botonExportar);
+
+    var entradaImportarPreferencias = document.createElement("input");
+    entradaImportarPreferencias.type = "file";
+    entradaImportarPreferencias.accept = "application/json,.json";
+    entradaImportarPreferencias.hidden = true;
+    entradaImportarPreferencias.id = "entrada-importar-preferencias";
+    entradaImportarPreferencias.addEventListener("change", manejarArchivoImportado);
+    accionesPreferencias.appendChild(entradaImportarPreferencias);
+
+    var botonImportar = document.createElement("button");
+    botonImportar.type = "button";
+    botonImportar.className = "btn-preferencia";
+    botonImportar.id = "btn-importar-preferencias";
+    botonImportar.textContent = "Importar preferencias";
+    botonImportar.addEventListener("click", function () {
+      entradaImportarPreferencias.click();
+    });
+    accionesPreferencias.appendChild(botonImportar);
+
+    vistaIndice.appendChild(accionesPreferencias);
+
+    mensajePreferencias = document.createElement("p");
+    mensajePreferencias.className = "mensaje-preferencias";
+    mensajePreferencias.id = "mensaje-preferencias";
+    mensajePreferencias.hidden = true;
+    vistaIndice.appendChild(mensajePreferencias);
 
     var lista = document.createElement("ul");
     lista.className = "lista-escenas";
@@ -456,6 +547,26 @@
   var botonEspejo = null;
   var espejoActivado = leerPreferencia("espejo") === "1";
 
+  // --- Copia de seguridad de preferencias (R-01) -----------------------------
+  // Copia en memoria de la ultima escena vista, para que "Exportar
+  // preferencias" pueda leerla aunque `localStorage` no este disponible esta
+  // sesion (requisito 2/3): se inicializa con lo que hubiera guardado ya
+  // (mismo criterio que `calcularReanudacion`) y `guardarUltimaEscenaVista`
+  // la mantiene al dia en cada cambio de bloque real.
+  var ultimaEscenaVistaEnMemoria = (function () {
+    var numeroGuardado = leerPreferencia("ultima_escena_numero");
+    var inicioGuardado = leerPreferencia("ultima_escena_inicio_segundos");
+    if (numeroGuardado === null || inicioGuardado === null) {
+      return null;
+    }
+    var numero = parseInt(numeroGuardado, 10);
+    var inicio = parseFloat(inicioGuardado);
+    if (isNaN(numero) || isNaN(inicio)) {
+      return null;
+    }
+    return { numero: numero, inicio_segundos: inicio };
+  })();
+
   // Texto de cada accion en la ayuda (requisito 3): fijo en espanol, no viaja
   // en el JSON -- a diferencia de las TECLAS (que si son configurables por el
   // dueno via `datos.mapa_teclas`), estas etiquetas son literales de interfaz
@@ -729,6 +840,7 @@
     }
     guardarPreferencia("ultima_escena_numero", String(escena.numero));
     guardarPreferencia("ultima_escena_inicio_segundos", String(bloque.inicio_segundos));
+    ultimaEscenaVistaEnMemoria = { numero: escena.numero, inicio_segundos: bloque.inicio_segundos };
   }
 
   // Localiza donde retomar (requisitos 1 y 5): `null` si no hay nada guardado
@@ -807,6 +919,163 @@
     if (escenaActual !== -1) {
       centrarBloqueActivo(true);
     }
+  }
+
+  // Copia de seguridad de preferencias (R-01, requisito 2): exportar e
+  // importar como archivo, plan B sin red ni dependencias cuando
+  // `localStorage` no persiste (o directamente no funciona) en el navegador
+  // de grabacion. Se lee siempre de las variables en memoria -- las mismas
+  // que ya reflejan el ajuste vigente aunque el ultimo intento de guardarlo
+  // en `localStorage` fallara -- nunca solo de `leerPreferencia`, que
+  // devolveria vacio si el almacenamiento nunca llego a funcionar esta
+  // sesion.
+  function construirExportacionPreferencias() {
+    var velocidadPorEscena = {};
+    datos.escenas.forEach(function (escena, indice) {
+      velocidadPorEscena[String(escena.numero)] = velocidadesEscena[indice];
+    });
+    return {
+      version: 1,
+      guion: datos.guion,
+      generado: new Date().toISOString(),
+      tamano_texto_px: tamanoTextoActualPx,
+      espejo: espejoActivado,
+      indicadores_ocultos: vistaReproductor.classList.contains("indicadores-ocultos"),
+      velocidad_por_escena: velocidadPorEscena,
+      ultima_escena: ultimaEscenaVistaEnMemoria
+    };
+  }
+
+  function nombreArchivoPreferencias() {
+    var base = String(datos.guion).replace(/[^a-zA-Z0-9._-]+/g, "-");
+    return "teleprompter-preferencias-" + base + ".json";
+  }
+
+  function mostrarMensajePreferencias(texto, esError) {
+    if (!mensajePreferencias) {
+      return;
+    }
+    mensajePreferencias.textContent = texto;
+    mensajePreferencias.classList.toggle("mensaje-preferencias--error", !!esError);
+    mensajePreferencias.hidden = false;
+  }
+
+  function exportarPreferencias() {
+    var contenido = JSON.stringify(construirExportacionPreferencias(), null, 2);
+    var nombreArchivo = nombreArchivoPreferencias();
+    try {
+      var blob = new Blob([contenido], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = nombreArchivo;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
+      mostrarMensajePreferencias('Preferencias exportadas a "' + nombreArchivo + '".', false);
+    } catch (error) {
+      // Nunca en silencio (requisito 3): si el navegador no permite disparar
+      // la descarga, se ofrece el mismo contenido para copiar a mano -- el
+      // plan B no puede depender el mismo de una unica via.
+      window.prompt("Copia este texto y guardalo en un archivo .json:", contenido);
+    }
+  }
+
+  // Aplica un objeto ya parseado (de un archivo importado) a las
+  // preferencias en memoria y a `localStorage` (best-effort, como cualquier
+  // otro `guardarPreferencia`). Cada campo se valida y se acota por
+  // separado: un archivo parcial o de una version futura aplica lo que
+  // reconoce sin descartar el resto ni romper la pagina.
+  function aplicarPreferenciasImportadas(objeto) {
+    if (!objeto || typeof objeto !== "object") {
+      throw new Error("el archivo no contiene un objeto JSON valido");
+    }
+    if (objeto.guion !== undefined && objeto.guion !== datos.guion) {
+      throw new Error(
+        'preferencias de otro guion ("' + objeto.guion + '"), no de "' + datos.guion + '"'
+      );
+    }
+    if (typeof objeto.tamano_texto_px === "number" && isFinite(objeto.tamano_texto_px)) {
+      tamanoTextoActualPx = Math.max(
+        datos.tamano_texto_minimo_px,
+        Math.min(objeto.tamano_texto_px, datos.tamano_texto_maximo_px)
+      );
+      guardarPreferencia("tamano_texto", String(tamanoTextoActualPx));
+      document.documentElement.style.setProperty("--tamano-base", tamanoTextoActualPx + "px");
+      actualizarIndicadorTamano();
+    }
+    if (typeof objeto.espejo === "boolean") {
+      espejoActivado = objeto.espejo;
+      guardarPreferencia("espejo", espejoActivado ? "1" : "0");
+      aplicarClaseEspejo();
+      actualizarBotonEspejo();
+    }
+    if (typeof objeto.indicadores_ocultos === "boolean") {
+      vistaReproductor.classList.toggle("indicadores-ocultos", objeto.indicadores_ocultos);
+      guardarPreferencia("indicadores_ocultos", objeto.indicadores_ocultos ? "1" : "0");
+    }
+    if (objeto.velocidad_por_escena && typeof objeto.velocidad_por_escena === "object") {
+      datos.escenas.forEach(function (escena, indice) {
+        var valor = objeto.velocidad_por_escena[String(escena.numero)];
+        if (typeof valor === "number" && isFinite(valor)) {
+          var acotada = Math.max(datos.velocidad_minima, Math.min(valor, datos.velocidad_maxima));
+          velocidadesEscena[indice] = acotada;
+          guardarPreferencia("velocidad_escena_" + escena.numero, String(acotada));
+        }
+      });
+      actualizarIndicadorVelocidad();
+    }
+    if (
+      objeto.ultima_escena &&
+      typeof objeto.ultima_escena.numero === "number" &&
+      typeof objeto.ultima_escena.inicio_segundos === "number"
+    ) {
+      ultimaEscenaVistaEnMemoria = {
+        numero: objeto.ultima_escena.numero,
+        inicio_segundos: objeto.ultima_escena.inicio_segundos
+      };
+      guardarPreferencia("ultima_escena_numero", String(objeto.ultima_escena.numero));
+      guardarPreferencia(
+        "ultima_escena_inicio_segundos",
+        String(objeto.ultima_escena.inicio_segundos)
+      );
+    }
+    if (escenaActual !== -1) {
+      centrarBloqueActivo(true);
+    }
+  }
+
+  function manejarArchivoImportado(evento) {
+    var entrada = evento.target;
+    var archivo = entrada.files && entrada.files[0];
+    entrada.value = "";
+    if (!archivo) {
+      return;
+    }
+    var lector = new FileReader();
+    lector.onload = function () {
+      try {
+        var objeto = JSON.parse(String(lector.result));
+        aplicarPreferenciasImportadas(objeto);
+        // Reconstruye el indice (requisito 2, "retomar sea un gesto"): el
+        // boton "Continuar" y el aviso de almacenamiento deben reflejar de
+        // inmediato lo que se acaba de importar, sin recargar la pagina.
+        renderizarIndice();
+        mostrarMensajePreferencias('Preferencias importadas de "' + archivo.name + '".', false);
+      } catch (error) {
+        mostrarMensajePreferencias(
+          'No se pudo importar "' + archivo.name + '": ' + error.message,
+          true
+        );
+      }
+    };
+    lector.onerror = function () {
+      mostrarMensajePreferencias('No se pudo leer "' + archivo.name + '".', true);
+    };
+    lector.readAsText(archivo);
   }
 
   // --- Autoscroll con bloque centrado (T-22) -------------------------------

@@ -310,6 +310,52 @@ button:focus-visible {
   background: rgba(255, 255, 255, 0.07);
 }
 
+/* Aviso honesto de persistencia (R-01, requisito 3): reemplaza el silencio
+   anterior de `try/catch` cuando `localStorage` no funciona en este
+   navegador. Mismo tono de acento que ya usa `.bloque--activo`, sin
+   introducir un color de alerta nuevo. */
+.aviso-almacenamiento {
+  margin: 0 0 1em;
+  padding: 0.75em 1em;
+  border-left: 3px solid var(--color-acento);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-texto-secundario);
+  font-size: 0.6em;
+}
+
+/* Copia de seguridad de preferencias (R-01, requisito 2): exportar/importar
+   como archivo, en el indice junto al boton "Continuar". */
+.preferencias-acciones {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.btn-preferencia {
+  padding: 0.4em 0.9em;
+  border: 1px solid var(--color-texto-secundario);
+  border-radius: 0.4em;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.6em;
+  cursor: pointer;
+}
+
+.btn-preferencia:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.mensaje-preferencias {
+  margin: 0.5em 0 1.5em;
+  font-size: 0.6em;
+  color: var(--color-texto-secundario);
+}
+
+.mensaje-preferencias--error {
+  color: var(--color-acento);
+}
+
 /* Indicadores ocultables con una tecla (requisito 4): un unico interruptor
    sobre la cabecera y la barra de progreso, sin tocar el guion en si. */
 #vista-reproductor.indicadores-ocultos .reproductor-cabecera,

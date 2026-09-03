@@ -1387,6 +1387,81 @@ desde T-18/T-20/T-21 — todo el trabajo vive en `guion.js`/`estilo.css`.
   más cerca del guardado, no el mismo índice. Sin errores de consola en
   ningún paso.
 
+## Persistencia verificada de preferencias, con plan B (R-01)
+
+`origen: auditoría #5`. T-26 confiaba en que `localStorage` sobrevive a
+cerrar el navegador y reabrir el archivo, sin comprobarlo en el navegador
+real de grabación — el `try/catch` evitaba el error pero no verificaba la
+persistencia real, y un fallo se ignoraba en silencio. Esta tarea cierra las
+tres piezas que pedía su ficha, entera en `guion.js`/`estilo.css`: ningún
+archivo Python cambia.
+
+- **Comprobación real (requisito 1), con dos verificaciones distintas y
+  complementarias.** `comprobarAlmacenamientoDisponible()` escribe y relee
+  una clave de prueba (`"prueba_disponibilidad"`, sin guión bajo doble para
+  no chocar con el test de marcadores sin sustituir de T-18) al cargar la
+  página: detecta con certeza el caso "`localStorage` no funciona aquí en
+  absoluto" (navegación privada, cuota agotada, `file://` restringido). Lo
+  que NO puede saberse dentro de una sola carga de página es si sobrevivirá
+  a un cierre futuro del navegador — eso se verificó aparte, a mano, con
+  Playwright headless (Chromium, no es dependencia del proyecto) usando
+  `launch_persistent_context` sobre `fixtures/salida/reproductor.html` real:
+  cerrar el contexto y reabrir el MISMO perfil de datos de usuario mantiene
+  las preferencias intactas; un perfil nuevo (otro navegador, otro usuario,
+  datos de navegación borrados) aparece vacío — el comportamiento esperado
+  de un almacenamiento particionado por origen/perfil, documentado en
+  `DECISIONES_TECNICAS.md` en vez de asumido.
+- **Aviso honesto (requisito 3).** Si `comprobarAlmacenamientoDisponible()`
+  devuelve `false`, `renderizarIndice()` añade un párrafo
+  `.aviso-almacenamiento` visible antes de cualquier otra interacción,
+  señalando que las preferencias no van a recordarse y remitiendo al plan B.
+  El reproductor sigue funcionando con normalidad sin `localStorage` —
+  verificado bloqueándolo a propósito (un `Object.defineProperty` que lanza
+  al leer `window.localStorage`, simulando el caso extremo).
+- **Plan B sin red ni dependencias (requisito 2): exportar/importar
+  preferencias como archivo `.json`.** Dos botones nuevos en el índice,
+  junto al "Continuar" de T-26: `exportarPreferencias()` construye el JSON
+  con `construirExportacionPreferencias()` y dispara una descarga real
+  (`Blob` + `URL.createObjectURL` + `<a download>`, verificado que funciona
+  desde una página `file://` en Chromium) o, si esa vía lanza, cae a
+  `window.prompt()` con el mismo contenido para copiar a mano — nunca en
+  silencio. `manejarArchivoImportado()` lee el archivo elegido con
+  `FileReader`, valida que sea del mismo guión (`objeto.guion !==
+  datos.guion` rechaza con un mensaje claro, sin aplicar nada) y aplica cada
+  campo reconocido con `aplicarPreferenciasImportadas()`, acotando tamaño y
+  velocidad a los mismos límites que sus ajustes en vivo. Tras importar,
+  `renderizarIndice()` se vuelve a llamar (ahora limpia
+  `vistaIndice.textContent` al empezar, para ser idempotente) así que el
+  botón "Continuar" y el aviso de almacenamiento reflejan de inmediato lo
+  importado, sin recargar la página.
+- **La exportación lee de las variables en memoria, nunca de
+  `localStorage` en el momento del clic.** `tamanoTextoActualPx`,
+  `velocidadesEscena`, `espejoActivado` y la clase `indicadores-ocultos` ya
+  son la fuente de verdad del ajuste vigente (son las que pinta la
+  interfaz); la única pieza nueva es `ultimaEscenaVistaEnMemoria`, una copia
+  en memoria que `guardarUltimaEscenaVista()` mantiene al día en cada
+  cambio de bloque real, inicializada igual que `calcularReanudacion()` con
+  lo que hubiera guardado antes. Verificado con Playwright bloqueando
+  `localStorage` del todo: "Exportar preferencias" sigue produciendo un
+  `.json` completo y correcto — el plan B funciona precisamente en el
+  escenario que lo justifica, no solo cuando el almacenamiento ya iba bien.
+- **Verificación.** `tests/test_reproductor.py` añade cinco tests que
+  comprueban, sobre el HTML generado: la comprobación de disponibilidad y el
+  aviso, los botones/función de exportar e importar, que la exportación lea
+  de las variables en memoria, la validación del guión de origen al
+  importar, y que la exportación nunca falle en silencio
+  (`window.prompt` como red de seguridad). El comportamiento real se
+  verificó de punta a punta con Playwright headless (Chromium) sobre
+  `fixtures/salida/reproductor.html` (generado de `fixtures/guion-ejemplo.md`):
+  cambiar tamaño/velocidad/espejo, volver al índice y exportar produce un
+  `.json` con esos valores; en un perfil de navegador COMPLETAMENTE NUEVO
+  (sin nada en `localStorage`) el botón "Continuar" no existe todavía;
+  importar ese mismo archivo lo hace aparecer con la escena y el bloque
+  correctos, y dejar las claves esperadas en el `localStorage` del nuevo
+  perfil; con `localStorage` bloqueado, el aviso aparece, el reproductor
+  sigue funcionando, y "Exportar preferencias" sigue produciendo un `.json`
+  completo leyendo solo de memoria. Sin errores de consola en ningún paso.
+
 ## Exportador `.srt` borrador (T-27)
 
 `scripts/srt.py` arranca los subtítulos en la fase de montaje sin partir de cero.

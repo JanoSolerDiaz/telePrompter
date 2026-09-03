@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-03 — R-01 (persistencia verificada + plan B), sesión de nube
+**Tarea(s):** R-01, primera de oleada v2 (`origen: auditoría #5`)
+**Estado resultante:** R-01 **COMPLETADA**. Fila `R-01` en §1 pasa de PENDIENTE a COMPLETADA. Ninguna otra T-XX/R-XX cambia de estado
+**Commits a develop:** `R-01: persistencia verificada de preferencias, con plan B` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (`Migración: No` en la ficha de R-01; sin cambio de esquema de `estado.json`)
+**Archivos creados/modificados:** `assets/reproductor/guion.js` (`comprobarAlmacenamientoDisponible`, aviso `.aviso-almacenamiento`, `construirExportacionPreferencias`/`exportarPreferencias`/`nombreArchivoPreferencias`, `aplicarPreferenciasImportadas`/`manejarArchivoImportado`, `ultimaEscenaVistaEnMemoria`, `renderizarIndice` ahora idempotente), `assets/reproductor/estilo.css` (`.aviso-almacenamiento`, `.preferencias-acciones`, `.btn-preferencia`, `.mensaje-preferencias`), `tests/test_reproductor.py` (5 tests nuevos), `SKILL.md` (sección «Copia de seguridad de preferencias, con aviso de persistencia (R-01)»), `DEVELOPERS.md` (sección R-01), `roadmap/DECISIONES_TECNICAS.md` (3 filas nuevas), `roadmap/SEGUIMIENTO.md` (cabecera, esta entrada, fila `R-01` en §1), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (409 pasan + 0 skipped, antes 404) · build ✅ (`verificar_salidas.py --fixture`, diez etapas OK)
+**Health check post-deploy:** NO APLICABLE — sesión de nube, sin acceso a `~/.claude/skills/` (nota de entorno, protocolo v1.3); R-01 no toca la instalación de la skill
+**Decisiones tomadas:** 3 filas nuevas en `roadmap/DECISIONES_TECNICAS.md` (2026-09-03, R-01): (1) la "comprobación real en el navegador de grabación" del requisito 1 se resuelve con dos verificaciones complementarias — detección en código de que `localStorage` no funciona en absoluto, más verificación manual con Playwright/Chromium real (`launch_persistent_context`) confirmando que el mismo perfil de navegador persiste entre cierre y reapertura y uno nuevo no —, con las alternativas descartadas (dar el `try/catch` existente por suficiente, o bloquear la tarea entera como T-32); (2) la exportación lee siempre de variables en memoria, nunca de `localStorage` en el momento del clic, para que funcione en el escenario exacto que la justifica; (3) la descarga real (`Blob`+`URL.createObjectURL`) es la vía primaria, verificada que funciona desde `file://`, con `window.prompt()` como red de seguridad si fallara
+**Hallazgos del auditor atendidos:** `#5` (severidad media) — el requisito 1 de su ficha R-01 queda resuelto en código con verificación real documentada; el auditor decide en su próxima pasada si lo marca RESUELTO en `auditoriacontinua.md` (documento que solo él modifica)
+**Hallazgos:** ninguno nuevo descubierto durante la implementación
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** siguiente tarea de la cola normal, `R-02` (registro de tomas por escena), segunda de oleada v2 de `roadmap/ROADMAP_PRODUCTO.md`
+
 ### Sesión 2026-09-03 — P-03 (hallazgo #14, severidad alta), sesión de nube
 **Tarea(s):** P-03 (urgente, atendida antes de la cola normal según §0.1/§0.3)
 **Estado resultante:** P-03 COMPLETADA. Hallazgo `#14` de `auditoriacontinua.md` pasa de ABIERTO a RESUELTO. Ninguna T-XX cambia de estado; sigue sin quedar ninguna PENDIENTE en §1. Próxima sesión de código retoma la cola normal en `R-01`

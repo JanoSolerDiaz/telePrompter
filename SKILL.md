@@ -168,6 +168,20 @@ En vez de relanzar automáticamente el reproductor al cargar la página (que fal
 | Preferencias persistidas | tamaño de texto, velocidad por escena, modo espejo, indicadores, última escena vista | Clave `teleprompter:<guion>:<preferencia>` |
 | Restablecer preferencias | botón en la ayuda (`?`) | Borra solo las claves de este guión |
 
+## Copia de seguridad de preferencias, con aviso de persistencia (R-01)
+
+T-26 confía en que `localStorage` sobrevive a cerrar el navegador y reabrir el archivo, algo que no estaba comprobado en el navegador real de grabación (`origen: auditoría #5`). Esta tarea aporta las tres piezas que faltaban:
+
+1. **Comprobación real**, no solo teórica: al cargar la página, el reproductor escribe y relee una clave de prueba en `localStorage`. Verificado con Playwright headless (Chromium) sobre el reproductor real: reabrir el **mismo perfil** de navegador tras cerrarlo mantiene las preferencias intactas; un perfil nuevo (u otro navegador) empieza sin nada, porque `localStorage` está particionado por perfil/origen — es el comportamiento esperado, no un fallo. El límite real de este mecanismo es que ningún código puede saber, dentro de una sola carga de página, si sobrevivirá a un cierre futuro: solo puede detectar que `localStorage` **no funciona aquí en absoluto** (navegación privada, cuota agotada, `file://` restringido).
+2. **Aviso honesto**: si esa comprobación falla, el índice muestra un mensaje visible en vez de perder los ajustes en silencio (como hacía T-26, con el `try/catch` ya existente pero sin ningún aviso).
+3. **Plan B sin red ni dependencias**: los botones **"Exportar preferencias"** e **"Importar preferencias"** en el índice empaquetan tamaño de texto, velocidad por escena, modo espejo, indicadores y última escena vista en un `.json` descargable (o, si el navegador no permite disparar la descarga, un texto para copiar a mano) y los restauran de vuelta, escena y bloque incluidos. La exportación lee siempre de las variables en memoria — no solo de `localStorage` — así que funciona igual de bien cuando el almacenamiento está completamente bloqueado.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Exportar preferencias | botón en el índice | Descarga `teleprompter-preferencias-<guion>.json`; si el navegador no permite la descarga, ofrece el mismo texto para copiar |
+| Importar preferencias | botón en el índice | Selector de archivo `.json`; valida que sea del mismo guión antes de aplicar nada |
+| Aviso de almacenamiento no disponible | automático | Comprueba escritura/lectura real de `localStorage` al cargar la página |
+
 ## Exportador `.srt` borrador (T-27)
 
 Arranca los subtítulos en la fase de montaje sin partir de cero: un subtítulo por bloque de respiración, con los tiempos ya calculados por el motor de tiempos, sobre el **texto locutado final** (con las reescrituras aceptadas ya aplicadas, nunca el original del guión). Un bloque muy corto se funde con el siguiente de la misma escena para no parpadear en pantalla — nunca funde bloques de escenas distintas —, y un bloque cuyo texto no cabe en el límite de líneas configurado se reparte en varios subtítulos consecutivos sin cortar ninguna palabra ni perder texto. Formato `.srt` estándar (índice, marca de tiempo, texto), UTF-8, validado con las mismas reglas que aplica ffmpeg.

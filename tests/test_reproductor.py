@@ -683,6 +683,77 @@ def test_guion_js_pasa_el_bloque_inicial_a_iniciarmotor() -> None:
     assert "marcarBloqueActivo(bloqueActual);" in pagina
 
 
+# --- Persistencia verificada de preferencias, con plan B (R-01) --------------------
+#
+# `origen: auditoría #5`. Verificado ademas a mano con Playwright headless
+# (Chromium, no es dependencia del proyecto) sobre `fixtures/salida/reproductor.html`,
+# generado a partir de `fixtures/guion-ejemplo.md`: (1) escribir preferencias, cerrar el
+# contexto y reabrir el MISMO perfil de Chromium (mismo directorio de datos de usuario,
+# no una recarga de pagina) las mantiene intactas; un perfil NUEVO empieza vacio, tal
+# como cabria esperar de `localStorage` particionado por perfil/origen -- resultado
+# documentado en `DECISIONES_TECNICAS.md`. (2) El ciclo completo exportar -> "Continuar"
+# ausente en un perfil nuevo -> importar el archivo descargado -> "Continuar" ya
+# disponible con la escena/bloque correctos, funciona de punta a punta, incluida la
+# exportacion cuando `localStorage` esta bloqueado del todo (se simulo lanzando en el
+# propio getter). (3) El aviso `.aviso-almacenamiento` aparece cuando `localStorage`
+# lanza al leer/escribir, y el reproductor sigue funcionando con normalidad.
+
+
+def test_guion_js_detecta_si_localstorage_no_esta_disponible() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: comprobacion real (escribe y relee una clave de prueba), no un
+    # try/catch silencioso -- distingue "no funciona aqui" del limite ya conocido de
+    # si sobrevive a cerrar y reabrir el archivo (eso no se puede saber dentro de una
+    # sola carga de pagina).
+    assert "function comprobarAlmacenamientoDisponible" in pagina
+    assert "var almacenamientoDisponible = comprobarAlmacenamientoDisponible();" in pagina
+    assert "aviso-almacenamiento" in pagina
+
+
+def test_guion_js_ofrece_exportar_e_importar_preferencias_en_el_indice() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: el plan B vive en el indice, el mismo punto de entrada/salida de una
+    # sesion de grabacion que ya usa el boton "Continuar" (T-26).
+    assert "btn-exportar-preferencias" in pagina
+    assert "btn-importar-preferencias" in pagina
+    assert "entrada-importar-preferencias" in pagina
+    assert "function exportarPreferencias" in pagina
+    assert "function manejarArchivoImportado" in pagina
+
+
+def test_guion_js_exporta_preferencias_desde_variables_en_memoria() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisitos 2 y 3: nunca depende solo de `localStorage` -- si nunca llego a
+    # funcionar esta sesion, `leerPreferencia` devolveria vacio y el plan B se
+    # quedaria sin nada que exportar. Se lee de las mismas variables que ya reflejan
+    # el ajuste vigente en memoria.
+    assert "function construirExportacionPreferencias" in pagina
+    assert "tamano_texto_px: tamanoTextoActualPx" in pagina
+    assert "espejo: espejoActivado" in pagina
+    assert "velocidad_por_escena: velocidadPorEscena" in pagina
+    assert "ultima_escena: ultimaEscenaVistaEnMemoria" in pagina
+
+
+def test_guion_js_valida_el_guion_de_origen_al_importar() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # No aplica sin avisar unas preferencias exportadas de OTRO guion.
+    assert "function aplicarPreferenciasImportadas" in pagina
+    assert "objeto.guion !== undefined && objeto.guion !== datos.guion" in pagina
+
+
+def test_guion_js_nunca_falla_en_silencio_al_exportar() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: si el navegador no permite disparar la descarga programada
+    # (Blob/URL.createObjectURL), se ofrece el mismo contenido para copiar a mano en
+    # vez de perder la exportacion sin decir nada.
+    assert 'window.prompt("Copia este texto y guardalo en un archivo .json:", contenido)' in pagina
+
+
 def test_escena_sin_locucion_no_rompe_la_generacion() -> None:
     guion_sin_locucion = """# Guion
 
