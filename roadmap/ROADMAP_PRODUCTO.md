@@ -8,7 +8,7 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-04 (segundo ciclo de PM del día)
+**Última actualización:** 2026-09-04 (duodécimo ciclo de PM del día). Cola de R-XX confirmada vacía otra vez, sin cambios de fondo: ver `SEGUIMIENTO.md` §3 bloqueo #8 para el hallazgo de esta sesión (rutinas programadas duplicadas), que es de infraestructura, no de producto.
 
 ---
 
