@@ -32,6 +32,21 @@
 
 ---
 
+### Sesión 2026-09-04 — Ciclo de Product Manager (sin sesión de código)
+**Tarea(s):** Gestión de `roadmap/ROADMAP_PRODUCTO.md` y `roadmap/ROADMAP_HISTORICO.md` (ciclo de PM)
+**Estado resultante:** Sin cambio de estado de ninguna T-XX. Fase transversal F-E (R-10, ya COMPLETADA) movida a `ROADMAP_HISTORICO.md`. Una R-XX nueva registrada PENDIENTE en §1: `R-11`, fase transversal F-F nueva. La cola de producto pasa de "ninguna R-XX pendiente" a `R-11`
+**Commits a develop:** `PM: mover F-E (R-10) a ROADMAP_HISTORICO.md y registrar R-11 (robustez de datos de rodaje)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (ciclo de gestión de roadmap, sin tocar código ni `estado.json`)
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (F-E marcada entregada, F-F/R-11 nueva, fecha de cabecera), `roadmap/ROADMAP_HISTORICO.md` (sección F-E/R-10 añadida, nota de cabecera con la fecha de este movimiento), `roadmap/SEGUIMIENTO.md` (cabecera, fila `R-11`), `roadmap/DECISIONES_TECNICAS.md` (4 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** no aplica — ciclo de PM, sin cambios de código; no se ejecutan mypy/ruff/pytest/`verificar_salidas.py` porque ningún archivo de `scripts/`, `tests/`, `assets/` ni `references/` cambia
+**Health check post-deploy:** no aplica — no hay instalación que verificar en este ciclo
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-04, PM): (1) mover F-E a histórico, mismo criterio que v2/v3/F-D; (2) agrupar los hallazgos `#16`/`#17`/`#18` en `R-11` en vez de tres R-XX independientes; (3) no abrir ninguna R-XX a partir de `#19` (límite teórico, sin escenario reproducido)
+**Hallazgos del auditor atendidos:** ninguno se cierra en este ciclo (el auditor es quien marca RESUELTO en su propio documento). `#15` ya estaba enrutado a R-10, ahora COMPLETADA — pendiente solo de que el auditor lo reevalúe y lo cierre. `#16`, `#17` y `#18` quedan enrutados a `R-11` nueva. `#19` se deja documentado sin R-XX, por no tener escenario reproducido
+**Tareas autopropuestas (P-XX):** ninguna (el PM no programa; `R-11` se registra como R-XX normal, con spec propia en `ROADMAP_PRODUCTO.md`, no como P-XX)
+**Próximo paso:** el programador retoma la cola de §1 en `R-11` (fase transversal F-F, única R-XX PENDIENTE). `roadmap/FEEDBACK.md` sigue sin entradas `nuevo` — se revisará de nuevo en el próximo ciclo de PM, con más motivo en cuanto el dueño complete una primera grabación real (bloqueo #7 de §3, sin urgencia). Nota de entorno: tercera sesión consecutiva que encuentra el `develop` local del clon efímero desalineado del remoto al arrancar (mismo síntoma que R-09 y R-10) — si se repite en la próxima sesión, merece investigarse como incidencia de infraestructura en vez de seguir realineándose en silencio cada vez.
+
+---
+
 ### Sesión 2026-09-04 — R-10 (robustez multiplataforma en Windows), sesión de nube
 **Tarea(s):** R-10, única de la fase transversal F-E
 **Estado resultante:** R-10 **COMPLETADA**. Fila `R-10` en §1 pasa de PENDIENTE a COMPLETADA. Sin ninguna T-XX ni R-XX PENDIENTE en §1 al cerrar

@@ -8,7 +8,7 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-03
+**Última actualización:** 2026-09-04
 
 ---
 
@@ -58,12 +58,19 @@ de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movieron a
 `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-03; su spec completa y cómo se entregó cada
 una vive ahí.
 
-### Fase transversal F-E — Robustez en el entorno real del dueño
+### Fase transversal F-E — entregada
 
-La primera vez que el proyecto corrió de verdad fuera de un contenedor de nube (sesión local de
-T-32, en el Windows del dueño) aparecieron fallos que ninguna sesión de nube podía ver, porque
-ninguna corre en Windows. Esta fase recoge esos hallazgos de uso real, del mismo modo que F-D
-recogía los del auditor. Contiene R-10.
+La fase F-E (robustez detectada al correr por primera vez en el Windows real del dueño) tiene su
+única R-XX (R-10) en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio
+pendiente. Se movió a `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-04; su spec completa y
+cómo se entregó vive ahí.
+
+### Fase transversal F-F — Robustez de los datos derivados del rodaje real
+
+La auditoría de 2026-09-04, la primera pasada tras completarse toda la oleada R (rodaje real,
+R-01 a R-07), encontró tres huecos menores en cómo esos datos de rodaje se propagan a las salidas
+derivadas — ninguno reproducido como bug hoy sobre material real, los tres cierres preventivos del
+mismo tipo que ya motivó F-D. Contiene R-11.
 
 ---
 
@@ -73,43 +80,44 @@ recogía los del auditor. Contiene R-10.
 > Ninguna R-XX puede empezar antes de que la oleada v1 esté entregada, salvo que se diga lo
 > contrario en su ficha.
 
-### R-10 — Robustez multiplataforma detectada al correr en Windows por primera vez
-**Oleada / Fase:** F-E · **Migración:** No · **Depende de:** T-06
-**Origen:** hallazgo de sesión (T-32 local, máquina del dueño, 2026-09-03 — no es hallazgo del
-auditor, que audita desde sesiones de nube sin acceso a esa máquina)
+### R-11 — Robustez de datos derivados del rodaje (toma buena ambigua, capítulos sobrantes, cobertura cruzada)
+**Oleada / Fase:** F-F · **Migración:** No · **Depende de:** R-02, R-05, R-07
+**Origen:** auditoría #16, #17, #18
 
-**Objetivo:** la primera vez que la suite completa corrió en la máquina real del dueño (Windows,
-no un contenedor de nube) aparecieron cuatro tests en rojo, documentados en
-`roadmap/HISTORIAL_SESIONES.md` (sesión "T-32 desbloqueada + P-04"). Tres son ruido de plataforma
-sin riesgo real para el producto; el cuarto sí lo tiene: cualquier guión que el dueño escriba y
-guarde en Windows llevará fin de línea `\r\n`, y `entrada.leer_guion` no lo normaliza — el `\r`
-llega intacto a todo el pipeline de parseo, troceo y revalidación, con riesgo de comparaciones de
-texto que fallan en silencio exactamente donde el invariante (c) («la edición manual manda»)
-depende de que dos textos idénticos se reconozcan como idénticos. Esta tarea cierra el hallazgo
-real y adapta o descarta el ruido de plataforma sin gastar más esfuerzo del que vale cada uno.
+**Objetivo:** cerrar tres huecos de robustez de menor entidad alrededor de los datos de rodaje real
+(R-02) y sus dos consumidores derivados (`.srt` alineado de R-05, capítulos de YouTube de R-07),
+detectados por el auditor sin bug reproducido hoy sobre material real — cierre preventivo, no
+corrección de una regresión. (1) `tomas.duracion_toma_buena` no valida que como mucho una toma esté
+marcada `buena` por escena — esa exclusividad hoy solo la garantiza el lado JS
+(`finalizarTomaActual`); un `.json` con dos tomas `buena` para la misma escena (edición manual,
+fusión de exportaciones, un futuro bug de `guion.js`) hace que la función Python elija la primera
+en silencio, sin ninguna señal de ambigüedad, propagándose sin aviso a R-04/R-05/R-07 (#16). (2)
+`capitulos_youtube.calcular_capitulos` empareja títulos de capítulo con escenas posicionalmente
+"hasta la más corta"; cuando sobran títulos de capítulo (más títulos que escenas), los sobrantes se
+descartan de `capitulos-youtube.txt` sin ningún aviso ni `motivo_sin_generar` — el caso simétrico
+(menos títulos que escenas) sí está cubierto (#17). (3) no existe ningún test de integración
+cruzada, en el espíritu de `tests/test_integracion_montaje.py` (T-33), entre `guion-alineado.srt`
+(R-05) y `capitulos-youtube.txt` (R-07): ambos comparten `tomas.duracion_toma_buena`, así que la
+coherencia hoy es "por construcción", no verificada por regresión (#18).
 
 **Requisitos:**
-1. `entrada.leer_guion` normaliza cualquier fin de línea (`\r\n`, `\r` suelto) a `\n` en el mismo
-   punto donde ya decodifica UTF-8, antes de que ninguna capa posterior vea el texto. Test con un
-   guión de prueba escrito con bytes `\r\n` explícitos (no solo con el `newline` que decide la
-   plataforma que ejecuta el test) que confirme un resultado idéntico al mismo guión con `\n`.
-2. Diagnosticar la causa exacta de `test_nombre_guion_seguro_nunca_vacio` en Windows antes de
-   tocar código — `PureWindowsPath` ya interpreta `.md` como sufijo igual que en POSIX incluso con
-   nombres terminados en varios puntos, así que puede que la causa real no sea la que parecía a
-   primera vista — y corregir `nombre_guion_seguro` si el diagnóstico confirma un caso real.
-3. `test_instalar_hook_copia_y_da_permiso_de_ejecucion` (verifica el bit de ejecución POSIX,
-   inexistente en Windows) pasa a `skip` explícito cuando `os.name != "posix"`, en vez de quedar
-   en rojo: instalar el hook sigue siendo una operación real en Windows (la copia del archivo),
-   solo la comprobación del bit deja de aplicar ahí.
-4. Verificar que ninguna salida generada (`.srt`, `.pdf`, `tarjetas.json`, reproductor) reintroduce
-   `\r\n` en su propio proceso de escritura — comprobación puntual, no una tarea nueva si ya
-   escriben con `\n`.
+1. `tomas.duracion_toma_buena` (o quien la invoque desde `scripts/tomas.py`) detecta más de una
+   toma `buena` en la misma escena y lo señala como una incidencia explícita — nunca elige la
+   primera en silencio. Test que reproduce exactamente el escenario del hallazgo #16 (dos tomas
+   `buena: true` en la misma escena).
+2. `capitulos_youtube.calcular_capitulos` deja constancia explícita (aviso o campo equivalente al
+   `motivo_sin_generar` ya existente) cuando hay títulos de capítulo sin escena correspondiente, en
+   vez de descartarlos sin rastro. Test que reproduce el escenario del hallazgo #17 (más títulos de
+   capítulo que escenas).
+3. Un test nuevo (no necesariamente un módulo nuevo) que, a partir del mismo `ResultadoTiempos` +
+   `tomas_por_escena`, genere `guion-alineado.srt` y `capitulos-youtube.txt` y confirme que sus
+   marcas de tiempo son mutuamente coherentes — cierra el hallazgo #18.
 
-**Criterio de aceptación:** un guión guardado con `\r\n` produce exactamente el mismo
-`guion-escenas.md` (mismo contenido, no solo mismo número de escenas) que el mismo guión guardado
-con `\n`; los cuatro tests que la sesión de T-32 marcó en rojo en Windows quedan en verde o
-correctamente `skip`, con la causa raíz de cada uno documentada en `DECISIONES_TECNICAS.md`; la
-suite sigue en verde en las sesiones de nube (Linux).
+**Criterio de aceptación:** un `.json` de tomas con dos tomas `buena` en la misma escena produce
+una incidencia visible en vez de una elección silenciosa; un guion con más títulos de capítulo que
+escenas no pierde ningún título sin dejar rastro explícito; existe al menos un test de integración
+que verifica la coherencia cruzada entre el `.srt` alineado y los capítulos de YouTube sobre el
+mismo dato de partida.
 
 ---
 

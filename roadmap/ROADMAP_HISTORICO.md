@@ -14,6 +14,10 @@ de negocio propio pendiente (a diferencia de la oleada v1, que sigue viva en `RO
 porque su criterio de salida —grabar un vídeo de curso entero con la skill— todavía no se ha
 cumplido, aunque todo su código esté entregado desde antes de este ciclo).
 
+**Movido a histórico el:** 2026-09-04, ciclo de Product Manager. Se añade la Fase transversal F-E
+(R-10), con su única R-XX ya COMPLETADA y sin ningún hito de negocio propio pendiente — mismo
+criterio que el movimiento anterior.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -262,6 +266,49 @@ validando en verde sin ninguno de ellos.
 **Cómo se entregó:** seis patrones nuevos en `PATRONES_RECURSO_EXTERNO` (con límite de palabra
 `\b` delante de `url(` para no confundir `URL.createObjectURL`/`revokeObjectURL`, ya en uso desde
 R-01); documentación completa en `references/validador-autocontencion.md` (nuevo).
+
+---
+
+## Fase transversal F-E — Robustez en el entorno real del dueño
+
+La primera vez que el proyecto corrió de verdad fuera de un contenedor de nube (sesión local de
+T-32, en el Windows del dueño) aparecieron fallos que ninguna sesión de nube podía ver, porque
+ninguna corre en Windows. Contenía R-10, su única R-XX. **Entregada 2026-09-04.**
+
+### R-10 — Robustez multiplataforma detectada al correr en Windows por primera vez
+**Oleada / Fase:** F-E · **Migración:** No · **Depende de:** T-06
+**Origen:** hallazgo de sesión (T-32 local, máquina del dueño, 2026-09-03 — no es hallazgo del
+auditor, que audita desde sesiones de nube sin acceso a esa máquina)
+
+**Objetivo:** la primera vez que la suite completa corrió en la máquina real del dueño (Windows,
+no un contenedor de nube) aparecieron cuatro tests en rojo, documentados en
+`roadmap/HISTORIAL_SESIONES.md` (sesión "T-32 desbloqueada + P-04"). Tres son ruido de plataforma
+sin riesgo real para el producto; el cuarto sí lo tiene: cualquier guión que el dueño escriba y
+guarde en Windows llevará fin de línea `\r\n`, y `entrada.leer_guion` no lo normalizaba — el `\r`
+llegaba intacto a todo el pipeline de parseo, troceo y revalidación, con riesgo de comparaciones de
+texto que fallan en silencio exactamente donde el invariante (c) («la edición manual manda»)
+depende de que dos textos idénticos se reconozcan como idénticos.
+
+**Requisitos:**
+1. `entrada.leer_guion` normaliza cualquier fin de línea (`\r\n`, `\r` suelto) a `\n` en el mismo
+   punto donde ya decodifica UTF-8, antes de que ninguna capa posterior vea el texto.
+2. Diagnosticar la causa exacta de `test_nombre_guion_seguro_nunca_vacio` en Windows antes de
+   tocar código y corregir `nombre_guion_seguro` solo si el diagnóstico confirma un caso real.
+3. `test_instalar_hook_copia_y_da_permiso_de_ejecucion` pasa a `skip` explícito cuando
+   `os.name != "posix"`, en vez de quedar en rojo.
+4. Verificar que ninguna salida generada (`.srt`, `.pdf`, `tarjetas.json`, reproductor) reintroduce
+   `\r\n` en su propio proceso de escritura.
+
+**Criterio de aceptación:** un guión guardado con `\r\n` produce exactamente el mismo
+`guion-escenas.md` que el mismo guión guardado con `\n`; los cuatro tests que la sesión de T-32
+marcó en rojo en Windows quedan en verde o correctamente `skip`, con la causa raíz de cada uno
+documentada en `DECISIONES_TECNICAS.md`; la suite sigue en verde en las sesiones de nube (Linux).
+
+**Cómo se entregó:** `entrada.leer_guion` normaliza `\r\n`/`\r` a `\n` justo tras decodificar;
+`nombre_guion_seguro` diagnosticado sin cambio de código (`PureWindowsPath`/`PurePosixPath` parten
+`"....md"` igual, la hipótesis original no se sostenía) y su parámetro pasa de `Path` a `PurePath`;
+`test_instalar_hook_...` gana su `skipif` no-POSIX; los doce `Path.write_text(...)` de `scripts/`
+fijan `newline="\n"` (hallazgo real de la comprobación puntual del requisito 4).
 
 ---
 
