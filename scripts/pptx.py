@@ -214,7 +214,7 @@ def guardar_tarjetas_json(contenido: str, carpeta_salida: Path) -> Path:
     aislamiento, §0.2)."""
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     destino = carpeta_salida / NOMBRE_ARCHIVO_TARJETAS_JSON
-    destino.write_text(contenido, encoding="utf-8")
+    destino.write_text(contenido, encoding="utf-8", newline="\n")
     return destino
 
 
@@ -485,7 +485,7 @@ def guardar_brief(contenido: str, carpeta_salida: Path) -> Path:
     (regla de aislamiento, §0.2), junto a `tarjetas.json`."""
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     destino = carpeta_salida / NOMBRE_ARCHIVO_BRIEF_PPTX
-    destino.write_text(contenido, encoding="utf-8")
+    destino.write_text(contenido, encoding="utf-8", newline="\n")
     return destino
 
 

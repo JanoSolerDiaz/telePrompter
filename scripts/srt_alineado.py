@@ -179,7 +179,7 @@ def guardar_srt_alineado(
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     destino = carpeta_salida / NOMBRE_ARCHIVO_SRT_ALINEADO
     codificacion = "utf-8-sig" if configuracion.srt_con_bom else "utf-8"
-    destino.write_text(contenido, encoding=codificacion)
+    destino.write_text(contenido, encoding=codificacion, newline="\n")
     return destino
 
 

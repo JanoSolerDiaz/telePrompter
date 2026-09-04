@@ -411,5 +411,5 @@ def guardar_convencion_guiones(
     `guion-escenas.md` (T-17)."""
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     destino = carpeta_salida / NOMBRE_ARCHIVO_CONVENCION
-    destino.write_text(generar_convencion_guiones(configuracion), encoding="utf-8")
+    destino.write_text(generar_convencion_guiones(configuracion), encoding="utf-8", newline="\n")
     return destino

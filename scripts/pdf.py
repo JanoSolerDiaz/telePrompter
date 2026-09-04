@@ -338,7 +338,7 @@ def guardar_html_impresion(html_impresion: str, carpeta_salida: Path) -> Path:
     de aislamiento, §0.2)."""
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     destino = carpeta_salida / NOMBRE_ARCHIVO_HTML_IMPRESION
-    destino.write_text(html_impresion, encoding="utf-8")
+    destino.write_text(html_impresion, encoding="utf-8", newline="\n")
     return destino
 
 

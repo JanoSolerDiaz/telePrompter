@@ -122,6 +122,45 @@ usarse). Por eso `entrada.py` evita la sintaxis de generics de PEP 695
 (`def f[T](...)`, que `ast.parse` de 3.11 ni siquiera analiza) y usa
 `typing.TypeVar` clásico. Ver `DECISIONES_TECNICAS.md`, T-06.
 
+### Robustez multiplataforma en Windows (R-10)
+
+La primera vez que la suite corrió de verdad en el Windows del dueño (sesión local
+de T-32) aparecieron cuatro tests en rojo, ninguno visible desde una sesión de
+nube (que solo corre en Linux). Causa raíz de cada uno, documentada también en
+`DECISIONES_TECNICAS.md`:
+
+- **`leer_guion` no normalizaba `\r\n`/`\r` a `\n`** (el hallazgo real, con riesgo
+  de producto): se lee con `read_bytes()+decode("utf-8-sig")` en vez de
+  `Path.read_text()` para poder dar un error accionable propio si la codificación
+  no es UTF-8 — eso deja fuera la traducción universal de saltos de línea que
+  `read_text()` aplica sola. Corregido con `texto.replace("\r\n", "\n").replace("\r",
+  "\n")` justo después de decodificar, antes de que ninguna capa posterior vea el
+  texto. Cualquier guion guardado en Windows (CRLF) produce ahora exactamente el
+  mismo texto en memoria que el mismo guion guardado con `\n`.
+- **`test_nombre_guion_seguro_nunca_vacio`**: diagnosticado, no corregido. La
+  hipótesis de la sesión de Windows ("`WindowsPath` no reconoce `.md` como sufijo
+  en `"....md"`") no se sostiene: `PureWindowsPath("....md").stem` es
+  literalmente igual que `PurePosixPath("....md").stem` (`"..."`), y
+  `nombre_guion_seguro` ya produce `"guion"` para ese `.stem` en cualquier
+  plataforma — verificado con un test que fija esa igualdad explícitamente
+  (`test_nombre_guion_seguro_nunca_vacio_con_ruta_windows`). `nombre_guion_seguro`
+  pasa a tipar su parámetro como `PurePath` (en vez de `Path`) precisamente para
+  permitir ese test sin depender de correr en Windows de verdad.
+- **`test_instalar_hook_copia_y_da_permiso_de_ejecucion`**: el bit de ejecución
+  POSIX (`stat.S_IXUSR`) no tiene equivalente en Windows; el test pasa a
+  `@pytest.mark.skipif(os.name != "posix", ...)` en vez de quedar en rojo.
+  Instalar el hook (copiar el archivo) sigue siendo una operación real ahí.
+- **Ninguna salida generada debe reintroducir `\r\n` por su cuenta** (requisito 4,
+  comprobación puntual): los doce `Path.write_text(...)` de `scripts/` no fijaban
+  `newline`, así que en Windows el `newline=None` por defecto traduce cada `\n`
+  escrito a `os.linesep` (`"\r\n"`) — no reproducible en una sesión de nube
+  (Linux ya usa `\n`, y la traducción depende de una rama de compilación de
+  `_io`, no de leer `os.linesep` en tiempo de ejecución). Corregido fijando
+  `newline="\n"` en las doce llamadas; guardado por
+  `tests/test_esqueleto.py::test_ninguna_salida_generada_reintroduce_saltos_de_linea_de_plataforma`,
+  que escanea `scripts/*.py` en busca de un `write_text(` nuevo sin ese
+  parámetro (mismo principio léxico que el validador de auto-contención).
+
 ## Estado del proyecto de guion (T-07)
 
 `scripts/estado.py` da al proceso memoria entre sesiones: `estado.json`, dentro de la

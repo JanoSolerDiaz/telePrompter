@@ -432,5 +432,5 @@ def guardar_documento_revision(texto: str, carpeta_salida: Path) -> Path:
         marca = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         copia_seguridad = destino.with_name(f"{destino.name}.bak-{marca}")
         copia_seguridad.write_bytes(destino.read_bytes())
-    destino.write_text(texto, encoding="utf-8")
+    destino.write_text(texto, encoding="utf-8", newline="\n")
     return destino

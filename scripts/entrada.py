@@ -28,7 +28,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as ErrorTiempoAgotado
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import TypeVar
 
 from config import (
@@ -96,6 +96,15 @@ def leer_guion(ruta: Path) -> str:
     Acepta UTF-8 con o sin BOM (algunos editores de Windows lo anaden al guardar)
     pero rechaza cualquier otra codificacion con un error accionable en vez de
     dejar que un `UnicodeDecodeError` se propague como traza cruda.
+
+    Normaliza `\\r\\n`/`\\r` a `\\n` justo despues de decodificar (R-10): se lee con
+    `read_bytes()` en vez de `read_text()` precisamente para controlar la
+    codificacion con `utf-8-sig`, lo que deja fuera la traduccion universal de
+    saltos de linea que `Path.read_text()` aplica sola -- sin este paso, un guion
+    escrito y guardado en Windows (CRLF) llegaria con el `\\r` intacto a todo el
+    pipeline de parseo/troceo/revalidacion, arriesgando comparaciones de texto que
+    dependen de que dos textos identicos se reconozcan como identicos (invariante
+    (c), §0.2).
     """
     ruta_validada = validar_ruta_guion(ruta)
     bytes_guion = ruta_validada.read_bytes()
@@ -106,6 +115,7 @@ def leer_guion(ruta: Path) -> str:
             f"El guion no esta en UTF-8 (revisa la codificacion del archivo): {ruta}. "
             f"Detalle: {excepcion}"
         ) from excepcion
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
 
     if not texto.strip():
         raise EntradaError(f"El guion esta vacio o solo contiene espacios en blanco: {ruta}")
@@ -136,7 +146,7 @@ def verificar_estructura_minima(texto: str, *, origen: Path | None = None) -> No
         )
 
 
-def nombre_guion_seguro(ruta_guion: Path) -> str:
+def nombre_guion_seguro(ruta_guion: PurePath) -> str:
     """Deriva un nombre de proyecto seguro a partir del nombre del guion.
 
     Se usa para construir `<carpeta-del-guion>/<nombre-guion><sufijo>/` (T-07,
@@ -146,6 +156,12 @@ def nombre_guion_seguro(ruta_guion: Path) -> str:
     si el nombre de archivo en si fuera hostil, para que la carpeta de salida
     derivada nunca pueda caer fuera de la carpeta del guion (regla de aislamiento,
     §0.2).
+
+    Tipada como `PurePath` (no `Path`) a proposito (R-10): es puro calculo lexico
+    sobre el nombre, sin tocar disco, lo que permite verificar con
+    `PureWindowsPath` -- sin depender de correr de verdad en Windows -- que
+    `.stem`/`.suffix` particionan un nombre con puntos finales repetidos
+    (`"....md"`) exactamente igual que en POSIX.
     """
     base = unicodedata.normalize("NFC", ruta_guion.stem).strip()
     limpio = re.sub(r"[\\/\x00-\x1f]", "-", base)

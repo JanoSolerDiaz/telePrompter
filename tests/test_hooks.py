@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import stat
 import subprocess
 import sys
@@ -46,6 +47,14 @@ def test_hook_permite_commit_si_ci_pasa(tmp_path: Path) -> None:
     assert resultado.returncode == 0
 
 
+@pytest.mark.skipif(
+    os.name != "posix",
+    reason=(
+        "El bit de ejecucion S_IXUSR es un concepto POSIX sin equivalente en Windows "
+        "(R-10): instalar el hook sigue copiando el archivo con normalidad ahi, solo "
+        "esta comprobacion puntual del permiso deja de aplicar."
+    ),
+)
 def test_instalar_hook_copia_y_da_permiso_de_ejecucion(tmp_path: Path) -> None:
     (tmp_path / ".git").mkdir()
 

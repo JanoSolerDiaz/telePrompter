@@ -380,5 +380,5 @@ def guardar_capitulos_youtube(contenido: str, carpeta_salida: Path) -> Path:
     `contenido=None` (requisito 4): quien orquesta decide no escribir nada."""
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     destino = carpeta_salida / NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE
-    destino.write_text(contenido, encoding="utf-8")
+    destino.write_text(contenido, encoding="utf-8", newline="\n")
     return destino

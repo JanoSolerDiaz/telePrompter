@@ -157,6 +157,7 @@ def guardar_estado(estado: EstadoProyecto, carpeta_salida: Path) -> Path:
         temporal.write_text(
             json.dumps(estado.a_dict(), ensure_ascii=False, indent=2, sort_keys=True),
             encoding="utf-8",
+            newline="\n",
         )
         temporal.replace(destino)
     except OSError:

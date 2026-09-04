@@ -214,5 +214,5 @@ def guardar_reproductor(pagina_html: str, carpeta_salida: Path) -> Path:
     """Escribe el reproductor en la carpeta de salida del guion (aislamiento, §0.2)."""
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     destino = carpeta_salida / NOMBRE_ARCHIVO_REPRODUCTOR
-    destino.write_text(pagina_html, encoding="utf-8")
+    destino.write_text(pagina_html, encoding="utf-8", newline="\n")
     return destino

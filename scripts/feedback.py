@@ -255,7 +255,7 @@ def registrar_tropiezos_en_feedback(
     separador = "" if texto_existente.endswith("\n") else "\n"
     texto_final = texto_existente + separador + "\n".join(filas_nuevas) + "\n"
     carpeta_salida.mkdir(parents=True, exist_ok=True)
-    ruta.write_text(texto_final, encoding="utf-8")
+    ruta.write_text(texto_final, encoding="utf-8", newline="\n")
     return len(filas_nuevas)
 
 

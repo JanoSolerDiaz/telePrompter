@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import sys
 import time
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import pytest
 
@@ -114,6 +114,32 @@ def test_ruta_con_acentos_y_espacios_se_lee_bien(tmp_path: Path) -> None:
     assert leer_guion(ruta) == GUION_VALIDO
 
 
+# --- leer_guion: normalizacion de fin de linea (R-10) -------------------------------
+
+
+def test_lee_guion_normaliza_crlf_a_lf(tmp_path: Path) -> None:
+    """Un guion guardado en Windows (CRLF) produce el mismo texto que en `\\n`.
+
+    Escrito con `write_bytes` y un `\\r\\n` explicito en los propios bytes, no con
+    el `newline` que decidiria la plataforma que ejecuta el test (requisito 1).
+    """
+    ruta = tmp_path / "guion.md"
+    ruta.write_bytes(GUION_VALIDO.replace("\n", "\r\n").encode("utf-8"))
+    assert leer_guion(ruta) == GUION_VALIDO
+
+
+def test_lee_guion_normaliza_cr_suelto_a_lf(tmp_path: Path) -> None:
+    ruta = tmp_path / "guion.md"
+    ruta.write_bytes(GUION_VALIDO.replace("\n", "\r").encode("utf-8"))
+    assert leer_guion(ruta) == GUION_VALIDO
+
+
+def test_lee_guion_con_bom_y_crlf_a_la_vez(tmp_path: Path) -> None:
+    ruta = tmp_path / "guion.md"
+    ruta.write_bytes(GUION_VALIDO.replace("\n", "\r\n").encode("utf-8-sig"))
+    assert leer_guion(ruta) == GUION_VALIDO
+
+
 # --- verificar_estructura_minima ----------------------------------------------------
 
 
@@ -151,6 +177,21 @@ def test_nombre_guion_seguro_neutraliza_secuencias_de_puntos() -> None:
 
 def test_nombre_guion_seguro_nunca_vacio() -> None:
     assert nombre_guion_seguro(Path("....md")) == "guion"
+
+
+def test_nombre_guion_seguro_nunca_vacio_con_ruta_windows() -> None:
+    """Diagnostico de R-10 (requisito 2), no una correccion.
+
+    La sesion local en Windows que descubrio T-32 marco este caso como en rojo ahi
+    ("WindowsPath no reconoce .md como sufijo"), pero `PureWindowsPath` particiona
+    `.stem`/`.suffix` de un nombre con puntos finales repetidos exactamente igual
+    que `PurePosixPath` -- verificado aqui explicitamente, sin depender de correr
+    en Windows de verdad. `nombre_guion_seguro` ya produce "guion" para ese `.stem`
+    en cualquier plataforma: el fallo original no estaba en esta funcion, y no se
+    modifica (decision completa en DECISIONES_TECNICAS.md).
+    """
+    assert PureWindowsPath("....md").stem == Path("....md").stem == "..."
+    assert nombre_guion_seguro(PureWindowsPath("....md")) == "guion"
 
 
 def test_carpeta_salida_para_queda_dentro_de_la_carpeta_del_guion(tmp_path: Path) -> None:

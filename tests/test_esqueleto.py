@@ -18,6 +18,30 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 from config import Configuracion
 from verificar_salidas import buscar_recursos_externos, verificar_autocontencion
 
+_RAIZ_SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+
+
+def _llamadas_write_text(texto: str) -> list[str]:
+    """Argumentos de cada `algo.write_text(...)` en `texto`, con parentesis
+    balanceados (a diferencia de una regex simple, soporta la llamada anidada
+    de `estado.py`: `write_text(json.dumps(estado.a_dict(), ...), ...)`)."""
+    resultados = []
+    marcador = ".write_text("
+    inicio = 0
+    while (idx := texto.find(marcador, inicio)) != -1:
+        pos = idx + len(marcador)
+        profundidad = 1
+        fin = pos
+        while profundidad > 0:
+            if texto[fin] == "(":
+                profundidad += 1
+            elif texto[fin] == ")":
+                profundidad -= 1
+            fin += 1
+        resultados.append(texto[pos : fin - 1])
+        inicio = fin
+    return resultados
+
 
 def test_configuracion_por_defecto_es_coherente() -> None:
     configuracion = Configuracion()
@@ -152,3 +176,26 @@ def test_verificacion_sin_reproductor_es_no_aplicable(tmp_path: Path) -> None:
     resultado = verificar_autocontencion(tmp_path / "no-existe.html")
     assert resultado.estado == "NO APLICABLE"
     assert not resultado.es_fallo
+
+
+def test_ninguna_salida_generada_reintroduce_saltos_de_linea_de_plataforma() -> None:
+    """R-10, requisito 4: ninguna escritura de una salida generada (`.srt`,
+    `.pdf`, `tarjetas.json`, reproductor, etc.) puede depender del `newline` por
+    defecto de `Path.write_text` -- en Windows traduce cada `\\n` a `\\r\\n`, lo
+    que reintroduciria fin de linea de plataforma justo en los archivos que este
+    proyecto genera para ser leidos en cualquier maquina. Comprobacion lexica
+    sobre el propio codigo fuente, mismo principio que el validador de
+    auto-contencion: detecta una escritura nueva sin `newline="\\n"` explicito
+    antes de que produzca un archivo con fin de linea inconsistente segun la
+    plataforma que lo genera.
+    """
+    infractores = []
+    for ruta in sorted(_RAIZ_SCRIPTS.glob("*.py")):
+        texto = ruta.read_text(encoding="utf-8")
+        for llamada in _llamadas_write_text(texto):
+            if "newline=" not in llamada:
+                infractores.append(f"{ruta.name}: write_text({llamada.strip()})")
+    assert not infractores, (
+        'write_text sin newline="\\n" explicito (reintroduce \\r\\n en Windows): '
+        + "; ".join(infractores)
+    )

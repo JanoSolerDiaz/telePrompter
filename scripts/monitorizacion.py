@@ -53,6 +53,7 @@ def _volcar_diagnostico(ruta: Path, excepcion: BaseException) -> None:
     ruta.write_text(
         f"Diagnostico teleprompter — {_marca_de_tiempo()}\n{'=' * 60}\n{cuerpo}",
         encoding="utf-8",
+        newline="\n",
     )
 
 
