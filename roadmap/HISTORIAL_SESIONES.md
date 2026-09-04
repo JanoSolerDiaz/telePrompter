@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-04 — R-11 (robustez de datos derivados del rodaje), sesión de nube
+**Tarea(s):** R-11, única de la fase transversal F-F
+**Estado resultante:** R-11 **COMPLETADA**. Fila `R-11` en §1 pasa de PENDIENTE a COMPLETADA. Sin ninguna T-XX ni R-XX PENDIENTE en §1 al cerrar
+**Commits a develop:** `R-11: robustez de datos derivados del rodaje (toma buena ambigua, capítulos sobrantes, cobertura cruzada)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (`Migración: No` en la ficha de R-11; sin cambio de esquema de `estado.json`)
+**Archivos creados/modificados:** `scripts/tomas.py` (`duracion_toma_buena` gana `numero_escena` opcional y rechaza con `RegistroTomasError` más de una toma `buena` por escena), `scripts/calibracion.py`/`scripts/srt_alineado.py`/`scripts/capitulos_youtube.py` (pasan `tiempo_escena.numero` en su llamada a `duracion_toma_buena`), `scripts/capitulos_youtube.py` (`ResultadoCapitulos` gana `titulos_sobrantes`), `scripts/verificar_salidas.py` (detalle nuevo de títulos sobrantes en la etapa de capítulos de YouTube), `tests/test_tomas.py` (2 tests nuevos: ambigüedad rechazada, mensaje con número de escena), `tests/test_capitulos_youtube.py` (1 test nuevo: títulos sobrantes), `tests/test_integracion_montaje.py` (1 test nuevo: coherencia cruzada `.srt` alineado/capítulos de YouTube), `references/contrato-tomas.md` (sección nueva sobre la exclusividad comprobada al leer), `SKILL.md` (párrafos de `.srt` alineado y capítulos de YouTube), `roadmap/SEGUIMIENTO.md` (cabecera, fila `R-11`), `roadmap/DECISIONES_TECNICAS.md` (5 filas nuevas), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (mypy, 68 archivos) · lint ✅ (`ruff check`) · tests ✅ (550 pasan + 0 skipped; antes 546) · build ✅ (`verificar_salidas.py --fixture`, todas las etapas OK, latentes conocidas de `.pptx`/`.pdf` por falta de dependencias del entorno de nube)
+**Health check post-deploy:** NO APLICABLE — sesión de nube, sin acceso a `~/.claude/skills/` (nota de entorno, protocolo v1.3); R-11 no toca la instalación de la skill
+**Decisiones tomadas:** 5 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-04, R-11): (1) la ambigüedad de "toma buena" se detecta en el punto de LECTURA (`duracion_toma_buena`), no en el de CARGA del `.json` exportado, para cubrir también un `estado.json` editado a mano; (2) `numero_escena` opcional solo para el mensaje de error; (3) los títulos sobrantes se exponen como campo de datos (`titulos_sobrantes`), sin nota en `capitulos-youtube.txt` (no tienen marca de tiempo que anunciar); (4) el test de coherencia cruzada se añade a `tests/test_integracion_montaje.py` (mismo género que el test de T-33) en vez de un archivo nuevo
+**Hallazgos del auditor atendidos:** ninguno se cierra en código por esta sesión de forma directa — el auditor es quien marca RESUELTO en su propio documento — pero R-11 implementa el cierre de código que resuelve `#16`, `#17` y `#18`, quedando pendientes solo de que el auditor los reevalúe contra este commit y los cierre
+**Hallazgos:** ninguno nuevo — los tres hallazgos que motivaron R-11 ya estaban documentados en `auditoriacontinua.md` y en la propia ficha de `ROADMAP_PRODUCTO.md`
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** no queda ninguna T-XX ni R-XX PENDIENTE en §1 (Fase F-F queda 100 % entregada con solo R-11 dentro). Corresponde un ciclo de Product Manager — revisar `auditoriacontinua.md` (reevaluar `#16`-`#18` contra este commit) y `roadmap/FEEDBACK.md` (sigue sin entradas `nuevo` reales) — salvo que el dueño indique otra prioridad. El bloqueo #7 de §3 (grabar un curso completo) sigue siendo la acción pendiente del dueño, sin cambios. Nota de entorno: cuarta sesión consecutiva que encuentra el `develop` local del clon efímero desalineado del remoto al arrancar (mismo síntoma que R-09, R-10 y el ciclo de PM anterior) — se recomienda investigarlo como incidencia de infraestructura si se repite una quinta vez.
+
+---
+
 ### Sesión 2026-09-04 — Ciclo de Product Manager (sin sesión de código)
 **Tarea(s):** Gestión de `roadmap/ROADMAP_PRODUCTO.md` y `roadmap/ROADMAP_HISTORICO.md` (ciclo de PM)
 **Estado resultante:** Sin cambio de estado de ninguna T-XX. Fase transversal F-E (R-10, ya COMPLETADA) movida a `ROADMAP_HISTORICO.md`. Una R-XX nueva registrada PENDIENTE en §1: `R-11`, fase transversal F-F nueva. La cola de producto pasa de "ninguna R-XX pendiente" a `R-11`

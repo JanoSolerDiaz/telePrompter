@@ -2604,6 +2604,36 @@ comportamiento.
   huecos conocidos y deliberadamente fuera de alcance (el validador es léxico, no
   interpreta JS/CSS). Enlazado desde la sección "Verificacion" de `SKILL.md`.
 
+## Robustez de datos derivados del rodaje (R-11)
+
+Cierra tres hallazgos de menor entidad (`#16` media, `#17` y `#18` baja) alrededor de
+los datos de rodaje real (R-02) y sus dos consumidores derivados (`.srt` alineado de
+R-05, capítulos de YouTube de R-07) — cierre preventivo, ninguno con bug reproducido
+hoy sobre material real. Sin migración de `estado.json`.
+
+- **Exclusividad de "toma buena" (#16):** `tomas.duracion_toma_buena` solo confiaba en
+  que el lado JS (`finalizarTomaActual`) garantizara como mucho una toma `buena` por
+  escena; un `.json` con dos tomas `buena` para la misma escena (edición manual, fusión
+  de exportaciones, un futuro bug de `guion.js`) hacía que eligiera la primera en
+  silencio. Ahora rechaza ese dato con `RegistroTomasError` en cuanto encuentra más de
+  una, con un mensaje que lista los números de toma en conflicto (y el número de escena,
+  si quien llama lo pasa — `calibracion.py`/`srt_alineado.py`/`capitulos_youtube.py` ya
+  lo hacen). La comprobación vive en el punto de LECTURA, no en `cargar_parte_de_rodaje`
+  (el punto de CARGA): cubre así también un `estado.json` editado a mano, no solo un
+  `.json` recién exportado. Ver `references/contrato-tomas.md` y `DECISIONES_TECNICAS.md`.
+- **Títulos de capítulo sobrantes (#17):** `capitulos_youtube.calcular_capitulos`
+  empareja títulos con escenas "hasta la más corta"; con más títulos que escenas, los
+  sobrantes ahora quedan en el campo nuevo `ResultadoCapitulos.titulos_sobrantes` en vez
+  de desaparecer sin rastro (mismo patrón que `motivo_sin_generar`/`escenas_sin_toma_buena`).
+  Deliberadamente sin nota en `capitulos-youtube.txt`: esos títulos no tienen marca de
+  tiempo que anunciar.
+- **Coherencia cruzada `.srt` alineado / capítulos de YouTube (#18):** ambos comparten
+  `tomas.duracion_toma_buena`, así que su coherencia era "por construcción", no
+  verificada por regresión. `tests/test_integracion_montaje.py` gana un test que
+  alimenta `reescalar_a_toma_buena` y `calcular_capitulos` con el mismo
+  `ResultadoTiempos`+`tomas_por_escena` y confirma que el inicio acumulado de cada
+  capítulo coincide con el de la misma escena en el `.srt` alineado.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

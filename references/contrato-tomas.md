@@ -116,3 +116,17 @@ Sin `jsonschema` ni ninguna biblioteca externa (§0.2): comprobación a mano,
 mismo patrón que `pptx.validar_tarjetas` (T-29) y `srt.validar_srt` (T-27).
 Cualquier archivo que no cumpla esto se rechaza con `RegistroTomasError` y un
 mensaje ya accionable en español — nunca se fusiona a medias.
+
+## Exclusividad de `buena`, comprobada al LEER (R-11, hallazgo #16)
+
+`cargar_parte_de_rodaje` no rechaza un archivo con más de una toma `buena` en
+la misma escena — no es una forma inválida del archivo, solo un dato que no
+debería darse (la exclusividad la garantiza el lado JS, `finalizarTomaActual`,
+al desmarcar cualquier otra toma antes de marcar la nueva). Si ocurriera de
+todos modos (edición manual del `.json` o de `estado.json`, fusión de dos
+exportaciones, un futuro bug de `guion.js`), la comprobación vive en el punto
+de LECTURA en vez de en el de carga: `duracion_toma_buena` (compartida por
+R-04/`calibracion.py`, R-05/`srt_alineado.py` y R-07/`capitulos_youtube.py`)
+rechaza con `RegistroTomasError` en cuanto encuentra más de una toma `buena`
+para la escena que le preguntan, en vez de elegir la primera en silencio y
+propagar un dato ambiguo a esas tres salidas derivadas.

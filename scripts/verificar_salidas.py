@@ -346,7 +346,8 @@ def generar_capitulos_youtube_fixture() -> Resultado:
     guardar_capitulos_youtube(contenido, CARPETA_SALIDA_FIXTURE)
     detalle = (
         f"generado sobre {ruta_guion.name}. {len(calculo.escenas_sin_toma_buena)} "
-        "escena(s) sin toma buena todavia (latente: cae a la duración estimada)."
+        "escena(s) sin toma buena todavia (latente: cae a la duración estimada). "
+        f"{len(calculo.titulos_sobrantes)} título(s) de capítulo sin escena correspondiente."
     )
     return Resultado("Generación de capítulos de YouTube", "OK", detalle)
 

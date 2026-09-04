@@ -109,7 +109,9 @@ def reescalar_a_toma_buena(
 
     for tiempo_escena in resultado_tiempos.escenas:
         bloques_escena = bloques_por_escena.get(tiempo_escena.numero, [])
-        duracion_real = duracion_toma_buena(tomas_por_escena.get(str(tiempo_escena.numero)))
+        duracion_real = duracion_toma_buena(
+            tomas_por_escena.get(str(tiempo_escena.numero)), tiempo_escena.numero
+        )
         estimada = tiempo_escena.duracion_estimada_segundos
         if duracion_real is not None and duracion_real > 0:
             escenas_alineadas.append(tiempo_escena.numero)

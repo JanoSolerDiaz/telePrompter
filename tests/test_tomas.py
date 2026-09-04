@@ -283,3 +283,31 @@ def test_duracion_toma_buena_es_none_sin_ninguna_marcada() -> None:
 
 def test_duracion_toma_buena_es_none_sin_escena_registrada() -> None:
     assert duracion_toma_buena(None) is None
+
+
+def test_duracion_toma_buena_rechaza_dos_tomas_marcadas_buena_a_la_vez() -> None:
+    """Reproduce exactamente el escenario del hallazgo #16 (R-11): un dato
+    corrupto (edicion manual, fusion de dos exportaciones, un futuro bug de
+    `guion.js`) con dos tomas `buena` en la misma escena debe rechazarse, nunca
+    elegir la primera en silencio."""
+    tomas_escena = {
+        "titulo": "Apertura",
+        "tomas": [
+            {"numero": 1, "duracion_segundos": 10.0, "nota": "", "buena": True},
+            {"numero": 2, "duracion_segundos": 999.0, "nota": "", "buena": True},
+        ],
+    }
+    with pytest.raises(RegistroTomasError, match="ambiguo"):
+        duracion_toma_buena(tomas_escena)
+
+
+def test_duracion_toma_buena_incluye_el_numero_de_escena_en_el_error_si_se_da() -> None:
+    tomas_escena = {
+        "titulo": "Apertura",
+        "tomas": [
+            {"numero": 1, "duracion_segundos": 10.0, "nota": "", "buena": True},
+            {"numero": 2, "duracion_segundos": 20.0, "nota": "", "buena": True},
+        ],
+    }
+    with pytest.raises(RegistroTomasError, match="escena 3"):
+        duracion_toma_buena(tomas_escena, numero_escena=3)

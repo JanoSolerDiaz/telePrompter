@@ -54,6 +54,14 @@ cuando el guion no trae la seccion, o cuando la trae pero no se pudo leer ningun
 titulo de su tabla; `formatear_capitulos_youtube` devuelve `None` en ese caso y
 `guardar_capitulos_youtube` no debe llamarse.
 
+R-11 (hallazgo #17): cuando sobran TITULOS de capitulo (mas titulos que
+escenas -- el caso simetrico al de arriba, que ya emparejaba "hasta el mas
+corto" sin avisar de los titulos que se quedaban fuera) los titulos
+descartados quedan ahora en `ResultadoCapitulos.titulos_sobrantes`, en vez de
+desaparecer sin rastro: la seccion auxiliar del guion sigue integra (no es
+perdida de la fuente), pero quien orquesta la generacion puede avisar al
+dueno de que un titulo de capitulo no llego a `capitulos-youtube.txt`.
+
 Requisito 5 (regenerable sin intervencion manual): este modulo no persiste nada
 por si mismo -- es una funcion pura del `ResultadoParseo`/`ResultadoTiempos` y de
 `EstadoProyecto.tomas` que se le pasen, igual que `srt_alineado.py`. La skill no
@@ -161,11 +169,15 @@ class ResultadoCapitulos:
     marca reportada, las que no tenian toma buena y cayeron a la duracion
     estimada de T-12 (requisito 2, mismo nombre de campo que
     `srt_alineado.ResultadoAlineacion`); vacio significa que todas las marcas
-    reportadas son tiempo real.
+    reportadas son tiempo real. `titulos_sobrantes` son los titulos de la
+    tabla de capitulos que no llegaron a emparejarse con ninguna escena por
+    haber MAS titulos que escenas (requisito 2 de R-11, hallazgo #17); vacio
+    en el caso normal (mismo numero de titulos que escenas, o menos).
     """
 
     capitulos: tuple[CapituloYoutube, ...]
     escenas_sin_toma_buena: tuple[int, ...]
+    titulos_sobrantes: tuple[str, ...]
     motivo_sin_generar: str | None
 
 
@@ -187,6 +199,7 @@ def calcular_capitulos(
         return ResultadoCapitulos(
             capitulos=(),
             escenas_sin_toma_buena=(),
+            titulos_sobrantes=(),
             motivo_sin_generar=(
                 f"el guion no trae ninguna seccion '{configuracion.titulo_seccion_capitulos}'."
             ),
@@ -196,6 +209,7 @@ def calcular_capitulos(
         return ResultadoCapitulos(
             capitulos=(),
             escenas_sin_toma_buena=(),
+            titulos_sobrantes=(),
             motivo_sin_generar=(
                 f"la seccion '{seccion.titulo}' no trae ninguna fila de tabla legible."
             ),
@@ -208,7 +222,9 @@ def calcular_capitulos(
     for indice, tiempo_escena in enumerate(resultado_tiempos.escenas):
         if indice >= numero_capitulos:
             break
-        duracion_real = duracion_toma_buena(tomas_por_escena.get(str(tiempo_escena.numero)))
+        duracion_real = duracion_toma_buena(
+            tomas_por_escena.get(str(tiempo_escena.numero)), tiempo_escena.numero
+        )
         if duracion_real is not None and duracion_real > 0:
             duracion = duracion_real
         else:
@@ -227,11 +243,13 @@ def calcular_capitulos(
         return ResultadoCapitulos(
             capitulos=(),
             escenas_sin_toma_buena=(),
+            titulos_sobrantes=tuple(titulos),
             motivo_sin_generar="el guion no tiene ninguna escena con la que emparejar un capitulo.",
         )
     return ResultadoCapitulos(
         capitulos=tuple(capitulos),
         escenas_sin_toma_buena=tuple(escenas_sin_toma_buena),
+        titulos_sobrantes=tuple(titulos[numero_capitulos:]),
         motivo_sin_generar=None,
     )
 

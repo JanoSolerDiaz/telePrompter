@@ -101,6 +101,21 @@ def test_menos_titulos_que_escenas_empareja_solo_hasta_el_mas_corto() -> None:
 
     assert [c.titulo for c in calculo.capitulos] == ["Unico"]
     assert calculo.motivo_sin_generar is None
+    assert calculo.titulos_sobrantes == ()
+
+
+def test_mas_titulos_que_escenas_deja_constancia_de_los_sobrantes() -> None:
+    """Reproduce el hallazgo #17 (R-11): con mas titulos de capitulo que
+    escenas, los sobrantes no deben desaparecer sin rastro -- a diferencia del
+    caso simetrico de arriba, que ya emparejaba "hasta el mas corto"."""
+    resultado, tiempos = _analizar(
+        _guion_con_capitulos(["Primero", "Segundo", "Tercero"], [8])
+    )
+    calculo = calcular_capitulos(resultado, tiempos, {})
+
+    assert [c.titulo for c in calculo.capitulos] == ["Primero"]
+    assert calculo.titulos_sobrantes == ("Segundo", "Tercero")
+    assert calculo.motivo_sin_generar is None
 
 
 def test_titulos_se_leen_de_los_guiones_reales_que_traen_la_seccion(

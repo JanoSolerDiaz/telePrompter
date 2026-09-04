@@ -11,12 +11,16 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
+from capitulos_youtube import calcular_capitulos
 from clasificador import clasificar_guion
 from config import Configuracion
 from convencion import detectar_desviaciones
 from parser import parsear_guion
 from pptx import generar_tarjetas, tarjetas_a_diccionario, validar_tarjetas
 from srt import exportar_srt, formatear_srt, generar_entradas_srt, validar_srt
+from srt_alineado import reescalar_a_toma_buena
 from tiempos import calcular_tiempos
 
 
@@ -79,3 +83,86 @@ def test_srt_y_tarjetas_json_son_consistentes_sobre_los_guiones_reales(
         numeros_guion = [escena.numero for escena in resultado.escenas]
         assert numeros_tarjetas == numeros_guion
         assert numeros_tarjetas == sorted(set(numeros_tarjetas))
+
+
+def _mmss(segundos: int) -> str:
+    return f"{segundos // 60}:{segundos % 60:02d}"
+
+
+def _guion_con_capitulos_y_tomas(
+    titulos_capitulos: list[str], palabras_por_escena: list[int]
+) -> str:
+    """Guion sintetico con una seccion `Capítulos` (una fila por titulo, mismo
+    orden que las escenas) y una escena por entrada de `palabras_por_escena` --
+    mismo generador que usan `tests/test_capitulos_youtube.py` y
+    `tests/test_srt_alineado.py`, unificado aqui para que ambas salidas partan
+    EXACTAMENTE del mismo guion."""
+    filas = "\n".join(f"| 0:00 | {titulo} |" for titulo in titulos_capitulos)
+    partes = [
+        "# Titulo\n",
+        "\n## Capítulos (para la descripción del vídeo)\n\n"
+        f"| Marca | Capítulo |\n|---|---|\n{filas}\n",
+    ]
+    inicio = 0
+    for indice, num_palabras in enumerate(palabras_por_escena, start=1):
+        fin = inicio + 15
+        palabras = " ".join(["palabra"] * num_palabras)
+        partes.append(
+            f"\n## BLOQUE {indice} - Escena {indice} ({_mmss(inicio)} - {_mmss(fin)})\n\n"
+            f"**LOCUCIÓN**\n\n> {palabras}. Otra frase, con coma, aqui.\n"
+        )
+        inicio = fin
+    return "".join(partes)
+
+
+def test_srt_alineado_y_capitulos_youtube_son_coherentes_entre_si() -> None:
+    """Cierra el hallazgo #18 (R-11): `guion-alineado.srt` (R-05) y
+    `capitulos-youtube.txt` (R-07) comparten `tomas.duracion_toma_buena`, asi
+    que su coherencia hoy es "por construccion" -- este test la verifica por
+    regresion en vez de darla por sentada, alimentando ambos con el MISMO
+    `ResultadoTiempos` + `tomas_por_escena` (dos escenas con toma buena real,
+    una sin ella que cae a la duracion estimada, igual que documentan
+    `ResultadoAlineacion.escenas_sin_toma_buena` y
+    `ResultadoCapitulos.escenas_sin_toma_buena`)."""
+    resultado = parsear_guion(
+        _guion_con_capitulos_y_tomas(["Primero", "Segundo", "Tercero"], [10, 10, 10])
+    )
+    tiempos = calcular_tiempos(resultado, Configuracion())
+    tomas_por_escena = {
+        "1": {
+            "titulo": "Escena 1",
+            "tomas": [{"numero": 1, "duracion_segundos": 5.0, "nota": "", "buena": True}],
+        },
+        "3": {
+            "titulo": "Escena 3",
+            "tomas": [{"numero": 1, "duracion_segundos": 30.0, "nota": "", "buena": True}],
+        },
+    }
+
+    alineacion = reescalar_a_toma_buena(tiempos, tomas_por_escena)
+    calculo = calcular_capitulos(resultado, tiempos, tomas_por_escena)
+
+    # Las dos salidas coinciden en que exactamente la escena 2 se apoya en la
+    # duracion estimada -- ninguna mezcla en silencio real con estimado sin
+    # decir cual es cual (mismo criterio de honestidad de R-04/R-05/R-07).
+    assert alineacion.escenas_sin_toma_buena == (2,)
+    assert calculo.escenas_sin_toma_buena == (2,)
+    assert alineacion.escenas_alineadas == (1, 3)
+
+    # Coherencia cruzada: el instante de inicio acumulado de cada capitulo de
+    # R-07 coincide con el instante de inicio acumulado de la misma escena en
+    # el `.srt` alineado de R-05 -- ambos avanzan el cursor con la MISMA
+    # duracion por escena (real si existe toma buena, estimada si no).
+    duracion_acumulada = 0.0
+    for tiempo_escena, capitulo in zip(
+        alineacion.resultado_tiempos.escenas, calculo.capitulos, strict=True
+    ):
+        assert capitulo.numero_escena == tiempo_escena.numero
+        assert capitulo.inicio_segundos == pytest.approx(duracion_acumulada, abs=1e-6)
+        duracion_acumulada += tiempo_escena.duracion_estimada_segundos
+
+    # Duracion total identica: el `.srt` alineado termina exactamente donde
+    # deberia empezar un capitulo hipotetico "despues de la ultima escena".
+    assert alineacion.resultado_tiempos.duracion_total_segundos == pytest.approx(
+        duracion_acumulada, abs=1e-6
+    )

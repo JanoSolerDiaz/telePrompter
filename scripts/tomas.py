@@ -25,6 +25,15 @@ tomas sin validar). R-04 (`calibracion.py`) y R-05 (`srt_alineado.py`)
 comparten esta misma funcion en vez de cada uno reimplementar el mismo
 criterio por su cuenta.
 
+R-11 (hallazgo #16): la exclusividad de "como mucho una toma buena por
+escena" solo la garantizaba antes el lado JS (`finalizarTomaActual` desmarca
+las demas antes de anadir la nueva) -- un `estado.tomas` con dos tomas
+`buena` para la misma escena (edicion manual, fusion de dos exportaciones, un
+futuro bug de `guion.js`) hacia que `duracion_toma_buena` eligiera la primera
+en silencio. Ahora rechaza ese dato con `RegistroTomasError` en vez de
+elegir: es un dato corrupto, no una ambiguedad legitima que se pueda resolver
+sola, y de ella dependen a la vez R-04/R-05/R-07.
+
 Contrato del archivo exportado y de `estado.json["tomas"]`: `references/contrato-tomas.md`.
 """
 
@@ -174,19 +183,36 @@ def _toma_a_dict(toma: Toma) -> dict[str, Any]:
     }
 
 
-def duracion_toma_buena(tomas_escena: dict[str, Any] | None) -> float | None:
+def duracion_toma_buena(
+    tomas_escena: dict[str, Any] | None, numero_escena: int | None = None
+) -> float | None:
     """Duracion real (segundos) de la toma marcada `buena` de una escena, tal
     como viene fusionada en `EstadoProyecto.tomas` (claves de escena en texto,
     ver `references/contrato-tomas.md`). `None` si la escena no tiene tomas
     todavia o ninguna esta marcada `buena` -- nunca se elige una toma sin
-    marcar ni se promedia entre varias."""
+    marcar ni se promedia entre varias.
+
+    `numero_escena` es opcional, solo para que el mensaje de error senale la
+    escena exacta cuando quien llama ya lo sabe (R-04/R-05/R-07 lo conocen
+    todos). Si hay MAS de una toma marcada `buena` (dato corrupto, hallazgo
+    #16 de R-11), se rechaza con `RegistroTomasError` en vez de elegir la
+    primera en silencio."""
     if tomas_escena is None:
         return None
-    for toma in tomas_escena.get("tomas", []):
-        if toma.get("buena"):
-            duracion = toma.get("duracion_segundos")
-            return float(duracion) if duracion is not None else None
-    return None
+    buenas = [toma for toma in tomas_escena.get("tomas", []) if toma.get("buena")]
+    if len(buenas) > 1:
+        contexto = f"la escena {numero_escena}" if numero_escena is not None else "una escena"
+        numeros = ", ".join(str(toma.get("numero")) for toma in buenas)
+        raise RegistroTomasError(
+            f"Parte de rodaje ambiguo en {contexto}: {len(buenas)} tomas marcadas "
+            f"'buena' a la vez (numeros {numeros}). Como mucho una toma puede ser la "
+            "buena por escena -- corrige el dato (a mano en el .json exportado o "
+            "en estado.json) antes de continuar."
+        )
+    if not buenas:
+        return None
+    duracion = buenas[0].get("duracion_segundos")
+    return float(duracion) if duracion is not None else None
 
 
 def registrar_tomas(estado: EstadoProyecto, parte: ParteDeRodaje) -> EstadoProyecto:

@@ -246,7 +246,7 @@ def _contraste_guion(evidencia: EvidenciaGuion) -> ContrasteGuion:
                 palabras=palabras_por_escena[tiempo_escena.numero],
                 duracion_estimada_segundos=tiempo_escena.duracion_estimada_segundos,
                 duracion_objetivo_segundos=tiempo_escena.duracion_objetivo_segundos,
-                duracion_real_segundos=duracion_toma_buena(tomas_escena),
+                duracion_real_segundos=duracion_toma_buena(tomas_escena, tiempo_escena.numero),
             )
         )
 
