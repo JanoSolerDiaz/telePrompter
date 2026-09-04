@@ -19,15 +19,20 @@
 | #2 | 2026-08-31 | Infraestructura | alta | **RESUELTO** | `.gitignore` excluye `assets/` y `fixtures/` completos. Quedan fuera del control de versiones los logotipos 480, los tres guiones de calibración y —en cuanto existan— las plantillas del reproductor (T-18) y el `guion-ejemplo.md` del health check (T-32). **Cerrado por P-01:** `.gitignore` acotado a artefactos generados; `assets/` y `fixtures/` versionados y presentes en el commit `e8b9663`. | P-01 · T-04 |
 | #3 | 2026-08-31 | Producto / marca | alta | **RESUELTO** | Poppins no estaba instalada, lo que vaciaba de efecto la decisión tipográfica. **Cerrado:** el dueño la instaló el mismo día. Reverificado: 5 archivos (Bold, SemiBold, Medium, Regular, Light), cobertura completa de la escala de la guía de marca. | T-28 · §6.8 |
 | #4 | 2026-08-31 | Calidad | media | **RESUELTO** | La 4ª verificación (`verificar_salidas.py --fixture`) es obligatoria desde T-00, pero su fixture no existe hasta T-32 y el generador HTML no existe hasta T-18: la red de seguridad quedaba incompleta durante casi todo el backlog. **Cerrado en T-00:** `verificar_salidas.py` declara cada etapa NO APLICABLE nombrando la tarea que la implementará, y se activará sola según avance el backlog. | T-00 |
-| #5 | 2026-08-31 | Producto | media | ABIERTO | T-26 asume que `localStorage` persiste al abrir el reproductor desde `file://`. No está verificado en el navegador de grabación; el `try/catch` evita el error pero no salva la promesa de «retomar entre sesiones». | T-26 |
-| #6 | 2026-08-31 | Coherencia | baja | ABIERTO | Nomenclatura arrastrada del nombre anterior: la carpeta de salida es `<nombre-guion>-tarjetas/` con el proyecto ya llamado `teleprompter`. Además `assets/` mezcla dos cosas distintas (logotipos de marca y, en el futuro, plantillas del reproductor). | T-07, T-18, T-28 |
+| #5 | 2026-08-31 | Producto | media | **RESUELTO** | T-26 asumía que `localStorage` persiste al abrir el reproductor desde `file://`, sin verificación real ni plan B si fallaba. **Cerrado por R-01** (2026-09-03), reverificado de forma independiente en esta pasada (2026-09-04) leyendo `guion.js`: `comprobarAlmacenamientoDisponible()` (líneas ~68-79) detecta con certeza si `localStorage` no funciona y muestra un aviso visible en el índice; "Exportar/Importar preferencias" (~1288-1410) lee siempre de las variables en memoria (nunca de `localStorage` en el momento del clic) y descarga un `.json` vía Blob, con `window.prompt()` como segundo nivel de resguardo si la descarga fallara. Verificado además con Playwright/Chromium real (persiste entre cierres del mismo perfil, vacío en un perfil nuevo). Es un plan B real en código, no solo documentado. | R-01 |
+| #6 | 2026-08-31 | Coherencia | baja | **RESUELTO** | Nomenclatura arrastrada del nombre anterior: la carpeta de salida era `<nombre-guion>-tarjetas/` con el proyecto ya llamado `teleprompter`, y `assets/` mezclaba logotipos de marca con plantillas del reproductor. **Cerrado por R-06** (2026-09-03), reverificado en esta pasada: `config.NOMBRE_SUFIJO_CARPETA_SALIDA = "-teleprompter"`, con migración automática de carpetas heredadas (`entrada._migrar_carpeta_salida_heredada`, copia `.bak` antes de renombrar, 7 tests en `test_entrada.py`) y `assets/` separado en `assets/marca/`, `assets/reproductor/`, `assets/pdf/`, cada una referenciada por separado en el código real (`config.py`, `reproductor.py`). | R-06 |
 | #7 | 2026-08-31 | Trazabilidad | baja | **RESUELTO** | Los tres logs estaban vacíos con el proyecto ya commiteado. **Cerrado:** la sesión de T-00 dejó 7 decisiones en `DECISIONES_TECNICAS.md`, su entrada en `HISTORIAL_SESIONES.md` y tres desviaciones en §7 (dos ya cerradas al resolverse §6.7). El cambio a v1.2 sí está registrado en los tres sitios. | §0.4 |
 | #8 | 2026-08-31 | Documentación | baja | **RESUELTO** | `DEVELOPERS.md` se referencia en §0.4 y en T-32 pero todavía no existía. **Cerrado por acumulación:** existe ya con 934 líneas y una sección por cada tarea completada (T-00 a T-21), mantenida sesión a sesión como parte del cierre de cada una — cumple de sobra lo que T-32 le exige, con antelación sobre esa tarea. | T-32 |
 | #9 | 2026-09-02 | Invariantes / revalidación | **alta** | **RESUELTO** | Si en una misma revalidación coincidían una edición manual del dueño y la aceptación de una partición de respiración sobre ese mismo bloque, la identidad usada para localizar la edición no se traducía a las identidades resultantes de la partición y la edición se perdía en silencio. **Cerrado por P-02** (2026-09-02): `revalidacion.py` pospone la partición ese mismo pase cuando hay conflicto y deja una incidencia explícita; test de regresión (`test_edicion_manual_y_particion_aceptada_misma_pasada_no_pierde_edicion`) reproduce exactamente este escenario. Verificado de nuevo en esta pasada (2026-09-03): sigue en verde. El propio cierre documentó un límite distinto, no cubierto por esta corrección → **#14**. | `revalidacion.py` · invariante (c) |
-| #10 | 2026-09-02 | Configuración / calidad | baja | ABIERTO | Dos colores de estado del índice del reproductor (`.escena-estado--grabada` `#4ade80`, `.escena-estado--revisada` `#60a5fa`, de T-19) están escritos a mano en `estilo.css` en vez de vivir en `Configuracion` — la misma deuda de «sin números mágicos» que T-21 cerró para el color de acento del reproductor sin tocar estos dos. | T-19, T-21 · §0.2 |
-| #11 | 2026-09-02 | Documentación / coherencia | baja | ABIERTO | `PROYECTO.md` (documento estable, «cambia poco») sigue describiendo en su glosario el ritmo como «por defecto 120, propio de locución didáctica y pausada» — la decisión anterior a T-12, ya sustituida en §0.2: el ritmo base es el deducido del propio guión, con 120 ppm solo de respaldo. | PROYECTO.md · T-12 |
-| #12 | 2026-09-02 | Infraestructura | baja | ABIERTO | `pyproject.toml` exige Python ≥3.12 (`requires-python`, `target-version = "py312"`), pero el intérprete real de las sesiones de nube es 3.11.15. Ya mitigado evitando deliberadamente sintaxis exclusiva de 3.12 (decisión de T-06), pero el desajuste de fondo sigue sin corregirse ni vigilarse fuera de una nota suelta en `DECISIONES_TECNICAS.md`. | pyproject.toml · DECISIONES_TECNICAS (T-06) |
-| #13 | 2026-09-02 | Robustez del validador | baja | ABIERTO | El validador de auto-contención (`verificar_salidas.py`) cubre `http(s)://`, `//cdn`, `<link>` remoto, `@import`, `fetch`/`XMLHttpRequest` y `src=` externo, pero no contempla `<object>`/`<embed src>`/`<base href>`/`WebSocket`/`EventSource`/`sendBeacon` ni `url(...)` de CSS fuera de `@import`. Hoy ninguna plantilla los usa; la regla dura solo se sostiene mientras nadie los introduzca sin ampliar el validador. Ya recogido en `R-09` (PENDIENTE), sin cambios en esta pasada. | `verificar_salidas.py` · regla «salida autocontenida» · R-09 |
+| #10 | 2026-09-02 | Configuración / calidad | baja | **RESUELTO** | Dos colores de estado del índice del reproductor (`.escena-estado--grabada` `#4ade80`, `.escena-estado--revisada` `#60a5fa`, de T-19) estaban escritos a mano en `estilo.css` en vez de vivir en `Configuracion`. **Cerrado por R-08** (2026-09-03), reverificado en esta pasada: `COLOR_ESTADO_GRABADA_REPRODUCTOR`/`COLOR_ESTADO_REVISADA_REPRODUCTOR` en `config.py`, inyectados por `reproductor.py` como variables CSS (`--color-estado-grabada`/`--color-estado-revisada`); cero hex literal en `estilo.css`. | R-08 |
+| #11 | 2026-09-02 | Documentación / coherencia | baja | **RESUELTO** | `PROYECTO.md` seguía describiendo el ritmo como «por defecto 120, propio de locución didáctica y pausada» — la decisión anterior a T-12. **Cerrado por R-08** (2026-09-03), reverificado en esta pasada: `PROYECTO.md:45` dice ahora «El ritmo base se deduce de las duraciones objetivo del propio guión; 120 ppm es solo el respaldo», palabra por palabra con §0.2. | R-08 |
+| #12 | 2026-09-02 | Infraestructura | baja | **RESUELTO** | `pyproject.toml` exige Python ≥3.12, pero el intérprete real de las sesiones de nube es 3.11.15, sin corrección ni vigilancia más allá de una nota suelta. **Cerrado por R-08** (2026-09-03) por la vía de mitigación explícita en vez de bajar la versión declarada (decisión razonada en `DECISIONES_TECNICAS.md`): `scripts/ci.py` gana `avisar_si_version_python_diverge`, que lee el mínimo real de `pyproject.toml` con `tomllib` y avisa (sin bloquear) si el intérprete no lo alcanza, llamada desde `ci.main()`; 4 tests dedicados en `test_ci.py`. Reverificado en esta pasada: sigue vigente y en verde. | R-08 |
+| #13 | 2026-09-02 | Robustez del validador | baja | **RESUELTO** | El validador de auto-contención cubría `http(s)://`/`@import`/`fetch`/`src=` externo, pero no `<object>`/`<embed src>`/`<base href>`/`WebSocket`/`EventSource`/`sendBeacon` ni `url(...)` de CSS. **Cerrado por R-09** (2026-09-03), reverificado en esta pasada: los seis patrones nuevos están en `PATRONES_RECURSO_EXTERNO` (`verificar_salidas.py`), con excepción `data:` donde corresponde (`<embed>`, `url()`) y 14 tests parametrizados en `test_esqueleto.py` (uno por patrón, más los de la excepción `data:`). Documentado en `references/validador-autocontencion.md`, incluida una tabla explícita de huecos deliberadamente fuera de alcance. Nota menor sin severidad propia: `<object data="data:...">` se sigue marcando como hallazgo aunque esté embebido en base64 (a diferencia de `<embed>`/`src=`) — verificado que es una política deliberada y documentada, no una inconsistencia. | R-09 |
+| #15 | 2026-09-04 | Robustez / multiplataforma | media | ABIERTO | `entrada.leer_guion` decodifica el guion con `read_bytes()` + `decode("utf-8-sig")`, sin normalizar `\r\n`/`\r` a `\n` — a diferencia de otras rutas de lectura del propio proyecto (p. ej. `Path.read_text()` en `verificar_salidas.py`), que sí aplican la traducción universal de saltos de línea de Python. Un guion escrito y guardado en Windows (el sistema real del dueño) llega con `\r` incrustado a todo el pipeline de parseo/troceo/revalidación. Verificado en el código actual: el `\r` no se elimina en ningún punto de `entrada.py`. Riesgo real: dos textos idénticos salvo el fin de línea podrían no reconocerse como iguales exactamente donde el invariante (c) depende de esa comparación. Detectado por el propio equipo en sesión local sobre Windows (no por este auditor) y ya registrado como `R-10` con requisito 1 explícito y test propuesto; sin código de corrección todavía tras varias sesiones intermedias (R-01 a R-09) que no tocaron `entrada.py`. | `entrada.leer_guion` · R-10 (PENDIENTE) |
+| #16 | 2026-09-04 | Robustez / datos (rodaje real) | media | ABIERTO | `tomas.duracion_toma_buena` no valida que como mucho una toma esté marcada `buena` por escena — esa exclusividad solo la garantiza el lado JS (`finalizarTomaActual` desmarca las demás antes de añadir la nueva). Si el `.json` exportado llega con dos tomas `buena: true` para la misma escena (edición manual del archivo, fusión de dos exportaciones, un futuro bug de `guion.js`), la función Python elige la primera en silencio, sin ninguna señal de ambigüedad. Reproducido en esta auditoría: `tomas=[{numero:1, duracion:10.0, buena:True}, {numero:2, duracion:999.0, buena:True}]` → `duracion_toma_buena(...) == 10.0` sin aviso. Es el punto único de fallo del que dependen a la vez R-04 (calibración de ppm), R-05 (`.srt` alineado) y R-07 (capítulos de YouTube): un dato de "toma buena" corrupto o ambiguo se propagaría en silencio a las tres salidas. Sin test que cubra este caso en `tests/test_tomas.py`. | `scripts/tomas.py` · R-02, hereda en R-04/R-05/R-07 |
+| #17 | 2026-09-04 | Cobertura / salida derivada | baja | ABIERTO | `capitulos_youtube.calcular_capitulos` empareja títulos de la sección «Capítulos» con escenas posicionalmente "hasta la más corta" (decisión documentada en el propio docstring). Cuando hay **más títulos de capítulo que escenas**, los títulos sobrantes se descartan de `capitulos-youtube.txt` sin ningún aviso ni `motivo_sin_generar` — a diferencia del caso simétrico (menos títulos que escenas), que sí está cubierto por un test. Reproducido: guion con 1 escena y una tabla de 3 capítulos → el archivo derivado solo trae el primero, los otros dos desaparecen sin rastro (el texto original de la sección auxiliar del guion sigue íntegro, así que no es pérdida de la fuente, solo de la salida derivada que se pega en la descripción de YouTube). | `scripts/capitulos_youtube.py` · R-07 |
+| #18 | 2026-09-04 | Calidad / cobertura de tests | baja | ABIERTO | No existe ningún test de integración cruzada entre `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07) que confirme que, alimentados con el mismo `ResultadoTiempos`+`tomas_por_escena`, producen marcas de tiempo mutuamente coherentes — ambos comparten la misma función `tomas.duracion_toma_buena`, así que la coherencia es "por construcción" hoy, no verificada por regresión. Es exactamente el tipo de brecha que `tests/test_integracion_montaje.py` (T-33) se creó para cerrar entre `.srt` y `tarjetas.json`, sin extenderse todavía a estas dos salidas más recientes. No es un bug hoy: es riesgo de deriva silenciosa si una de las dos cambia de fórmula por separado en el futuro. | `tests/test_integracion_montaje.py` · R-05, R-07 |
+| #19 | 2026-09-04 | Invariantes / revalidación (residual de #14) | baja | ABIERTO | El endurecimiento de P-04 (`_incidencias_anclas_desajustadas`) compara, por escena, solo el **conjunto/cantidad** de índices de ancla esperados contra los reales — no su contenido ni orden. Si dos conflictos coincidieran en número exacto de anclas pero en una disposición distinta, el aviso de incidencia no se dispararía. No se ha encontrado un escenario real del código actual que lo produzca (las claves de identidad `(escena, índice_original, mitad)` son deterministas dado el mismo guion + estado), por lo que es una asimetría teórica entre "detecta desajuste de cantidad" y "detecta desajuste de contenido", no un fallo reproducido. Se dejó constancia para que no se pierda de cara a una futura revisión de `revalidacion.py`. | `scripts/revalidacion.py` · límite residual de P-04 |
 | #14 | 2026-09-03 | Invariantes / revalidación | **alta** | **RESUELTO** | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. **Cerrado por P-03** (2026-09-03): `revalidacion.py` ahora persiste entre pasadas qué particiones quedaron pospuestas (`estado.validacion["particiones_pospuestas"]`), así que la pasada siguiente interpreta las anclas del documento con el MISMO esquema de identidad con el que se escribió, en vez de asumir que toda partición aceptada ya está materializada. Efecto: mientras la edición manual siga en el documento, la partición se queda pospuesta sin duplicar ni mal atribuir nada; solo se materializa cuando el dueño deja de tocar el bloque. Dos tests de regresión nuevos en `tests/test_revalidacion.py` reproducen exactamente el escenario de este hallazgo (falla sin el fix) y confirman que la materialización posterior sigue funcionando cuando el conflicto se resuelve. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
 
 ---
@@ -37,6 +42,156 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-04 — oleada R completa (R-01 a R-09) + endurecimiento de #14 (P-04/P-05), primera pasada tras el rodaje real
+
+**Nota de arranque, sin severidad propia.** El clon efímero de esta sesión partía con `develop`
+local desalineado del remoto: apuntaba a un historial huérfano de 4 commits (esqueleto muy
+temprano), sin ancestro común con `origin/develop` (53 commits) — una sesión anterior ya había
+detectado y corregido exactamente este mismo desajuste (`SEGUIMIENTO.md`, sesión de R-09) sin que
+volviera a ocurrir por causa del propio proyecto; es un artefacto del entorno de sesión, no del
+código. Realineado con `git reset --hard origin/develop` (árbol de trabajo limpio antes de la
+operación, nada local que perder). Se deja constancia por si se repite: si vuelve a pasar en
+sesiones sucesivas, merece investigarse como incidencia de infraestructura, no seguir
+resolviéndose en silencio cada vez.
+
+**Alcance.** Desde la pasada anterior (2026-09-03, que auditó T-22 a T-33 y abrió `#14`) el equipo
+ha completado **toda la oleada R** (R-01 a R-09, oleadas v2/v3 y fase transversal F-D, las nueve
+`COMPLETADA`), cerrado y endurecido `#14` (P-03 y P-04), corregido un bug real de instalación
+detectado en la máquina del dueño (P-05), completado por fin T-32 con instalación real y health
+check en Windows (11/11 OK), y registrado `R-10` (PENDIENTE) a partir de hallazgos de esa sesión
+real. Un ciclo de PM (2026-09-03) archivó las oleadas ya entregadas a `ROADMAP_HISTORICO.md`. Esta
+pasada audita todo ese tramo: no relee lo que el equipo narra, lo verifica de forma independiente
+—código, tests propios y ejecución real de las cuatro redes— y busca específicamente lo que el
+propio equipo, por estar dentro del proyecto, podría no haber visto.
+
+**Verificación objetiva de las cuatro redes, repetida de forma independiente.** `pip install -r
+requirements-dev.txt` (limpio, confirma una vez más que el runtime no las necesita). `python -m
+mypy scripts/ tests/` → limpio sobre 68 archivos. `python -m ruff check scripts/ tests/` → limpio.
+`python -m pytest` → **541 passed**, coincide exacto con lo que narra `SEGUIMIENTO.md` (antes 402).
+`python scripts/verificar_salidas.py --fixture` → las **catorce** etapas en `OK` (antes diez):
+`.srt` alineado y capítulos de YouTube nuevos desde R-05/R-07, ambos cayendo honestamente a la
+estimación de T-12 porque `fixtures/guion-ejemplo.md` nunca se grabó de verdad — degradación
+documentada, no fallo. `.pptx`/`.pdf` reales siguen LATENTES en este contenedor por las mismas
+razones de siempre (sin la skill de marca, sin Chrome/Edge). Ninguna etapa NO APLICABLE.
+
+**Cierre verificado de los seis hallazgos `ABIERTO` heredados (#5, #6, #10, #11, #12, #13).**
+Encargué una verificación independiente completa, leyendo el código real y no los mensajes de
+commit: las seis R-XX que el equipo dice haberlos cerrado (R-01, R-06, R-08 ×3, R-09) los cierran
+de verdad, con evidencia de archivo:línea para cada uno (detalle en la tabla de arriba). Ninguno
+quedó a medias ni maquillado. Dos matices que el propio equipo no señaló, ninguno grave: (1) el
+validador de auto-contención (#13/R-09) marca `<object data="data:...">` como hallazgo aunque esté
+embebido en base64, a diferencia de `<embed>`/`src=` — verificado que es una política **deliberada
+y documentada** en `references/validador-autocontencion.md`, no una inconsistencia; (2) el propio
+endurecimiento de P-04 sobre `#14` (`_incidencias_anclas_desajustadas`) compara solo la
+**cantidad** de anclas por escena, no su disposición — asimetría teórica sin escenario real que la
+dispare hoy, registrada como **#19** para que no se pierda de cara a una futura revisión de
+`revalidacion.py`.
+
+**`#14` reverificado, sigue cerrado, y su endurecimiento (P-04) resiste el mismo tipo de ataque.**
+Además de los dos tests de regresión de P-03, confirmé que `_particiones_pospuestas_previas` hace
+lectura tolerante de verdad: basura en `estado.validacion["particiones_pospuestas"]` (no-dict,
+claves no convertibles, valores `None`) no aborta la revalidación, degrada a `{}` y sigue —
+exactamente lo que P-04 prometía y que un `estado.json` corrupto o anterior a P-03 necesita para no
+reproducir `#14` en silencio. La "incidencia de anclas" nueva es defensa en profundidad real, no
+cosmética: se dispara cuando el documento en disco no trae las anclas que la reconstrucción
+esperaba (p. ej. ese mismo `estado.json` antiguo). Mensaje de conflicto corregido: ya no promete
+que "revalidar sin tocar el bloque" materializa la partición, afirmación que P-03 había dejado sin
+corregir y que era literalmente falsa.
+
+**Hallazgos nuevos en la oleada R (rodaje real), ninguno urgente pero todos reales.** Encargué una
+revisión dedicada de R-02 a R-07 (tomas, tropiezos, calibración, `.srt` alineado, capítulos de
+YouTube) contra los cuatro invariantes y contra el patrón de "cobertura fina sospechosa" que
+produjo `#9`/`#14` en `revalidacion.py` — ningún módulo nuevo se acerca a esa proporción
+(líneas/test entre ~12 y ~29, frente a las ~35-46 de `revalidacion.py` cuando apareció el bug).
+Aun así, aparecieron tres huecos reales, todos de severidad baja o media, ninguno con incidente
+observado en material real:
+- **#16 (media):** `tomas.duracion_toma_buena` no detecta que dos tomas lleguen marcadas `buena`
+  para la misma escena en el `.json` — elige la primera en silencio. La exclusividad solo la
+  garantiza el lado JS (`finalizarTomaActual`), nunca la función Python que R-04, R-05 **y** R-07
+  comparten como única fuente de "duración real". Es el tipo de punto único de fallo silencioso
+  que el propio proyecto ya sabe identificar y cerrar (mismo espíritu que `#9`/`#14`, aunque de
+  impacto menor: un dato de rodaje mal atribuido en una salida derivada, no pérdida del guion de
+  origen). Reproducido con datos sintéticos en esta auditoría.
+- **#17 (baja):** `capitulos_youtube.calcular_capitulos` descarta en silencio los títulos de
+  capítulo sobrantes cuando hay más filas en la sección «Capítulos» que escenas en el guion — el
+  caso simétrico (menos títulos que escenas) sí está cubierto por un test, este no.
+- **#18 (baja):** sin test de integración cruzada entre `.srt` alineado y capítulos de YouTube pese
+  a compartir literalmente la misma fuente de duración real — el mismo tipo de brecha que
+  `tests/test_integracion_montaje.py` (T-33) cerró una vez para `.srt`/`tarjetas.json`, sin
+  extenderse todavía a estas dos salidas más recientes de R-05/R-07.
+
+Lo positivo de esta oleada, verificado y no solo leído: el diseño de identidad de "tropiezo" por
+**texto exacto** (nunca por índice) en vez de reabrir el problema de `revalidacion.py` es una
+decisión defensiva correcta y explícitamente razonada así en `references/contrato-tropiezos.md`;
+`calibracion.py` no toca `tiempos.calcular_tiempos`, que sigue siendo la única fuente de tiempos;
+y `.srt` alineado/capítulos de YouTube comparten la misma función de duración real en vez de
+reimplementarla cada uno, coherencia por construcción (aunque sin test que la confirme, `#18`).
+
+**Hallazgo nuevo fuera de la oleada R — #15 (media): CRLF sin normalizar en `entrada.leer_guion`,
+ya detectado por el propio equipo, todavía sin corregir tras nueve sesiones.** Verificado en el
+código actual: `leer_guion` decodifica con `read_bytes()` + `decode("utf-8-sig")`, sin normalizar
+`\r\n`/`\r`, mientras otras rutas de lectura del propio proyecto (`Path.read_text()`, usado en
+`verificar_salidas.py` y otros módulos) sí aplican la traducción universal de saltos de línea de
+Python — una asimetría real entre rutas de lectura del mismo proyecto. No es un hallazgo mío: lo
+detectó el propio equipo en la primera sesión que corrió de verdad en el Windows del dueño (sesión
+"T-32 desbloqueada + P-04"), lo dejó explícitamente como "propuesta y no ejecutada", y el PM lo
+recuperó a tiempo como `R-10` antes de que se perdiera del todo (ocho sesiones lo habían dejado
+pasar). Lo señalo aquí porque el riesgo que describe es exactamente del tipo que este documento
+existe para vigilar —una comparación de texto que falla en silencio justo donde el invariante (c)
+depende de que dos textos idénticos se reconozcan como idénticos— y porque ya es la tarea
+`PENDIENTE` con más antigüedad sin tocar del backlog. Confirmado que `R-10` la especifica con el
+rigor habitual (test con bytes `\r\n` explícitos, no dependiente de la plataforma que ejecuta el
+test), así que no hace falta una P-XX adicional: solo que se ejecute pronto.
+
+**Coherencia entre lo decidido y lo ejecutado, muestreada contra `DECISIONES_TECNICAS.md`.**
+Contrasté la decisión de R-06 de sacar la migración de carpetas heredadas de `scripts/migraciones/`
+(paquete reservado al esquema de `estado.json`, no a rutas del sistema de ficheros) pese a que la
+ficha de `ROADMAP_PRODUCTO.md` sugería ese nombre — la desviación está documentada donde debe y es
+técnicamente correcta: meter un archivo con el patrón de nombre de migración sin esa forma habría
+roto `migraciones._migraciones_disponibles()`. Contrasté también el autoajuste del propio R-09
+(corrección de un falso positivo real del patrón `url(...)` contra `URL.createObjectURL` del
+reproductor, detectado por el test de guiones reales y corregido en la misma sesión antes de dar la
+tarea por buena) — el tipo de autocorrección que demuestra que las cuatro redes se usan de verdad,
+no se leen por encima. Sin desviaciones nuevas que añadir a §7 de `SEGUIMIENTO.md` más allá de las
+ya registradas.
+
+**Invariantes de datos, verificados de nuevo contra el código, no solo releídos.**
+- **(a) cobertura total:** sostenida en el núcleo del pipeline; dos huecos menores y nuevos en
+  salidas derivadas de la oleada R (`#16`, `#17`), ninguno toca el guion de origen ni descarta
+  locución — el texto de origen sigue íntegro en ambos casos, solo una salida derivada pierde un
+  dato sin avisar.
+- **(b) original recuperable:** sostenida — `FEEDBACK.md` (R-03) es append-only de verdad, nunca
+  reescribe una fila existente.
+- **(c) la edición manual manda:** sostenida en el código de esta oleada — tomas y tropiezos viven
+  fuera de `guion-escenas.md` (en `estado.json` y `FEEDBACK.md` respectivamente) y ninguno toca el
+  mecanismo de identidad ancla/partición donde vivieron `#9`/`#14`. El riesgo real que queda sobre
+  este invariante es `#15` (CRLF), no código nuevo de esta pasada.
+- **(d) sin borrado destructivo:** sostenida — `feedback.registrar_tropiezos_en_feedback` hace
+  copia `.bak-<marca>` antes de reescribir un `FEEDBACK.md` existente; `srt_alineado.py`/
+  `capitulos_youtube.py` no necesitan `.bak` por ser derivados puramente regenerables, sin estado
+  del dueño que perder — correcto y documentado como tal en el propio criterio de aceptación de
+  R-07.
+
+**Salida autocontenida y cero red.** Sostenidas: `guion.js` sigue sin `fetch`/`WebSocket`/
+`XMLHttpRequest`; la exportación de tomas/tropiezos/preferencias usa `Blob`+`URL.createObjectURL`,
+sin red. El validador se endureció de verdad en R-09 (seis patrones nuevos, 14 tests) y el fixture
+pasa con las plantillas reales.
+
+**Conclusión general.** Nueve sesiones de código después de la auditoría anterior, el proyecto
+sigue sin introducir deuda nueva de las categorías graves que este documento vigila: los seis
+hallazgos heredados están genuinamente cerrados, no solo declarados, y el hallazgo más grave del
+histórico (`#14`) no solo sigue resuelto sino que su endurecimiento (P-04) resiste un ataque de
+lectura tolerante que el propio equipo se propuso a sí mismo verificar. La oleada R añade
+funcionalidad de rodaje real completa y bien aislada de los invariantes centrales, con solo deuda
+menor propia (`#16`, `#17`, `#18`) del mismo tamaño y tipo que el proyecto ya sabe reconocer y
+cerrar sin ayuda — ninguna exige tratamiento urgente. La única nota que merece más atención de la
+que está recibiendo es `#15`/`R-10`: no es un hallazgo nuevo ni oculto, el propio equipo lo vio y
+lo documentó con precisión, pero ha esperado nueve sesiones en la cola mientras se priorizaba
+funcionalidad nueva sobre una corrección de robustez ya diagnosticada — y es precisamente el tipo
+de deuda que, a diferencia de `#16`/`#17`/`#18`, ya se sabe que afecta a la máquina real del dueño,
+no a un escenario hipotético. Recomiendo que sea la primera tarea de la próxima sesión de código,
+antes de abrir ninguna R-XX nueva.
 
 ### Auditoría 2026-09-03 — backlog T-XX cerrado (T-22 a T-33), primera pasada tras el ciclo de PM
 
