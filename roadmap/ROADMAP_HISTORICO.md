@@ -18,6 +18,10 @@ cumplido, aunque todo su código esté entregado desde antes de este ciclo).
 (R-10), con su única R-XX ya COMPLETADA y sin ningún hito de negocio propio pendiente — mismo
 criterio que el movimiento anterior.
 
+**Movido a histórico el:** 2026-09-04 (segundo ciclo de PM del día). Se añade la Fase transversal
+F-F (R-11), con su única R-XX ya COMPLETADA y sin ningún hito de negocio propio pendiente — mismo
+criterio que los dos movimientos anteriores.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -309,6 +313,67 @@ documentada en `DECISIONES_TECNICAS.md`; la suite sigue en verde en las sesiones
 `"....md"` igual, la hipótesis original no se sostenía) y su parámetro pasa de `Path` a `PurePath`;
 `test_instalar_hook_...` gana su `skipif` no-POSIX; los doce `Path.write_text(...)` de `scripts/`
 fijan `newline="\n"` (hallazgo real de la comprobación puntual del requisito 4).
+
+---
+
+## Fase transversal F-F — Robustez de los datos derivados del rodaje real
+
+La auditoría de 2026-09-04, la primera pasada tras completarse toda la oleada R (rodaje real,
+R-01 a R-07), encontró tres huecos menores en cómo esos datos de rodaje se propagan a las salidas
+derivadas — ninguno reproducido como bug hoy sobre material real, los tres cierres preventivos del
+mismo tipo que ya motivó F-D. Contenía R-11, su única R-XX. **Entregada 2026-09-04.**
+
+### R-11 — Robustez de datos derivados del rodaje (toma buena ambigua, capítulos sobrantes, cobertura cruzada)
+**Oleada / Fase:** F-F · **Migración:** No · **Depende de:** R-02, R-05, R-07
+**Origen:** auditoría #16, #17, #18
+
+**Objetivo:** cerrar tres huecos de robustez de menor entidad alrededor de los datos de rodaje real
+(R-02) y sus dos consumidores derivados (`.srt` alineado de R-05, capítulos de YouTube de R-07),
+detectados por el auditor sin bug reproducido hoy sobre material real — cierre preventivo, no
+corrección de una regresión. (1) `tomas.duracion_toma_buena` no validaba que como mucho una toma
+estuviera marcada `buena` por escena — esa exclusividad solo la garantizaba el lado JS
+(`finalizarTomaActual`); un `.json` con dos tomas `buena` para la misma escena (edición manual,
+fusión de exportaciones, un futuro bug de `guion.js`) hacía que la función Python eligiera la
+primera en silencio, sin ninguna señal de ambigüedad, propagándose sin aviso a R-04/R-05/R-07
+(#16). (2) `capitulos_youtube.calcular_capitulos` empareja títulos de capítulo con escenas
+posicionalmente "hasta la más corta"; cuando sobraban títulos de capítulo (más títulos que
+escenas), los sobrantes se descartaban de `capitulos-youtube.txt` sin ningún aviso ni
+`motivo_sin_generar` — el caso simétrico (menos títulos que escenas) ya estaba cubierto (#17). (3)
+no existía ningún test de integración cruzada, en el espíritu de `tests/test_integracion_montaje.py`
+(T-33), entre `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07): ambos comparten
+`tomas.duracion_toma_buena`, así que la coherencia era "por construcción", no verificada por
+regresión (#18).
+
+**Requisitos:**
+1. `tomas.duracion_toma_buena` (o quien la invoque desde `scripts/tomas.py`) detecta más de una
+   toma `buena` en la misma escena y lo señala como una incidencia explícita — nunca elige la
+   primera en silencio. Test que reproduce exactamente el escenario del hallazgo #16 (dos tomas
+   `buena: true` en la misma escena).
+2. `capitulos_youtube.calcular_capitulos` deja constancia explícita (aviso o campo equivalente al
+   `motivo_sin_generar` ya existente) cuando hay títulos de capítulo sin escena correspondiente, en
+   vez de descartarlos sin rastro. Test que reproduce el escenario del hallazgo #17 (más títulos de
+   capítulo que escenas).
+3. Un test nuevo (no necesariamente un módulo nuevo) que, a partir del mismo `ResultadoTiempos` +
+   `tomas_por_escena`, genere `guion-alineado.srt` y `capitulos-youtube.txt` y confirme que sus
+   marcas de tiempo son mutuamente coherentes — cierra el hallazgo #18.
+
+**Criterio de aceptación:** un `.json` de tomas con dos tomas `buena` en la misma escena produce
+una incidencia visible en vez de una elección silenciosa; un guion con más títulos de capítulo que
+escenas no pierde ningún título sin dejar rastro explícito; existe al menos un test de integración
+que verifica la coherencia cruzada entre el `.srt` alineado y los capítulos de YouTube sobre el
+mismo dato de partida.
+
+**Cómo se entregó:** `tomas.duracion_toma_buena` gana un parámetro opcional `numero_escena` (para
+mensajes de error más precisos) y rechaza con `RegistroTomasError` en cuanto encuentra más de una
+toma `buena` en la misma escena, comprobado en el punto de LECTURA (no en `cargar_parte_de_rodaje`,
+el punto de CARGA) para cubrir también un `estado.json` editado a mano o una fusión de
+exportaciones; `ResultadoCapitulos` gana el campo `titulos_sobrantes` (mismo patrón que
+`motivo_sin_generar`/`escenas_sin_toma_buena`), deliberadamente sin nota en
+`capitulos-youtube.txt` (esos títulos no tienen marca de tiempo que anunciar); nuevo test en
+`tests/test_integracion_montaje.py` que alimenta `reescalar_a_toma_buena` y `calcular_capitulos`
+con el mismo `ResultadoTiempos`+`tomas_por_escena` y confirma que el inicio acumulado de cada
+capítulo coincide con el inicio acumulado de la misma escena en el `.srt` alineado (test de
+regresión: ya pasaba antes del cambio, la coherencia era "por construcción").
 
 ---
 

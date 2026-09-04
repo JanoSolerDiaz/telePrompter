@@ -32,6 +32,21 @@
 
 ---
 
+### Sesión 2026-09-04 — Ciclo de Product Manager (sin sesión de código), segundo del día
+**Tarea(s):** Gestión de `roadmap/ROADMAP_PRODUCTO.md` y `roadmap/ROADMAP_HISTORICO.md` (ciclo de PM)
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1 (todas siguen COMPLETADA). Fase transversal F-F (R-11, ya COMPLETADA) movida a `ROADMAP_HISTORICO.md`. Ninguna R-XX nueva registrada: la cola de producto en `ROADMAP_PRODUCTO.md` queda explícitamente vacía
+**Commits a develop:** `PM: mover F-F (R-11) a ROADMAP_HISTORICO.md, sin nueva R-XX` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (ciclo de gestión de roadmap, sin tocar código ni `estado.json`)
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (F-F marcada entregada, sección de detalle de R-XX vacía, fecha de cabecera), `roadmap/ROADMAP_HISTORICO.md` (sección F-F/R-11 añadida, nota de cabecera con la fecha de este movimiento), `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** no aplica — ciclo de PM, sin cambios de código; no se ejecutan mypy/ruff/pytest/`verificar_salidas.py` porque ningún archivo de `scripts/`, `tests/`, `assets/` ni `references/` cambia (se ejecutaron igualmente como comprobación de salud del repo tras el realineamiento de `develop`, ver más abajo, y salieron en verde)
+**Health check post-deploy:** no aplica — no hay instalación que verificar en este ciclo
+**Decisiones tomadas:** 1 fila nueva en `DECISIONES_TECNICAS.md` (2026-09-04, PM): no abrir ninguna R-XX nueva sin un hallazgo real del auditor o una entrada real de `FEEDBACK.md`, mismo criterio de "cierre preventivo" que ya rigió F-D/F-E/F-F
+**Hallazgos del auditor atendidos:** ninguno se cierra en este ciclo (el auditor es quien marca RESUELTO en su propio documento). `#15`-`#18` siguen enrutados a R-10/R-11, ambas ya COMPLETADA, pendientes solo de que el auditor los reevalúe y cierre. `#19` sigue documentado sin R-XX
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** no hay ninguna T-XX ni R-XX que retomar. La próxima sesión de código depende de que (a) una nueva pasada del auditor abra un hallazgo que el PM convierta en R-XX, o (b) el dueño complete el primer rodaje real (bloqueo #7 de §3) y deje una entrada `nuevo` en `roadmap/FEEDBACK.md`. Nota de entorno: **quinta sesión consecutiva** que arranca con `develop` local desalineado del remoto — esta vez con una variante nueva del síntoma (HEAD *detached* sobre el commit correcto de `origin/develop`, con la rama local `develop` apuntando aparte al historial huérfano de siempre, en vez de la rama `develop` local ya desactualizada de las sesiones anteriores); realineado con `git checkout develop && git reset --hard origin/develop`. Dado que ya son cinco sesiones con el mismo síntoma de fondo (un clon efímero que arranca con un historial de `develop` no relacionado con `origin/develop`) aunque con variantes menores en el detalle exacto, esto probablemente merece una investigación de infraestructura por parte del dueño en vez de seguir realineándose en silencio sesión tras sesión — el propio dueño es quien tiene visibilidad sobre cómo se provisionan estos clones efímeros, no el agente.
+
+---
+
 ### Sesión 2026-09-04 — R-11 (robustez de datos derivados del rodaje), sesión de nube
 **Tarea(s):** R-11, única de la fase transversal F-F
 **Estado resultante:** R-11 **COMPLETADA**. Fila `R-11` en §1 pasa de PENDIENTE a COMPLETADA. Sin ninguna T-XX ni R-XX PENDIENTE en §1 al cerrar

@@ -8,7 +8,7 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-04
+**Última actualización:** 2026-09-04 (segundo ciclo de PM del día)
 
 ---
 
@@ -58,19 +58,13 @@ de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movieron a
 `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-03; su spec completa y cómo se entregó cada
 una vive ahí.
 
-### Fase transversal F-E — entregada
+### Fases transversales F-E y F-F — entregadas
 
-La fase F-E (robustez detectada al correr por primera vez en el Windows real del dueño) tiene su
-única R-XX (R-10) en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio
-pendiente. Se movió a `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-04; su spec completa y
-cómo se entregó vive ahí.
-
-### Fase transversal F-F — Robustez de los datos derivados del rodaje real
-
-La auditoría de 2026-09-04, la primera pasada tras completarse toda la oleada R (rodaje real,
-R-01 a R-07), encontró tres huecos menores en cómo esos datos de rodaje se propagan a las salidas
-derivadas — ninguno reproducido como bug hoy sobre material real, los tres cierres preventivos del
-mismo tipo que ya motivó F-D. Contiene R-11.
+La fase F-E (robustez detectada al correr por primera vez en el Windows real del dueño, R-10) y la
+fase F-F (robustez de los datos derivados del rodaje real, R-11) tienen sus R-XX en **COMPLETADA**
+en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. F-E se movió a
+`ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-04; F-F se movió en el segundo ciclo de PM de
+ese mismo día. Su spec completa y cómo se entregó cada una vive ahí.
 
 ---
 
@@ -80,44 +74,10 @@ mismo tipo que ya motivó F-D. Contiene R-11.
 > Ninguna R-XX puede empezar antes de que la oleada v1 esté entregada, salvo que se diga lo
 > contrario en su ficha.
 
-### R-11 — Robustez de datos derivados del rodaje (toma buena ambigua, capítulos sobrantes, cobertura cruzada)
-**Oleada / Fase:** F-F · **Migración:** No · **Depende de:** R-02, R-05, R-07
-**Origen:** auditoría #16, #17, #18
-
-**Objetivo:** cerrar tres huecos de robustez de menor entidad alrededor de los datos de rodaje real
-(R-02) y sus dos consumidores derivados (`.srt` alineado de R-05, capítulos de YouTube de R-07),
-detectados por el auditor sin bug reproducido hoy sobre material real — cierre preventivo, no
-corrección de una regresión. (1) `tomas.duracion_toma_buena` no valida que como mucho una toma esté
-marcada `buena` por escena — esa exclusividad hoy solo la garantiza el lado JS
-(`finalizarTomaActual`); un `.json` con dos tomas `buena` para la misma escena (edición manual,
-fusión de exportaciones, un futuro bug de `guion.js`) hace que la función Python elija la primera
-en silencio, sin ninguna señal de ambigüedad, propagándose sin aviso a R-04/R-05/R-07 (#16). (2)
-`capitulos_youtube.calcular_capitulos` empareja títulos de capítulo con escenas posicionalmente
-"hasta la más corta"; cuando sobran títulos de capítulo (más títulos que escenas), los sobrantes se
-descartan de `capitulos-youtube.txt` sin ningún aviso ni `motivo_sin_generar` — el caso simétrico
-(menos títulos que escenas) sí está cubierto (#17). (3) no existe ningún test de integración
-cruzada, en el espíritu de `tests/test_integracion_montaje.py` (T-33), entre `guion-alineado.srt`
-(R-05) y `capitulos-youtube.txt` (R-07): ambos comparten `tomas.duracion_toma_buena`, así que la
-coherencia hoy es "por construcción", no verificada por regresión (#18).
-
-**Requisitos:**
-1. `tomas.duracion_toma_buena` (o quien la invoque desde `scripts/tomas.py`) detecta más de una
-   toma `buena` en la misma escena y lo señala como una incidencia explícita — nunca elige la
-   primera en silencio. Test que reproduce exactamente el escenario del hallazgo #16 (dos tomas
-   `buena: true` en la misma escena).
-2. `capitulos_youtube.calcular_capitulos` deja constancia explícita (aviso o campo equivalente al
-   `motivo_sin_generar` ya existente) cuando hay títulos de capítulo sin escena correspondiente, en
-   vez de descartarlos sin rastro. Test que reproduce el escenario del hallazgo #17 (más títulos de
-   capítulo que escenas).
-3. Un test nuevo (no necesariamente un módulo nuevo) que, a partir del mismo `ResultadoTiempos` +
-   `tomas_por_escena`, genere `guion-alineado.srt` y `capitulos-youtube.txt` y confirme que sus
-   marcas de tiempo son mutuamente coherentes — cierra el hallazgo #18.
-
-**Criterio de aceptación:** un `.json` de tomas con dos tomas `buena` en la misma escena produce
-una incidencia visible en vez de una elección silenciosa; un guion con más títulos de capítulo que
-escenas no pierde ningún título sin dejar rastro explícito; existe al menos un test de integración
-que verifica la coherencia cruzada entre el `.srt` alineado y los capítulos de YouTube sobre el
-mismo dato de partida.
+*(Sin ninguna R-XX PENDIENTE ni EN CURSO en este momento — la última, R-11, quedó COMPLETADA y se
+movió a `ROADMAP_HISTORICO.md`. La próxima entrada aquí sale de un hallazgo nuevo del auditor o de
+una entrada `nuevo` en `FEEDBACK.md`; ver la nota del ciclo de PM del 2026-09-04 en
+`SEGUIMIENTO.md`.)*
 
 ---
 
