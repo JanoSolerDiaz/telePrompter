@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-05 — Ciclo de Product Manager (sin sesión de código), primero del día
+**Tarea(s):** Ninguna de producto — comprobación de rutina de `auditoriacontinua.md`, `roadmap/FEEDBACK.md` y §1 de `SEGUIMIENTO.md` (reconfirmación de cola vacía, primer ciclo de PM de hoy tras la pasada de auditoría de esta misma fecha)
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1 (todas COMPLETADA, salvo T-24b BLOQUEADA por hardware del dueño). Ninguna R-XX nueva registrada: la cola de producto en `ROADMAP_PRODUCTO.md` sigue vacía
+**Commits a develop:** `PM: reconfirmación de cola vacía tras auditoría 2026-09-05 (cierre verificado de #15-#18, bloqueo #8 sin novedad)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera y callout «PARA EL DUEÑO»), `roadmap/ROADMAP_PRODUCTO.md` (cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** no aplica — ningún archivo de `scripts/`, `tests/`, `assets/` ni `references/` cambia en este ciclo; solo documentación de `roadmap/`
+**Health check post-deploy:** no aplica — no hay instalación que verificar en este ciclo
+**Decisiones tomadas:** 1 fila nueva en `DECISIONES_TECNICAS.md` (2026-09-05, PM primer ciclo): reafirma la política de no abrir R-XX especulativa, apoyada en la verificación independiente que la propia auditoría de hoy hizo del cierre de `#15`-`#18`, y decide no reenviar la notificación del bloqueo #8 por no haber novedad desde el 2026-09-04
+**Hallazgos del auditor atendidos:** ninguno se cierra en este ciclo (el auditor es quien marca RESUELTO en su propio documento; la tabla de registro de `auditoriacontinua.md` sigue mostrando `#15`-`#18` como `ABIERTO` pese a que la narrativa de la pasada de hoy los da por cerrados con evidencia de código — inconsistencia menor entre la tabla y la narrativa del propio documento del auditor, que no me corresponde tocar; se deja constancia aquí para que la próxima pasada del auditor la revise, sin que esto cambie la conclusión de que no hay trabajo de producto pendiente). `#19` sigue documentado sin R-XX, `#20` es de infraestructura (bloqueo #8), no de producto
+**Hallazgos:** ninguno nuevo. Se reconfirma el bloqueo #8 (rutinas programadas duplicadas) exactamente en el mismo estado que dejó el ciclo del 2026-09-04, sin actuar sobre él (no corresponde a esta sesión) y sin renotificar (ya se notificó una vez, no hay novedad)
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** sigue sin haber ninguna T-XX ni R-XX de producto que retomar; depende de (a) una nueva pasada del auditor con hallazgo real nuevo, (b) la primera entrada real en `roadmap/FEEDBACK.md` tras el primer rodaje del dueño (bloqueo #7 de §3), o (c) que el dueño decida cuál trío de rutinas conservar (bloqueo #8). Nota de entorno: **decimocuarta sesión consecutiva** con `develop` local desalineado del remoto al arrancar (HEAD *detached*, historial local de 4 commits sin ancestro común con `origin/develop` por ser clon superficial truncado en un punto anterior a la reescritura de la rama); realineado con `git reset --hard origin/develop` (árbol de trabajo limpio antes de la operación, nada local que perder). Sigue sin resolverse el bloqueo #8 que lo explica de forma plausible
+
+---
+
 ### Sesión 2026-09-04 — Ciclo de Product Manager (sin sesión de código), duodécimo del día — hallazgo de rutinas duplicadas
 **Tarea(s):** Ninguna de producto — comprobación de rutina de `auditoriacontinua.md`, `roadmap/FEEDBACK.md` y §1 de `SEGUIMIENTO.md` (duodécima confirmación consecutiva de cola vacía); investigación del patrón recurrente de clon desalineado, que llevaba doce sesiones seguidas sin explicación más allá de "probablemente infraestructura del dueño"
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1 (todas COMPLETADA, salvo T-24b BLOQUEADA por hardware del dueño). Ninguna R-XX nueva registrada: la cola de producto en `ROADMAP_PRODUCTO.md` sigue vacía. Nuevo bloqueo #8 en §3 de `SEGUIMIENTO.md`, de infraestructura, no de producto
