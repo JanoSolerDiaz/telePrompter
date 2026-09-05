@@ -32,7 +32,8 @@
 | #16 | 2026-09-04 | Robustez / datos (rodaje real) | media | ABIERTO | `tomas.duracion_toma_buena` no valida que como mucho una toma esté marcada `buena` por escena — esa exclusividad solo la garantiza el lado JS (`finalizarTomaActual` desmarca las demás antes de añadir la nueva). Si el `.json` exportado llega con dos tomas `buena: true` para la misma escena (edición manual del archivo, fusión de dos exportaciones, un futuro bug de `guion.js`), la función Python elige la primera en silencio, sin ninguna señal de ambigüedad. Reproducido en esta auditoría: `tomas=[{numero:1, duracion:10.0, buena:True}, {numero:2, duracion:999.0, buena:True}]` → `duracion_toma_buena(...) == 10.0` sin aviso. Es el punto único de fallo del que dependen a la vez R-04 (calibración de ppm), R-05 (`.srt` alineado) y R-07 (capítulos de YouTube): un dato de "toma buena" corrupto o ambiguo se propagaría en silencio a las tres salidas. Sin test que cubra este caso en `tests/test_tomas.py`. | `scripts/tomas.py` · R-02, hereda en R-04/R-05/R-07 |
 | #17 | 2026-09-04 | Cobertura / salida derivada | baja | ABIERTO | `capitulos_youtube.calcular_capitulos` empareja títulos de la sección «Capítulos» con escenas posicionalmente "hasta la más corta" (decisión documentada en el propio docstring). Cuando hay **más títulos de capítulo que escenas**, los títulos sobrantes se descartan de `capitulos-youtube.txt` sin ningún aviso ni `motivo_sin_generar` — a diferencia del caso simétrico (menos títulos que escenas), que sí está cubierto por un test. Reproducido: guion con 1 escena y una tabla de 3 capítulos → el archivo derivado solo trae el primero, los otros dos desaparecen sin rastro (el texto original de la sección auxiliar del guion sigue íntegro, así que no es pérdida de la fuente, solo de la salida derivada que se pega en la descripción de YouTube). | `scripts/capitulos_youtube.py` · R-07 |
 | #18 | 2026-09-04 | Calidad / cobertura de tests | baja | ABIERTO | No existe ningún test de integración cruzada entre `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07) que confirme que, alimentados con el mismo `ResultadoTiempos`+`tomas_por_escena`, producen marcas de tiempo mutuamente coherentes — ambos comparten la misma función `tomas.duracion_toma_buena`, así que la coherencia es "por construcción" hoy, no verificada por regresión. Es exactamente el tipo de brecha que `tests/test_integracion_montaje.py` (T-33) se creó para cerrar entre `.srt` y `tarjetas.json`, sin extenderse todavía a estas dos salidas más recientes. No es un bug hoy: es riesgo de deriva silenciosa si una de las dos cambia de fórmula por separado en el futuro. | `tests/test_integracion_montaje.py` · R-05, R-07 |
-| #19 | 2026-09-04 | Invariantes / revalidación (residual de #14) | baja | ABIERTO | El endurecimiento de P-04 (`_incidencias_anclas_desajustadas`) compara, por escena, solo el **conjunto/cantidad** de índices de ancla esperados contra los reales — no su contenido ni orden. Si dos conflictos coincidieran en número exacto de anclas pero en una disposición distinta, el aviso de incidencia no se dispararía. No se ha encontrado un escenario real del código actual que lo produzca (las claves de identidad `(escena, índice_original, mitad)` son deterministas dado el mismo guion + estado), por lo que es una asimetría teórica entre "detecta desajuste de cantidad" y "detecta desajuste de contenido", no un fallo reproducido. Se dejó constancia para que no se pierda de cara a una futura revisión de `revalidacion.py`. | `scripts/revalidacion.py` · límite residual de P-04 |
+| #19 | 2026-09-04 | Invariantes / revalidación (residual de #14) | baja | ABIERTO | El endurecimiento de P-04 (`_incidencias_anclas_desajustadas`) compara, por escena, solo el **conjunto/cantidad** de índices de ancla esperados contra los reales — no su contenido ni orden. Si dos conflictos coincidieran en número exacto de anclas pero en una disposición distinta, el aviso de incidencia no se dispararía. No se ha encontrado un escenario real del código actual que lo produzca (las claves de identidad `(escena, índice_original, mitad)` son deterministas dado el mismo guion + estado), por lo que es una asimetría teórica entre "detecta desajuste de cantidad" y "detecta desajuste de contenido", no un fallo reproducido. Se dejó constancia para que no se pierda de cara a una futura revisión de `revalidacion.py`. Reevaluado en esta pasada (2026-09-05): sin cambios en `revalidacion.py` desde la última auditoría, sigue exactamente en el mismo estado teórico. | `scripts/revalidacion.py` · límite residual de P-04 |
+| #20 | 2026-09-05 | Infraestructura / proceso (fuera del código) | media | ASUMIDO | Confirmado de forma independiente en esta pasada (no solo leído en `SEGUIMIENTO.md` §3 bloqueo #8): el proyecto tiene seis rutinas programadas en vez de tres, en dos tríos con cron idéntico o solapado (`Auditor`/`auditor-teleprompter`, `Product manager`/`product-manager-teleprompter`, `Programador`/`programador-teleprompter`), el trío sin sufijo creado 2026-08-25, antes del primer commit (2026-08-31). Efecto observado en esta misma sesión: el clon de `develop` llegó DETACHED y con 4 commits sin ancestro común con `origin/develop` (52 de diferencia), exactamente el síntoma que trece sesiones consecutivas llevan documentando sin explicación de fondo hasta que el PM lo conectó con esta causa el 2026-09-04. No es una decisión que un auditor de código deba tomar (afecta a la cuenta del dueño, no al repositorio) ni ejecutable desde esta sesión: se registra como riesgo asumido y ya notificado, no como hallazgo nuevo — el PM ya lo documentó con el detalle completo (IDs, cron, fechas) y ya lo notificó al dueño por separado. Se deja constancia aquí únicamente para que la auditoría, como supervisor externo, conste de que verificó el bloqueo por su cuenta y coincide en el diagnóstico, y para vigilar que no quede olvidado si sigue sin resolverse varias pasadas más. | `SEGUIMIENTO.md` §3 bloqueo #8 · acción del dueño, no de código |
 | #14 | 2026-09-03 | Invariantes / revalidación | **alta** | **RESUELTO** | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. **Cerrado por P-03** (2026-09-03): `revalidacion.py` ahora persiste entre pasadas qué particiones quedaron pospuestas (`estado.validacion["particiones_pospuestas"]`), así que la pasada siguiente interpreta las anclas del documento con el MISMO esquema de identidad con el que se escribió, en vez de asumir que toda partición aceptada ya está materializada. Efecto: mientras la edición manual siga en el documento, la partición se queda pospuesta sin duplicar ni mal atribuir nada; solo se materializa cuando el dueño deja de tocar el bloque. Dos tests de regresión nuevos en `tests/test_revalidacion.py` reproducen exactamente el escenario de este hallazgo (falla sin el fix) y confirman que la materialización posterior sigue funcionando cuando el conflicto se resuelve. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
 
 ---
@@ -42,6 +43,106 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-05 — cierre de F-E/F-F (R-10, R-11), cola de producto vacía, confirmación del bloqueo de infraestructura #8
+
+**Nota de arranque, sin severidad propia — mismo síntoma que ya lleva trece sesiones documentado.**
+El clon efímero de esta sesión partía otra vez con `develop` local en HEAD *detached*, apuntando al
+mismo historial huérfano de 4 commits (esqueleto muy temprano) sin ancestro común con
+`origin/develop` (52 commits de diferencia). Realineado con `git reset --hard origin/develop`
+(árbol de trabajo limpio antes de la operación, nada local que perder). No lo trato como hallazgo
+nuevo: el equipo ya lo diagnosticó el 2026-09-04 y lo conectó con una causa plausible (bloqueo #8,
+rutinas duplicadas) — ver más abajo, donde confirmo esa lectura de forma independiente.
+
+**Alcance.** Desde la pasada anterior (2026-09-04, que auditó la oleada R completa y abrió `#15`
+a `#19`) el equipo ha completado **R-10** (robustez multiplataforma en Windows: CRLF, `write_text`
+con `newline="\n"`, skip del test del bit de ejecución en no-POSIX) y **R-11** (robustez de datos
+derivados del rodaje: toma buena ambigua, títulos de capítulo sobrantes, test de coherencia cruzada
+`.srt` alineado/capítulos de YouTube), cerrando `#15` a `#18`. Un ciclo de PM archivó ambas fases
+(F-E, F-F) a `ROADMAP_HISTORICO.md` y confirmó, en varios ciclos sucesivos sin sesión de código, que
+la cola de producto sigue vacía — hasta que el último de esos ciclos encontró y documentó el
+bloqueo #8 (rutinas programadas duplicadas). Esta pasada verifica ese tramo completo de forma
+independiente, código y no solo narrativa, y presta atención especial a si el hallazgo de
+infraestructura del último ciclo de PM merece una lectura distinta desde fuera del proyecto.
+
+**Verificación objetiva de las cuatro redes, repetida de forma independiente.** `pip install -r
+requirements-dev.txt` limpio. `python -m mypy scripts/ tests/` limpio. `python -m ruff check
+scripts/ tests/` limpio. `python -m pytest` → **550 passed**, coincide con el recuento que narra
+`DECISIONES_TECNICAS.md`/`SEGUIMIENTO.md` (antes 541, +9 de R-10/R-11). `python
+scripts/verificar_salidas.py --fixture` → las catorce etapas en `OK`, mismo resultado que la pasada
+anterior; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor por las mismas razones de
+siempre (sin la skill de marca, sin Chrome/Edge), degradación documentada y no fallo.
+
+**R-10 y R-11 verificadas leyendo el código real, no los mensajes de commit.** `entrada.leer_guion`
+normaliza `\r\n`/`\r` a `\n` justo después de `decode("utf-8-sig")` (`scripts/entrada.py`), cerrando
+`#15` de verdad — comprobado también que los otros once `Path.write_text(...)` de `scripts/` fijan
+`newline="\n"` explícito (los dos que mi primer grep de una sola línea no encontró, en `estado.py` y
+`monitorizacion.py`, sí lo tienen: el parámetro cae en su propia línea dentro de una llamada
+multilínea, falso negativo de mi propio grep, no del código) y que el test de guarda léxico
+(`test_ninguna_salida_generada_reintroduce_saltos_de_linea_de_plataforma`) los cubre a los catorce.
+`tomas.duracion_toma_buena` ahora levanta `RegistroTomasError` con más de una toma `buena` por
+escena en vez de elegir la primera en silencio (`#16`), con el número de escena en el mensaje;
+`capitulos_youtube.calcular_capitulos` expone `titulos_sobrantes` cuando sobran títulos de capítulo
+(`#17`); `tests/test_integracion_montaje.py` gana el test de coherencia cruzada `.srt` alineado /
+capítulos de YouTube (`#18`). Las tres decisiones de diseño están razonadas en
+`DECISIONES_TECNICAS.md` (2026-09-04) y coinciden exactamente con el código: la validación de
+exclusividad vive en el punto de LECTURA (`duracion_toma_buena`, compartida por R-04/R-05/R-07), no
+en el de carga, precisamente para cubrir también la edición manual de `estado.json` y no solo el
+`.json` exportado — el mismo criterio que ya se aplicó en `#9`/`#14` de no conformarse con blindar
+la vía "normal". Ningún número mágico nuevo, ninguna dependencia añadida, `SKILL.md` y
+`references/contrato-tomas.md` actualizados en la misma sesión que el código, no después.
+
+**`#19` reevaluado, sin cambios.** `revalidacion.py` no se ha tocado desde la auditoría anterior:
+sigue siendo el mismo límite teórico sin escenario reproducido, correctamente sin R-XX propia por
+las mismas razones ya registradas por el PM (2026-09-04).
+
+**El hallazgo de infraestructura (bloqueo #8), confirmado de forma independiente.** No es un
+hallazgo de este auditor — lo detectó y documentó el propio PM el 2026-09-04, con el detalle exacto
+(seis `trig_...`, cron de cada uno, fechas de creación) en `SEGUIMIENTO.md` §3 y
+`DECISIONES_TECNICAS.md` — pero como esta pasada es la primera desde entonces, verifiqué la lectura
+en vez de darla por buena sin más: la nota de arranque de esta misma sesión (`develop` local
+detached, sin ancestro común con `origin/develop`) es exactamente el síntoma que el PM lleva trece
+sesiones registrando y que conectó con el bloqueo #8 como causa plausible. No tengo acceso a
+`list_triggers` desde este rol para confirmar el número exacto de rutinas por mi cuenta, así que no
+puedo verificar el hecho en sí, solo su síntoma observable — coincide con lo narrado. Registrado como
+**`#20`, severidad media, estado ASUMIDO**: es una acción operativa sobre la cuenta del dueño, ya
+notificada y fuera del alcance de cualquier sesión de código o de auditoría, no un hallazgo que deba
+convertirse en tarea. Lo dejo con severidad propia (no simplemente "ver bloqueo #8") porque el coste
+acumulado es real (cómputo doble desde hace más de una semana, riesgo de condición de carrera entre
+clones efímeros escribiendo casi a la vez sobre `origin/develop`) y porque el propio registro de
+hallazgos es el sitio donde este documento vigila que nada se pierda por estar "fuera del código".
+
+**Coherencia entre lo decidido y lo ejecutado.** Sin desviaciones nuevas que añadir a §7 de
+`SEGUIMIENTO.md`. `HOJA_DE_RUTA.md` sigue en v1.3, sin ninguna modificación desde la pasada anterior
+— la regla de inmutabilidad se sigue respetando. `ROADMAP_PRODUCTO.md` y `SEGUIMIENTO.md` §1
+coinciden: cola de R-XX vacía, las dos fases F-E/F-F archivadas en `ROADMAP_HISTORICO.md` con su
+spec completa. `roadmap/FEEDBACK.md` sigue con cero entradas `nuevo`, coherente con que el bloqueo
+#7 (grabar un curso real) sigue sin resolverse.
+
+**Invariantes de datos, verificados de nuevo contra el código.**
+- **(a) cobertura total:** sostenida; `#17` (títulos de capítulo sobrantes) ya no descarta sin
+  rastro, ahora expone `titulos_sobrantes`.
+- **(b) original recuperable:** sostenida, sin cambios en el área en esta pasada.
+- **(c) la edición manual manda:** sostenida — R-10/R-11 no tocan `revalidacion.py` ni el mecanismo
+  de identidad ancla/partición. El riesgo real que quedaba sobre este invariante (`#15`, CRLF) está
+  cerrado de verdad.
+- **(d) sin borrado destructivo:** sostenida, sin cambios en el área.
+
+**Salida autocontenida y cero red.** Reverificado con el patrón completo de
+`PATRONES_RECURSO_EXTERNO` (los seis de R-09 más los originales) y una búsqueda propia en
+`guion.js` de `fetch`/`XMLHttpRequest`/`WebSocket`/`EventSource`/`sendBeacon`: sin coincidencias.
+Runtime sigue sin dependencias fuera de la biblioteca estándar (`dependencies = []` en
+`pyproject.toml`).
+
+**Conclusión general.** El proyecto cerró F-E y F-F sin introducir deuda nueva de las categorías que
+esta auditoría vigila: R-10 y R-11 son cierres reales, no maquillados, verificados línea a línea
+contra `#15`-`#18`, y no tocan ninguno de los invariantes centrales que motivaron `#9`/`#14`. La
+única nota que merece seguimiento no es de código: es el bloqueo #8 (rutinas duplicadas), que esta
+pasada confirma de forma independiente por su síntoma observable y tiene coste acumulado real
+aunque esté fuera del alcance de cualquier sesión de código o de auditoría — quedará como `#20`
+hasta que el dueño decida qué trío conservar. Nada exige tratamiento urgente de código en esta
+pasada; el backlog de producto sigue legítimamente vacío a la espera del primer rodaje real
+(bloqueo #7) o de una nueva pasada de esta misma auditoría.
 
 ### Auditoría 2026-09-04 — oleada R completa (R-01 a R-09) + endurecimiento de #14 (P-04/P-05), primera pasada tras el rodaje real
 
