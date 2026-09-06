@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-06 — Ciclo de Product Manager (sin sesión de código), único del día
+**Tarea(s):** Ninguna de producto — comprobación de rutina de `auditoriacontinua.md`, `roadmap/FEEDBACK.md` y §1 de `SEGUIMIENTO.md` (reconfirmación de cola vacía, tercer ciclo consecutivo); verificación directa del bloqueo #8 con `list_triggers`
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1 (todas COMPLETADA, salvo T-24b BLOQUEADA por hardware del dueño). Ninguna R-XX nueva registrada: la cola de producto en `ROADMAP_PRODUCTO.md` sigue vacía
+**Commits a develop:** `PM: reconfirmación de cola vacía tras auditoría 2026-09-06, verificación directa del bloqueo #8 (list_triggers, sin novedad)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/ROADMAP_PRODUCTO.md` (cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** no aplica — ningún archivo de `scripts/`, `tests/`, `assets/` ni `references/` cambia en este ciclo; solo documentación de `roadmap/`
+**Health check post-deploy:** no aplica — no hay instalación que verificar en este ciclo
+**Decisiones tomadas:** 1 fila nueva en `DECISIONES_TECNICAS.md` (2026-09-06, PM ciclo único): reafirma la política de no abrir R-XX especulativa y documenta la verificación directa (no solo documental) del bloqueo #8 vía `list_triggers`, con resultado "sin cambios"
+**Hallazgos del auditor atendidos:** ninguno se cierra en este ciclo de producto — el único hallazgo de la pasada de hoy del auditor fue un desajuste de mantenimiento en su propia tabla (`#15`-`#18` de `ABIERTO` a `RESUELTO`, cierre real ya efectivo desde R-10/R-11), sin R-XX ni P-XX asociada por no ser un hallazgo del proyecto. `#19` sigue documentado sin R-XX, `#20` es de infraestructura (bloqueo #8), no de producto
+**Hallazgos:** ninguno nuevo de producto. Se verificó por acceso directo (`mcp__Claude_Code_Remote__list_triggers`) que el bloqueo #8 (rutinas programadas duplicadas) sigue exactamente igual: siete rutinas totales en la cuenta, seis de ellas para este proyecto (dos tríos con cron idéntico o solapado), las seis con `enabled=true`. No se actúa sobre ellas (acción reservada al dueño, §3 bloqueo #8) ni se renotifica (ya se notificó el 2026-09-04, sin novedad desde entonces)
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** sigue sin haber ninguna T-XX ni R-XX de producto que retomar; depende de (a) una nueva pasada del auditor con hallazgo real nuevo, (b) la primera entrada real en `roadmap/FEEDBACK.md` tras el primer rodaje del dueño (bloqueo #7 de §3), o (c) que el dueño decida cuál trío de rutinas conservar (bloqueo #8). Nota de entorno: **decimoquinta sesión consecutiva** con `develop` local desalineado del remoto al arrancar (HEAD *detached*, historial local de 4 commits sin ancestro común con `origin/develop`); realineado con `git reset --hard origin/develop` (árbol de trabajo limpio antes de la operación, nada local que perder). Sigue sin resolverse el bloqueo #8 que lo explica de forma plausible
+
+---
+
 ### Sesión 2026-09-05 — Ciclo de Product Manager (sin sesión de código), primero del día
 **Tarea(s):** Ninguna de producto — comprobación de rutina de `auditoriacontinua.md`, `roadmap/FEEDBACK.md` y §1 de `SEGUIMIENTO.md` (reconfirmación de cola vacía, primer ciclo de PM de hoy tras la pasada de auditoría de esta misma fecha)
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1 (todas COMPLETADA, salvo T-24b BLOQUEADA por hardware del dueño). Ninguna R-XX nueva registrada: la cola de producto en `ROADMAP_PRODUCTO.md` sigue vacía

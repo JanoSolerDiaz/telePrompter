@@ -8,7 +8,7 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-05 (primer ciclo de PM del día). Cola de R-XX confirmada vacía otra vez, sin cambios de fondo: la pasada del auditor de hoy (`auditoriacontinua.md`) verificó de forma independiente el cierre de `#15`-`#18` (R-10/R-11) y reevaluó `#19` sin R-XX propia; ver `SEGUIMIENTO.md` §3 bloqueo #8 para el hallazgo de infraestructura (rutinas programadas duplicadas, sin novedad desde el 2026-09-04), que no es de producto.
+**Última actualización:** 2026-09-06 (ciclo único de PM del día). Cola de R-XX confirmada vacía por tercer ciclo consecutivo, sin cambios de fondo: la pasada del auditor de hoy (`auditoriacontinua.md`) no encontró código nuevo que auditar y solo corrigió un desajuste de mantenimiento en su propia tabla de hallazgos (`#15`-`#18` a `RESUELTO`, ya cerrados de verdad por R-10/R-11); `#19` reevaluado sin R-XX propia. Ver `SEGUIMIENTO.md` §3 bloqueo #8 para el hallazgo de infraestructura (rutinas programadas duplicadas, verificado hoy por acceso directo a `list_triggers`: siguen las seis activas, sin novedad desde el 2026-09-04), que no es de producto.
 
 ---
 
