@@ -28,10 +28,10 @@
 | #11 | 2026-09-02 | Documentación / coherencia | baja | **RESUELTO** | `PROYECTO.md` seguía describiendo el ritmo como «por defecto 120, propio de locución didáctica y pausada» — la decisión anterior a T-12. **Cerrado por R-08** (2026-09-03), reverificado en esta pasada: `PROYECTO.md:45` dice ahora «El ritmo base se deduce de las duraciones objetivo del propio guión; 120 ppm es solo el respaldo», palabra por palabra con §0.2. | R-08 |
 | #12 | 2026-09-02 | Infraestructura | baja | **RESUELTO** | `pyproject.toml` exige Python ≥3.12, pero el intérprete real de las sesiones de nube es 3.11.15, sin corrección ni vigilancia más allá de una nota suelta. **Cerrado por R-08** (2026-09-03) por la vía de mitigación explícita en vez de bajar la versión declarada (decisión razonada en `DECISIONES_TECNICAS.md`): `scripts/ci.py` gana `avisar_si_version_python_diverge`, que lee el mínimo real de `pyproject.toml` con `tomllib` y avisa (sin bloquear) si el intérprete no lo alcanza, llamada desde `ci.main()`; 4 tests dedicados en `test_ci.py`. Reverificado en esta pasada: sigue vigente y en verde. | R-08 |
 | #13 | 2026-09-02 | Robustez del validador | baja | **RESUELTO** | El validador de auto-contención cubría `http(s)://`/`@import`/`fetch`/`src=` externo, pero no `<object>`/`<embed src>`/`<base href>`/`WebSocket`/`EventSource`/`sendBeacon` ni `url(...)` de CSS. **Cerrado por R-09** (2026-09-03), reverificado en esta pasada: los seis patrones nuevos están en `PATRONES_RECURSO_EXTERNO` (`verificar_salidas.py`), con excepción `data:` donde corresponde (`<embed>`, `url()`) y 14 tests parametrizados en `test_esqueleto.py` (uno por patrón, más los de la excepción `data:`). Documentado en `references/validador-autocontencion.md`, incluida una tabla explícita de huecos deliberadamente fuera de alcance. Nota menor sin severidad propia: `<object data="data:...">` se sigue marcando como hallazgo aunque esté embebido en base64 (a diferencia de `<embed>`/`src=`) — verificado que es una política deliberada y documentada, no una inconsistencia. | R-09 |
-| #15 | 2026-09-04 | Robustez / multiplataforma | media | ABIERTO | `entrada.leer_guion` decodifica el guion con `read_bytes()` + `decode("utf-8-sig")`, sin normalizar `\r\n`/`\r` a `\n` — a diferencia de otras rutas de lectura del propio proyecto (p. ej. `Path.read_text()` en `verificar_salidas.py`), que sí aplican la traducción universal de saltos de línea de Python. Un guion escrito y guardado en Windows (el sistema real del dueño) llega con `\r` incrustado a todo el pipeline de parseo/troceo/revalidación. Verificado en el código actual: el `\r` no se elimina en ningún punto de `entrada.py`. Riesgo real: dos textos idénticos salvo el fin de línea podrían no reconocerse como iguales exactamente donde el invariante (c) depende de esa comparación. Detectado por el propio equipo en sesión local sobre Windows (no por este auditor) y ya registrado como `R-10` con requisito 1 explícito y test propuesto; sin código de corrección todavía tras varias sesiones intermedias (R-01 a R-09) que no tocaron `entrada.py`. | `entrada.leer_guion` · R-10 (PENDIENTE) |
-| #16 | 2026-09-04 | Robustez / datos (rodaje real) | media | ABIERTO | `tomas.duracion_toma_buena` no valida que como mucho una toma esté marcada `buena` por escena — esa exclusividad solo la garantiza el lado JS (`finalizarTomaActual` desmarca las demás antes de añadir la nueva). Si el `.json` exportado llega con dos tomas `buena: true` para la misma escena (edición manual del archivo, fusión de dos exportaciones, un futuro bug de `guion.js`), la función Python elige la primera en silencio, sin ninguna señal de ambigüedad. Reproducido en esta auditoría: `tomas=[{numero:1, duracion:10.0, buena:True}, {numero:2, duracion:999.0, buena:True}]` → `duracion_toma_buena(...) == 10.0` sin aviso. Es el punto único de fallo del que dependen a la vez R-04 (calibración de ppm), R-05 (`.srt` alineado) y R-07 (capítulos de YouTube): un dato de "toma buena" corrupto o ambiguo se propagaría en silencio a las tres salidas. Sin test que cubra este caso en `tests/test_tomas.py`. | `scripts/tomas.py` · R-02, hereda en R-04/R-05/R-07 |
-| #17 | 2026-09-04 | Cobertura / salida derivada | baja | ABIERTO | `capitulos_youtube.calcular_capitulos` empareja títulos de la sección «Capítulos» con escenas posicionalmente "hasta la más corta" (decisión documentada en el propio docstring). Cuando hay **más títulos de capítulo que escenas**, los títulos sobrantes se descartan de `capitulos-youtube.txt` sin ningún aviso ni `motivo_sin_generar` — a diferencia del caso simétrico (menos títulos que escenas), que sí está cubierto por un test. Reproducido: guion con 1 escena y una tabla de 3 capítulos → el archivo derivado solo trae el primero, los otros dos desaparecen sin rastro (el texto original de la sección auxiliar del guion sigue íntegro, así que no es pérdida de la fuente, solo de la salida derivada que se pega en la descripción de YouTube). | `scripts/capitulos_youtube.py` · R-07 |
-| #18 | 2026-09-04 | Calidad / cobertura de tests | baja | ABIERTO | No existe ningún test de integración cruzada entre `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07) que confirme que, alimentados con el mismo `ResultadoTiempos`+`tomas_por_escena`, producen marcas de tiempo mutuamente coherentes — ambos comparten la misma función `tomas.duracion_toma_buena`, así que la coherencia es "por construcción" hoy, no verificada por regresión. Es exactamente el tipo de brecha que `tests/test_integracion_montaje.py` (T-33) se creó para cerrar entre `.srt` y `tarjetas.json`, sin extenderse todavía a estas dos salidas más recientes. No es un bug hoy: es riesgo de deriva silenciosa si una de las dos cambia de fórmula por separado en el futuro. | `tests/test_integracion_montaje.py` · R-05, R-07 |
+| #15 | 2026-09-04 | Robustez / multiplataforma | media | **RESUELTO** | `entrada.leer_guion` decodificaba el guion con `read_bytes()` + `decode("utf-8-sig")` sin normalizar `\r\n`/`\r` a `\n`, a diferencia de otras rutas de lectura del propio proyecto que sí aplican la traducción universal de saltos de línea de Python. **Cerrado por R-10** (2026-09-04), verificado de nuevo en esta pasada leyendo el código: `entrada.py:118` aplica `texto.replace("\r\n", "\n").replace("\r", "\n")` justo después de `decode("utf-8-sig")`, con el motivo documentado en el propio docstring de `leer_guion`. La auditoría del 2026-09-05 ya había verificado el cierre en su narrativa pero dejó esta fila del registro sin actualizar a RESUELTO — corregido en esta pasada. | R-10 |
+| #16 | 2026-09-04 | Robustez / datos (rodaje real) | media | **RESUELTO** | `tomas.duracion_toma_buena` no validaba que como mucho una toma estuviera marcada `buena` por escena; con dos tomas `buena: true` para la misma escena elegía la primera en silencio. **Cerrado por R-11** (2026-09-04), verificado de nuevo en esta pasada: `duracion_toma_buena` (`scripts/tomas.py:186-215`) ahora levanta `RegistroTomasError` citando los números de toma en conflicto cuando `len(buenas) > 1`, en vez de elegir. Misma nota que `#15`: la fila seguía ABIERTO en el registro pese a que la narrativa del 2026-09-05 ya daba el hallazgo por cerrado; corregido aquí. | R-11 |
+| #17 | 2026-09-04 | Cobertura / salida derivada | baja | **RESUELTO** | `capitulos_youtube.calcular_capitulos` descartaba en silencio los títulos de capítulo sobrantes cuando había más filas en la sección «Capítulos» que escenas en el guion. **Cerrado por R-11** (2026-09-04), verificado de nuevo en esta pasada: `ResultadoCapitulos.titulos_sobrantes` (`scripts/capitulos_youtube.py`) expone los títulos que no llegaron a emparejarse por exceso, con el propio docstring citando este hallazgo por número. Fila corregida de ABIERTO a RESUELTO en esta pasada, igual que `#15`/`#16`. | R-11 |
+| #18 | 2026-09-04 | Calidad / cobertura de tests | baja | **RESUELTO** | No existía test de integración cruzada entre `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07) que confirmara marcas de tiempo mutuamente coherentes. **Cerrado por R-11** (2026-09-04), verificado de nuevo en esta pasada: `tests/test_integracion_montaje.py::test_srt_alineado_y_capitulos_youtube_son_coherentes_entre_si` reproduce exactamente ese cruce con un guion sintético de capítulos + tomas. Fila corregida de ABIERTO a RESUELTO en esta pasada. | R-11 |
 | #19 | 2026-09-04 | Invariantes / revalidación (residual de #14) | baja | ABIERTO | El endurecimiento de P-04 (`_incidencias_anclas_desajustadas`) compara, por escena, solo el **conjunto/cantidad** de índices de ancla esperados contra los reales — no su contenido ni orden. Si dos conflictos coincidieran en número exacto de anclas pero en una disposición distinta, el aviso de incidencia no se dispararía. No se ha encontrado un escenario real del código actual que lo produzca (las claves de identidad `(escena, índice_original, mitad)` son deterministas dado el mismo guion + estado), por lo que es una asimetría teórica entre "detecta desajuste de cantidad" y "detecta desajuste de contenido", no un fallo reproducido. Se dejó constancia para que no se pierda de cara a una futura revisión de `revalidacion.py`. Reevaluado en esta pasada (2026-09-05): sin cambios en `revalidacion.py` desde la última auditoría, sigue exactamente en el mismo estado teórico. | `scripts/revalidacion.py` · límite residual de P-04 |
 | #20 | 2026-09-05 | Infraestructura / proceso (fuera del código) | media | ASUMIDO | Confirmado de forma independiente en esta pasada (no solo leído en `SEGUIMIENTO.md` §3 bloqueo #8): el proyecto tiene seis rutinas programadas en vez de tres, en dos tríos con cron idéntico o solapado (`Auditor`/`auditor-teleprompter`, `Product manager`/`product-manager-teleprompter`, `Programador`/`programador-teleprompter`), el trío sin sufijo creado 2026-08-25, antes del primer commit (2026-08-31). Efecto observado en esta misma sesión: el clon de `develop` llegó DETACHED y con 4 commits sin ancestro común con `origin/develop` (52 de diferencia), exactamente el síntoma que trece sesiones consecutivas llevan documentando sin explicación de fondo hasta que el PM lo conectó con esta causa el 2026-09-04. No es una decisión que un auditor de código deba tomar (afecta a la cuenta del dueño, no al repositorio) ni ejecutable desde esta sesión: se registra como riesgo asumido y ya notificado, no como hallazgo nuevo — el PM ya lo documentó con el detalle completo (IDs, cron, fechas) y ya lo notificó al dueño por separado. Se deja constancia aquí únicamente para que la auditoría, como supervisor externo, conste de que verificó el bloqueo por su cuenta y coincide en el diagnóstico, y para vigilar que no quede olvidado si sigue sin resolverse varias pasadas más. | `SEGUIMIENTO.md` §3 bloqueo #8 · acción del dueño, no de código |
 | #14 | 2026-09-03 | Invariantes / revalidación | **alta** | **RESUELTO** | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. **Cerrado por P-03** (2026-09-03): `revalidacion.py` ahora persiste entre pasadas qué particiones quedaron pospuestas (`estado.validacion["particiones_pospuestas"]`), así que la pasada siguiente interpreta las anclas del documento con el MISMO esquema de identidad con el que se escribió, en vez de asumir que toda partición aceptada ya está materializada. Efecto: mientras la edición manual siga en el documento, la partición se queda pospuesta sin duplicar ni mal atribuir nada; solo se materializa cuando el dueño deja de tocar el bloque. Dos tests de regresión nuevos en `tests/test_revalidacion.py` reproducen exactamente el escenario de este hallazgo (falla sin el fix) y confirman que la materialización posterior sigue funcionando cuando el conflicto se resuelve. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
@@ -43,6 +43,90 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-06 — reconfirmación sin cambios de código, corrección de un desajuste en el propio registro de hallazgos
+
+**Nota de arranque, sin severidad propia.** El clon efímero de esta sesión partía otra vez con
+`develop` local en HEAD *detached*, apuntando al mismo historial huérfano de 4 commits sin ancestro
+común con `origin/develop` (52 commits de diferencia) — decimoquinta vez consecutiva con el mismo
+síntoma, ya diagnosticado por el PM el 2026-09-04 como bloqueo #8 (rutinas programadas duplicadas).
+Realineado con `git reset --hard origin/develop` (árbol de trabajo limpio, nada local que perder).
+
+**Alcance.** Desde la pasada anterior (2026-09-05) no ha habido ninguna sesión de código: el único
+commit en `develop` es un ciclo de PM (2026-09-05) que reconfirma la cola de producto vacía y el
+bloqueo #8 sin novedad, sin tocar `scripts/` ni `tests/`. Esta pasada es por tanto una
+reconfirmación: repite las cuatro redes de forma independiente, revisa la coherencia
+decisión-ejecución y —a diferencia de una simple relectura— audita también el propio documento de
+auditoría, que es donde apareció el único hallazgo real de esta pasada.
+
+**Verificación objetiva de las cuatro redes, repetida de forma independiente.** `pip install -r
+requirements-dev.txt` limpio. `python -m mypy scripts/ tests/` → limpio sobre 68 archivos. `python -m
+ruff check scripts/ tests/` → limpio. `python -m pytest` → **550 passed**, idéntico al recuento de la
+pasada anterior (sin código nuevo, no se esperaba otro número). `python scripts/verificar_salidas.py
+--fixture` → las catorce etapas en `OK`, mismo resultado que las dos pasadas previas; `.pptx`/`.pdf`
+reales siguen LATENTES en este contenedor por las mismas razones de siempre (sin la skill de marca,
+sin Chrome/Edge), degradación documentada y no fallo.
+
+**Hallazgo nuevo — desajuste dentro del propio registro de hallazgos, corregido en esta pasada, sin
+número propio por ser un error de mantenimiento del documento y no del proyecto auditado.** La
+narrativa de la auditoría 2026-09-05 afirma explícitamente, con evidencia de código, que R-10 y R-11
+cierran `#15` a `#18` ("cerrando `#15` de verdad", "cerrando... `#16`", etc.) y los tres documentos
+vivos del PM (`DECISIONES_TECNICAS.md`, `ROADMAP_PRODUCTO.md`, `SEGUIMIENTO.md`, todos con fecha
+2026-09-05) dan por hecho ese cierre. Pero la fila de la tabla de las cuatro entradas `#15`-`#18`
+seguía literalmente con `Estado = ABIERTO` y la redacción PREVIA al arreglo (la descripción del
+hallazgo, no su cierre) — un desajuste entre lo que la pasada anterior concluyó y lo que dejó escrito
+en el propio registro rastreable, que es exactamente el tipo de deriva silenciosa que este documento
+existe para vigilar en el proyecto, y que en esta ocasión apareció en sí mismo. Verifiqué las cuatro
+correcciones contra el código real antes de tocar la tabla, no me fié de la narrativa previa: `#15`
+(`entrada.py:118`, normalización CRLF confirmada), `#16` (`tomas.py:186-215`,
+`RegistroTomasError` confirmado), `#17` (`ResultadoCapitulos.titulos_sobrantes` confirmado en
+`capitulos_youtube.py`) y `#18` (`test_srt_alineado_y_capitulos_youtube_son_coherentes_entre_si`
+confirmado en `tests/test_integracion_montaje.py`). Las cuatro filas se corrigen a `RESUELTO` en el
+registro de arriba, con la evidencia de archivo:línea que faltaba. No abro un `#ID` nuevo porque no
+es un hallazgo sobre el código del proyecto: es una corrección de mantenimiento sobre este mismo
+documento, y la propia instrucción del encargo pide reevaluar los `ABIERTO` contra el código en cada
+pasada, no limitarse a repetir el estado de la tabla.
+
+**`#19` reevaluado, sin cambios.** `scripts/revalidacion.py` no se ha tocado desde P-04 (2026-09-03,
+último commit sobre ese archivo); sigue siendo el mismo límite teórico sin escenario reproducido.
+
+**`#20` reevaluado.** Bloqueo #8 (rutinas duplicadas) sigue `ABIERTO` en `SEGUIMIENTO.md` §3, sin
+cambios desde su notificación al dueño el 2026-09-04 — el propio síntoma de esta sesión (clon
+detached, historial huérfano) es la decimoquinta repetición consecutiva. Se mantiene como `#20`,
+`ASUMIDO`, sin escalar: sigue siendo una acción operativa sobre la cuenta del dueño, ya notificada,
+fuera del alcance de cualquier sesión de código o de auditoría.
+
+**Coherencia entre lo decidido y lo ejecutado.** Sin desviaciones nuevas que añadir a §7 de
+`SEGUIMIENTO.md`. `HOJA_DE_RUTA.md` sigue en v1.3 sin ninguna modificación desde T-17 — la regla de
+inmutabilidad se sigue respetando. `ROADMAP_PRODUCTO.md` y `SEGUIMIENTO.md` §1 coinciden entre sí y
+con el código: cola de R-XX vacía, T-24b sigue BLOQUEADA a la espera del clicker real, ninguna otra
+tarea PENDIENTE.
+
+**Invariantes de datos, verificados de nuevo contra el código (spot-check, no re-auditoría completa,
+al no haber cambios de código desde la pasada anterior).**
+- **(a) cobertura total:** sostenida; `#17` sigue exponiendo `titulos_sobrantes` en vez de descartar
+  en silencio.
+- **(b) original recuperable:** sostenida, sin cambios en el área.
+- **(c) la edición manual manda:** sostenida; `revalidacion.py` intacto desde P-04, `#15` (CRLF)
+  sigue cerrado de verdad.
+- **(d) sin borrado destructivo:** sostenida, sin cambios en el área.
+
+**Salida autocontenida y cero red.** Reverificado leyendo `PATRONES_RECURSO_EXTERNO` en
+`scripts/verificar_salidas.py`: los trece patrones de R-09 siguen activos (http(s), CDN, hoja de
+estilos enlazada, `@import`, `fetch`, `XMLHttpRequest`, `src=` externo, `<object>`, `<embed src>`
+externo, `<base href>`, `WebSocket`, `EventSource`/`sendBeacon`, `url(...)` externo), con la excepción
+`data:` donde corresponde. Runtime sigue sin dependencias fuera de la biblioteca estándar
+(`dependencies = []` en `pyproject.toml`).
+
+**Conclusión general.** Segunda pasada consecutiva sin trabajo de código que auditar: el proyecto
+permanece exactamente donde lo dejó la pasada anterior, con las cuatro redes en verde y ningún
+invariante degradado. El único hallazgo real de esta sesión no fue en el código del proyecto sino en
+el propio documento de auditoría — la tabla de hallazgos se había quedado un paso por detrás de su
+propia narrativa, dejando cuatro filas `ABIERTO` que la pasada anterior ya había cerrado con evidencia
+de código. Corregido en esta misma pasada. No queda ningún hallazgo `ABIERTO` de código sin enrutar
+(`#19` sigue siendo un límite teórico sin escenario reproducido, ya razonado por qué no merece R-XX
+propia); `#20` sigue `ASUMIDO`, a la espera de que el dueño decida qué trío de rutinas conservar. Nada
+exige tratamiento urgente en esta pasada.
 
 ### Auditoría 2026-09-05 — cierre de F-E/F-F (R-10, R-11), cola de producto vacía, confirmación del bloqueo de infraestructura #8
 
