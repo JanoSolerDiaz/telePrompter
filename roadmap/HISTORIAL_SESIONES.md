@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-07 — Ciclo de Programador (sin trabajo de código posible), único del día
+**Tarea(s):** Ninguna — §1 de `SEGUIMIENTO.md` no tiene ninguna T-XX/R-XX PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño) y `auditoriacontinua.md` no tiene ningún hallazgo `ABIERTO` de severidad alta que atender como P-XX urgente
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
+**Commits a develop:** `Programador: reconfirmación de las cuatro redes y del bloqueo #8 (list_triggers), sin trabajo de código posible` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy` limpio, 68 archivos) · lint ✅ (`ruff` limpio) · tests ✅ (`pytest`, 550 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor, degradación esperada)
+**Health check post-deploy:** no aplica — sesión de nube, sin acceso a `~/.claude/skills/` del dueño (nota de entorno, protocolo v1.3)
+**Decisiones tomadas:** 1 fila nueva en `DECISIONES_TECNICAS.md` (2026-09-07, Programador ciclo único): reafirma que no ejecutar código sin una T-XX/R-XX/P-XX real que lo motive es la decisión correcta, y documenta la reverificación independiente de las cuatro redes y del bloqueo #8
+**Hallazgos del auditor atendidos:** ninguno — la pasada del auditor de hoy (`auditoriacontinua.md`, `82e3ef4`) ya había confirmado las cuatro redes en verde antes de esta sesión; esta sesión las repite de forma independiente con el mismo resultado. `#19` sigue sin R-XX propia (límite teórico ya razonado), `#20` sigue `ASUMIDO` (infraestructura, bloqueo #8)
+**Hallazgos:** ninguno nuevo. Verificado por acceso directo (`list_triggers`) que el bloqueo #8 (rutinas programadas duplicadas) sigue exactamente igual: las mismas seis rutinas para este proyecto (`Auditor`/`Product manager`/`Programador` del 2026-08-25 junto a `auditor-teleprompter`/`product-manager-teleprompter`/`programador-teleprompter` del 2026-08-31), las seis `enabled=true`, mismos `cron_expression` ya documentados desde el 2026-09-04. No se renotifica al dueño por no haber novedad
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** sigue sin haber ninguna T-XX ni R-XX de producto que retomar; depende de (a) una nueva pasada del auditor con hallazgo real nuevo, (b) la primera entrada real en `roadmap/FEEDBACK.md` tras el primer rodaje del dueño (bloqueo #7 de §3), o (c) que el dueño decida cuál trío de rutinas conservar (bloqueo #8). Nota de entorno: **decimoséptima sesión consecutiva** con `develop` local desalineado del remoto al arrancar (HEAD *detached*, historial local de 4 commits sin ancestro común con `origin/develop`); realineado con `git reset --hard origin/develop` (árbol de trabajo limpio antes de la operación, nada local que perder)
+
+---
+
 ### Sesión 2026-09-06 — Ciclo de Product Manager (sin sesión de código), único del día
 **Tarea(s):** Ninguna de producto — comprobación de rutina de `auditoriacontinua.md`, `roadmap/FEEDBACK.md` y §1 de `SEGUIMIENTO.md` (reconfirmación de cola vacía, tercer ciclo consecutivo); verificación directa del bloqueo #8 con `list_triggers`
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1 (todas COMPLETADA, salvo T-24b BLOQUEADA por hardware del dueño). Ninguna R-XX nueva registrada: la cola de producto en `ROADMAP_PRODUCTO.md` sigue vacía
