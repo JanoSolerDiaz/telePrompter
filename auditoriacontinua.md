@@ -44,6 +44,88 @@
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
 
+### Auditoría 2026-09-07 — tercera reconfirmación consecutiva sin cambios de código, registro sin desajustes
+
+**Nota de arranque, sin severidad propia — mismo síntoma que ya lleva dieciséis sesiones
+documentado.** El clon efímero de esta sesión partía otra vez con `develop` local en HEAD
+*detached*, apuntando a un historial de 4 commits (`f78a92c`…`74cd27f`) sin ancestro común con
+`origin/develop` (52 commits de diferencia — `git merge-base --is-ancestor` lo confirma: ninguno de
+los dos historiales es antepasado del otro). Realineado con `git reset --hard origin/develop`
+(árbol de trabajo limpio antes de la operación, nada local que perder). Mismo diagnóstico que el
+resto de sesiones: consecuencia del bloqueo #8 (rutinas duplicadas), reverificado más abajo.
+
+**Alcance.** Desde la pasada anterior (2026-09-06, commit `2bf65bd`) no ha habido ninguna sesión de
+código: `git log f3a954b..HEAD` da cero commits nuevos — el propio HEAD de `origin/develop` es
+todavía `f3a954b`, un ciclo de PM que solo reconfirmó el bloqueo #8 sin tocar `scripts/` ni `tests/`.
+Tercera pasada consecutiva (2026-09-05 fue la última con trabajo de código real) sin nada nuevo que
+auditar en el árbol de fuentes; el foco de esta pasada es, por tanto, reverificar de forma
+independiente que nada se ha degradado en silencio y comprobar que el propio registro de hallazgos
+sigue coherente con su narrativa (el único tipo de desajuste que esta auditoría ha encontrado en las
+últimas pasadas).
+
+**Verificación objetiva de las cuatro redes, repetida de forma independiente.** `pip install -r
+requirements-dev.txt` limpio. `python -m mypy scripts/ tests/` → **limpio sobre 68 archivos**.
+`python -m ruff check scripts/ tests/` → **limpio**. `python -m pytest` → **550 passed en 2.43s**,
+idéntico recuento a las dos pasadas anteriores (sin código nuevo, no se esperaba otro número).
+`python scripts/verificar_salidas.py --fixture` → las **catorce etapas en OK**; `.pptx`/`.pdf` reales
+siguen LATENTES en este contenedor por las mismas razones ya documentadas (sin la skill de marca
+`480-branded-pptx`, sin Chrome/Edge instalado) — degradación esperada y documentada, no un fallo.
+
+**Registro de hallazgos, reevaluado fila por fila.** A diferencia de la pasada del 2026-09-06 (que
+encontró cuatro filas `#15`-`#18` desfasadas respecto a su propia narrativa), esta vez la tabla ya
+está coherente: las cuatro figuran `RESUELTO` con la evidencia de archivo:línea correcta. No hace
+falta ninguna corrección de mantenimiento en esta pasada.
+
+**`#19` reevaluado, sin cambios.** `git log -1 -- scripts/revalidacion.py` sigue devolviendo
+`1a40c84` (2026-09-03, el commit de P-04): el archivo no se ha tocado desde entonces, así que el
+límite teórico (comparación por conjunto/cantidad de anclas, no por contenido/orden) sigue exacto y
+sin escenario reproducido. Se mantiene `ABIERTO`, sin escalar.
+
+**`#20` reevaluado con verificación directa nueva de `list_triggers` (no solo releyendo
+`SEGUIMIENTO.md`).** Confirmado por esta sesión: siguen existiendo exactamente las mismas **seis**
+rutinas para este proyecto, las seis con `enabled: true` y los mismos `cron_expression` ya
+documentados — `Auditor` (`trig_019V5UKE8jKMvA2LCneiTtTD`, `0 3 * * *`) junto a
+`auditor-teleprompter` (`trig_01PUyc5iBFvJwY2Eu2iga9Ai`, mismo cron); `Product manager`
+(`trig_01Gou6bJDBVucaAkfXYaynAz`, `0 19 * * *`) junto a `product-manager-teleprompter`
+(`trig_01UeizxJHtmf1U8stMcdnAfy`, mismo cron); `Programador` (`trig_01RkE491KgehtmqBcoFUFFKz`,
+`0 6,8,10,12,14 * * 1-5`) junto a `programador-teleprompter` (`trig_01FWDZPhNLTjaxS5zabErJbT`,
+`0 6-15 * * 1-5`, solapado). Sin cambios de `updated_at` respecto a lo ya registrado el 2026-09-06.
+Sigue siendo el síntoma más probable detrás del clon `detached` que abre esta misma narrativa y las
+quince anteriores. Se mantiene `#20` como `ASUMIDO`, sin escalar ni renotificar (sin novedad desde
+la notificación del 2026-09-04): repetir la misma información sin cambio sería ruido, no señal.
+
+**Coherencia entre lo decidido y lo ejecutado.** Sin desviaciones nuevas que añadir a §7 de
+`SEGUIMIENTO.md` (las cinco filas existentes siguen describiendo exactamente lo mismo).
+`HOJA_DE_RUTA.md` sigue en v1.3, sin ninguna modificación desde T-17 (`git log` confirma que su
+último commit real es `8971150`, T-19) — la regla de inmutabilidad se sigue respetando.
+`ROADMAP_PRODUCTO.md` confirma la cola de R-XX vacía y remite a §1 de `SEGUIMIENTO.md`, que a su vez
+no tiene ninguna T-XX/R-XX `PENDIENTE` salvo T-24b `BLOQUEADA` (clicker físico, decisión del dueño).
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Todo coincide entre documentos y con el
+código.
+
+**Invariantes de datos, verificados de nuevo contra el código (spot-check, no re-auditoría completa,
+al no haber cambios de código desde la pasada anterior).**
+- **(a) cobertura total:** sostenida, sin cambios en el área desde R-11.
+- **(b) original recuperable / ediciones manuales respetadas:** sostenida, `revalidacion.py` intacto
+  desde P-04/P-03.
+- **(c) reproductor autocontenido, sin red:** reverificado leyendo `PATRONES_RECURSO_EXTERNO` en
+  `scripts/verificar_salidas.py` — los trece patrones de R-09 siguen activos y la cuarta red confirma
+  `reproductor.html` y `guion-impresion.html` autocontenidos sobre el fixture real.
+- **(d) runtime solo biblioteca estándar:** `pyproject.toml` sigue con `dependencies = []`;
+  `mypy`/`ruff`/`pytest` solo en `requirements-dev.txt`.
+- **(e) sin número mágico suelto / defaults en `SKILL.md`:** sin cambios en `config.py` desde la
+  última verificación exhaustiva; no se repite la revisión completa por no haber código nuevo.
+- **(f) nada se escribe fuera de la carpeta de salida / copia `.bak`:** sostenida, sin cambios en el
+  área.
+
+**Conclusión general.** Tercera pasada consecutiva sin trabajo de código que auditar: el proyecto
+permanece exactamente donde lo dejó la pasada del 2026-09-06, con las cuatro redes en verde, el
+registro de hallazgos ya coherente consigo mismo (sin el desajuste de mantenimiento que sí hubo que
+corregir la pasada anterior) y ningún invariante degradado. `#19` sigue siendo un límite teórico sin
+escenario reproducido; `#20` sigue `ASUMIDO`, a la espera de que el dueño decida qué trío de rutinas
+conservar — verificado de nuevo por acceso directo, sin cambios desde el 2026-09-04. Nada exige
+tratamiento urgente en esta pasada.
+
 ### Auditoría 2026-09-06 — reconfirmación sin cambios de código, corrección de un desajuste en el propio registro de hallazgos
 
 **Nota de arranque, sin severidad propia.** El clon efímero de esta sesión partía otra vez con
