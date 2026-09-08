@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-08 — Ciclo de Programador (sin trabajo de código posible), sexto del día
+**Tarea(s):** Ninguna — §1 de `SEGUIMIENTO.md` sigue sin ninguna T-XX/R-XX PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño) y `auditoriacontinua.md` sigue sin ningún hallazgo `ABIERTO` de severidad alta que atender como P-XX urgente
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
+**Commits a develop:** `Programador: sexta reconfirmación del día (2026-09-08), cuatro redes y bloqueo #8 (list_triggers) sin novedad` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy` limpio, 68 archivos) · lint ✅ (`ruff` limpio) · tests ✅ (`pytest`, 550 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor, degradación esperada)
+**Health check post-deploy:** no aplica — sesión de nube, sin acceso a `~/.claude/skills/` del dueño (nota de entorno, protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva
+**Hallazgos del auditor atendidos:** ninguno — sin cambios desde la última pasada de auditoría (`5f0d8b0`)
+**Hallazgos:** ninguno nuevo. Verificado de nuevo por acceso directo (`list_triggers`) que el bloqueo #8 (rutinas programadas duplicadas) sigue exactamente igual: las mismas seis rutinas para este proyecto (mismos `id`, `cron_expression` y `created_at`), las seis `enabled=true`. No se renotifica al dueño por no haber novedad (sesión de nube automatizada, sin usuario observando en vivo: notificar de nuevo un hallazgo ya conocido y sin cambios sería ruido, no señal). El clon de `develop` de esta sesión llegó con `HEAD` *detached* (arrastraba 8 commits sueltos ya integrados en `origin/develop`); se resolvió con `git checkout develop && git pull` normal, sin pérdida de trabajo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** sigue sin haber ninguna T-XX ni R-XX de producto que retomar; depende de (a) una nueva pasada del auditor con hallazgo real nuevo, (b) la primera entrada real en `roadmap/FEEDBACK.md` tras el primer rodaje del dueño (bloqueo #7 de §3), o (c) que el dueño decida cuál trío de rutinas conservar (bloqueo #8)
+
+---
+
 ### Sesión 2026-09-08 — Ciclo de Programador (sin trabajo de código posible), quinto del día
 **Tarea(s):** Ninguna — §1 de `SEGUIMIENTO.md` sigue sin ninguna T-XX/R-XX PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño) y `auditoriacontinua.md` sigue sin ningún hallazgo `ABIERTO` de severidad alta que atender como P-XX urgente
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
