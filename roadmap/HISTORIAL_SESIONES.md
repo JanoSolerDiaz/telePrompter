@@ -32,6 +32,23 @@
 
 ---
 
+### Sesión 2026-09-08 — Ciclo único de Product Manager
+**Tarea(s):** Gestión de roadmap de producto — revisión de `auditoriacontinua.md`, `roadmap/FEEDBACK.md` y coherencia de §1 de `SEGUIMIENTO.md`
+**Estado resultante:** Sin ninguna R-XX nueva ni cambio de estado en §1 (cola de producto sigue vacía; T-24b sigue BLOQUEADA por hardware del dueño)
+**Commits a develop:** `PM: ciclo único del día (2026-09-08), cola vacía, observación de arquitectura registrada sin R-XX` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/ROADMAP_PRODUCTO.md` (cabecera), `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** N/A — ciclo de PM, no toca `scripts/`/`tests/`; no aplica el pipeline de tipos/lint/tests/build
+**Health check post-deploy:** N/A — sin cambios de código
+**Decisiones tomadas:** 1 fila añadida a `DECISIONES_TECNICAS.md` (2026-09-08, Product Manager): se documenta una observación de arquitectura real (las indicaciones `**EN PANTALLA**`/`**NOTA**` que T-09 clasifica con posición exacta nunca llegan al reproductor interactivo ni quedan ancladas en `guion-escenas.md`, solo listadas al pie por número de línea) y se razona explícitamente por qué NO se abre una R-XX todavía: sin evidencia real de fricción (`FEEDBACK.md` vacío, bloqueo #7 sin cumplirse), consistente con la política ya reafirmada seis veces desde 2026-09-02
+**Hallazgos del auditor atendidos:** ninguno nuevo — `auditoriacontinua.md` (pasada de hoy, cuarta consecutiva sin código nuevo) solo tiene `#19` (baja, límite teórico ya razonado sin R-XX propia) y `#20` (media, `ASUMIDO`, infraestructura no accionable desde una R-XX) como hallazgos no `RESUELTO`, ambos ya correctamente enrutados en ciclos anteriores
+**Hallazgos:** el hueco de arquitectura descrito arriba (no es un bug: el reproductor y `guion-escenas.md` cumplen su spec original de T-16/T-18 al pie de la letra; es una posible mejora futura, no una regresión)
+**Tareas autopropuestas (P-XX):** ninguna — no corresponde al rol de PM
+**Bloqueo #8 (rutinas duplicadas):** reverificado por acceso directo a `list_triggers`: siguen existiendo las mismas seis rutinas de teleprompter (`Auditor`/`Product manager`/`Programador` del 2026-08-25 junto a `auditor-teleprompter`/`product-manager-teleprompter`/`programador-teleprompter` del 2026-08-31), todas `enabled=true`, mismos `cron_expression`/`created_at`; sin cambios desde la notificación del 2026-09-04, no se renotifica
+**Próximo paso:** ninguna R-XX en cola. La siguiente sesión de PM debe seguir revisando `roadmap/FEEDBACK.md` y `auditoriacontinua.md` en cada ciclo; si llega una entrada `nuevo` de feedback real de rodaje (bloqueo #7) que confirme fricción con las indicaciones de pantalla durante la grabación, la nota de `DECISIONES_TECNICAS.md` de hoy ya deja perfilada la solución (anclar por `linea_inicio`/`linea_fin` ya existentes, sin nueva lógica de clasificación) para convertirla en R-XX sin partir de cero
+
+---
+
 ### Sesión 2026-09-08 — Ciclo de Programador (sin trabajo de código posible), décimo del día
 **Tarea(s):** Ninguna — §1 de `SEGUIMIENTO.md` sigue sin ninguna T-XX/R-XX PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño) y `auditoriacontinua.md` sigue sin ningún hallazgo `ABIERTO` de severidad alta que atender como P-XX urgente
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
