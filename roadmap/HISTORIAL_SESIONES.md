@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-09 — Ciclo de Programador (sin trabajo de código posible), noveno del día
+**Tarea(s):** Ninguna T-XX/R-XX — §1 de `SEGUIMIENTO.md` sigue sin ninguna PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño). `#21` (severidad alta en `auditoriacontinua.md`) sigue siendo el mismo falso positivo de clon superficial investigado y corregido en el primer ciclo de hoy; este noveno ciclo aporta una novena muestra independiente en vez de darlo por bueno sin comprobar
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
+**Commits a develop:** `Programador: novena reconfirmación del día (2026-09-09), cuatro redes en verde, #21 reconfirmado por novena vez (clon también superficial) y bloqueo #8 sin novedad` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy` limpio, 68 archivos) · lint ✅ (`ruff` limpio) · tests ✅ (`pytest`, 550 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor, degradación esperada)
+**Health check post-deploy:** N/A (sesión de nube, no instala la skill — nota de entorno del protocolo v1.3)
+**Decisiones tomadas:** `DECISIONES_TECNICAS.md` fila 2026-09-09 "Programador (noveno ciclo del día)"
+**Hallazgos del auditor atendidos:** ninguno nuevo — `#21` reconfirmado como falso positivo ya corregido (novena muestra independiente), bloqueo #8 sin novedad desde 2026-09-04 (verificado por `list_triggers`: las seis rutinas de teleprompter, todas `enabled=true`, mismos `id`/`cron_expression`/`created_at`)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna — sin hallazgo que encaje en las cuatro categorías de P-XX urgente
+**Próximo paso:** ninguno de código; sigue pendiente de acción del dueño el bloqueo #8 (§3, rutinas duplicadas) — no bloquea desarrollo
+
 ### Sesión 2026-09-09 — Ciclo de Programador (sin trabajo de código posible), octavo del día
 **Tarea(s):** Ninguna T-XX/R-XX — §1 de `SEGUIMIENTO.md` sigue sin ninguna PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño). `#21` (severidad alta en `auditoriacontinua.md`) sigue siendo el mismo falso positivo de clon superficial investigado y corregido en el primer ciclo de hoy; este octavo ciclo aporta una octava muestra independiente en vez de darlo por bueno sin comprobar
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
