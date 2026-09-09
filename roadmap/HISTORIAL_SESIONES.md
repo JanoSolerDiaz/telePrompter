@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-09 — Ciclo de Product Manager
+**Tarea(s):** Gestión y evolución del roadmap de producto. Ninguna T-XX/R-XX en curso antes de este ciclo (§1 sin PENDIENTE salvo T-24b BLOQUEADA); se abre **R-12** (nueva oleada v4)
+**Estado resultante:** R-12 PENDIENTE en §1 de `SEGUIMIENTO.md`, spec completa en `ROADMAP_PRODUCTO.md`
+**Commits a develop:** `PM: se abre R-12 (oleada v4) — cue de indicaciones EN PANTALLA/NOTA en el reproductor` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (cabecera, nueva oleada v4, spec de R-12), `roadmap/SEGUIMIENTO.md` (cabecera, fila R-12 en §1, nota en bloqueo #8 de §3), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** N/A — ciclo de PM, no toca `scripts/`/`tests/`; no aplica la verificación de las cuatro redes
+**Health check post-deploy:** N/A — ciclo de PM
+**Decisiones tomadas:** `DECISIONES_TECNICAS.md` fila 2026-09-09 "Product Manager (ciclo único del día)": por qué se abre ahora R-12 pese a la política de esperar feedback real, y cómo la propia ficha acota el riesgo de diseño que motivaba esa cautela
+**Hallazgos del auditor atendidos:** ninguno nuevo de producto — `#19` (baja) sigue sin R-XX propia por lo ya razonado el 2026-09-04; `#20` (media) y `#21` (alta, investigada por el programador y confirmada como falso positivo de clon superficial) son ambas de infraestructura/cuenta del dueño, ya enrutadas en el bloqueo #8 de §3 (se añade una nota ahí conectando `#21` con esa misma causa raíz, sin cambiar la acción pedida al dueño)
+**Hallazgos:** ninguno nuevo — `roadmap/FEEDBACK.md` sigue con cero entradas `nuevo`
+**Tareas autopropuestas (P-XX):** ninguna — este ciclo es de producto (R-XX), no de código
+**Próximo paso:** la siguiente sesión de Programador implementa R-12 según la spec de `ROADMAP_PRODUCTO.md` (requisitos 1-6 y criterio de aceptación); no depende de ninguna decisión pendiente del dueño
+
+---
+
 ### Sesión 2026-09-09 — Ciclo de Programador (sin trabajo de código posible), décimo del día
 **Tarea(s):** Ninguna T-XX/R-XX — §1 de `SEGUIMIENTO.md` sigue sin ninguna PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño). `#21` (severidad alta en `auditoriacontinua.md`) sigue siendo el mismo falso positivo de clon superficial investigado y corregido en el primer ciclo de hoy; este décimo ciclo aporta una décima muestra independiente en vez de darlo por bueno sin comprobar
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
