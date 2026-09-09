@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-09 — Ciclo de Programador (sin trabajo de código posible), primero del día
+**Tarea(s):** Ninguna — §1 de `SEGUIMIENTO.md` sigue sin ninguna T-XX/R-XX PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño). Revisado `auditoriacontinua.md` antes de elegir tarea (§0.1 paso 2): hallazgo nuevo `#21` (severidad alta, historial de `develop` reescrito) evaluado y descartado como P-XX urgente por no encajar en ninguna de las cuatro categorías de §0.1/§0.3 (pérdida de texto del guión, corrupción del estado, rotura del reproductor/auto-contención del HTML, seguridad) — es trazabilidad de git/infraestructura, no un defecto de código
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
+**Commits a develop:** `Programador: primera reconfirmación del día (2026-09-09), cuatro redes en verde, hallazgo #21 revisado (no encaja en P-XX urgente) y bloqueo #8 (list_triggers) sin novedad` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy` limpio, 68 archivos) · lint ✅ (`ruff` limpio) · tests ✅ (`pytest`, 550 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor, degradación esperada)
+**Health check post-deploy:** no aplica — sesión de nube, sin acceso a `~/.claude/skills/` del dueño (nota de entorno, protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva
+**Hallazgos del auditor atendidos:** `#21` revisado y enrutado (no P-XX urgente; queda para el PM). Sin cambios en `#19`/`#20`, ya correctamente enrutados en ciclos anteriores
+**Hallazgos:** ninguno nuevo propio. Verificado de nuevo por acceso directo (`list_triggers`) que el bloqueo #8 (rutinas programadas duplicadas) sigue exactamente igual: las mismas seis rutinas para este proyecto (mismos `id`, `cron_expression` y `created_at`), las seis `enabled=true`. No se renotifica al dueño por no haber novedad
+**Tareas autopropuestas (P-XX):** ninguna — `#21` no cumple la excepción de urgencia de §0.1/§0.3 (no es pérdida de texto del guión, corrupción del estado, rotura del reproductor/auto-contención del HTML ni seguridad); es un hallazgo de proceso/git que corresponde enrutar al PM, no una P-XX del programador
+**Próximo paso:** sigue sin haber ninguna T-XX ni R-XX de producto que retomar. La siguiente sesión de PM debe enrutar `#21` (decidir si abre R-XX de proceso o se limita a notificar al dueño, dado que el propio hallazgo señala que "es información nueva que el dueño no ha visto todavía"); depende también de (a) una nueva pasada del auditor con hallazgo real nuevo, (b) la primera entrada real en `roadmap/FEEDBACK.md` tras el primer rodaje del dueño (bloqueo #7), o (c) que el dueño decida cuál trío de rutinas conservar (bloqueo #8)
+
+---
+
 ### Sesión 2026-09-08 — Ciclo único de Product Manager
 **Tarea(s):** Gestión de roadmap de producto — revisión de `auditoriacontinua.md`, `roadmap/FEEDBACK.md` y coherencia de §1 de `SEGUIMIENTO.md`
 **Estado resultante:** Sin ninguna R-XX nueva ni cambio de estado en §1 (cola de producto sigue vacía; T-24b sigue BLOQUEADA por hardware del dueño)
