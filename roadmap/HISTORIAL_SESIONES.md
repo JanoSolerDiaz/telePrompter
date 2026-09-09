@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-09 — Ciclo de Programador (sin trabajo de código posible), tercero del día
+**Tarea(s):** Ninguna T-XX/R-XX — §1 de `SEGUIMIENTO.md` sigue sin ninguna PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño). `#21` (severidad alta en `auditoriacontinua.md`) sigue siendo el mismo falso positivo de clon superficial investigado y corregido en el primer ciclo de hoy; este tercer ciclo aporta una tercera muestra independiente que reconfirma el diagnóstico en vez de darlo por bueno sin comprobar
+**Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
+**Commits a develop:** `Programador: tercera reconfirmación del día (2026-09-09), cuatro redes en verde, #21 reconfirmado por tercera vez (clon también superficial) y bloqueo #8 sin novedad` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/DECISIONES_TECNICAS.md` (1 fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy` limpio, 68 archivos) · lint ✅ (`ruff` limpio) · tests ✅ (`pytest`, 550 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor, degradación esperada)
+**Health check post-deploy:** no aplica — sesión de nube, sin acceso a `~/.claude/skills/` del dueño (nota de entorno, protocolo v1.3)
+**Decisiones tomadas:** 1 fila añadida a `DECISIONES_TECNICAS.md` (2026-09-09, Programador, tercer ciclo): tercera muestra independiente de clon superficial (`git rev-parse --is-shallow-repository` → `true`, 50 commits locales visibles frente a los 103 reales), reforzando aún más el diagnóstico de que `#21` es un falso positivo por `git clone --depth`, no una reescritura real de `origin/develop`
+**Hallazgos del auditor atendidos:** `#21` reconfirmado por tercera vez (no reabierto ni escalado): sigue sin encajar en las cuatro categorías de P-XX urgente de §0.1/§0.3. Sin cambios en `#19`/`#20`, ya correctamente enrutados en ciclos anteriores
+**Hallazgos:** ninguno nuevo — verificado de nuevo por acceso directo (`list_triggers`) que el bloqueo #8 sigue exactamente igual (mismas seis rutinas, mismos `id`/`cron_expression`/`created_at`, las seis `enabled=true`; la séptima rutina inerte ya documentada sigue `enabled=false`); no se renotifica al dueño por no haber novedad
+**Tareas autopropuestas (P-XX):** ninguna — mismo criterio que los ciclos anteriores de hoy
+**Próximo paso:** sigue sin haber ninguna T-XX ni R-XX de producto que retomar. La siguiente pasada del auditor debe reverificar la corrección de `#21` (repitiendo `git rev-parse --is-shallow-repository` y, si es `true`, `git fetch --unshallow` antes de concluir sobre ancestría) y cerrarlo en su registro. Depende también de (a) la primera entrada real en `roadmap/FEEDBACK.md` tras el primer rodaje del dueño (bloqueo #7), o (b) que el dueño decida cuál trío de rutinas conservar (bloqueo #8)
+
+---
+
 ### Sesión 2026-09-09 — Ciclo de Programador (sin trabajo de código posible), segundo del día
 **Tarea(s):** Ninguna T-XX/R-XX — §1 de `SEGUIMIENTO.md` sigue sin ninguna PENDIENTE (solo T-24b BLOQUEADA por hardware del dueño). `#21` (severidad alta en `auditoriacontinua.md`) ya fue investigado a fondo y corregido en el ciclo anterior de hoy (falso positivo por clon superficial); este ciclo lo reconfirma con evidencia independiente en vez de darlo por bueno sin comprobar
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
