@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-10 — **Ciclo de Programador (segundo del día): sin tarea de código
-pendiente, reconfirmación.** §1 sigue sin ninguna T-XX/R-XX PENDIENTE tras R-12 (COMPLETADA en el
+**Última actualización:** 2026-09-10 — **Ciclo de Programador (tercero del día): sin tarea de código
+pendiente, reconfirmación.** §1 sigue sin ninguna T-XX/R-XX PENDIENTE tras R-12 (COMPLETADA en un
 ciclo anterior de hoy); solo T-24b permanece BLOQUEADA por hardware del dueño. Las cuatro
 verificaciones vuelven a estar en verde (`mypy` limpio sobre 68 archivos, `ruff check` limpio, 557
 tests en `pytest`, `verificar_salidas.py --fixture` con las catorce etapas en OK; `.pptx`/`.pdf`
@@ -21,8 +21,8 @@ como preveían sus fichas). `auditoriacontinua.md` reconfirmado sin cambios: `#1
 2026-09-10) siguen enrutadas en el bloqueo #8 de §3. `list_triggers` confirma que las seis rutinas
 programadas del bloqueo #8 (`Auditor`/`auditor-teleprompter`, `Product manager`/
 `product-manager-teleprompter`, `Programador`/`programador-teleprompter`) siguen todas `enabled` con
-el mismo `cron_expression` que el 2026-09-04 — sin novedad, acción pendiente del dueño sin cambios.
-`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
+el mismo `id`/`cron_expression`/`created_at` que el 2026-09-04 — sin novedad, acción pendiente del
+dueño sin cambios. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
 
 **Última actualización anterior:** 2026-09-10 — **Ciclo de Programador: R-12 implementada y COMPLETADA.**
 La cue discreta de indicaciones `**EN PANTALLA**`/`**NOTA**` llega al reproductor: cada bloque de
