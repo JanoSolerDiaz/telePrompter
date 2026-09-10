@@ -415,6 +415,16 @@ MAPA_TECLAS_REPRODUCTOR: tuple[tuple[str, tuple[str, ...]], ...] = (
 # camara y toda la pantalla, indicadores incluidos.
 ESPEJO_INCLUYE_INDICADORES: bool = False
 
+# --- Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12) ----------------
+# Prefijo textual minimo que distingue, en la cue discreta del reproductor, una
+# indicacion de pantalla de una nota interna (requisito 6): sin iconografia ni
+# recursos nuevos, para no arriesgar la auto-contencion del `.html` (principio de
+# producto #4). El criterio de "es NOTA" es el mismo que ya usa `pdf.es_nota_interna`
+# (T-28, reutilizado tal cual: busca el rotulo NOTA en el motivo de clasificacion de
+# T-09), no una senal nueva.
+PREFIJO_INDICACION_PANTALLA_REPRODUCTOR: str = "Pantalla:"
+PREFIJO_INDICACION_NOTA_REPRODUCTOR: str = "Nota:"
+
 # Nombre del archivo de log dentro de la carpeta de salida del guion. El logger nunca
 # escribe fuera de esa carpeta (regla de aislamiento, §0.2).
 NOMBRE_ARCHIVO_LOG: str = "teleprompter.log"
@@ -525,6 +535,8 @@ class Configuracion:
         default=MAPA_TECLAS_REPRODUCTOR
     )
     espejo_incluye_indicadores: bool = ESPEJO_INCLUYE_INDICADORES
+    prefijo_indicacion_pantalla_reproductor: str = PREFIJO_INDICACION_PANTALLA_REPRODUCTOR
+    prefijo_indicacion_nota_reproductor: str = PREFIJO_INDICACION_NOTA_REPRODUCTOR
     srt_caracteres_por_linea_max: int = SRT_CARACTERES_POR_LINEA_MAX
     srt_lineas_max_por_subtitulo: int = SRT_LINEAS_MAX_POR_SUBTITULO
     srt_duracion_minima_segundos: float = SRT_DURACION_MINIMA_SEGUNDOS

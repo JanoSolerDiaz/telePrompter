@@ -23,6 +23,15 @@ cual (UTF-8, sin `ensure_ascii`): la pagina declara su `charset` y no hay
 ningun motivo para escaparlas. Ademas, `guion.js` solo usa `textContent` para
 volcar ese texto al DOM, nunca `innerHTML`: aunque el escapado de arriba
 fallara, no hay via de inyeccion de marcado en el render.
+
+Cue de indicaciones EN PANTALLA/NOTA (R-12): cada bloque de respiracion trae
+ademas su lista `indicaciones` (puede estar vacia), ancladas por
+`_indicaciones_ancladas_por_indice` al ultimo bloque que las precede en el
+guion de origen -- reutiliza tal cual la clasificacion de T-09
+(`clasificador.clasificar_guion`) y el mismo filtro pantalla/nota que T-28 y
+T-29 (`pdf.indicaciones_no_recitables`/`pdf.es_nota_interna`), sin inventar
+clasificacion nueva. `guion.js` las pinta como una cue subordinada, visible
+solo mientras su bloque ancla esta activo.
 """
 
 from __future__ import annotations
@@ -32,8 +41,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from clasificador import BloqueClasificado, clasificar_guion
 from config import NOMBRE_ARCHIVO_REPRODUCTOR, Configuracion
-from parser import ResultadoParseo
+from parser import Escena, ResultadoParseo
+from pdf import es_nota_interna, indicaciones_no_recitables
 from tiempos import BloqueConTiempo, ResultadoTiempos
 
 _CARPETA_PLANTILLAS = Path(__file__).resolve().parent.parent / "assets" / "reproductor"
@@ -82,6 +93,56 @@ def _json_seguro_para_script(datos: dict[str, Any]) -> str:
     return texto
 
 
+def _formatear_indicacion_reproductor(
+    bloque: BloqueClasificado, configuracion: Configuracion
+) -> str:
+    """Prefijo `Pantalla:`/`Nota:` (requisito 6) + texto en una sola linea,
+    misma normalizacion de espacios que `documento_revision.formatear_indicaciones`
+    y `pptx._extracto`, pero SIN truncar: es una cue en vivo durante la grabacion,
+    no un extracto de un documento -- cortarla dejaria al locutor sin la
+    instruccion completa, justo lo que esta tarea existe para evitar."""
+    prefijo = (
+        configuracion.prefijo_indicacion_nota_reproductor
+        if es_nota_interna(bloque)
+        else configuracion.prefijo_indicacion_pantalla_reproductor
+    )
+    return f"{prefijo} {' '.join(bloque.contenido.split())}"
+
+
+def _indicaciones_ancladas_por_indice(
+    escena: Escena,
+    bloques_clasificados: list[BloqueClasificado],
+    bloques_escena: list[BloqueConTiempo],
+    configuracion: Configuracion,
+) -> dict[int, list[str]]:
+    """Ancla cada indicacion `EN PANTALLA`/`NOTA` (T-09) al ULTIMO bloque de
+    respiracion (T-11) que la precede en el guion de origen (R-12, requisito 1):
+    el mayor indice cuyo `linea_fin` cae antes del `linea_inicio` de la
+    indicacion. Como los bloques de una escena vienen en orden de lectura, eso
+    ya excluye por construccion cualquier bloque de locucion POSTERIOR (la mitad
+    derecha del requisito 1, "y antes del siguiente bloque de locucion", sale
+    gratis sin comprobarla aparte) y, si la indicacion es la ultima de la
+    escena, el candidato mas alto es naturalmente el ultimo bloque (requisito
+    4). Sin ningun bloque precedente (la indicacion aparece antes de toda
+    locucion de la escena, caso sin ejemplo en los guiones reales pero posible
+    en la convencion) se ancla al primero: ninguna indicacion se pierde en
+    silencio (invariante (a) de §0.2, extendido por esta tarea)."""
+    indicaciones_por_indice: dict[int, list[str]] = {}
+    if not bloques_escena:
+        return indicaciones_por_indice
+    for bloque_indicacion in indicaciones_no_recitables(escena, bloques_clasificados):
+        candidatos = [
+            indice
+            for indice, bloque_con_tiempo in enumerate(bloques_escena)
+            if bloque_con_tiempo.bloque.linea_fin < bloque_indicacion.linea_inicio
+        ]
+        indice_ancla = max(candidatos) if candidatos else 0
+        indicaciones_por_indice.setdefault(indice_ancla, []).append(
+            _formatear_indicacion_reproductor(bloque_indicacion, configuracion)
+        )
+    return indicaciones_por_indice
+
+
 def _construir_datos(
     resultado: ResultadoParseo,
     resultado_tiempos: ResultadoTiempos,
@@ -102,26 +163,36 @@ def _construir_datos(
             bloque_con_tiempo
         )
 
-    escenas_datos = [
-        {
-            "numero": escena.numero,
-            "titulo": escena.titulo,
-            "duracion_estimada_segundos": tiempo_escena.duracion_estimada_segundos,
-            "duracion_objetivo_segundos": tiempo_escena.duracion_objetivo_segundos,
-            "bloques": [
-                {
-                    "texto": bloque_con_tiempo.bloque.texto,
-                    "num_palabras": bloque_con_tiempo.bloque.num_palabras,
-                    "inicio_segundos": bloque_con_tiempo.inicio_segundos,
-                    "fin_segundos": bloque_con_tiempo.fin_segundos,
-                }
-                for bloque_con_tiempo in bloques_por_escena.get(escena.numero, [])
-            ],
-        }
-        for escena, tiempo_escena in zip(
-            resultado.escenas, resultado_tiempos.escenas, strict=True
+    # Cue de indicaciones EN PANTALLA/NOTA (R-12): reutiliza tal cual la
+    # clasificacion de T-09 (sin logica de clasificacion nueva, requisito 1) y el
+    # mismo filtro/criterio pantalla-vs-nota que ya usan T-28 (`pdf.py`) y T-29
+    # (`pptx.py`), en vez de duplicarlo una tercera vez.
+    bloques_clasificados = clasificar_guion(resultado, configuracion).bloques
+
+    escenas_datos = []
+    for escena, tiempo_escena in zip(resultado.escenas, resultado_tiempos.escenas, strict=True):
+        bloques_escena = bloques_por_escena.get(escena.numero, [])
+        indicaciones_por_indice = _indicaciones_ancladas_por_indice(
+            escena, bloques_clasificados, bloques_escena, configuracion
         )
-    ]
+        escenas_datos.append(
+            {
+                "numero": escena.numero,
+                "titulo": escena.titulo,
+                "duracion_estimada_segundos": tiempo_escena.duracion_estimada_segundos,
+                "duracion_objetivo_segundos": tiempo_escena.duracion_objetivo_segundos,
+                "bloques": [
+                    {
+                        "texto": bloque_con_tiempo.bloque.texto,
+                        "num_palabras": bloque_con_tiempo.bloque.num_palabras,
+                        "inicio_segundos": bloque_con_tiempo.inicio_segundos,
+                        "fin_segundos": bloque_con_tiempo.fin_segundos,
+                        "indicaciones": indicaciones_por_indice.get(indice, []),
+                    }
+                    for indice, bloque_con_tiempo in enumerate(bloques_escena)
+                ],
+            }
+        )
 
     return {
         "guion": nombre_guion,

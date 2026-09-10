@@ -2634,6 +2634,66 @@ hoy sobre material real. Sin migración de `estado.json`.
   `ResultadoTiempos`+`tomas_por_escena` y confirma que el inicio acumulado de cada
   capítulo coincide con el de la misma escena en el `.srt` alineado.
 
+## Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12)
+
+Cierra el hueco de arquitectura que el PM registró el 2026-09-08: T-09 ya clasifica
+cada indicación `**EN PANTALLA**`/`**NOTA**` con `linea_inicio`/`linea_fin` exactos, y
+`documento_revision.py` (T-16) ya las lista al pie de cada escena en
+`guion-escenas.md`, pero esa información nunca llegaba al propio reproductor — donde
+está mirando quien graba. Sin migración de `estado.json`.
+
+- **Sin clasificación nueva:** `reproductor._construir_datos` llama a
+  `clasificador.clasificar_guion` (mismo patrón que `pdf.py`/`pptx.py`) y reutiliza tal
+  cual `pdf.indicaciones_no_recitables`/`pdf.es_nota_interna` — la tercera reutilización
+  de ese par de funciones (T-28, T-29, y ahora R-12), en vez de duplicar el filtro una
+  vez más.
+- **Anclaje (`_indicaciones_ancladas_por_indice`, requisito 1):** para cada indicación,
+  el ÚLTIMO bloque de respiración (T-11) de la escena cuyo `linea_fin` cae antes del
+  `linea_inicio` de la indicación — el mayor índice que cumple esa condición. Como los
+  bloques de una escena están en orden de lectura, eso ya excluye por construcción
+  cualquier bloque de locución POSTERIOR sin comprobar el límite superior aparte (la
+  segunda mitad del requisito 1 sale gratis), y si la indicación es la última de la
+  escena, el candidato más alto es naturalmente el último bloque (requisito 4). Sin
+  ningún bloque precedente (indicación antes de toda locución, sin ejemplo en los tres
+  guiones reales pero posible en la convención) se ancla al primero — nunca se pierde
+  en silencio. Verificado con un test que compara el total de indicaciones ancladas en
+  el reproductor contra el total que clasifica T-09 sobre los tres guiones reales: sale
+  exacto en los tres.
+- **Prefijo pantalla/nota (requisito 6):** `Configuracion.prefijo_indicacion_pantalla_reproductor`
+  (`"Pantalla:"`) / `.prefijo_indicacion_nota_reproductor` (`"Nota:"`), texto plano sin
+  iconografía — no arriesga la auto-contención del `.html`. El criterio de "es NOTA" es
+  el mismo `pdf.es_nota_interna` de siempre, no una señal nueva.
+- **Sin truncar (decisión deliberada, distinta de `pdf.py`/`pptx.py`):** el extracto de
+  `documento_revision.formatear_indicaciones`/`pptx._extracto` corta a
+  `longitud_extracto_indicacion_max` porque alimentan un documento de repaso; la cue del
+  reproductor es la instrucción en vivo durante la grabación, así que
+  `_formatear_indicacion_reproductor` solo normaliza espacios (mismo patrón), sin cortar
+  nada — truncar dejaría al locutor sin la mitad de la instrucción justo cuando la
+  necesita.
+- **Render (`guion.js`/`estilo.css`, requisitos 2 y 3):** un `<p class="cue-indicacion">`
+  por indicación, hijo del `<li class="bloque">` de su ancla. CSS puro decide la
+  visibilidad — sin lógica nueva en JS más allá de crear el elemento —: oculta por
+  defecto, visible solo bajo `.bloque--activo .cue-indicacion` (nunca compite en tamaño
+  ni contraste con el bloque activo, `font-size: 0.5em` e itálica en
+  `--color-texto-secundario`) y se pliega junto a la cabecera y la barra de progreso en
+  la misma regla `#vista-reproductor.indicadores-ocultos` que ya usa `H` (T-23): sin
+  atajo ni preferencia nueva.
+- **Verificado visualmente** con Playwright/Chromium real sobre el reproductor generado
+  de `guion-artefactos-lienzo.md` (la única escena real con `EN PANTALLA` + `NOTA`
+  seguidas): ambas cues aparecen bajo el bloque activo correcto, subordinadas en tamaño
+  y contraste, y `H` las oculta junto al resto de indicadores.
+- **Hallazgo menor detectado durante la verificación visual, fuera del alcance de esta
+  tarea:** cuando una indicación es la última de la escena y el `.md` de origen trae una
+  línea `---` separadora antes del siguiente encabezado (convención habitual entre
+  escenas), esa línea queda dentro del rango de líneas que T-09 asigna al rótulo no-
+  locución (`clasificador._clasificar_seccion_locucion`/límites de sección) y aparece
+  como `"... para no romper el ritmo. ---"` en el texto de la indicación. No es un
+  hallazgo de R-12: el mismo `---` ya aparece hoy en `guion-escenas.md` (T-16) y en
+  `notas_internas`/`indicaciones_pantalla` de `tarjetas.json` (T-29), porque los tres
+  reutilizan el mismo `bloque.contenido` de T-09. Cosmético (no pierde texto, no rompe
+  ningún invariante), pero documentado aquí para que una futura revisión de los límites
+  de sección de `clasificador.py` no lo redescubra de cero.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

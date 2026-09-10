@@ -304,6 +304,17 @@ Las salidas seleccionadas se generan de forma independiente: el fallo o la laten
 |--------|-------------|------|
 | Salidas seleccionadas | pregunta cada vez | Sin selección previa, sugiere las cuatro; con histórico, sugiere la última selección registrada en `estado.json` |
 
+## Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12)
+
+Un guion de este producto mezcla locución con indicaciones de pantalla (`**EN PANTALLA**`/`**NOTA**`, T-09), pero hasta ahora esas indicaciones solo llegaban al `.pdf`/`guion-escenas.md` — nunca al propio reproductor, que es donde está mirando quien graba. Cada indicación se ancla al ÚLTIMO bloque de respiración (T-11) que la precede en el guion de origen, para que se vea con margen mientras aún se recita la línea anterior; si no hay ninguna locución antes (caso sin ejemplo en los guiones reales, pero contemplado) se ancla a la primera. Sin clasificación nueva: reutiliza tal cual la de T-09 y el mismo criterio pantalla/nota que ya usan el `.pdf` (T-28) y el `.pptx` (T-29).
+
+La cue es siempre subordinada al bloque activo (principio de producto #5: nunca compite en tamaño ni contraste) y solo se muestra mientras el bloque al que está anclada es el activo; se pliega junto al resto de indicadores con la misma tecla `H` (T-23), sin atajo nuevo. Cada indicación lleva un prefijo textual mínimo que distingue pantalla de nota, sin iconografía ni recursos nuevos (no arriesga la auto-contención del `.html`). `guion-escenas.md` no cambia: las indicaciones siguen listadas al pie tal como en T-16.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Prefijo de indicación de pantalla | `Pantalla:` | `prefijo_indicacion_pantalla_reproductor` |
+| Prefijo de nota interna | `Nota:` | `prefijo_indicacion_nota_reproductor`; mismo criterio "es NOTA" que `pdf.es_nota_interna` (T-28) |
+
 ## Precedencia de configuración (T-31)
 
 ```
@@ -448,6 +459,13 @@ de normalización más arriba.
 | Clave | Por defecto | Nota |
 |-------|-------------|------|
 | `espejo_incluye_indicadores` | No | `True` voltea también cabecera, barra de progreso y ayuda |
+
+### Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `prefijo_indicacion_pantalla_reproductor` | `Pantalla:` | Antepuesto a cada indicación EN PANTALLA en la cue del reproductor |
+| `prefijo_indicacion_nota_reproductor` | `Nota:` | Antepuesto a cada indicación clasificada como nota interna |
 
 ### Exportador `.srt` borrador (T-27)
 

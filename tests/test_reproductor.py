@@ -16,8 +16,10 @@ from typing import Any
 
 import pytest
 
+from clasificador import clasificar_guion
 from config import Configuracion
 from parser import ResultadoParseo, parsear_guion
+from pdf import indicaciones_no_recitables
 from reproductor import contraste_relativo, generar_reproductor_html, guardar_reproductor
 from tiempos import ResultadoTiempos, calcular_tiempos
 from verificar_salidas import buscar_recursos_externos
@@ -951,3 +953,111 @@ def test_guion_js_muestra_resumen_de_tropiezos_junto_a_cada_escena() -> None:
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     assert "escena-tropiezos" in pagina
+
+
+# --- Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12) -------------------
+
+
+def test_indicacion_en_pantalla_se_ancla_al_ultimo_bloque_que_la_precede() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    # La locucion de la primera escena se trocea (T-11) en dos bloques de
+    # respiracion; la indicacion EN PANTALLA que viene despues, en el guion de
+    # origen, se ancla al ULTIMO de los dos (requisito 1), no al primero.
+    bloques_escena_0 = datos["escenas"][0]["bloques"]
+    assert len(bloques_escena_0) == 2
+    assert bloques_escena_0[0]["indicaciones"] == []
+    assert bloques_escena_0[1]["indicaciones"] == ["Pantalla: Título del vídeo en pantalla."]
+    # La segunda escena no tiene ninguna indicacion: no se inventa ninguna.
+    for bloque in datos["escenas"][1]["bloques"]:
+        assert bloque["indicaciones"] == []
+
+
+def test_nota_interna_lleva_un_prefijo_distinto_al_de_pantalla() -> None:
+    guion = _GUION_DOS_ESCENAS.replace(
+        "Título del vídeo en pantalla.",
+        "Título del vídeo en pantalla.\n\n**NOTA**\n\nRecordatorio interno para el montaje.",
+    )
+    resultado, tiempos = _pipeline(guion)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    indicaciones = datos["escenas"][0]["bloques"][-1]["indicaciones"]
+    assert indicaciones == [
+        "Pantalla: Título del vídeo en pantalla.",
+        "Nota: Recordatorio interno para el montaje.",
+    ]
+
+
+def test_indicacion_sin_bloque_precedente_se_ancla_al_primero() -> None:
+    # Caso sin ejemplo en los guiones reales (siempre llevan la LOCUCION
+    # primero), pero posible en la convencion: requisito 4 exige que ninguna
+    # indicacion se pierda en silencio tampoco en este extremo.
+    guion = """# Guion
+
+## BLOQUE 0 — Prueba (0:00 – 0:10)
+
+**EN PANTALLA**
+
+Logotipo de apertura.
+
+**LOCUCIÓN**
+
+> Primera frase de la escena.
+"""
+    resultado, tiempos = _pipeline(guion)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    bloques = datos["escenas"][0]["bloques"]
+    assert len(bloques) == 1
+    assert bloques[0]["indicaciones"] == ["Pantalla: Logotipo de apertura."]
+
+
+def test_indicaciones_no_recitables_no_se_pierden_en_los_guiones_reales(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    for nombre, texto in texto_guiones_reales.items():
+        resultado, tiempos = _pipeline(texto)
+        pagina = generar_reproductor_html(resultado, tiempos, nombre_guion=nombre)
+        datos = _extraer_datos(pagina)
+        total_reproductor = sum(
+            len(bloque["indicaciones"])
+            for escena in datos["escenas"]
+            for bloque in escena["bloques"]
+        )
+        clasificacion = clasificar_guion(resultado)
+        total_clasificado = sum(
+            len(indicaciones_no_recitables(escena, clasificacion.bloques))
+            for escena in resultado.escenas
+        )
+        assert total_reproductor == total_clasificado, (
+            f"{nombre}: el reproductor no ancla el 100% de las indicaciones que T-09 "
+            f"clasifico ({total_reproductor} de {total_clasificado})"
+        )
+
+
+def test_guion_js_muestra_la_cue_solo_mientras_el_bloque_ancla_esta_activo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "cue-indicacion" in pagina
+    assert ".bloque--activo .cue-indicacion" in pagina
+
+
+def test_cue_de_indicacion_se_pliega_con_el_resto_de_indicadores() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "#vista-reproductor.indicadores-ocultos .cue-indicacion" in pagina
+
+
+def test_prefijos_de_indicacion_son_configurables() -> None:
+    configuracion = Configuracion(
+        prefijo_indicacion_pantalla_reproductor="PANTALLA >",
+        prefijo_indicacion_nota_reproductor="NOTA >",
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    pagina = generar_reproductor_html(
+        resultado, tiempos, nombre_guion="guion", configuracion=configuracion
+    )
+    datos = _extraer_datos(pagina)
+    indicaciones = datos["escenas"][0]["bloques"][-1]["indicaciones"]
+    assert indicaciones == ["PANTALLA > Título del vídeo en pantalla."]

@@ -10,17 +10,34 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-09 — **Ciclo de Product Manager.** Tras el décimo ciclo de
-Programador del día (sin trabajo de código posible, ver commit anterior), este ciclo de PM abre
-**R-12** (§1 y `ROADMAP_PRODUCTO.md`, nueva oleada v4): cue discreta de las indicaciones `**EN
-PANTALLA**`/`**NOTA**` en el reproductor, ancladas al bloque de respiración que las precede,
-convirtiendo en tarea la observación de arquitectura que el PM dejó registrada sin R-XX propia el
-2026-09-08. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Reconfirmado el registro de
+**Última actualización:** 2026-09-10 — **Ciclo de Programador: R-12 implementada y COMPLETADA.**
+La cue discreta de indicaciones `**EN PANTALLA**`/`**NOTA**` llega al reproductor: cada bloque de
+respiración (T-11) incorpora ahora su lista `indicaciones`, ancladas al ÚLTIMO bloque que las
+precede en el guion de origen (`reproductor._indicaciones_ancladas_por_indice`), reutilizando sin
+lógica de clasificación nueva la de T-09 y el mismo criterio pantalla/nota que ya usan T-28/T-29
+(`pdf.indicaciones_no_recitables`/`pdf.es_nota_interna`). `guion.js`/`estilo.css` la pintan como un
+`<p class="cue-indicacion">` subordinado (oculto salvo bajo `.bloque--activo`) que se pliega con el
+resto de indicadores en la misma tecla `H` (T-23), sin atajo nuevo. Verificado con 7 tests nuevos
+(550→557) y, además, visualmente con Playwright/Chromium real sobre `guion-artefactos-lienzo.md`
+(la única escena real con `EN PANTALLA`+`NOTA` seguidas): ambas cues aparecen bajo el bloque activo
+correcto y `H` las oculta. Detalle completo en `DECISIONES_TECNICAS.md` y `DEVELOPERS.md`. Fila
+`R-12` en §1 pasa de PENDIENTE a COMPLETADA; ninguna T-XX/R-XX PENDIENTE queda en la cola (salvo
+T-24b, BLOQUEADA por hardware del dueño).
+
+**Hallazgo menor detectado durante la verificación visual, dejado como observación para la próxima
+auditoría (no urgente, no P-XX):** cuando la última indicación de una escena precede a un separador
+`---` entre escenas en el `.md` de origen (convención habitual), ese `---` queda dentro del rango de
+líneas que T-09 asigna al rótulo no-locución y aparece pegado al final del texto de la indicación
+(`"... para no romper el ritmo. ---"`). Preexistente a R-12 — el mismo `---` ya aparece hoy en
+`guion-escenas.md` (T-16) y en `tarjetas.json` (T-29), los tres reutilizan `bloque.contenido` de
+T-09 — y cosmético (no pierde texto, no rompe ningún invariante), pero se deja constancia aquí para
+que una futura revisión de los límites de sección de `clasificador.py` no lo redescubra de cero.
+
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Reconfirmado el registro de
 `auditoriacontinua.md`: `#19` (baja) sigue sin R-XX propia por lo ya razonado; `#20` (media) y `#21`
-(alta, investigada y confirmada como falso positivo de clon superficial por el programador — ver
-`DECISIONES_TECNICAS.md` 2026-09-09) son ambas de infraestructura/cuenta del dueño, correctamente
-enrutadas en el bloqueo #8 de §3, sin acción de código pendiente. Sin cambios en bloqueos, preguntas
-abiertas ni desviaciones.
+(alta, ya RESUELTA por el auditor el 2026-09-10) son ambas de infraestructura/cuenta del dueño,
+correctamente enrutadas en el bloqueo #8 de §3, sin acción de código pendiente. Sin cambios en
+bloqueos, preguntas abiertas ni desviaciones.
 
 ---
 
@@ -83,7 +100,7 @@ abiertas ni desviaciones.
 | R-09 | Endurecer el validador de auto-contención | **COMPLETADA** | 2026-09-03 | Seis patrones nuevos en `PATRONES_RECURSO_EXTERNO` (`<object>`, `<embed src>`, `<base href>`, `WebSocket`, `EventSource`/`sendBeacon`, `url(...)` de CSS fuera de `@import`), excepción `data:` donde aplica; lista completa documentada en `references/validador-autocontencion.md`. Fase F-D · `origen: auditoría #13` |
 | R-10 | Robustez multiplataforma detectada al correr en Windows por primera vez | **COMPLETADA** | 2026-09-04 | `entrada.leer_guion` normaliza `\r\n`/`\r` a `\n` tras decodificar (hallazgo real); `test_nombre_guion_seguro_nunca_vacio` diagnosticado sin cambio de código (`PureWindowsPath`/`PurePosixPath` parten `"....md"` igual); `test_instalar_hook_...` pasa a `skipif` no-POSIX; los doce `write_text` de `scripts/` fijan `newline="\n"` (requisito 4, hallazgo real de la comprobación). Fase F-E · `origen: hallazgo de sesión (no de auditoría)` |
 | R-11 | Robustez de datos derivados del rodaje (toma buena ambigua, capítulos sobrantes, cobertura cruzada) | **COMPLETADA** | 2026-09-04 | `tomas.duracion_toma_buena` rechaza con `RegistroTomasError` más de una toma `buena` por escena (#16); `capitulos_youtube.calcular_capitulos` expone `titulos_sobrantes` cuando hay más títulos que escenas (#17); nuevo test de coherencia cruzada `.srt` alineado/capítulos de YouTube en `tests/test_integracion_montaje.py` (#18). Fase F-F · `origen: auditoría #16, #17, #18` |
-| R-12 | Cue discreta de indicaciones EN PANTALLA/NOTA en el reproductor | **PENDIENTE** | 2026-09-09 (PM) | Spec completa en `ROADMAP_PRODUCTO.md`. Ancla la indicación al bloque de respiración que la precede, reutilizando `linea_inicio`/`linea_fin` ya calculados por T-09/T-11; cue subordinada (nunca compite con el bloque activo), se pliega en el mismo grupo que oculta `H` (T-23), sin atajo nuevo. Oleada v4 · `origen: observación de arquitectura del PM (2026-09-08)` |
+| R-12 | Cue discreta de indicaciones EN PANTALLA/NOTA en el reproductor | **COMPLETADA** | 2026-09-10 | `reproductor._indicaciones_ancladas_por_indice` ancla cada indicación al ÚLTIMO bloque de respiración que la precede (sin bloque precedente, al primero — requisito 4), reutilizando tal cual la clasificación de T-09 y el filtro pantalla/nota de T-28/T-29 (`pdf.indicaciones_no_recitables`/`es_nota_interna`). `guion.js`/`estilo.css`: cue subordinada (`.cue-indicacion`, visible solo bajo `.bloque--activo`), plegada con el resto de indicadores en `H` (T-23), sin atajo nuevo. Prefijos `Pantalla:`/`Nota:` configurables. 7 tests nuevos (550→557); verificado también visualmente con Playwright/Chromium real. Oleada v4 · `origen: observación de arquitectura del PM (2026-09-08)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

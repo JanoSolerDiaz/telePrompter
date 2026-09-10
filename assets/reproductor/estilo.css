@@ -399,7 +399,8 @@ button:focus-visible {
 /* Indicadores ocultables con una tecla (requisito 4): un unico interruptor
    sobre la cabecera y la barra de progreso, sin tocar el guion en si. */
 #vista-reproductor.indicadores-ocultos .reproductor-cabecera,
-#vista-reproductor.indicadores-ocultos .barra-progreso-contenedor {
+#vista-reproductor.indicadores-ocultos .barra-progreso-contenedor,
+#vista-reproductor.indicadores-ocultos .cue-indicacion {
   display: none;
 }
 
@@ -420,6 +421,24 @@ button:focus-visible {
   border-left: 3px solid var(--color-acento);
   padding-left: 0.75em;
   font-weight: 600;
+}
+
+/* Cue discreta de indicaciones EN PANTALLA/NOTA (R-12, requisito 2): tamano y
+   peso siempre subordinados al bloque activo -- nunca compite en tamano ni
+   contraste (principio de producto #5) -- y visible unicamente mientras el
+   bloque al que esta anclada esta activo; al avanzar al siguiente bloque de
+   locucion, `.bloque--activo` se mueve y la cue anterior deja de mostrarse. */
+.cue-indicacion {
+  display: none;
+  margin: 0.5em 0 0;
+  font-size: 0.5em;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-texto-secundario);
+}
+
+.bloque--activo .cue-indicacion {
+  display: block;
 }
 
 .reproductor-controles {

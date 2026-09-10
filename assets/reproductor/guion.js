@@ -647,6 +647,16 @@
       item.className = "bloque";
       item.id = "bloque-" + indiceBloque;
       item.textContent = bloque.texto;
+      // Cue discreta de indicaciones EN PANTALLA/NOTA (R-12, requisitos 2 y 3):
+      // un <p> por indicacion, subordinado por CSS (oculto salvo que este
+      // bloque sea el activo, y plegado junto al resto de indicadores con
+      // `indicadores-ocultos`) -- nunca compite con el texto de locucion.
+      (bloque.indicaciones || []).forEach(function (textoIndicacion) {
+        var cue = document.createElement("p");
+        cue.className = "cue-indicacion";
+        cue.textContent = textoIndicacion;
+        item.appendChild(cue);
+      });
       elementosBloque[indiceBloque] = item;
       listaBloques.appendChild(item);
     });
