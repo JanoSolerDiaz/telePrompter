@@ -10,68 +10,35 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-10 — **Ciclo de Programador (sexto del día): sin tarea de código
-pendiente, pero se corrige un diagnóstico erróneo de más de una semana en el bloqueo #8.**
-§1 sigue sin ninguna T-XX/R-XX PENDIENTE tras R-12; solo T-24b permanece BLOQUEADA por hardware
-del dueño. Las cuatro verificaciones vuelven a estar en verde (`mypy` limpio, `ruff check` limpio,
-557 tests en `pytest`, `verificar_salidas.py --fixture` con las catorce etapas en OK; `.pptx`/`.pdf`
-reales siguen LATENTES en este contenedor de nube, tal como preveían sus fichas).
+**Última actualización:** 2026-09-10 — **Ciclo de Programador (séptimo del día): sin tarea de
+código pendiente ni novedad que reportar.** §1 sigue sin ninguna T-XX/R-XX PENDIENTE tras R-12;
+solo T-24b permanece BLOQUEADA por hardware del dueño. Las cuatro verificaciones vuelven a estar en
+verde (`mypy` limpio sobre 68 archivos, `ruff check` limpio, 557 tests en `pytest`,
+`verificar_salidas.py --fixture` con las catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES
+en este contenedor de nube, tal como preveían sus fichas). El bloqueo #8 (corregido en el ciclo
+anterior de hoy: el trío de rutinas sin sufijo pertenece a `centro-estudios-sw`, no a este
+proyecto) sigue `RESUELTO`, sin novedad. `auditoriacontinua.md` sin hallazgos `ABIERTO` de
+severidad alta; `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. No se repite aquí el detalle ya
+narrado en el ciclo anterior (ver "Última actualización anterior" más abajo) para no seguir
+engordando este documento con reconfirmaciones idénticas — el auditor ya señaló ese coste de
+legibilidad (`auditoriacontinua.md` #20).
 
-**Corrección del bloqueo #8, verificada con datos que ninguna sesión anterior había mirado:**
-`list_triggers` (MCP `claude-code-remote`) trae, para cada rutina, el `git_repository.url` real y
-el contenido íntegro de su prompt — campos que las quince y pico reconfirmaciones anteriores del
-bloqueo #8 nunca leyeron, limitándose a comparar `name`/`cron_expression`. Leídos esta vez:
-`Auditor` (`trig_019V5UKE8jKMvA2LCneiTtTD`), `Product manager` (`trig_01Gou6bJDBVucaAkfXYaynAz`) y
-`Programador` (`trig_01RkE491KgehtmqBcoFUFFKz`) — el trío "sin sufijo" que el bloqueo #8 venía
-señalando como duplicado de `auditor-teleprompter`/`product-manager-teleprompter`/
-`programador-teleprompter` desde el 2026-09-04 — apuntan los tres a
-`https://github.com/JanoSolerDiaz/centro-estudios-sw`, no a `telePrompter`, y su prompt lo confirma
-sin ambigüedad («Actúa como el mejor product manager del mundo para **GestorAcademia**», no
-teleprompter). **No son duplicados de las rutinas de este proyecto: son las rutinas de otro
-proyecto del dueño que aún no ha renombrado sus rutinas con sufijo de producto.** Los tres cron
-tampoco coinciden exactamente con los de `-teleprompter` (`Programador` sin sufijo es
-`0 6,8,10,12,14 * * 1-5`, cinco disparos fijos; `programador-teleprompter` es `0 6-15 * * 1-5`,
-diez disparos cada hora en punto) — la lectura anterior los había dado por "coincidentes o
-solapados" sin haber comparado el detalle. Para `telePrompter`, cada rol tiene **una sola** rutina
-habilitada (`auditor-teleprompter` 3:00, `product-manager-teleprompter` 19:00,
-`programador-teleprompter` 6-15h L-V), sin solape ni coste doble. Bloqueo #8 corregido de
-`ABIERTO` a `RESUELTO` en §3 — no hay ninguna acción pendiente del dueño sobre las rutinas de
-*este* proyecto (si el dueño quiere, puede revisar por separado si el trío sin sufijo de
-`centro-estudios-sw` tiene su propio problema de nomenclatura, pero eso es ajeno a este repositorio
-y a este documento). El resto de `auditoriacontinua.md` reconfirmado sin cambios: `#19` (baja)
-sigue `ABIERTO` sin escenario reproducido; `#20` (media, `ASUMIDO`) describe el mismo bloqueo #8 y
-queda desactualizada por esta corrección — no se edita aquí porque `auditoriacontinua.md` es de
-escritura exclusiva del rol Auditor (protocolo), pero su próxima pasada debería actualizar esa fila
-con esta evidencia. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
-
-**Última actualización anterior:** 2026-09-10 — **Ciclo de Programador: R-12 implementada y COMPLETADA.**
-La cue discreta de indicaciones `**EN PANTALLA**`/`**NOTA**` llega al reproductor: cada bloque de
-respiración (T-11) incorpora ahora su lista `indicaciones`, ancladas al ÚLTIMO bloque que las
-precede en el guion de origen (`reproductor._indicaciones_ancladas_por_indice`), reutilizando sin
-lógica de clasificación nueva la de T-09 y el mismo criterio pantalla/nota que ya usan T-28/T-29
-(`pdf.indicaciones_no_recitables`/`pdf.es_nota_interna`). `guion.js`/`estilo.css` la pintan como un
-`<p class="cue-indicacion">` subordinado (oculto salvo bajo `.bloque--activo`) que se pliega con el
-resto de indicadores en la misma tecla `H` (T-23), sin atajo nuevo. Verificado con 7 tests nuevos
-(550→557) y, además, visualmente con Playwright/Chromium real sobre `guion-artefactos-lienzo.md`
-(la única escena real con `EN PANTALLA`+`NOTA` seguidas): ambas cues aparecen bajo el bloque activo
-correcto y `H` las oculta. Detalle completo en `DECISIONES_TECNICAS.md` y `DEVELOPERS.md`. Fila
-`R-12` en §1 pasa de PENDIENTE a COMPLETADA; ninguna T-XX/R-XX PENDIENTE queda en la cola (salvo
-T-24b, BLOQUEADA por hardware del dueño).
-
-**Hallazgo menor detectado durante la verificación visual, dejado como observación para la próxima
-auditoría (no urgente, no P-XX):** cuando la última indicación de una escena precede a un separador
-`---` entre escenas en el `.md` de origen (convención habitual), ese `---` queda dentro del rango de
-líneas que T-09 asigna al rótulo no-locución y aparece pegado al final del texto de la indicación
-(`"... para no romper el ritmo. ---"`). Preexistente a R-12 — el mismo `---` ya aparece hoy en
-`guion-escenas.md` (T-16) y en `tarjetas.json` (T-29), los tres reutilizan `bloque.contenido` de
-T-09 — y cosmético (no pierde texto, no rompe ningún invariante), pero se deja constancia aquí para
-que una futura revisión de los límites de sección de `clasificador.py` no lo redescubra de cero.
-
-`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Reconfirmado el registro de
-`auditoriacontinua.md`: `#19` (baja) sigue sin R-XX propia por lo ya razonado; `#20` (media) y `#21`
-(alta, ya RESUELTA por el auditor el 2026-09-10) son ambas de infraestructura/cuenta del dueño,
-correctamente enrutadas en el bloqueo #8 de §3, sin acción de código pendiente. Sin cambios en
-bloqueos, preguntas abiertas ni desviaciones.
+**Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
+`DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-10, sexto ciclo: bloqueo #8 corregido de `ABIERTO` a `RESUELTO` en §3. `list_triggers`
+  trae `git_repository.url` y el prompt completo de cada rutina — datos que ninguna reconfirmación
+  anterior había leído. El trío "sin sufijo" (`Auditor`/`Product manager`/`Programador`) apunta a
+  `https://github.com/JanoSolerDiaz/centro-estudios-sw` (proyecto `GestorAcademia` del dueño, no
+  teleprompter) y sus cron no coinciden con los de `-teleprompter`. Ninguna rutina de *este*
+  proyecto está duplicada. `auditoriacontinua.md` #19 (baja) y #20 (media) reconfirmados sin
+  cambios; #20 queda desactualizado por esta corrección pero es de escritura exclusiva del Auditor.
+- 2026-09-10, ciclo previo: **R-12 implementada y COMPLETADA** (cue discreta de indicaciones `**EN
+  PANTALLA**`/`**NOTA**` en el reproductor, ancladas al bloque de respiración precedente,
+  reutilizando T-09/T-28/T-29 sin lógica nueva; 7 tests nuevos, 550→557; verificado también con
+  Playwright/Chromium real). Ninguna T-XX/R-XX PENDIENTE queda en la cola salvo T-24b (BLOQUEADA,
+  hardware del dueño). Hallazgo cosmético menor dejado como observación no urgente: un `---` de
+  separador de escena puede quedar pegado al final del texto de una indicación (preexistente a
+  R-12, no pierde texto ni rompe invariantes).
 
 ---
 
