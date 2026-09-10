@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-10 — Ciclo de Programador (sin trabajo de código posible), sexto del día: corrige el bloqueo #8
+**Tarea(s):** Ninguna T-XX/R-XX de código — §1 de `SEGUIMIENTO.md` sigue sin ninguna PENDIENTE. En su lugar, se investiga a fondo el bloqueo #8 de §3 (rutinas programadas "duplicadas") antes de reconfirmarlo por sexta vez sin más, y se descubre que el diagnóstico venía siendo erróneo desde el 2026-09-04
+**Estado resultante:** Bloqueo #8 corregido de `ABIERTO` a `RESUELTO` en §3 de `SEGUIMIENTO.md`. Ninguna T-XX/R-XX cambia de estado en §1
+**Commits a develop:** `Programador: corrige el bloqueo #8 (rutinas "duplicadas" eran de otro proyecto del dueño), sexta reconfirmación del día (2026-09-10)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera, callout "PARA EL DUEÑO", fila del bloqueo #8), `roadmap/DECISIONES_TECNICAS.md` (nueva fila), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`python -m mypy scripts/ tests/`) · lint ✅ (`ruff check scripts/ tests/`) · tests ✅ (`pytest`, 557 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor de nube, degradación esperada)
+**Health check post-deploy:** N/A (sesión de nube, no instala la skill — nota de entorno del protocolo v1.3)
+**Decisiones tomadas:** ver `DECISIONES_TECNICAS.md` (2026-09-10, "Programador (sexto ciclo del día)")
+**Hallazgos del auditor atendidos:** ninguno de código — pero se corrige de facto el hallazgo `#20` de `auditoriacontinua.md` (media, `ASUMIDO`), que describía el mismo bloqueo #8 con el diagnóstico ahora superado; no se edita `auditoriacontinua.md` directamente por ser de escritura exclusiva del rol Auditor, se deja anotado para su próxima pasada
+**Hallazgos:** **Hallazgo nuevo, de infraestructura, corrigiendo uno propio previo:** antes de reconfirmar el bloqueo #8 por sexta vez con la misma redacción de siempre, se leyeron los campos `git_repository.url` y el prompt completo de cada rutina en la respuesta de `list_triggers` — campos presentes en la misma llamada que todas las reconfirmaciones anteriores (desde el 2026-09-04) venían haciendo sin leerlos, comparando solo `name`/`cron_expression`. El trío "sin sufijo" (`Auditor`/`Product manager`/`Programador`, creado 2026-08-25) que se venía señalando como duplicado de `auditor-teleprompter`/`product-manager-teleprompter`/`programador-teleprompter` apunta en realidad a `https://github.com/JanoSolerDiaz/centro-estudios-sw`, un proyecto distinto del dueño, y su prompt lo confirma sin ambigüedad («...para GestorAcademia»). Para teleprompter no hay ninguna rutina duplicada: cada rol tiene una sola, sin solape de cron. El bloqueo llevaba más de una semana notificando al dueño un coste doble de cómputo que no existe para este proyecto; corregido en el mismo ciclo en que se detectó, sin esperar a una pasada de auditor
+**Tareas autopropuestas (P-XX):** ninguna — la corrección es documental (§3/§0.4), no toca código de producto ni cumple ninguno de los cuatro motivos de P-XX urgente
+**Próximo paso:** ninguno de código; el dueño puede, si quiere, revisar por separado si el trío de `centro-estudios-sw` tiene su propio problema de nomenclatura o solape — queda fuera del alcance de este repositorio. La próxima pasada de auditor debería actualizar la fila `#20` de `auditoriacontinua.md` con esta evidencia
+
+---
+
 ### Sesión 2026-09-10 — Ciclo de Programador (sin trabajo de código posible), quinto del día
 **Tarea(s):** Ninguna T-XX/R-XX — §1 de `SEGUIMIENTO.md` sigue sin ninguna PENDIENTE tras R-12 (completada en un ciclo anterior de hoy); solo T-24b BLOQUEADA por hardware del dueño. `auditoriacontinua.md` no registra ningún hallazgo `ABIERTO` de severidad alta (`#19` baja, `#20` media `ASUMIDO`, `#21` alta ya `RESUELTO`)
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1
