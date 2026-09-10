@@ -32,6 +32,47 @@
 
 ---
 
+### Sesión 2026-09-10 — Ciclo de Product Manager: R-12 archivada a histórico, se abren R-13 y R-14
+**Tarea(s):** Ninguna T-XX en curso. Gestión de roadmap: archiva la oleada v4 (R-12, ya
+`COMPLETADA`) a `ROADMAP_HISTORICO.md`; abre **R-13** (oleada v5 nueva) y **R-14** (fase transversal
+F-G nueva)
+**Estado resultante:** R-13 y R-14 quedan `PENDIENTE` en §1 de `SEGUIMIENTO.md`. Ningún estado de
+T-XX/R-XX existente cambia (T-24b sigue `BLOQUEADA` por hardware del dueño)
+**Commits a develop:** `PM: se archiva la oleada v4 (R-12) a histórico y se abren R-13 (oleada v5) y
+R-14 (fase F-G)` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (gestión de roadmap, sin tocar `scripts/`)
+**Archivos creados/modificados:** `roadmap/ROADMAP_HISTORICO.md` (oleada v4 archivada con spec
+completa de R-12), `roadmap/ROADMAP_PRODUCTO.md` (v4 sustituida por remisión al histórico; specs
+nuevas de R-13/R-14; oleada v5 y fase F-G), `roadmap/SEGUIMIENTO.md` (cabecera + filas R-13/R-14 en
+§1), `roadmap/DECISIONES_TECNICAS.md` (cuatro decisiones nuevas), `roadmap/HISTORIAL_SESIONES.md`
+(esta entrada)
+**Verificaciones pre-push:** N/A — ciclo de gestión de roadmap, sin cambios en `scripts/`/`tests/`;
+no aplica ejecutar las cuatro redes de verificación de código
+**Health check post-deploy:** N/A (sesión de nube, sin cambios de código que instalar)
+**Decisiones tomadas:** cuatro filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-10, rol PM):
+archivar v4 a histórico; mantener `#19` sin R-XX propia (reconfirmación); abrir R-13; abrir R-14
+**Hallazgos del auditor atendidos:** ninguno `ABIERTO` de severidad alta que atender. `#19` (baja)
+reconfirmado sin R-XX propia, sin escenario reproducido; `#20` (media, `ASUMIDO`) sigue enrutado en
+el bloqueo #8 de `SEGUIMIENTO.md` §3, sin acción de producto pendiente
+**Hallazgos:** dos huecos de arquitectura, verificados leyendo código antes de escribir spec, no
+inventados: (1) `scripts/pptx.py` (`tarjetas.json`, T-29) es el único de los tres consumidores de
+`tomas.duracion_toma_buena` que no la usa, a diferencia de `scripts/srt_alineado.py` (R-05) y
+`scripts/capitulos_youtube.py` (R-07) — rompe la fórmula de derivación de rango que `references/
+contrato-montaje.md` enseña a la fase de montaje en cuanto existe `guion-alineado.srt` real →
+**R-13**; (2) `scripts/clasificador.py` (T-09) deja el separador de escena `---` pegado al
+`contenido` de la última indicación no-locución de una escena, colándose sin filtrar en
+`guion-escenas.md`, `tarjetas.json` y la cue del reproductor (R-12) — cosmético, sin pérdida de
+texto ni ruptura de invariantes, pero ya repetido en tres salidas → **R-14**. `roadmap/FEEDBACK.md`
+reconfirmado sin ninguna entrada `nuevo` (bloqueo #7 — grabar un curso completo — sigue sin
+resolverse)
+**Tareas autopropuestas (P-XX):** ninguna (P-XX es régimen del programador, no del PM)
+**Próximo paso:** siguiente ciclo de Programador implementa R-13 y/o R-14, en ese orden salvo que
+alguna quede `BLOQUEADA` — ninguna de las dos depende de que el dueño resuelva el bloqueo #7
+(grabación real) para poder implementarse, aunque R-13 se beneficiará de datos reales de rodaje en
+cuanto existan
+
+---
+
 ### Sesión 2026-09-10 — Ciclo de Programador (sin trabajo de código posible), décimo del día: reconfirmación sin novedad
 **Tarea(s):** Ninguna T-XX/R-XX — §1 sigue sin ninguna PENDIENTE tras R-12; solo T-24b BLOQUEADA por hardware del dueño. `auditoriacontinua.md` sin hallazgos `ABIERTO` de severidad alta (`#19` baja, `#20` media `ASUMIDO`)
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1; bloqueo #8 sigue `RESUELTO`, sin novedad; `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`

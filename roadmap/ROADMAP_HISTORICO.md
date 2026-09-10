@@ -22,6 +22,10 @@ criterio que el movimiento anterior.
 F-F (R-11), con su única R-XX ya COMPLETADA y sin ningún hito de negocio propio pendiente — mismo
 criterio que los dos movimientos anteriores.
 
+**Movido a histórico el:** 2026-09-10, ciclo de Product Manager. Se añade la Oleada v4 (R-12), con
+su única R-XX ya COMPLETADA (2026-09-10) y sin ningún hito de negocio propio pendiente — mismo
+criterio que los tres movimientos anteriores.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -377,5 +381,84 @@ regresión: ya pasaba antes del cambio, la coherencia era "por construcción").
 
 ---
 
+## Oleada v4 — Señalización de las indicaciones de pantalla en el reproductor
+
+Todo lo entregado hasta v1-F-F resuelve la locución: el texto que hay que decir, cuándo y a qué
+ritmo. Pero el segmento objetivo de este producto (§ Cliente objetivo) graba guiones que
+**mezclan** locución con indicaciones de pantalla (`**EN PANTALLA**`, `**NOTA**`), y esas
+indicaciones, aunque T-09 ya las clasifica con posición exacta, solo llegaban al locutor por el
+`.pdf`/`guion-escenas.md` — nunca al propio reproductor, que es donde está mirando mientras graba.
+Contenía R-12, su única R-XX. **Entregada 2026-09-10.**
+
+### R-12 — Cue discreta de indicaciones EN PANTALLA/NOTA en el reproductor
+**Oleada / Fase:** v4 · **Migración:** No · **Depende de:** T-09, T-11, T-19, T-21, T-23
+**Origen:** observación de arquitectura del PM (ciclo 2026-09-08), convertida en tarea en el ciclo del 2026-09-09
+
+**Objetivo:** hoy, `scripts/clasificador.py` (T-09) clasifica cada tramo de una escena como
+`locucion` o `no_locucion` con `linea_inicio`/`linea_fin` exactos, y `scripts/documento_revision.py`
+(T-16, `_indicaciones_no_recitables`/`formatear_indicaciones`) ya lista las indicaciones
+`**EN PANTALLA**`/`**NOTA**` al pie de cada escena en `guion-escenas.md`. Pero esa información nunca
+llega a `scripts/reproductor.py`: el JSON que embebe en el `.html` solo lleva escenas → bloques de
+locución (T-18/T-19). Para un guion que mezcla locución con instrucciones de pantalla —el caso
+central de este producto (§ Cliente objetivo)— eso significa que durante la grabación, en pantalla
+completa, no hay ninguna señal de cuándo cambiar de aplicación, diapositiva o encuadre: hay que
+memorizarlo de antemano o consultar el `.pdf` aparte, rompiendo el propio motivo de ser de un
+teleprompter. El objetivo es cerrar ese hueco sin inventar clasificación nueva (reutiliza
+`linea_inicio`/`linea_fin` ya calculados) y sin que la cue compita nunca con la legibilidad del
+bloque de locución activo (principio de producto #5, límite explícito de esta ficha, no una
+sugerencia).
+
+**Requisitos:**
+1. `scripts/reproductor.py` (`_construir_datos` o equivalente) incorpora, para cada bloque de
+   respiración (T-11) de una escena, las indicaciones `no_locucion` cuya `linea_inicio` cae
+   inmediatamente después de la `linea_fin` de ese bloque y antes de la `linea_inicio` del
+   siguiente bloque de locución de la misma escena — es decir, se ancla la indicación al bloque de
+   locución que la PRECEDE en el guion de origen, para que el locutor la vea con margen antes de
+   tener que actuar, mientras aún está recitando la línea anterior. Sin lógica de clasificación
+   nueva: solo reutiliza el resultado ya calculado por T-09/T-11.
+2. El reproductor muestra esa indicación como una cue discreta y subordinada: tipografía más
+   pequeña que el bloque activo, nunca el mismo tamaño ni contraste — el bloque de locución activo
+   sigue siendo, en todo momento, el elemento dominante de la pantalla. Visible mientras el bloque
+   de respiración al que está anclada está activo; se oculta al avanzar al siguiente bloque de
+   locución.
+3. La cue se pliega en el mismo grupo de indicadores que ya oculta la tecla `H` (T-23,
+   `indicadores-ocultos` en `guion.js`) — no añade atajo nuevo ni preferencia de configuración
+   aparte; reutiliza el mecanismo ya entregado y ya persistido (T-26).
+4. Ninguna indicación se pierde en silencio (invariante (a) de §0.2, extendido de "el parser no
+   descarta texto" a "el reproductor no descarta ninguna cue que el parser sí clasificó"): si una
+   indicación no tiene bloque de locución posterior en la misma escena (es la última de la escena),
+   se ancla al último bloque de respiración de esa escena en vez de quedar sin mostrar.
+5. `guion-escenas.md` (T-16) no cambia de formato: las indicaciones siguen listadas al pie tal
+   como hoy, como referencia de revisión de una sola pasada (principio de producto #2). Este
+   requisito es exclusivamente del reproductor interactivo.
+6. Distingue `**EN PANTALLA**` de `**NOTA**` con un prefijo textual mínimo (p. ej. «Pantalla:» /
+   «Nota:»), sin iconografía gráfica ni recursos adicionales que arriesguen la auto-contención del
+   `.html` (principio de producto #4) ni la legibilidad a distancia de cámara (principio #5).
+
+**Criterio de aceptación:** en un guion con al menos una indicación `EN PANTALLA` o `NOTA` (los tres
+guiones reales de `fixtures/reales/` sirven de fixture), el reproductor generado muestra el texto de
+cada indicación anclado al bloque de respiración correcto, sin que el locutor tenga que abrir el
+`.pdf` ni memorizarla de antemano; el bloque activo de locución sigue siendo en todo momento el
+elemento visualmente dominante (verificable por contraste/tamaño, igual que T-21 verifica el
+contraste AAA del bloque activo); ocultar indicadores con `H` también oculta la cue; ninguna de las
+indicaciones que hoy lista `guion-escenas.md` al pie de cada escena deja de aparecer en el
+reproductor; cero indicaciones nuevas o recalculadas respecto a lo que T-09 ya clasificaba —
+únicamente se muestra lo que ya existía, donde antes no se mostraba.
+
+**Cómo se entregó:** `reproductor._indicaciones_ancladas_por_indice` ancla cada indicación al
+ÚLTIMO bloque de respiración que la precede (sin bloque precedente, al primero — requisito 4),
+reutilizando tal cual la clasificación de T-09 y el filtro pantalla/nota de T-28/T-29
+(`pdf.indicaciones_no_recitables`/`es_nota_interna`). `guion.js`/`estilo.css`: cue subordinada
+(`.cue-indicacion`, visible solo bajo `.bloque--activo`), plegada con el resto de indicadores en
+`H` (T-23), sin atajo nuevo. Prefijos `Pantalla:`/`Nota:` configurables. 7 tests nuevos
+(550→557); verificado también visualmente con Playwright/Chromium real. Observación no urgente
+dejada para una futura revisión de `clasificador.py`: un separador de escena `---` puede quedar
+pegado al final del texto de una indicación cuando esta es la última de la escena (preexistente a
+R-12, no pierde texto ni rompe invariantes) — promovida a `R-14` en el ciclo de PM del 2026-09-10.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
-`roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`, ambos con fecha 2026-09-03.)*
+`roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
+2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
+2026-09-10.)*

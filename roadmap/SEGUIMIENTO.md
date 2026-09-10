@@ -10,20 +10,29 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-10 — **Ciclo de Programador (décimo del día): sin tarea de
-código pendiente ni novedad que reportar.** §1 sigue sin ninguna T-XX/R-XX PENDIENTE tras R-12;
-solo T-24b permanece BLOQUEADA por hardware del dueño. Las cuatro verificaciones vuelven a estar en
-verde (`mypy` limpio sobre 68 archivos, `ruff check` limpio, 557 tests en `pytest`,
-`verificar_salidas.py --fixture` con las catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES
-en este contenedor de nube, tal como preveían sus fichas). El bloqueo #8 sigue `RESUELTO`, sin
-novedad. `auditoriacontinua.md` sin hallazgos `ABIERTO` de severidad alta; `roadmap/FEEDBACK.md`
-sigue sin entradas `nuevo`. No se repite aquí el detalle ya narrado en ciclos anteriores (ver
-"Última actualización anterior" más abajo) para no seguir engordando este documento con
-reconfirmaciones idénticas — el auditor ya señaló ese coste de legibilidad (`auditoriacontinua.md`
-#20).
+**Última actualización:** 2026-09-10 — **Ciclo de Product Manager.** Tras el décimo ciclo de
+Programador del día (sin tarea de código pendiente, ver commit anterior) y con R-12 ya
+**COMPLETADA**, este ciclo de PM archiva la oleada v4 entera en `ROADMAP_HISTORICO.md` (§0.4 de
+`HOJA_DE_RUTA.md`: mover a histórico lo 100 % entregado) y abre dos R-XX nuevas, ambas sobre huecos
+ya verificados en el código, no sobre funcionalidad especulativa: **R-13** (oleada v5) — `tarjetas.json`
+es el único de los tres consumidores de `tomas.duracion_toma_buena` que todavía no usa la duración
+real de una toma buena cuando existe (`srt_alineado.py` y `capitulos_youtube.py` sí lo hacen desde
+R-05/R-07), lo que rompe la fórmula de derivación de rango que `references/contrato-montaje.md`
+enseña a la fase de montaje en cuanto hay `guion-alineado.srt` real — y **R-14** (fase transversal
+F-G) — promueve a tarea el hallazgo cosmético que la propia sesión de R-12 dejó documentado (un
+separador de escena `---` puede colarse al final de una indicación en tres salidas, por reutilizar
+sin filtrar el mismo `bloque.contenido` de `clasificador.py`). Ambas están `PENDIENTE` en §1, specs
+completas en `ROADMAP_PRODUCTO.md`. Reconfirmado: `auditoriacontinua.md` sin ningún hallazgo
+`ABIERTO` de severidad alta (`#19` baja, sin R-XX propia por lo ya razonado; `#20` media, ASUMIDO,
+enrutado en el bloqueo #8); `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. Sin cambios en
+bloqueos, preguntas abiertas ni desviaciones.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-10, ciclo de Programador (décimo del día): sin tarea de código pendiente ni novedad que
+  reportar. §1 sin ninguna T-XX/R-XX PENDIENTE tras R-12 (ya COMPLETADA); solo T-24b BLOQUEADA por
+  hardware del dueño. Cuatro redes en verde (`mypy` limpio, `ruff` limpio, 557 tests, `verificar_
+  salidas.py --fixture` catorce etapas OK; `.pptx`/`.pdf` LATENTES como siempre en este contenedor).
 - 2026-09-10, sexto ciclo: bloqueo #8 corregido de `ABIERTO` a `RESUELTO` en §3. `list_triggers`
   trae `git_repository.url` y el prompt completo de cada rutina — datos que ninguna reconfirmación
   anterior había leído. El trío "sin sufijo" (`Auditor`/`Product manager`/`Programador`) apunta a
@@ -101,6 +110,8 @@ reconfirmaciones idénticas — el auditor ya señaló ese coste de legibilidad 
 | R-10 | Robustez multiplataforma detectada al correr en Windows por primera vez | **COMPLETADA** | 2026-09-04 | `entrada.leer_guion` normaliza `\r\n`/`\r` a `\n` tras decodificar (hallazgo real); `test_nombre_guion_seguro_nunca_vacio` diagnosticado sin cambio de código (`PureWindowsPath`/`PurePosixPath` parten `"....md"` igual); `test_instalar_hook_...` pasa a `skipif` no-POSIX; los doce `write_text` de `scripts/` fijan `newline="\n"` (requisito 4, hallazgo real de la comprobación). Fase F-E · `origen: hallazgo de sesión (no de auditoría)` |
 | R-11 | Robustez de datos derivados del rodaje (toma buena ambigua, capítulos sobrantes, cobertura cruzada) | **COMPLETADA** | 2026-09-04 | `tomas.duracion_toma_buena` rechaza con `RegistroTomasError` más de una toma `buena` por escena (#16); `capitulos_youtube.calcular_capitulos` expone `titulos_sobrantes` cuando hay más títulos que escenas (#17); nuevo test de coherencia cruzada `.srt` alineado/capítulos de YouTube en `tests/test_integracion_montaje.py` (#18). Fase F-F · `origen: auditoría #16, #17, #18` |
 | R-12 | Cue discreta de indicaciones EN PANTALLA/NOTA en el reproductor | **COMPLETADA** | 2026-09-10 | `reproductor._indicaciones_ancladas_por_indice` ancla cada indicación al ÚLTIMO bloque de respiración que la precede (sin bloque precedente, al primero — requisito 4), reutilizando tal cual la clasificación de T-09 y el filtro pantalla/nota de T-28/T-29 (`pdf.indicaciones_no_recitables`/`es_nota_interna`). `guion.js`/`estilo.css`: cue subordinada (`.cue-indicacion`, visible solo bajo `.bloque--activo`), plegada con el resto de indicadores en `H` (T-23), sin atajo nuevo. Prefijos `Pantalla:`/`Nota:` configurables. 7 tests nuevos (550→557); verificado también visualmente con Playwright/Chromium real. Oleada v4 · `origen: observación de arquitectura del PM (2026-09-08)` |
+| R-13 | Duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt` | **PENDIENTE** | 2026-09-10 (PM) | Spec completa en `ROADMAP_PRODUCTO.md`. `tarjetas.json` es el único de los tres consumidores de `tomas.duracion_toma_buena` que aún no la usa (`srt_alineado.py`/R-05 y `capitulos_youtube.py`/R-07 sí); sin ella, la fórmula de rango de `contrato-montaje.md` deja de ser fiable en cuanto existe `guion-alineado.srt` real. Oleada v5 · `origen: observación de arquitectura del PM (2026-09-10)` |
+| R-14 | El separador de escena no debe colarse en el texto de una indicación | **PENDIENTE** | 2026-09-10 (PM) | Spec completa en `ROADMAP_PRODUCTO.md`. `clasificador.py` incluye hoy el `---` de fin de escena en el `contenido` de la última indicación no-locución, colándose sin filtrar en `guion-escenas.md`, `tarjetas.json` y la cue del reproductor (R-12). Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
