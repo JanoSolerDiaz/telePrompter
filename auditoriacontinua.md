@@ -35,7 +35,7 @@
 | #19 | 2026-09-04 | Invariantes / revalidación (residual de #14) | baja | ABIERTO | El endurecimiento de P-04 (`_incidencias_anclas_desajustadas`) compara, por escena, solo el **conjunto/cantidad** de índices de ancla esperados contra los reales — no su contenido ni orden. Si dos conflictos coincidieran en número exacto de anclas pero en una disposición distinta, el aviso de incidencia no se dispararía. No se ha encontrado un escenario real del código actual que lo produzca (las claves de identidad `(escena, índice_original, mitad)` son deterministas dado el mismo guion + estado), por lo que es una asimetría teórica entre "detecta desajuste de cantidad" y "detecta desajuste de contenido", no un fallo reproducido. Se dejó constancia para que no se pierda de cara a una futura revisión de `revalidacion.py`. Reevaluado en esta pasada (2026-09-05): sin cambios en `revalidacion.py` desde la última auditoría, sigue exactamente en el mismo estado teórico. | `scripts/revalidacion.py` · límite residual de P-04 |
 | #20 | 2026-09-05 | Infraestructura / proceso (fuera del código) | media | ASUMIDO | Confirmado de forma independiente en esta pasada (no solo leído en `SEGUIMIENTO.md` §3 bloqueo #8): el proyecto tiene seis rutinas programadas en vez de tres, en dos tríos con cron idéntico o solapado (`Auditor`/`auditor-teleprompter`, `Product manager`/`product-manager-teleprompter`, `Programador`/`programador-teleprompter`), el trío sin sufijo creado 2026-08-25, antes del primer commit (2026-08-31). Efecto observado en esta misma sesión: el clon de `develop` llegó DETACHED y con 4 commits sin ancestro común con `origin/develop` (52 de diferencia), exactamente el síntoma que trece sesiones consecutivas llevan documentando sin explicación de fondo hasta que el PM lo conectó con esta causa el 2026-09-04. No es una decisión que un auditor de código deba tomar (afecta a la cuenta del dueño, no al repositorio) ni ejecutable desde esta sesión: se registra como riesgo asumido y ya notificado, no como hallazgo nuevo — el PM ya lo documentó con el detalle completo (IDs, cron, fechas) y ya lo notificó al dueño por separado. Se deja constancia aquí únicamente para que la auditoría, como supervisor externo, conste de que verificó el bloqueo por su cuenta y coincide en el diagnóstico, y para vigilar que no quede olvidado si sigue sin resolverse varias pasadas más. | `SEGUIMIENTO.md` §3 bloqueo #8 · acción del dueño, no de código |
 | #14 | 2026-09-03 | Invariantes / revalidación | **alta** | **RESUELTO** | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. **Cerrado por P-03** (2026-09-03): `revalidacion.py` ahora persiste entre pasadas qué particiones quedaron pospuestas (`estado.validacion["particiones_pospuestas"]`), así que la pasada siguiente interpreta las anclas del documento con el MISMO esquema de identidad con el que se escribió, en vez de asumir que toda partición aceptada ya está materializada. Efecto: mientras la edición manual siga en el documento, la partición se queda pospuesta sin duplicar ni mal atribuir nada; solo se materializa cuando el dueño deja de tocar el bloque. Dos tests de regresión nuevos en `tests/test_revalidacion.py` reproducen exactamente el escenario de este hallazgo (falla sin el fix) y confirman que la materialización posterior sigue funcionando cuando el conflicto se resuelve. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
-| #21 | 2026-09-09 | Infraestructura / trazabilidad (git) | **alta** | ABIERTO | **Verificado de forma directa en esta pasada, no citado de memoria:** el historial de `origin/develop` ha sido reescrito en algún punto no determinable con precisión desde esta sesión, colapsando TODO el tramo T-00→P-05 (decenas de commits atómicos por tarea, entre ellos los que cerraron `#9` y `#14`) en un único commit raíz, `576f6d9` (`git log --oneline --reverse \| head -1`). El commit `1a40c84` (P-04, citado explícitamente como vigente por las pasadas de auditoría del 2026-09-04 al 2026-09-08, la última hace solo un día) sigue existiendo como objeto suelto en la base de datos de git de este clon (`git cat-file -t 1a40c84` → `commit`) pero **ya no es antepasado de `HEAD`** (`git merge-base --is-ancestor 1a40c84 HEAD` → falso); lo mismo ocurre con los hashes que pasadas anteriores citaron para `HOJA_DE_RUTA.md` (`7176b46`, `8971150`), que ni siquiera existen ya como objetos (`git cat-file -t` falla con "Not a valid object name"). El contenido de los archivos **no está comprometido** — verificado independientemente: `HOJA_DE_RUTA.md` sigue terminando en T-33 v1.3 sin ninguna línea añadida, `revalidacion.py` conserva `_particiones_pospuestas_previas`/`_incidencias_anclas_desajustadas` (el arreglo de P-04) y los cinco tests de regresión de `#9`/`#14` en `tests/test_revalidacion.py` siguen presentes y en verde — pero la **trazabilidad commit-a-commit** que exige literalmente §0.2 de la hoja de ruta ("commits atómicos por tarea con prefijo del ID") para todo ese tramo ya no es reconstruible desde `git log`, y las citas de hash de cinco auditorías consecutivas (incluida la de ayer) apuntaban, sin que nadie lo notara, a objetos que el propio repositorio ya no reconoce como parte de la rama. Es la misma causa raíz que el bloqueo #8 (rutinas duplicadas compitiendo por escribir en `origin/develop`) pero una consecuencia distinta y más grave que el coste de cómputo doble ya registrado: pérdida irreversible de la granularidad de commits de la primera fase del proyecto y una cadena de citas de auditoría que, desde al menos el 2026-09-04, no son ya verificables tal y como están escritas. No se marca `RESUELTO` ni `ASUMIDO` porque es información nueva que el dueño no ha visto todavía — a diferencia de `#20`, que sí fue notificado y aceptado como riesgo el 2026-09-04. | `origen: verificación de esta auditoría` · misma causa que bloqueo #8 · `git log`/`git cat-file`/`git merge-base` de esta sesión |
+| #21 | 2026-09-09 | Infraestructura / trazabilidad (git) | **alta** | **RESUELTO** | Diagnóstico original (2026-09-09): el historial de `origin/develop` parecía reescrito, colapsando T-00→P-05 en un commit raíz distinto en cada pasada, con commits "citados como vigentes" que `git merge-base --is-ancestor` daba por no-antepasados. **Era un falso positivo del clon superficial (`git clone --depth`) de cada contenedor efímero, no una reescritura real.** El programador ya lo investigó y corrigió el mismo día (`DECISIONES_TECNICAS.md`, primer ciclo 2026-09-09) con `git fetch --unshallow`; **esta auditoría lo reproduce de forma independiente en esta pasada (2026-09-10), no se limita a leer la corrección:** este clon también llegó superficial (`git rev-parse --is-shallow-repository` → `true`); `git fetch --unshallow origin` (operación de solo lectura) trajo el historial completo — **114 commits**, raíz real `f78a92c` ("initial commit") → `e8b9663` (T-00) → …; `git merge-base --is-ancestor 1a40c84 develop` **y** `... 576f6d9 develop` devuelven ambos **"IS ancestor"** tras el `unshallow`, confirmando que ninguno de los dos commits que auditorías previas creyeron "perdidos" lo estaba de verdad. Se corrige aquí a `RESUELTO` (no solo en `DECISIONES_TECNICAS.md`, que el auditor no puede dar por bueno sin repetir la comprobación): el contenido y la trazabilidad commit-a-commit del proyecto están intactos; la causa raíz observable (clon superficial con frontera variable) no es una acción de código y no requiere P-XX. | `origen: corrección del programador 2026-09-09` · reproducido de forma independiente por esta auditoría (2026-09-10) con `git fetch --unshallow` + `git merge-base --is-ancestor` |
 
 ---
 
@@ -44,6 +44,136 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-10 — sexta reconfirmación consecutiva sin cambios de código; `#21` cerrado con verificación independiente propia (falso positivo de clon superficial), `#20` reconfirmado por acceso directo a `list_triggers`
+
+**Nota de arranque.** El clon efímero de esta sesión llegó con `develop` en HEAD *attached* y
+`git checkout develop && git pull origin develop` resolvió en un **fast-forward limpio**
+(`467833f..d620270`, 17 commits) sin ningún `reset --hard` ni historial huérfano que realinear —
+tercera vez consecutiva (tras 2026-09-08 y 2026-09-09) sin el síntoma *detached* que documentaron
+quince sesiones anteriores. El propio clon, sin embargo, **sí llegó superficial**
+(`git rev-parse --is-shallow-repository` → `true`), lo cual es precisamente el dato que esta pasada
+usa para cerrar `#21` de forma independiente (ver más abajo), no para reabrir la nota de arranque
+como hallazgo nuevo.
+
+**Alcance.** `git diff --stat 8d3516e HEAD` (mi propio commit de la pasada anterior, 2026-09-09,
+contra el `HEAD` actual) confirma que los **17 commits nuevos tocan exclusivamente
+`roadmap/`**: diez ciclos de reconfirmación de Programador el 2026-09-09 (todas sin cambio de
+código, documentando `#21` como investigado y las cuatro redes en verde), uno de ellos corrigiendo
+`#21` en `DECISIONES_TECNICAS.md`, y un ciclo de PM que abre **R-12** (oleada v4, `PENDIENTE`,
+todavía sin implementar). **Cero cambios en `scripts/`, `tests/`, `SKILL.md`, `PROYECTO.md`,
+`DEVELOPERS.md` o `references/`** desde la pasada anterior — confirmado con
+`git diff --stat 8d3516e HEAD -- scripts/ tests/ SKILL.md PROYECTO.md DEVELOPERS.md references/`,
+que no devuelve ninguna línea. Sexta pasada consecutiva sin código nuevo que auditar en el árbol de
+fuentes desde la última con trabajo real (R-11, 2026-09-04); el foco es, como en las cinco
+anteriores, reverificar de forma independiente las cuatro redes y cerrar o escalar los hallazgos
+`ABIERTO` contra evidencia propia, no contra la narrativa de otro rol.
+
+**Verificación objetiva de las cuatro redes, repetida de forma independiente.** `pip install -r
+requirements-dev.txt` limpio. `python -m mypy scripts/ tests/` → **limpio sobre 68 archivos**.
+`python -m ruff check scripts/ tests/` → **limpio**. `python -m pytest` → **550 passed en 2.83s**,
+mismo recuento que las seis pasadas anteriores (sin código nuevo, no se esperaba otro número).
+`python scripts/verificar_salidas.py --fixture` → las **catorce etapas en OK**; `.pptx`/`.pdf`
+reales siguen LATENTES en este contenedor por las mismas razones ya documentadas (sin la skill de
+marca `480-branded-pptx`, sin Chrome/Edge instalado) — degradación esperada y documentada, no un
+fallo.
+
+**`#21` cerrado a `RESUELTO`, con verificación independiente propia, no por transcribir la
+corrección del programador.** El programador ya había investigado `#21` el 2026-09-09 y concluido,
+en `DECISIONES_TECNICAS.md`, que era un falso positivo del clon superficial de cada contenedor
+efímero — pero esa corrección vive en un documento que el auditor no escribe, y la instrucción de
+esta auditoría es reevaluar cada `ABIERTO` contra el código, no dar por buena la palabra de otro rol.
+Repetí la comprobación por mi cuenta en esta misma sesión: `git rev-parse
+--is-shallow-repository` → `true` (mi propio clon también llegó superficial, con 50 commits locales
+visibles antes de la operación); `git fetch --unshallow origin` (operación de solo lectura, no
+destructiva) trajo el historial completo, **114 commits**, con raíz real `f78a92c` ("initial
+commit") → `e8b9663` (T-00) → …, **no** `576f6d9` ni ningún otro commit intermedio citado por pasadas
+anteriores como "raíz". Tras el `unshallow`, `git merge-base --is-ancestor 1a40c84 develop` **y**
+`git merge-base --is-ancestor 576f6d9 develop` devuelven ambos **"IS ancestor"**: ninguno de los dos
+commits que auditorías anteriores creyeron perdidos o huérfanos lo estaba — eran alcanzables desde
+`develop` en todo momento, solo invisibles para un clon superficial que no había traído esa parte del
+grafo. Se corrige el registro de arriba de `ABIERTO` a `RESUELTO` con esta evidencia propia. Lección
+para las próximas pasadas (y para mí mismo si repito el error): antes de diagnosticar una reescritura
+de historial a partir de `git log --oneline --reverse | head -1` o de `git merge-base
+--is-ancestor`, comprobar primero `git rev-parse --is-shallow-repository` — es la comprobación más
+barata y habría evitado que `#21` llegara a abrirse con severidad alta el 2026-09-09.
+
+**`#19` reevaluado, sin cambios.** `git log -1 -- scripts/revalidacion.py` sigue devolviendo
+`1a40c84` (P-04, 2026-09-03): el archivo no se ha tocado desde entonces (confirmado también
+leyendo el contenido: `_particiones_pospuestas_previas`/`_incidencias_anclas_desajustadas` siguen en
+`scripts/revalidacion.py`, líneas 110 y 300). El límite teórico (comparación por conjunto/cantidad
+de anclas, no por contenido/orden) sigue exacto y sin escenario reproducido. Se mantiene `ABIERTO`,
+sin escalar.
+
+**`#20` reevaluado con `list_triggers` en directo (no solo releyendo `SEGUIMIENTO.md`).** Llamada
+propia a `list_triggers` en esta pasada: siguen existiendo exactamente las mismas **seis** rutinas de
+teleprompter, todas `enabled: true`, mismos `id`/`cron_expression`/`created_at` que documentan las
+pasadas anteriores — `auditor-teleprompter` (`trig_01PUyc5iBFvJwY2Eu2iga9Ai`, `0 3 * * *`,
+2026-08-31) junto a `Auditor` (`trig_019V5UKE8jKMvA2LCneiTtTD`, mismo cron, 2026-08-25);
+`product-manager-teleprompter` (`trig_01UeizxJHtmf1U8stMcdnAfy`, `0 19 * * *`, 2026-08-31) junto a
+`Product manager` (`trig_01Gou6bJDBVucaAkfXYaynAz`, mismo cron, 2026-08-25);
+`programador-teleprompter` (`trig_01FWDZPhNLTjaxS5zabErJbT`, `0 6-15 * * 1-5`, 2026-08-31) junto a
+`Programador` (`trig_01RkE491KgehtmqBcoFUFFKz`, `0 6,8,10,12,14 * * 1-5`, solapado, 2026-08-25). Sin
+cambios desde la notificación del 2026-09-04. Se mantiene `#20` como `ASUMIDO`, sin escalar ni
+renotificar: sigue siendo una acción sobre la cuenta del dueño, ya notificada, sin novedad que
+justifique repetir el aviso. **Efecto colateral ya visible, sin severidad propia nueva:** el volumen
+de ciclos de reconfirmación duplicados ha hecho crecer `DECISIONES_TECNICAS.md` a 265 KB y
+`HISTORIAL_SESIONES.md` a 298 KB — la mayoría de ese volumen son entradas casi idénticas de
+"reconfirmación N del día". No degrada ningún invariante ni la funcionalidad, pero empieza a costar
+legibilidad al propio proceso de auditoría (hay que paginar los documentos para encontrar la última
+entrada real); es el mismo coste de `#20` haciéndose visible en un sitio nuevo, no un hallazgo
+independiente.
+
+**R-12 revisada (nueva, `PENDIENTE`, todavía sin implementar — no hay código que auditar
+todavía).** La ficha (`ROADMAP_PRODUCTO.md`) especifica una cue discreta para las indicaciones `**EN
+PANTALLA**`/`**NOTA**` en el reproductor, ancladas al bloque de respiración que las precede,
+reutilizando `linea_inicio`/`linea_fin` ya calculados por T-09/T-11 sin clasificación nueva. La
+ficha es coherente con los principios de producto ya vigentes: fija como requisito no negociable
+que la cue nunca compita en tamaño/contraste con el bloque activo (principio #5), que se pliegue en
+el mecanismo de ocultar indicadores ya entregado por T-23 (sin atajo nuevo) y que ninguna indicación
+se pierda si no hay bloque de locución posterior en la escena (extiende el invariante (a) de forma
+explícita y razonada, no lo relaja). No encuentro ninguna contradicción entre esta ficha y §0.2 ni
+con el resto del roadmap; queda pendiente de auditar en código cuando se implemente.
+
+**Coherencia entre lo decidido y lo ejecutado.** Sin desviaciones nuevas que añadir a §7 de
+`SEGUIMIENTO.md` (las cinco filas existentes describen exactamente lo mismo). `HOJA_DE_RUTA.md`
+sigue con su último commit real en `74cd27f` (T-17), sin ninguna modificación posterior — la regla
+de inmutabilidad se sigue respetando, y §0.2 (invariantes (a)-(d), aislamiento por proyecto, cero
+red, runtime sin dependencias, sin números mágicos) sigue coincidiendo palabra por palabra con el
+código verificado en esta pasada. `ROADMAP_PRODUCTO.md` y `SEGUIMIENTO.md` §1 coinciden: única
+tarea `PENDIENTE` es R-12 (recién abierta), T-24b sigue `BLOQUEADA` por hardware del dueño.
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (bloqueo #7 — grabar un curso completo — sin
+resolver).
+
+**Invariantes de datos, verificados de nuevo contra el código (spot-check dirigido, no
+re-auditoría completa, al no haber cambios de código desde la pasada anterior).**
+- **(a) cobertura total:** sostenida, sin cambios en el área desde R-11; R-12 la extiende (sin
+  implementar todavía) en vez de arriesgarla.
+- **(b) original recuperable / ediciones manuales respetadas:** sostenida, `revalidacion.py` intacto
+  en contenido desde P-04/P-03.
+- **(c) reproductor autocontenido, sin red:** reverificado por la cuarta red sobre el fixture real y
+  por spot-check directo de `PATRONES_RECURSO_EXTERNO` (trece patrones, líneas 94-114 de
+  `scripts/verificar_salidas.py`) — `reproductor.html` y `guion-impresion.html` autocontenidos,
+  catorce etapas en OK.
+- **(d) runtime solo biblioteca estándar:** `pyproject.toml` sigue con `dependencies = []`;
+  `mypy`/`ruff`/`pytest` solo en `requirements-dev.txt`.
+- **(e) sin número mágico suelto / defaults en `SKILL.md`:** sin cambios en `config.py` desde la
+  última verificación exhaustiva; `test_skill_md.py` (parte de los 550) sigue verificando la
+  correspondencia bidireccional.
+- **(f) nada se escribe fuera de la carpeta de salida / copia `.bak`:** sostenida, sin cambios en el
+  área.
+
+**Conclusión general.** Sexta pasada consecutiva sin trabajo de código que auditar: el contenido del
+proyecto permanece exactamente donde lo dejó la pasada del 2026-09-09, con las cuatro redes en verde
+y ningún invariante degradado. A diferencia de las cinco pasadas anteriores, esta sí cierra un
+hallazgo de severidad alta con verificación propia: `#21` pasa a `RESUELTO`, reproducido de forma
+independiente (no transcrito de `DECISIONES_TECNICAS.md`) con `git fetch --unshallow` y
+`git merge-base --is-ancestor` sobre mi propio clon. `#19` sigue siendo un límite teórico sin
+escenario reproducido; `#20` sigue `ASUMIDO`, reconfirmado por acceso directo a `list_triggers`, con
+el coste acumulado ahora también visible en el tamaño de los documentos vivos del proyecto. R-12
+(nueva, `PENDIENTE`) está bien especificada y no contradice ningún principio ni invariante vigente.
+No queda ningún hallazgo `ABIERTO` de código sin enrutar; nada exige tratamiento urgente en esta
+pasada.
 
 ### Auditoría 2026-09-09 — quinta reconfirmación consecutiva sin cambios de código; hallazgo nuevo de fondo: el historial de `develop` está reescrito desde hace días sin que ninguna pasada lo detectara (#21)
 
