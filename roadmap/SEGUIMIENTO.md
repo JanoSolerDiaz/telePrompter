@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-10 — **Ciclo de Programador (noveno del día): sin tarea de
+**Última actualización:** 2026-09-10 — **Ciclo de Programador (décimo del día): sin tarea de
 código pendiente ni novedad que reportar.** §1 sigue sin ninguna T-XX/R-XX PENDIENTE tras R-12;
 solo T-24b permanece BLOQUEADA por hardware del dueño. Las cuatro verificaciones vuelven a estar en
 verde (`mypy` limpio sobre 68 archivos, `ruff check` limpio, 557 tests en `pytest`,
