@@ -10,18 +10,17 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-10 — **Ciclo de Programador (séptimo del día): sin tarea de
+**Última actualización:** 2026-09-10 — **Ciclo de Programador (octavo del día): sin tarea de
 código pendiente ni novedad que reportar.** §1 sigue sin ninguna T-XX/R-XX PENDIENTE tras R-12;
 solo T-24b permanece BLOQUEADA por hardware del dueño. Las cuatro verificaciones vuelven a estar en
 verde (`mypy` limpio sobre 68 archivos, `ruff check` limpio, 557 tests en `pytest`,
 `verificar_salidas.py --fixture` con las catorce etapas en OK; `.pptx`/`.pdf` reales siguen LATENTES
-en este contenedor de nube, tal como preveían sus fichas). El bloqueo #8 (corregido en el ciclo
-anterior de hoy: el trío de rutinas sin sufijo pertenece a `centro-estudios-sw`, no a este
-proyecto) sigue `RESUELTO`, sin novedad. `auditoriacontinua.md` sin hallazgos `ABIERTO` de
-severidad alta; `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. No se repite aquí el detalle ya
-narrado en el ciclo anterior (ver "Última actualización anterior" más abajo) para no seguir
-engordando este documento con reconfirmaciones idénticas — el auditor ya señaló ese coste de
-legibilidad (`auditoriacontinua.md` #20).
+en este contenedor de nube, tal como preveían sus fichas). El bloqueo #8 sigue `RESUELTO`, sin
+novedad. `auditoriacontinua.md` sin hallazgos `ABIERTO` de severidad alta; `roadmap/FEEDBACK.md`
+sigue sin entradas `nuevo`. No se repite aquí el detalle ya narrado en ciclos anteriores (ver
+"Última actualización anterior" más abajo) para no seguir engordando este documento con
+reconfirmaciones idénticas — el auditor ya señaló ese coste de legibilidad (`auditoriacontinua.md`
+#20).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
