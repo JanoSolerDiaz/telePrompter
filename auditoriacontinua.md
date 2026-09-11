@@ -33,7 +33,7 @@
 | #17 | 2026-09-04 | Cobertura / salida derivada | baja | **RESUELTO** | `capitulos_youtube.calcular_capitulos` descartaba en silencio los títulos de capítulo sobrantes cuando había más filas en la sección «Capítulos» que escenas en el guion. **Cerrado por R-11** (2026-09-04), verificado de nuevo en esta pasada: `ResultadoCapitulos.titulos_sobrantes` (`scripts/capitulos_youtube.py`) expone los títulos que no llegaron a emparejarse por exceso, con el propio docstring citando este hallazgo por número. Fila corregida de ABIERTO a RESUELTO en esta pasada, igual que `#15`/`#16`. | R-11 |
 | #18 | 2026-09-04 | Calidad / cobertura de tests | baja | **RESUELTO** | No existía test de integración cruzada entre `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07) que confirmara marcas de tiempo mutuamente coherentes. **Cerrado por R-11** (2026-09-04), verificado de nuevo en esta pasada: `tests/test_integracion_montaje.py::test_srt_alineado_y_capitulos_youtube_son_coherentes_entre_si` reproduce exactamente ese cruce con un guion sintético de capítulos + tomas. Fila corregida de ABIERTO a RESUELTO en esta pasada. | R-11 |
 | #19 | 2026-09-04 | Invariantes / revalidación (residual de #14) | baja | ABIERTO | El endurecimiento de P-04 (`_incidencias_anclas_desajustadas`) compara, por escena, solo el **conjunto/cantidad** de índices de ancla esperados contra los reales — no su contenido ni orden. Si dos conflictos coincidieran en número exacto de anclas pero en una disposición distinta, el aviso de incidencia no se dispararía. No se ha encontrado un escenario real del código actual que lo produzca (las claves de identidad `(escena, índice_original, mitad)` son deterministas dado el mismo guion + estado), por lo que es una asimetría teórica entre "detecta desajuste de cantidad" y "detecta desajuste de contenido", no un fallo reproducido. Se dejó constancia para que no se pierda de cara a una futura revisión de `revalidacion.py`. Reevaluado en esta pasada (2026-09-05): sin cambios en `revalidacion.py` desde la última auditoría, sigue exactamente en el mismo estado teórico. | `scripts/revalidacion.py` · límite residual de P-04 |
-| #20 | 2026-09-05 | Infraestructura / proceso (fuera del código) | media | ASUMIDO | Confirmado de forma independiente en esta pasada (no solo leído en `SEGUIMIENTO.md` §3 bloqueo #8): el proyecto tiene seis rutinas programadas en vez de tres, en dos tríos con cron idéntico o solapado (`Auditor`/`auditor-teleprompter`, `Product manager`/`product-manager-teleprompter`, `Programador`/`programador-teleprompter`), el trío sin sufijo creado 2026-08-25, antes del primer commit (2026-08-31). Efecto observado en esta misma sesión: el clon de `develop` llegó DETACHED y con 4 commits sin ancestro común con `origin/develop` (52 de diferencia), exactamente el síntoma que trece sesiones consecutivas llevan documentando sin explicación de fondo hasta que el PM lo conectó con esta causa el 2026-09-04. No es una decisión que un auditor de código deba tomar (afecta a la cuenta del dueño, no al repositorio) ni ejecutable desde esta sesión: se registra como riesgo asumido y ya notificado, no como hallazgo nuevo — el PM ya lo documentó con el detalle completo (IDs, cron, fechas) y ya lo notificó al dueño por separado. Se deja constancia aquí únicamente para que la auditoría, como supervisor externo, conste de que verificó el bloqueo por su cuenta y coincide en el diagnóstico, y para vigilar que no quede olvidado si sigue sin resolverse varias pasadas más. | `SEGUIMIENTO.md` §3 bloqueo #8 · acción del dueño, no de código |
+| #20 | 2026-09-05 | Infraestructura / proceso (fuera del código) | media | **RESUELTO** | Diagnóstico original: seis rutinas programadas en vez de tres, en dos tríos con cron idéntico o solapado (`Auditor`/`auditor-teleprompter`, `Product manager`/`product-manager-teleprompter`, `Programador`/`programador-teleprompter`), asumido como coste doble de cómputo sobre la cuenta del dueño. **Corregido el 2026-09-10 por el programador** (sexto ciclo, `DECISIONES_TECNICAS.md`): el trío sin sufijo apunta a otro repositorio del dueño (`centro-estudios-sw`/GestorAcademia), no a este proyecto. **Cerrado en esta pasada con verificación independiente propia, no por transcribir la corrección ajena:** llamada directa a `list_triggers` en esta sesión (2026-09-11) leyendo `session_request.config.sources[].git_repository.url` de las seis rutinas — el campo completo, no solo `name`/`cron_expression` como comprobaban las ~15 reconfirmaciones previas a la corrección: `auditor-teleprompter`/`product-manager-teleprompter`/`programador-teleprompter` → `https://github.com/JanoSolerDiaz/telePrompter` (este repositorio); `Auditor`/`Product manager`/`Programador` (sin sufijo) → `https://github.com/JanoSolerDiaz/centro-estudios-sw` (otro proyecto del dueño). Confirmado: ninguna rutina de *este* proyecto está duplicada, una sola por rol, sin solape de cron. | `SEGUIMIENTO.md` §3 bloqueo #8 · verificado de forma independiente por esta auditoría (2026-09-11) leyendo `git_repository.url` de `list_triggers` |
 | #14 | 2026-09-03 | Invariantes / revalidación | **alta** | **RESUELTO** | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. **Cerrado por P-03** (2026-09-03): `revalidacion.py` ahora persiste entre pasadas qué particiones quedaron pospuestas (`estado.validacion["particiones_pospuestas"]`), así que la pasada siguiente interpreta las anclas del documento con el MISMO esquema de identidad con el que se escribió, en vez de asumir que toda partición aceptada ya está materializada. Efecto: mientras la edición manual siga en el documento, la partición se queda pospuesta sin duplicar ni mal atribuir nada; solo se materializa cuando el dueño deja de tocar el bloque. Dos tests de regresión nuevos en `tests/test_revalidacion.py` reproducen exactamente el escenario de este hallazgo (falla sin el fix) y confirman que la materialización posterior sigue funcionando cuando el conflicto se resuelve. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
 | #21 | 2026-09-09 | Infraestructura / trazabilidad (git) | **alta** | **RESUELTO** | Diagnóstico original (2026-09-09): el historial de `origin/develop` parecía reescrito, colapsando T-00→P-05 en un commit raíz distinto en cada pasada, con commits "citados como vigentes" que `git merge-base --is-ancestor` daba por no-antepasados. **Era un falso positivo del clon superficial (`git clone --depth`) de cada contenedor efímero, no una reescritura real.** El programador ya lo investigó y corrigió el mismo día (`DECISIONES_TECNICAS.md`, primer ciclo 2026-09-09) con `git fetch --unshallow`; **esta auditoría lo reproduce de forma independiente en esta pasada (2026-09-10), no se limita a leer la corrección:** este clon también llegó superficial (`git rev-parse --is-shallow-repository` → `true`); `git fetch --unshallow origin` (operación de solo lectura) trajo el historial completo — **114 commits**, raíz real `f78a92c` ("initial commit") → `e8b9663` (T-00) → …; `git merge-base --is-ancestor 1a40c84 develop` **y** `... 576f6d9 develop` devuelven ambos **"IS ancestor"** tras el `unshallow`, confirmando que ninguno de los dos commits que auditorías previas creyeron "perdidos" lo estaba de verdad. Se corrige aquí a `RESUELTO` (no solo en `DECISIONES_TECNICAS.md`, que el auditor no puede dar por bueno sin repetir la comprobación): el contenido y la trazabilidad commit-a-commit del proyecto están intactos; la causa raíz observable (clon superficial con frontera variable) no es una acción de código y no requiere P-XX. | `origen: corrección del programador 2026-09-09` · reproducido de forma independiente por esta auditoría (2026-09-10) con `git fetch --unshallow` + `git merge-base --is-ancestor` |
 
@@ -44,6 +44,150 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-11 — primera pasada con código real que auditar desde R-11 (R-12 implementada y revisada en profundidad); `#20` cerrado con verificación independiente propia (el trío "duplicado" era de otro proyecto del dueño); `#19` reconfirmado sin cambios
+
+**Nota de arranque.** El clon efímero de esta sesión llegó con `develop` en HEAD *attached* y
+`git checkout develop && git pull origin develop` resolvió en un **fast-forward limpio**
+(`467833f..19ff44c`, 29 commits) sin ningún `reset --hard` ni historial huérfano que realinear.
+El propio clon **sí llegó superficial** (`git rev-parse --is-shallow-repository` → `true`), el mismo
+síntoma benigno que `#21` (cerrado 2026-09-10) ya diagnosticó como un falso positivo del
+`git clone --depth` de cada contenedor efímero: no se reabre como hallazgo, solo se deja constancia
+porque reaparece en esta sesión (ver más abajo cómo afectó, y cómo se verificó sin necesidad de
+`--unshallow`, la reevaluación de `#19`).
+
+**Alcance — primera pasada con código nuevo desde R-11 (2026-09-04).** La auditoría anterior
+(2026-09-10, commit `7d1559e`) cerró con R-12 todavía `PENDIENTE` ("no hay código que auditar
+todavía", literalmente, en su propia narrativa). Desde entonces: `279edc3` implementa R-12 por
+completo (`scripts/reproductor.py`, `scripts/config.py`, `assets/reproductor/guion.js`/`estilo.css`,
+`tests/test_reproductor.py`, `SKILL.md`, `DEVELOPERS.md`), diez ciclos de reconfirmación de
+Programador sin cambio de código, uno de ellos (`14773ee`, sexto del día) corrigiendo el diagnóstico
+del bloqueo #8, y `19ff44c` (PM) archiva la oleada v4 a histórico y abre R-13/R-14. `git diff --stat
+7d1559e HEAD -- scripts/ tests/ SKILL.md PROYECTO.md DEVELOPERS.md references/ assets/` confirma
+exactamente esos 7 archivos tocados, 321 líneas — nada más. Esta es, por tanto, la primera pasada
+desde R-11 con código de producto real que revisar en profundidad, no solo reconfirmar.
+
+**Verificación objetiva de las cuatro redes, independiente.** `pip install -r requirements-dev.txt`
+limpio. `python -m mypy scripts/ tests/` → **limpio sobre 68 archivos**. `python -m ruff check
+scripts/ tests/` → **limpio**. `python -m pytest` → **557 passed en 3.7s** (550→557, los 7 tests
+nuevos de R-12). `python scripts/verificar_salidas.py --fixture` → **las catorce etapas en OK**;
+`.pptx`/`.pdf` reales siguen LATENTES en este contenedor (sin la skill de marca, sin Chrome/Edge) —
+degradación esperada y documentada, no un fallo.
+
+**Revisión en profundidad de R-12 (`scripts/reproductor.py`), no solo lectura del diff.** Leído el
+código completo de `_indicaciones_ancladas_por_indice`/`_formatear_indicacion_reproductor` y su
+integración en `_construir_datos`, más `guion.js`/`estilo.css`. Reutiliza tal cual la clasificación de
+T-09 (`clasificador.clasificar_guion`) y el filtro pantalla/nota ya público de T-28
+(`pdf.indicaciones_no_recitables`/`es_nota_interna`), sin duplicar heurística — coherente con lo que
+`DEVELOPERS.md` documenta. El anclaje (mayor índice de bloque cuyo `linea_fin` cae antes de la
+indicación, o el primero si no hay ninguno) es correcto y determinista; `guion.js` usa
+`item.textContent = bloque.texto` seguido de `appendChild` de un `<p class="cue-indicacion">` con
+`textContent` propio — nunca `innerHTML`, consistente con la nota de seguridad del propio módulo
+(cero vía de inyección de marcado). Los siete tests nuevos cubren el caso principal (ancla al último
+bloque), el prefijo distinto para `NOTA`, el caso sin bloque precedente (ancla al primero), la
+cobertura total contra los tres guiones reales, la visibilidad condicionada por `.bloque--activo` y
+el plegado con `H`, y la configurabilidad de los prefijos — batería sólida, no cosmética.
+
+**Verificado también en vivo, no solo por los tests unitarios (Playwright/Chromium real, ejecutado
+en esta sesión).** Generado `reproductor.html` sobre `fixtures/reales/guion-artefactos-lienzo.md`
+(la escena con `EN PANTALLA`+`NOTA` seguidas que cita `DEVELOPERS.md`) y recorridas las ocho escenas
+con un navegador real: **cero errores de consola** en las ocho; la escena 2 (`El requisito que nadie
+te cuenta`) muestra correctamente las dos cues (`Pantalla:`/`Nota:`) ancladas al bloque activo
+correcto. Confirmado además, en el propio texto capturado del DOM, que **`#R-14` (la fuga del
+separador `---` de fin de escena en el texto de la indicación) reproduce tal cual en las ocho
+escenas del fixture real** — no solo en la escena que motivó su apertura —, verificación
+independiente de que la ficha de R-14 describe el problema con exactitud y sigue sin corregir
+(`clasificador.py` no toca la cadena `---` en ningún punto: confirmado también por `grep`). No se
+abre un hallazgo nuevo por esto: R-14 ya lo cubre, `PENDIENTE`, con spec ya escrita y verificada
+contra el código actual.
+
+**Observación menor, sin severidad propia (spot-check, no un defecto accionable).** Si una escena no
+tiene NINGÚN bloque de respiración (`bloques_escena` vacío -- posible en la convención si una escena
+carece por completo de `**LOCUCIÓN**`, escenario que `revalidacion._incidencias_escenas_sin_locucion`
+ya detecta y avisa en T-17), `_indicaciones_ancladas_por_indice` devuelve un diccionario vacío y esa
+escena pierde toda cue en el reproductor. No se registra como hallazgo porque, en ese mismo escenario
+degenerado, la escena ya no tiene ningún `<li class="bloque">` que renderizar en el reproductor (todo
+`escena.bloques` sale vacío): no hay ancla posible para la indicación con o sin este código, es una
+limitación estructural preexistente de una escena sin locución en un reproductor pensado para
+recitar, no una regresión de R-12, y el propio caso ya se avisa aguas arriba (T-17) antes de llegar
+a generarse. Se deja constancia para que una futura revisión de R-14/R-13 no lo redescubra de cero.
+
+**R-13 y R-14 verificadas contra el código actual (ambas `PENDIENTE`, no implementadas
+todavía).** `grep -n "duracion_toma_buena\|duracion_real_segundos" scripts/pptx.py` no devuelve nada:
+`tarjetas.json` en efecto sigue exponiendo solo la duración estimada, confirmando que la premisa de
+R-13 (único consumidor de `tomas.duracion_toma_buena` que no la usa) sigue siendo exacta y la tarea
+no se ha adelantado a medias. R-14 verificada en vivo, arriba. Ninguna contradice §0.2 ni los
+principios de producto; ambas están correctamente enrutadas en §1 de `SEGUIMIENTO.md` como
+`PENDIENTE`, con spec completa en `ROADMAP_PRODUCTO.md`.
+
+**`#19` reevaluado, sin cambios.** El hash que `git log -1 -- scripts/revalidacion.py` devuelve en
+este clon (`f3a954b`, 2026-09-06) no coincide con el citado por auditorías anteriores (`1a40c84`,
+2026-09-03) — el mismo síntoma de colapso de historial en clones superficiales que ya cerró `#21`:
+confirmado leyendo el contenido, no solo el hash, que `_particiones_pospuestas_previas` (línea 110) y
+`_incidencias_anclas_desajustadas` (línea 300) siguen presentes y sin cambios; `f3a954b` resulta ser
+un commit de PM que reintroduce el árbol completo del repositorio como "archivo nuevo" (síntoma ya
+diagnosticado, no una reescritura real del contenido). El límite teórico de `#19` (comparación de
+anclas por conjunto/cantidad, no por contenido/orden) sigue exacto y sin escenario reproducido. Se
+mantiene `ABIERTO`, baja, sin escalar.
+
+**`#20` cerrado a `RESUELTO`, con verificación independiente propia.** Ver el registro de arriba:
+llamada directa a `list_triggers` en esta sesión leyendo el campo completo
+`session_request.config.sources[].git_repository.url` de las seis rutinas (no solo `name`/
+`cron_expression`, que es todo lo que comprobaban las ~15 reconfirmaciones anteriores a la corrección
+del programador) — confirma de forma independiente, no por transcribir `DECISIONES_TECNICAS.md`, que
+el trío sin sufijo pertenece a `centro-estudios-sw` (otro proyecto del dueño) y el trío `-teleprompter`
+a este repositorio, sin duplicado ni solape real para teleprompter. Coincide exactamente con la
+corrección que el programador registró el 2026-09-10 (sexto ciclo); esta pasada la reproduce con su
+propia llamada a la herramienta, no se limita a darla por buena.
+
+**Coherencia entre lo decidido y lo ejecutado.** `HOJA_DE_RUTA.md` sigue sin ninguna modificación
+posterior a T-17 (documento inmutable, respetado). `ROADMAP_HISTORICO.md`/`ROADMAP_PRODUCTO.md`/
+`SEGUIMIENTO.md`/`DECISIONES_TECNICAS.md` cuentan la misma historia sin contradicciones: R-12
+`COMPLETADA` y archivada, R-13/R-14 `PENDIENTE` con spec completa, bloqueo #8 `RESUELTO` (diagnóstico
+corregido), ninguna T-XX/R-XX pendiente salvo T-24b (BLOQUEADA, hardware del dueño). `SEGUIMIENTO.md`
+señalaba explícitamente que la fila `#20` de este documento "queda desactualizada por esta corrección
+pero es de escritura exclusiva del Auditor" — exactamente la corrección que esta pasada aplica.
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (bloqueo #7 sin resolver). Sin desviaciones
+nuevas que añadir a §7 de `SEGUIMIENTO.md`.
+
+**Invariantes de datos, verificados contra el código actual (revisión dirigida, con código nuevo
+real que auditar por primera vez desde R-11).**
+- **(a) cobertura total:** sostenida; R-12 la extiende sin arriesgarla — test dedicado
+  (`test_indicaciones_no_recitables_no_se_pierden_en_los_guiones_reales`) compara el total de
+  indicaciones ancladas en el reproductor contra el total que clasifica T-09 sobre los tres guiones
+  reales, y sale exacto. El caso degenerado de escena sin locución (arriba) es una limitación
+  estructural preexistente, no una pérdida silenciosa de R-12.
+- **(b) original recuperable / ediciones manuales respetadas:** sostenida, `revalidacion.py` intacto
+  en contenido desde P-04/P-03 (confirmado por contenido, no por hash — ver `#19`).
+- **(c) reproductor autocontenido, sin red:** reverificado por la cuarta red sobre el fixture real y
+  por `PATRONES_RECURSO_EXTERNO` (trece patrones intactos); R-12 no añade ningún recurso, icono ni
+  fuente nueva — solo texto plano vía `textContent`.
+- **(d) runtime solo biblioteca estándar:** `pyproject.toml` sigue con `dependencies = []`;
+  `mypy`/`ruff`/`pytest` solo en `requirements-dev.txt`.
+- **(e) sin número mágico suelto / defaults en `SKILL.md`:** los dos campos nuevos de R-12
+  (`prefijo_indicacion_pantalla_reproductor`/`prefijo_indicacion_nota_reproductor`) están documentados
+  en `SKILL.md` (confirmado por `grep`, dos tablas). El `font-size: 0.5em` de `.cue-indicacion` en
+  `estilo.css` NO es un número mágico nuevo: sigue el mismo patrón ya establecido y auditado (`#10`,
+  cerrado) de que los ratios tipográficos relativos de elementos secundarios se fijan en CSS (0.55em,
+  0.6em, 0.7em, 0.75em, 0.85em ya existentes en el mismo archivo) mientras que los COLORES sí viajan
+  por `Configuracion`/variables CSS — la cue usa `var(--color-texto-secundario)`, no un color nuevo.
+- **(f) nada se escribe fuera de la carpeta de salida / copia `.bak`:** sostenida, sin cambios en el
+  área.
+
+**Conclusión general.** Primera pasada desde R-11 con trabajo de código real que auditar en
+profundidad, no solo reconfirmar: R-12 está bien implementada, reutiliza la clasificación existente
+sin duplicar lógica, tiene batería de tests sólida y se verificó en vivo con Playwright/Chromium real
+sin errores de consola — incluida la confirmación independiente de que el hallazgo cosmético que
+motivó R-14 (la fuga del separador `---`) reproduce exactamente como su ficha describe, en las ocho
+escenas del fixture real, no solo en la que se citó al abrirla. Las cuatro redes siguen en verde
+(557 tests, no 550: primer cambio de recuento desde R-11). Se cierra `#20` a `RESUELTO` con
+verificación propia e independiente (no por transcribir la corrección del programador), completando
+la corrección que `SEGUIMIENTO.md` había señalado como pendiente de aplicar en este documento. `#19`
+sigue como límite teórico sin escenario reproducido, reconfirmado pese al mismo síntoma de colapso de
+historial en clon superficial que ya cerró `#21` (no reabierto: contenido verificado directamente).
+R-13 y R-14 están bien especificadas, verificadas contra el código actual y no contradicen ningún
+invariante ni principio vigente. No queda ningún hallazgo `ABIERTO` de código sin enrutar; nada exige
+tratamiento urgente en esta pasada.
 
 ### Auditoría 2026-09-10 — sexta reconfirmación consecutiva sin cambios de código; `#21` cerrado con verificación independiente propia (falso positivo de clon superficial), `#20` reconfirmado por acceso directo a `list_triggers`
 
