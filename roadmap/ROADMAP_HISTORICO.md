@@ -26,6 +26,10 @@ criterio que los dos movimientos anteriores.
 su única R-XX ya COMPLETADA (2026-09-10) y sin ningún hito de negocio propio pendiente — mismo
 criterio que los tres movimientos anteriores.
 
+**Movido a histórico el:** 2026-09-11, ciclo de Product Manager. Se añaden la Oleada v5 (R-13) y la
+Fase transversal F-G (R-14), ambas COMPLETADA por el Programador el mismo día (2026-09-11) y sin
+ningún hito de negocio propio pendiente — mismo criterio que los cuatro movimientos anteriores.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -458,7 +462,106 @@ R-12, no pierde texto ni rompe invariantes) — promovida a `R-14` en el ciclo d
 
 ---
 
+## Oleada v5 — Coherencia de datos derivados para el montaje real
+
+Cierra un hueco de coherencia entre las dos salidas que `references/contrato-montaje.md` documenta
+como "CONTRATO DE MONTAJE" (`guion.srt`/`guion-alineado.srt` y `tarjetas.json`): desde R-05 y R-07,
+el `.srt` alineado y los capítulos de YouTube ya preferían la duración real de la toma buena sobre
+la estimada cuando existía parte de rodaje; `tarjetas.json` era el único de los tres consumidores
+de `tomas.duracion_toma_buena` que no lo hacía. Contenía R-13, su única R-XX. **Entregada
+2026-09-11.**
+
+### R-13 — Duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt`
+**Oleada / Fase:** v5 · **Migración:** No · **Depende de:** T-12, T-29, R-02, R-04, R-05
+**Origen:** observación de arquitectura del PM (2026-09-10), verificada contra
+`references/contrato-montaje.md`, `scripts/pptx.py`, `scripts/capitulos_youtube.py` y
+`scripts/srt_alineado.py`
+
+**Objetivo:** que `tarjetas.json` deje de ser el único de los tres consumidores de
+`tomas.duracion_toma_buena` que expone solo la duración estimada, para que la fórmula de derivación
+de rango de `contrato-montaje.md` siga siendo coherente con `guion-alineado.srt` una vez el dueño
+tiene partes de rodaje reales.
+
+**Requisitos:**
+1. `tarjetas.json` (`scripts/pptx.py`) incorpora, por escena, un campo de duración real
+   (`duracion_real_segundos`, `null`/ausente si la escena no tiene toma buena) usando
+   `tomas.duracion_toma_buena` — mismo dato que ya calculan `srt_alineado.py` y
+   `capitulos_youtube.py`.
+2. `duracion_estimada_segundos` no se toca ni se sustituye: sigue siendo la única fuente para
+   `guion.srt` (T-27) y `guion-escenas.md`. El campo de duración real es un dato adicional, nunca
+   una sustitución en silencio del existente.
+3. `tarjetas.json` señala si el conjunto de escenas mezcla duración real y estimada (mismo aviso
+   que ya resuelve R-07 para los capítulos de YouTube).
+4. `references/contrato-montaje.md` y `references/contrato-tarjetas.md` se actualizan con la
+   fórmula correcta de derivación de rango cuando existe `guion-alineado.srt`.
+5. Sin migración de `estado.json`: el dato de origen ya vive en `estado.json["tomas"]`;
+   `tarjetas.json` es una salida derivada que se regenera en cada validación (T-30).
+6. Test de integración que cruza `tarjetas.json` y `guion-alineado.srt` sobre un guion con al menos
+   una toma buena registrada (mismo patrón que R-11 / hallazgo #18).
+
+**Criterio de aceptación:** sobre un guion con al menos una escena con toma buena registrada,
+`tarjetas.json` trae el campo de duración real para esa escena y ausente/`null` para las que no la
+tienen; sumando esas duraciones (real cuando existe, estimada si no) se reconstruyen exactamente
+los límites de escena de `guion-alineado.srt`; sobre un guion sin ninguna toma buena registrada,
+`tarjetas.json` y la fórmula de derivación de rango se comportan exactamente igual que antes, sin
+regresión sobre los tres guiones reales de `fixtures/reales/`.
+
+**Cómo se entregó:** `Tarjeta.duracion_real_segundos` (`None` si la escena no tiene toma buena,
+reutilizando tal cual `tomas.duracion_toma_buena`) y `ResultadoTarjetas.mezcla_duracion_real_y_estimada`
+(booleano de cabecera, `true` solo si el conjunto mezcla ambos casos); `duracion_estimada_segundos`
+intacta. `generar_tarjetas`/`exportar_pptx` ganan `tomas_por_escena` opcional (mismo patrón que
+`srt_alineado.py`/`capitulos_youtube.py`, no integrado en el selector automático de T-30); sin él,
+comportamiento idéntico a antes de R-13. `references/contrato-tarjetas.md` y `contrato-montaje.md`
+actualizados con la fórmula de rango correcta. 7 tests nuevos (557→564), incluido el cruce con
+`guion-alineado.srt` en `test_integracion_montaje.py`.
+
+---
+
+## Fase transversal F-G — Deuda técnica menor
+
+Agrupa hallazgos de calidad menores, sin hito de producto propio, con el mismo criterio que ya
+usaron F-D (R-08/R-09) y F-F (R-11). Contenía R-14, su única R-XX. **Entregada 2026-09-11.**
+
+### R-14 — El separador de escena no debe colarse en el texto de una indicación
+**Oleada / Fase:** F-G · **Migración:** No · **Depende de:** T-09
+**Origen:** observación de arquitectura de R-12 (2026-09-10), registrada como hallazgo cosmético no
+urgente, promovida a R-XX por afectar tres salidas y estar ya localizada en código
+
+**Objetivo:** `scripts/clasificador.py` (T-09) incluía, dentro del `contenido` de la última sección
+`no_locucion` de una escena, el separador `---` que el guion de origen usa entre escenas, cuando
+esa sección era la última antes del siguiente `## BLOQUE N`. Ese `contenido` se reutilizaba sin
+filtrar en `documento_revision.py` (T-16), `pptx.py` (T-29) y la cue del reproductor (R-12): en las
+tres salidas, el separador aparecía pegado al final del texto mostrado como indicación `EN
+PANTALLA`/`NOTA`.
+
+**Requisitos:**
+1. `clasificador.py` deja de incluir la línea de separador de escena dentro del `contenido`
+   mostrado de la sección `no_locucion` que la precede, sin perder cobertura total.
+2. `clasificador.reconstruir()` sigue reconstruyendo el guion de origen sin pérdida byte a byte;
+   test de reconstrucción extendido con un caso que cubra una escena que termina en indicación
+   seguida de separador.
+3. `guion-escenas.md`, `tarjetas.json` y la cue del reproductor dejan de mostrar el `---` pegado al
+   texto de la indicación, verificado sobre los tres guiones reales.
+4. Sin cambio de esquema de `estado.json`.
+
+**Criterio de aceptación:** sobre los tres guiones reales, ninguna indicación no-locución mostrada
+en `guion-escenas.md`, `tarjetas.json` o el reproductor generado termina en `---`; el test de
+cobertura total sigue en verde; cero regresión en la suite de tests existente.
+
+**Cómo se entregó:** `_separar_marcador_fin_escena` extrae el `---` de fin de escena (con las
+líneas en blanco que lo acompañan) en su propio bloque `no_locucion` (`senal="separador_escena"`)
+antes de clasificar rótulos/inferencia, en vez de dejarlo pegado al `contenido` de la última
+indicación. Nueva señal añadida a los tres sitios que la necesitan para no colarse como una
+"indicación" propia ni proponerse como convención: `pdf._SENALES_ESTRUCTURALES`,
+`documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES`.
+`references/convencion-guion.md` documenta ahora el separador. Fixture golden
+`fixtures/guion-ejemplo-esperado.md` regenerado a mano. 5 tests nuevos (564→569). Verificado sobre
+los tres guiones reales: cero indicación termina en `---` en `guion-escenas.md`, `tarjetas.json` ni
+la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
-2026-09-10.)*
+2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11.)*

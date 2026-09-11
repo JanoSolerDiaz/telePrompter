@@ -10,16 +10,19 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-11 — **Ciclo de Programador (sin trabajo de código posible),
-octava reconfirmación del día: sin novedad.** §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` tras R-14
-(solo T-24b `BLOQUEADA` por hardware del dueño); `auditoriacontinua.md` sin ningún hallazgo `ABIERTO`
-de severidad alta (`#19` baja, sin cambios; `#21` sigue `RESUELTO`); `roadmap/FEEDBACK.md` sigue sin
-entradas `nuevo`. Cuatro redes en verde: `mypy`/`ruff` limpios, 569 tests, `verificar_salidas.py
---fixture` catorce etapas OK (`.pptx`/`.pdf` reales siguen LATENTES en este contenedor de nube,
-degradación esperada). Sin cambios en bloqueos, preguntas abiertas ni desviaciones.
+**Última actualización:** 2026-09-11 — **Ciclo de Product Manager: archiva la Oleada v5 (R-13) y la
+Fase transversal F-G (R-14) — ambas ya `COMPLETADA` por el Programador el mismo día — a
+`ROADMAP_HISTORICO.md`.** Sin cambio de estado de ninguna T-XX/R-XX en §1 (R-13/R-14 ya constaban
+`COMPLETADA`); la cola de `ROADMAP_PRODUCTO.md` queda vacía y **no se abre ninguna R-XX nueva**:
+`auditoriacontinua.md` sigue sin ningún hallazgo `ABIERTO` de severidad alta ni sin enrutar (20/21
+`RESUELTO`; el único `#19`, baja, mantiene su decisión razonada de no convertirse en R-XX
+especulativa) y `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. Sin cambios en bloqueos, preguntas
+abiertas ni desviaciones; sin cambio de código, no aplica la verificación de las cuatro redes.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-11, ciclo de Programador: octava reconfirmación del día, sin novedad. Cuatro redes en
+  verde (569 tests). Sin trabajo de código pendiente tras R-14.
 - 2026-09-11, ciclo de Programador: séptima reconfirmación del día, sin novedad. Cuatro redes en
   verde (569 tests). Sin trabajo de código pendiente tras R-14.
 - 2026-09-11, ciclo de Programador: sexta reconfirmación del día, sin novedad. Cuatro redes en

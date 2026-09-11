@@ -32,6 +32,20 @@
 
 ---
 
+### Sesión 2026-09-11 — Ciclo de Product Manager: archiva Oleada v5 (R-13) y Fase F-G (R-14) a histórico; cola de `ROADMAP_PRODUCTO.md` queda vacía, no se abre ninguna R-XX nueva
+**Tarea(s):** Ninguna T-XX/R-XX nueva. Gestión de roadmap: R-13 y R-14, ya `COMPLETADA` por el Programador el mismo día, se archivan enteras (Oleada v5 y Fase transversal F-G) a `roadmap/ROADMAP_HISTORICO.md`, siguiendo §0.4 de `HOJA_DE_RUTA.md`
+**Estado resultante:** Sin cambio de estado en §1 de `SEGUIMIENTO.md` (R-13/R-14 ya constaban `COMPLETADA`); `roadmap/ROADMAP_PRODUCTO.md` queda con la cola de R-XX vacía
+**Commits a develop:** (ver `git log` de esta fecha en `develop`, commit de PM de este ciclo)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_HISTORICO.md` (añadidas Oleada v5/R-13 y Fase F-G/R-14), `roadmap/ROADMAP_PRODUCTO.md` (cabecera y detalle de tareas actualizados, secciones archivadas retiradas), `roadmap/DECISIONES_TECNICAS.md` (fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** N/A — ciclo de gestión de roadmap, sin cambio de código (`scripts/`, `tests/`); no aplica la verificación de las cuatro redes
+**Health check post-deploy:** N/A — sin cambio de código
+**Decisiones tomadas:** `DECISIONES_TECNICAS.md`, fila `2026-09-11 | PM | Se archivan la Oleada v5 (R-13) y la Fase transversal F-G (R-14)...`
+**Hallazgos del auditor atendidos:** ninguno nuevo. Revisado el registro completo de `auditoriacontinua.md`: 20/21 hallazgos `RESUELTO`, el único `ABIERTO` (`#19`, baja) mantiene la decisión ya razonada de no abrir R-XX especulativa (PM, 2026-09-04), sin motivo para revisarla en este ciclo
+**Hallazgos:** ninguno nuevo. Releído el código entregado por R-13 (`scripts/pptx.py`, `references/contrato-tarjetas.md`, `references/contrato-montaje.md`) buscando una inconsistencia de arquitectura del mismo tipo que motivó R-12/R-13/R-14: ninguna encontrada
+**Tareas autopropuestas (P-XX):** ninguna — no corresponde al PM proponerlas
+**Próximo paso:** el Programador sigue sin trabajo de código pendiente (cola de T-XX/R-XX vacía salvo T-24b bloqueada). El próximo trabajo de producto sale de la primera entrada real de `roadmap/FEEDBACK.md`, de un hallazgo de auditoría nuevo sin enrutar, o de que el dueño grabe el primer curso completo (bloqueo #7 de `SEGUIMIENTO.md` §3) y aporte fricciones reales de rodaje
+
 ### Sesión 2026-09-11 — Ciclo de Programador (sin trabajo de código posible), octava reconfirmación del día: sin novedad
 **Tarea(s):** Ninguna T-XX/R-XX — §1 sigue sin ninguna PENDIENTE tras R-14; solo T-24b BLOQUEADA por hardware del dueño. `auditoriacontinua.md` sin hallazgos `ABIERTO` de severidad alta (`#19` baja, sin cambios; `#21` sigue `RESUELTO`)
 **Estado resultante:** Sin cambio de estado de ninguna T-XX/R-XX en §1; `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`
