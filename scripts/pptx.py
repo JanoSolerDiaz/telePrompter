@@ -27,6 +27,21 @@ dependencia `pptx` no estan instaladas en esta maquina, la generacion de
 `tarjetas.json` y el brief **nunca falla** -- solo se marca la salida
 `.pptx` como latente en el mensaje devuelto, para que quien orquesta la
 skill (T-30) lo refleje en el resumen final.
+
+Duracion real por escena (tarea R-13): igual que `srt_alineado.py` (R-05) y
+`capitulos_youtube.py` (R-07), acepta opcionalmente `tomas_por_escena`
+(`EstadoProyecto.tomas` tal cual) y usa `tomas.duracion_toma_buena` para
+anadir, por escena, `duracion_real_segundos` -- `None` si la escena no
+tiene toma buena todavia. `duracion_estimada_segundos` no se toca: sigue
+siendo la unica fuente para `guion.srt`/`guion-escenas.md`. Sin
+`tomas_por_escena` (el caso de siempre en el selector automatico de T-30,
+que no conoce el parte de rodaje), el campo sale `None` en todas las
+escenas y el comportamiento es identico al de antes de R-13 -- mismo
+patron de "nunca falla, solo se queda sin dato real" que ya usan R-05/R-07.
+No se extrae una funcion compartida con esos dos modulos para esta
+decision de real-vs-estimada (ver `DECISIONES_TECNICAS.md`, R-13): son solo
+tres lineas, y tocar `srt_alineado.py`/`capitulos_youtube.py` ya estables
+para ahorrarlas no compensa el riesgo sobre codigo ya verificado.
 """
 
 from __future__ import annotations
@@ -46,6 +61,7 @@ from config import (
 from parser import Escena, ResultadoParseo
 from pdf import dimensiones_png, es_nota_interna, indicaciones_no_recitables
 from tiempos import ResultadoTiempos
+from tomas import duracion_toma_buena
 
 RAIZ = Path(__file__).resolve().parent.parent
 
@@ -60,6 +76,7 @@ class Tarjeta:
     numero: int
     titulo: str
     duracion_estimada_segundos: float
+    duracion_real_segundos: float | None
     duracion_objetivo_segundos: float | None
     aviso_desviacion: str | None
     bloques: tuple[str, ...]
@@ -78,6 +95,7 @@ class ResultadoTarjetas:
     duracion_total_segundos: float
     duracion_objetivo_total_segundos: tuple[int, int] | None
     palabras_locucion_total: int
+    mezcla_duracion_real_y_estimada: bool
     tarjetas: tuple[Tarjeta, ...]
 
 
@@ -119,6 +137,7 @@ def _tarjeta_de_escena(
     resultado_tiempos: ResultadoTiempos,
     bloques_clasificados: list[BloqueClasificado],
     configuracion: Configuracion,
+    tomas_por_escena: dict[str, Any],
 ) -> Tarjeta:
     tiempo_escena = next(t for t in resultado_tiempos.escenas if t.numero == escena.numero)
     bloques_escena = [
@@ -126,10 +145,14 @@ def _tarjeta_de_escena(
     ]
     textos_bloques = tuple(b.bloque.texto for b in bloques_escena)
     pantalla, notas = _indicaciones_de_escena(escena, bloques_clasificados, configuracion)
+    duracion_real = duracion_toma_buena(tomas_por_escena.get(str(escena.numero)), escena.numero)
+    if duracion_real is not None and duracion_real <= 0:
+        duracion_real = None
     return Tarjeta(
         numero=escena.numero,
         titulo=escena.titulo,
         duracion_estimada_segundos=tiempo_escena.duracion_estimada_segundos,
+        duracion_real_segundos=duracion_real,
         duracion_objetivo_segundos=tiempo_escena.duracion_objetivo_segundos,
         aviso_desviacion=tiempo_escena.aviso or None,
         bloques=textos_bloques,
@@ -144,25 +167,38 @@ def generar_tarjetas(
     resultado_tiempos: ResultadoTiempos,
     nombre_guion: str = "guion",
     configuracion: Configuracion | None = None,
+    tomas_por_escena: dict[str, Any] | None = None,
 ) -> ResultadoTarjetas:
     """Construye el contrato completo (requisito 1) a partir de un guion ya
     parseado y con tiempos calculados -- mismo patron que `pdf.py`/`srt.py`:
     no recalcula nada, consume `ResultadoTiempos` tal cual, asi que el texto
     de cada bloque ya es el LOCUTADO FINAL cuando `resultado_tiempos` viene
-    de una revalidacion (T-17, reescrituras aceptadas materializadas)."""
+    de una revalidacion (T-17, reescrituras aceptadas materializadas).
+
+    `tomas_por_escena` (tarea R-13) es `EstadoProyecto.tomas` tal cual, el
+    mismo contenedor que ya consumen `srt_alineado.py`/`capitulos_youtube.py`;
+    ausente u omitido (el caso del selector automatico de T-30, que no conoce
+    el parte de rodaje) equivale a que ninguna escena tiene toma buena
+    todavia -- mismo comportamiento que antes de R-13."""
     configuracion = configuracion or Configuracion()
+    tomas_por_escena = tomas_por_escena or {}
     clasificacion = clasificar_guion(resultado, configuracion)
     palabras_totales = sum(resumen.palabras_locucion for resumen in clasificacion.resumenes)
     tarjetas = tuple(
-        _tarjeta_de_escena(escena, resultado_tiempos, clasificacion.bloques, configuracion)
+        _tarjeta_de_escena(
+            escena, resultado_tiempos, clasificacion.bloques, configuracion, tomas_por_escena
+        )
         for escena in resultado.escenas
     )
+    tiene_real = any(tarjeta.duracion_real_segundos is not None for tarjeta in tarjetas)
+    tiene_estimada = any(tarjeta.duracion_real_segundos is None for tarjeta in tarjetas)
     return ResultadoTarjetas(
         titulo=nombre_guion,
         para_terceros=not configuracion.incluir_notas_internas,
         duracion_total_segundos=resultado_tiempos.duracion_total_segundos,
         duracion_objetivo_total_segundos=resultado_tiempos.duracion_objetivo_total_segundos,
         palabras_locucion_total=palabras_totales,
+        mezcla_duracion_real_y_estimada=tiene_real and tiene_estimada,
         tarjetas=tarjetas,
     )
 
@@ -184,12 +220,14 @@ def tarjetas_a_diccionario(resultado_tarjetas: ResultadoTarjetas) -> dict[str, A
                 if resultado_tarjetas.duracion_objetivo_total_segundos is not None
                 else None
             ),
+            "mezcla_duracion_real_y_estimada": resultado_tarjetas.mezcla_duracion_real_y_estimada,
         },
         "escenas": [
             {
                 "numero": tarjeta.numero,
                 "titulo": tarjeta.titulo,
                 "duracion_estimada_segundos": tarjeta.duracion_estimada_segundos,
+                "duracion_real_segundos": tarjeta.duracion_real_segundos,
                 "duracion_objetivo_segundos": tarjeta.duracion_objetivo_segundos,
                 "aviso_desviacion": tarjeta.aviso_desviacion,
                 "bloques": list(tarjeta.bloques),
@@ -224,6 +262,7 @@ _CLAVES_METADATOS: dict[str, type | tuple[type, ...]] = {
     "numero_escenas": int,
     "palabras_locucion_total": int,
     "duracion_total_segundos": (int, float),
+    "mezcla_duracion_real_y_estimada": bool,
 }
 _CLAVES_ESCENA: dict[str, type | tuple[type, ...]] = {
     "numero": int,
@@ -365,9 +404,8 @@ def _diapositiva_markdown(indice: int, grupo: tuple[Tarjeta, ...]) -> str:
             "- Notas del orador: el texto de locución completo de esta escena, íntegro "
             "(el mismo de arriba)."
         )
-    return (
-        f"### Diapositiva {indice} — contenido (LIGHT), escena(s) {numeros}\n\n"
-        + "\n\n".join(secciones)
+    return f"### Diapositiva {indice} — contenido (LIGHT), escena(s) {numeros}\n\n" + "\n\n".join(
+        secciones
     )
 
 
@@ -521,20 +559,25 @@ def exportar_pptx(
     carpeta_salida: Path,
     nombre_guion: str = "guion",
     configuracion: Configuracion | None = None,
+    tomas_por_escena: dict[str, Any] | None = None,
 ) -> ResultadoPptx:
     """Punto de entrada normal del modulo: genera y guarda `tarjetas.json` y
     el brief SIEMPRE (requisito 4), sea cual sea la disponibilidad de la
     skill de marca -- nunca falla por su ausencia. La generacion real del
     `.pptx` no la hace este codigo (ver docstring del modulo): la hace
     Claude delegando en `480-branded-pptx` dentro de la misma sesion,
-    leyendo el brief devuelto aqui."""
+    leyendo el brief devuelto aqui.
+
+    `tomas_por_escena` (R-13) es opcional, igual que en `generar_tarjetas`:
+    el selector automatico de T-30 (`salidas.py`) no lo conoce y lo omite,
+    igual que ya hace con `srt_alineado.py`/`capitulos_youtube.py` -- quien
+    quiera `duracion_real_segundos` en `tarjetas.json` llama a este punto de
+    entrada aparte con `EstadoProyecto.tomas`, cuando existe parte de rodaje."""
     configuracion = configuracion or Configuracion()
     resultado_tarjetas = generar_tarjetas(
-        resultado, resultado_tiempos, nombre_guion, configuracion
+        resultado, resultado_tiempos, nombre_guion, configuracion, tomas_por_escena
     )
-    ruta_json = guardar_tarjetas_json(
-        formatear_tarjetas_json(resultado_tarjetas), carpeta_salida
-    )
+    ruta_json = guardar_tarjetas_json(formatear_tarjetas_json(resultado_tarjetas), carpeta_salida)
     ruta_brief = guardar_brief(generar_brief(resultado_tarjetas, configuracion), carpeta_salida)
 
     disponible = detectar_skill_pptx_disponible(configuracion)

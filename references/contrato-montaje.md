@@ -115,11 +115,36 @@ fin_escena[k]    = inicio_escena[k] + duracion_estimada_segundos de escenas[k]
 
 y la suma de `duracion_estimada_segundos` de todas las escenas es exactamente
 `metadatos.duracion_total_segundos`, que a su vez es el instante en que termina
-el último subtítulo del `.srt` (verificado por
+el último subtítulo de `guion.srt` (verificado por
 `tests/test_integracion_montaje.py`, T-33). Con ese rango `[inicio_escena,
-fin_escena)` por escena, cualquier subtítulo del `.srt` cuyo intervalo cae
+fin_escena)` por escena, cualquier subtítulo de `guion.srt` cuyo intervalo cae
 dentro de él pertenece a esa escena, sin ambigüedad, mientras no haya
 desviaciones de numeración (sección anterior).
+
+**Esa fórmula solo es coherente con `guion.srt` (estimado).** En cuanto existe
+un parte de rodaje con al menos una toma buena (R-02) y, con él,
+`guion-alineado.srt` (R-05), los límites de escena reales ya no son los que
+resulta de sumar `duracion_estimada_segundos` — son los que reescala R-05 a
+partir de la toma real. Desde **R-13**, `tarjetas.json` trae ese mismo dato por
+escena (`duracion_real_segundos`, `references/contrato-tarjetas.md`), así que
+la fórmula correcta — coherente con `guion-alineado.srt` cuando existe — es:
+
+```
+duracion_usada[k]  = duracion_real_segundos de escenas[k] si no es null,
+                      duracion_estimada_segundos de escenas[k] si lo es
+inicio_escena[k]   = suma(duracion_usada de escenas[0..k-1])
+fin_escena[k]      = inicio_escena[k] + duracion_usada[k]
+```
+
+`metadatos.mezcla_duracion_real_y_estimada` avisa si el conjunto mezcla ambos
+casos (algunas escenas con toma buena, otras todavía no), para que la cadena de
+montaje sepa, antes de fiarse del campo, si hay huecos sin evidencia real. Sin
+ningún parte de rodaje (`duracion_real_segundos` es `null` en todas), esta
+fórmula coincide exactamente con la anterior — no hay dos fórmulas que
+mantener, solo una que ya elige la fuente correcta escena a escena. Verificado
+por `tests/test_integracion_montaje.py::
+test_tarjetas_json_duracion_real_reconstruye_limites_de_guion_alineado_srt`
+(R-13).
 
 ## Qué quedaba fuera de esta tarea (T-33), ya completado por sesiones posteriores
 

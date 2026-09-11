@@ -166,3 +166,81 @@ def test_srt_alineado_y_capitulos_youtube_son_coherentes_entre_si() -> None:
     assert alineacion.resultado_tiempos.duracion_total_segundos == pytest.approx(
         duracion_acumulada, abs=1e-6
     )
+
+
+def test_tarjetas_json_duracion_real_reconstruye_limites_de_guion_alineado_srt() -> None:
+    """Cierra R-13: sobre un guion con al menos una toma buena, sumar por
+    escena `duracion_real_segundos` cuando existe (o `duracion_estimada_
+    segundos` si no) reconstruye exactamente los limites de escena de
+    `guion-alineado.srt` (R-05) -- la formula que `references/contrato-
+    montaje.md` le ensena a la fase de montaje una vez existe parte de
+    rodaje real. Mismo guion sintetico que el test anterior (R-11, hallazgo
+    #18), reutilizado aqui para que ambas salidas partan del mismo
+    `ResultadoTiempos` + `tomas_por_escena`."""
+    resultado = parsear_guion(
+        _guion_con_capitulos_y_tomas(["Primero", "Segundo", "Tercero"], [10, 10, 10])
+    )
+    tiempos = calcular_tiempos(resultado, Configuracion())
+    tomas_por_escena = {
+        "1": {
+            "titulo": "Escena 1",
+            "tomas": [{"numero": 1, "duracion_segundos": 5.0, "nota": "", "buena": True}],
+        },
+        "3": {
+            "titulo": "Escena 3",
+            "tomas": [{"numero": 1, "duracion_segundos": 30.0, "nota": "", "buena": True}],
+        },
+    }
+
+    alineacion = reescalar_a_toma_buena(tiempos, tomas_por_escena)
+    resultado_tarjetas = generar_tarjetas(
+        resultado, tiempos, "prueba", Configuracion(), tomas_por_escena
+    )
+    datos_tarjetas = tarjetas_a_diccionario(resultado_tarjetas)
+    assert validar_tarjetas(datos_tarjetas) == []
+
+    # Escena 2 sin toma buena: duracion_real_segundos ausente (null), tal
+    # como coincide con `escenas_sin_toma_buena` del `.srt` alineado.
+    assert datos_tarjetas["metadatos"]["mezcla_duracion_real_y_estimada"] is True
+    escena_2 = next(e for e in datos_tarjetas["escenas"] if e["numero"] == 2)
+    assert escena_2["duracion_real_segundos"] is None
+
+    inicio_escena = 0.0
+    for escena_tarjeta, tiempo_escena_alineado in zip(
+        datos_tarjetas["escenas"], alineacion.resultado_tiempos.escenas, strict=True
+    ):
+        duracion = (
+            escena_tarjeta["duracion_real_segundos"]
+            if escena_tarjeta["duracion_real_segundos"] is not None
+            else escena_tarjeta["duracion_estimada_segundos"]
+        )
+        # La duracion derivada de tarjetas.json (real si existe, estimada si
+        # no) coincide exactamente con la duracion de esa misma escena en
+        # `guion-alineado.srt` -- misma formula de rango que documenta
+        # contrato-montaje.md.
+        assert duracion == pytest.approx(
+            tiempo_escena_alineado.duracion_estimada_segundos, abs=1e-6
+        )
+        inicio_escena += duracion
+
+    assert inicio_escena == pytest.approx(
+        alineacion.resultado_tiempos.duracion_total_segundos, abs=1e-6
+    )
+
+
+def test_tarjetas_json_sin_ninguna_toma_buena_se_comporta_como_antes_de_r13(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    """Criterio de aceptacion de R-13: sin ninguna toma buena registrada,
+    `tarjetas.json` se comporta exactamente igual que antes de la tarea
+    sobre los tres guiones reales -- ninguna regresion."""
+    for nombre, texto in texto_guiones_reales.items():
+        resultado = parsear_guion(texto)
+        resultado_tiempos = calcular_tiempos(resultado, Configuracion())
+        resultado_tarjetas = generar_tarjetas(resultado, resultado_tiempos, nombre)
+        datos = tarjetas_a_diccionario(resultado_tarjetas)
+        assert validar_tarjetas(datos) == [], f"{nombre}: {validar_tarjetas(datos)}"
+        assert datos["metadatos"]["mezcla_duracion_real_y_estimada"] is False
+        assert all(escena["duracion_real_segundos"] is None for escena in datos["escenas"])
+        suma_estimada = sum(escena["duracion_estimada_segundos"] for escena in datos["escenas"])
+        assert suma_estimada == datos["metadatos"]["duracion_total_segundos"]

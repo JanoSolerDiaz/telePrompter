@@ -21,13 +21,16 @@
     "numero_escenas": 7,
     "palabras_locucion_total": 412,
     "duracion_total_segundos": 187.4,
-    "duracion_objetivo_total_segundos": [180, 210]   // o null si el guion no trae objetivo
+    "duracion_objetivo_total_segundos": [180, 210],  // o null si el guion no trae objetivo
+    "mezcla_duracion_real_y_estimada": false          // true (R-13) si alguna escena tiene
+                                                       // duracion real y otra no
   },
   "escenas": [
     {
       "numero": 0,
       "titulo": "Arranque",
       "duracion_estimada_segundos": 24.1,
+      "duracion_real_segundos": null,                 // o el numero (R-13) si hay toma buena
       "duracion_objetivo_segundos": 25.0,             // o null
       "aviso_desviacion": null,                        // o el texto del aviso de T-12
       "bloques": [
@@ -52,6 +55,7 @@
 | `palabras_locucion_total` | `int` | Suma de palabras de locución de todas las escenas. |
 | `duracion_total_segundos` | `number` | Duración estimada total (T-12). |
 | `duracion_objetivo_total_segundos` | `[number, number]` \| `null` | Horquilla objetivo del metadato de cabecera del guion, si lo trae. |
+| `mezcla_duracion_real_y_estimada` | `bool` | **(R-13)** `true` si el conjunto de escenas mezcla duración real (con toma buena) y estimada (sin ella todavía) — mismo aviso que ya resuelve R-07 para los capítulos de YouTube. `false` si todas las escenas están en el mismo caso (todas con toma buena, o ninguna). |
 
 ## Claves de cada elemento de `escenas` (requisito 1)
 
@@ -59,7 +63,8 @@
 |-------|------|-------------|
 | `numero` | `int` | Número de escena (`## BLOQUE N — …`). |
 | `titulo` | `string` | Título de la escena. |
-| `duracion_estimada_segundos` | `number` | Duración estimada de la escena (T-12). |
+| `duracion_estimada_segundos` | `number` | Duración estimada de la escena (T-12). **Nunca se sustituye** por la real: sigue siendo la única fuente para `guion.srt`/`guion-escenas.md` (requisito 2 de R-13). |
+| `duracion_real_segundos` | `number` \| `null` | **(R-13)** Duración real de la toma marcada `buena` de esta escena (`tomas.duracion_toma_buena`, R-02), la misma que ya usan `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07). `null` si la escena no tiene toma buena registrada todavía — nunca se inventa un tiempo real que no existe. |
 | `duracion_objetivo_segundos` | `number` \| `null` | Duración objetivo de la escena, si el guion la trae en su encabezado. |
 | `aviso_desviacion` | `string` \| `null` | Aviso de desviación de T-12 si la estimada se aleja de la objetivo; `null` si no hay. |
 | `bloques` | `string[]` | Un elemento por bloque de respiración (T-11), texto **locutado final** (reescrituras aceptadas ya materializadas si viene de una revalidación, T-17). |

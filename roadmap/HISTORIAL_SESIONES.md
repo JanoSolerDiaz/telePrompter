@@ -32,6 +32,47 @@
 
 ---
 
+### Sesión 2026-09-11 — Ciclo de Programador: R-13 implementada y COMPLETADA
+**Tarea(s):** R-13 (duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt`)
+**Estado resultante:** R-13 pasa de `PENDIENTE` a `COMPLETADA` en §1 de `SEGUIMIENTO.md`. R-14 sigue
+`PENDIENTE` (siguiente tarea de la cola). Ningún hallazgo `ABIERTO` de severidad alta en
+`auditoriacontinua.md` (solo `#19`, baja, reconfirmado sin cambios) — no hubo urgencia P-XX que
+atender antes de esta tarea
+**Commits a develop:** `Programador: R-13 — duración real por escena en tarjetas.json, coherente con
+guion-alineado.srt` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (la ficha de R-13 lo fija como requisito 5: dato ya vivo en
+`estado.json["tomas"]`, `tarjetas.json` es una salida derivada que se regenera en cada validación)
+**Archivos creados/modificados:** `scripts/pptx.py` (`Tarjeta.duracion_real_segundos`,
+`ResultadoTarjetas.mezcla_duracion_real_y_estimada`, `generar_tarjetas`/`exportar_pptx` ganan
+`tomas_por_escena` opcional, `tarjetas_a_diccionario`/`validar_tarjetas` actualizados),
+`tests/test_pptx.py` (6 tests nuevos), `tests/test_integracion_montaje.py` (2 tests nuevos, cruce con
+`guion-alineado.srt` y regresión sin toma buena), `references/contrato-tarjetas.md` (dos claves
+nuevas documentadas), `references/contrato-montaje.md` (fórmula de derivación de rango corregida
+para cuando existe `guion-alineado.srt`), `SKILL.md` (dos menciones actualizadas),
+`roadmap/DECISIONES_TECNICAS.md` (dos decisiones nuevas), `roadmap/SEGUIMIENTO.md` (cabecera + fila
+R-13 en §1), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy scripts/ tests/`, 68 archivos) · lint ✅ (`ruff check
+scripts/ tests/`) · tests ✅ (557→564, los 7 nuevos en verde) · build ✅
+(`scripts/verificar_salidas.py --fixture`, 14 etapas OK, incluida la validación de `tarjetas.json`)
+**Health check post-deploy:** N/A — sesión de nube, no puede instalar en `~/.claude/skills/` (nota de
+entorno del protocolo v1.3); entregar es el push a `origin/develop`
+**Decisiones tomadas:** dos filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-11, R-13): no extraer
+una función compartida con `srt_alineado.py`/`capitulos_youtube.py` para la regla real-vs-estimada
+(tres líneas duplicadas, riesgo de tocar código estable no compensado); señalar la mezcla real/
+estimada con un único booleano de cabecera (`metadatos.mezcla_duracion_real_y_estimada`) en vez de
+una lista de escenas, porque el array de escenas ya expone el dato por escena
+**Hallazgos del auditor atendidos:** ninguno `ABIERTO` de severidad alta que atender antes de esta
+tarea (revisado `auditoriacontinua.md` al empezar, por protocolo)
+**Hallazgos:** ninguno nuevo. Confirmado al implementar: `pptx.py` era en efecto el único de los tres
+consumidores de `tomas.duracion_toma_buena` sin usarla, tal como había verificado el PM al abrir la
+ficha — el hueco se cierra reutilizando esa misma función sin cambiar su comportamiento
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** siguiente tarea de la cola es **R-14** (el separador de escena `---` no debe
+colarse en el texto de una indicación), spec completa en `roadmap/ROADMAP_PRODUCTO.md`, fase
+transversal F-G
+
+---
+
 ### Sesión 2026-09-10 — Ciclo de Product Manager: R-12 archivada a histórico, se abren R-13 y R-14
 **Tarea(s):** Ninguna T-XX en curso. Gestión de roadmap: archiva la oleada v4 (R-12, ya
 `COMPLETADA`) a `ROADMAP_HISTORICO.md`; abre **R-13** (oleada v5 nueva) y **R-14** (fase transversal

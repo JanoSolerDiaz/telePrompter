@@ -2694,6 +2694,68 @@ está mirando quien graba. Sin migración de `estado.json`.
   ningún invariante), pero documentado aquí para que una futura revisión de los límites
   de sección de `clasificador.py` no lo redescubra de cero.
 
+## Duración real por escena en `tarjetas.json` (R-13)
+
+`origen: roadmap`, oleada v5, depende de T-12, T-29, R-02, R-04 y R-05. Objetivo:
+`references/contrato-montaje.md` documenta dos "CONTRATO DE MONTAJE" —
+`guion.srt`/`guion-alineado.srt` y `tarjetas.json` — y desde R-05/R-07 los dos primeros ya
+prefieren la duración **real** de la toma buena (`tomas.duracion_toma_buena`) sobre la
+**estimada** de T-12 cuando existe parte de rodaje. `scripts/pptx.py` (`tarjetas.json`, T-29)
+era el único de los tres consumidores de esa función que aún no lo hacía: exponía solo
+`duracion_estimada_segundos`, así que la fórmula de derivación de rango que
+`contrato-montaje.md` enseña a la fase de montaje (sumar duraciones estimadas) dejaba de ser
+fiable en cuanto existía `guion-alineado.srt` real.
+
+- **Requisito 1 (campo de duración real, sin sustituir la estimada).** `Tarjeta` gana
+  `duracion_real_segundos: float | None` — `tomas.duracion_toma_buena` reutilizada tal cual
+  (mismo import que ya hacen `srt_alineado.py`/`capitulos_youtube.py`), `None` si la escena no
+  tiene toma buena todavía o si la duración registrada es cero o negativa (dato degenerado,
+  tratado igual que "sin toma buena", nunca como una duración real de cero segundos).
+  `duracion_estimada_segundos` no se toca (requisito 2): sigue siendo la única fuente para
+  `guion.srt` (T-27) y `guion-escenas.md` (T-16). `generar_tarjetas`/`exportar_pptx` ganan un
+  parámetro opcional `tomas_por_escena` al final de su firma (compatible con las llamadas
+  posicionales existentes, p. ej. en `tests/test_integracion_montaje.py`); omitido (el caso del
+  selector automático de T-30, `salidas.py`, que no conoce el parte de rodaje), el comportamiento
+  es idéntico al de antes de R-13 — mismo patrón de "no integrado en el selector automático" que
+  ya usan `srt_alineado.py`/`capitulos_youtube.py`.
+- **Decisión de no extraer una función compartida (ver `DECISIONES_TECNICAS.md`, 2026-09-11).**
+  La ficha de R-13 dejaba explícitamente como decisión del programador si extraer a `tomas.py`
+  la regla "real si hay toma buena positiva, estimada si no" para que los tres módulos la
+  compartan. Se decidió NO extraerla: son solo tres líneas, y tocar `srt_alineado.py`/
+  `capitulos_youtube.py` — dos módulos de R-05/R-07 ya `COMPLETADA`, estables y con su propia
+  suite verde — para ahorrarlas no compensa el riesgo de introducir una regresión en código ya
+  probado. `pptx.py` implementa el conditional en línea, tercera aparición del mismo patrón.
+- **Requisito 3 (aviso de mezcla).** `ResultadoTarjetas.mezcla_duracion_real_y_estimada: bool`
+  (metadato de cabecera), `true` solo si al menos una escena tiene duración real y al menos otra
+  no — no una lista de escenas como `escenas_sin_toma_buena` de R-05/R-07 (ver la misma entrada
+  de `DECISIONES_TECNICAS.md`): `tarjetas.json` ya lleva TODAS las escenas con su
+  `duracion_real_segundos` explícito, así que una lista aparte sería redundante con el propio
+  array de `escenas`.
+- **Requisito 4 (contratos actualizados).** `references/contrato-tarjetas.md` documenta las dos
+  claves nuevas (`escenas[].duracion_real_segundos`, `metadatos.mezcla_duracion_real_y_estimada`).
+  `references/contrato-montaje.md` gana la fórmula corregida de derivación de rango
+  (`duracion_usada[k] = duracion_real_segundos si no es null, si no duracion_estimada_segundos`),
+  con la nota de que sin ningún parte de rodaje coincide exactamente con la fórmula anterior —
+  no hay dos fórmulas que mantener.
+- **`validar_tarjetas`.** `mezcla_duracion_real_y_estimada` se suma a `_CLAVES_METADATOS` (siempre
+  presente, tipo `bool`); `duracion_real_segundos` NO se suma a `_CLAVES_ESCENA` — mismo criterio
+  que `duracion_objetivo_segundos`/`aviso_desviacion`, campos opcionales/nulables que el validador
+  no fuerza por tipo.
+- **Requisito 5 (sin migración).** El dato de origen ya vive en `estado.json["tomas"]` desde R-02;
+  `tarjetas.json` es una salida derivada que se regenera en cada validación (T-30), así que no hay
+  esquema persistido que migrar.
+- **Requisito 6 y verificación.** `tests/test_pptx.py` gana 5 tests (sin tomas → todo `None`/sin
+  mezcla; una toma buena → `duracion_real_segundos` presente y estimada intacta; mezcla solo
+  cuando hay ambos casos; duración no positiva se ignora; el diccionario serializado cumple el
+  contrato con las claves nuevas). `tests/test_integracion_montaje.py` gana 2 tests: uno que
+  reconstruye, sumando `duracion_real_segundos`/`duracion_estimada_segundos` por escena de
+  `tarjetas.json`, los límites exactos de `guion-alineado.srt` (mismo guion sintético que el test
+  de coherencia de R-11, hallazgo #18, reutilizado aquí); y un test de no regresión que confirma,
+  sobre los tres guiones reales sin ninguna toma buena, que `tarjetas.json` se comporta
+  exactamente igual que antes de R-13 (criterio de aceptación literal). 557→564 tests.
+  `python scripts/verificar_salidas.py --fixture` sigue en 14 etapas OK sin cambios (la fixture no
+  tiene parte de rodaje, así que ejercita la vía sin toma buena).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

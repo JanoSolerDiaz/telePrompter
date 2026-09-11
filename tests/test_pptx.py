@@ -97,6 +97,78 @@ def test_generar_tarjetas_modo_para_terceros_omite_notas_internas() -> None:
     assert tarjetas.tarjetas[0].indicaciones_pantalla == ("Título del vídeo en pantalla.",)
 
 
+# --- duracion real por escena (R-13) --------------------------------------------------
+
+
+def test_generar_tarjetas_sin_tomas_duracion_real_es_none_para_todas() -> None:
+    """Sin `tomas_por_escena` (el caso del selector automatico de T-30), el
+    comportamiento es identico al de antes de R-13: ninguna escena trae
+    duracion real y no hay mezcla que senalar."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos)
+    assert all(t.duracion_real_segundos is None for t in tarjetas.tarjetas)
+    assert tarjetas.mezcla_duracion_real_y_estimada is False
+
+
+def test_generar_tarjetas_con_toma_buena_incluye_duracion_real() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tomas_por_escena = {
+        "0": {"tomas": [{"numero": 1, "duracion_segundos": 12.5, "nota": "", "buena": True}]},
+    }
+    tarjetas = generar_tarjetas(resultado, tiempos, tomas_por_escena=tomas_por_escena)
+    escena_0 = next(t for t in tarjetas.tarjetas if t.numero == 0)
+    escena_1 = next(t for t in tarjetas.tarjetas if t.numero == 1)
+    assert escena_0.duracion_real_segundos == 12.5
+    assert escena_1.duracion_real_segundos is None
+    # duracion_estimada_segundos nunca se sustituye (requisito 2 de R-13).
+    assert escena_0.duracion_estimada_segundos != 12.5
+
+
+def test_generar_tarjetas_mezcla_duracion_real_y_estimada_solo_si_hay_ambas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+
+    # Ninguna escena con toma buena: sin mezcla.
+    sin_tomas = generar_tarjetas(resultado, tiempos)
+    assert sin_tomas.mezcla_duracion_real_y_estimada is False
+
+    # Solo una de las dos escenas con toma buena: mezcla.
+    mezclada = generar_tarjetas(
+        resultado,
+        tiempos,
+        tomas_por_escena={
+            "0": {"tomas": [{"numero": 1, "duracion_segundos": 9.0, "nota": "", "buena": True}]}
+        },
+    )
+    assert mezclada.mezcla_duracion_real_y_estimada is True
+
+    # Las dos escenas con toma buena: sin mezcla (todas reales).
+    todas_reales = generar_tarjetas(
+        resultado,
+        tiempos,
+        tomas_por_escena={
+            "0": {"tomas": [{"numero": 1, "duracion_segundos": 9.0, "nota": "", "buena": True}]},
+            "1": {"tomas": [{"numero": 1, "duracion_segundos": 11.0, "nota": "", "buena": True}]},
+        },
+    )
+    assert todas_reales.mezcla_duracion_real_y_estimada is False
+
+
+def test_generar_tarjetas_toma_buena_duracion_no_positiva_se_ignora() -> None:
+    """Dato degenerado (duracion 0 o negativa): se trata igual que "sin toma
+    buena todavia", nunca como una duracion real de cero segundos."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(
+        resultado,
+        tiempos,
+        tomas_por_escena={
+            "0": {"tomas": [{"numero": 1, "duracion_segundos": 0.0, "nota": "", "buena": True}]}
+        },
+    )
+    escena_0 = next(t for t in tarjetas.tarjetas if t.numero == 0)
+    assert escena_0.duracion_real_segundos is None
+    assert tarjetas.mezcla_duracion_real_y_estimada is False
+
+
 # --- serializacion y validacion del contrato -----------------------------------------
 
 
@@ -107,6 +179,24 @@ def test_tarjetas_a_diccionario_produce_json_valido_segun_el_contrato() -> None:
     assert validar_tarjetas(datos) == []
     assert datos["metadatos"]["numero_escenas"] == 2
     assert datos["metadatos"]["titulo"] == "prueba"
+
+
+def test_tarjetas_a_diccionario_incluye_duracion_real_y_aviso_de_mezcla() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(
+        resultado,
+        tiempos,
+        tomas_por_escena={
+            "0": {"tomas": [{"numero": 1, "duracion_segundos": 9.0, "nota": "", "buena": True}]}
+        },
+    )
+    datos = tarjetas_a_diccionario(tarjetas)
+    assert validar_tarjetas(datos) == []
+    assert datos["metadatos"]["mezcla_duracion_real_y_estimada"] is True
+    escena_0 = next(e for e in datos["escenas"] if e["numero"] == 0)
+    escena_1 = next(e for e in datos["escenas"] if e["numero"] == 1)
+    assert escena_0["duracion_real_segundos"] == 9.0
+    assert escena_1["duracion_real_segundos"] is None
 
 
 def test_formatear_tarjetas_json_es_json_serializable_y_valido() -> None:
@@ -266,9 +356,7 @@ def test_detectar_skill_pptx_disponible_true_si_las_dos_carpetas_existen(
     base = tmp_path / "pptx"
     marca.mkdir()
     base.mkdir()
-    configuracion = Configuracion(
-        ruta_skill_marca_pptx=str(marca), ruta_skill_pptx_base=str(base)
-    )
+    configuracion = Configuracion(ruta_skill_marca_pptx=str(marca), ruta_skill_pptx_base=str(base))
     assert detectar_skill_pptx_disponible(configuracion) is True
 
 
@@ -298,9 +386,7 @@ def test_exportar_pptx_mensaje_positivo_con_skill_disponible(tmp_path: Path) -> 
     base = tmp_path / "pptx"
     marca.mkdir()
     base.mkdir()
-    configuracion = Configuracion(
-        ruta_skill_marca_pptx=str(marca), ruta_skill_pptx_base=str(base)
-    )
+    configuracion = Configuracion(ruta_skill_marca_pptx=str(marca), ruta_skill_pptx_base=str(base))
     carpeta_salida = tmp_path / "salida"
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
     resultado_pptx = exportar_pptx(
@@ -318,9 +404,7 @@ def test_exportar_pptx_sobre_guiones_reales(
 ) -> None:
     for nombre, texto in texto_guiones_reales.items():
         resultado, tiempos = _pipeline(texto)
-        resultado_pptx = exportar_pptx(
-            resultado, tiempos, tmp_path / nombre, nombre_guion=nombre
-        )
+        resultado_pptx = exportar_pptx(resultado, tiempos, tmp_path / nombre, nombre_guion=nombre)
         datos = json.loads(resultado_pptx.ruta_tarjetas_json.read_text(encoding="utf-8"))
         assert validar_tarjetas(datos) == [], f"{nombre}: {validar_tarjetas(datos)}"
         assert datos["metadatos"]["numero_escenas"] == len(resultado.escenas)
