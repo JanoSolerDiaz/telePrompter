@@ -10,26 +10,20 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-11 — **Ciclo de Programador: R-14 implementada y COMPLETADA.**
-`scripts/clasificador.py` deja de incluir el separador `---` de fin de escena en el `contenido` de
-la última indicación no-locución de cada escena: `_separar_marcador_fin_escena` lo extrae en su
-propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia
-sobre el resto del cuerpo, sin perder cobertura (invariante (a): sigue contabilizado, solo cambia
-de bloque). La nueva señal se añade a los tres sitios que la necesitan para no colarse como
-"indicación" propia ni proponerse como convención nueva: `pdf._SENALES_ESTRUCTURALES`,
-`documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES` (T-10).
-`references/convencion-guion.md` documenta ahora el separador (requisito 1 de R-14). Fixture golden
-`fixtures/guion-ejemplo-esperado.md` regenerado a mano tras verificar que el único cambio es el
-esperado (rangos de línea más cortos, `---` fuera del texto). 5 tests nuevos (564→569). Cuatro
-redes en verde (`mypy`/`ruff` limpios, 569 tests, `verificar_salidas.py --fixture` catorce etapas
-OK). Verificado sobre los tres guiones reales: cero indicación termina en `---` en
-`guion-escenas.md`, `tarjetas.json` ni la cue del reproductor. Reconfirmado antes de empezar:
-`auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad alta (`#19` baja, sin cambios).
-§1 sin ninguna T-XX/R-XX `PENDIENTE`: R-14 era la última de la cola. Solo T-24b sigue BLOQUEADA por
-hardware del dueño. Sin cambios en bloqueos, preguntas abiertas ni desviaciones.
+**Última actualización:** 2026-09-11 — **Ciclo de Programador (sin trabajo de código posible),
+primera reconfirmación del día: sin novedad.** §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` tras R-14
+(solo T-24b `BLOQUEADA` por hardware del dueño); `auditoriacontinua.md` sin ningún hallazgo `ABIERTO`
+de severidad alta (`#19` baja, sin cambios); `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. Cuatro
+redes en verde: `mypy`/`ruff` limpios, 569 tests, `verificar_salidas.py --fixture` catorce etapas OK
+(`.pptx`/`.pdf` reales siguen LATENTES en este contenedor de nube, degradación esperada). Sin cambios
+en bloqueos, preguntas abiertas ni desviaciones.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-11, ciclo de Programador: R-14 implementada y COMPLETADA. `scripts/clasificador.py`
+  extrae el separador `---` de fin de escena a su propio bloque `no_locucion` en vez de dejarlo
+  pegado al `contenido` de la última indicación de la escena. 5 tests nuevos (564→569). Cuatro redes
+  en verde. Era la última R-XX de la cola.
 - 2026-09-11, ciclo de Programador: R-13 implementada y COMPLETADA. `scripts/pptx.py` incorpora
   `duracion_real_segundos` por escena en `tarjetas.json` y `mezcla_duracion_real_y_estimada` de
   cabecera, coherente con `guion-alineado.srt`. 7 tests nuevos (557→564). Cuatro redes en verde.
