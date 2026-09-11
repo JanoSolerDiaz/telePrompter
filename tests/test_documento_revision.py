@@ -8,6 +8,7 @@ respiracion, sin perder ninguno.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from config import Configuracion
@@ -90,6 +91,23 @@ def test_documento_cubre_todas_las_escenas_y_bloques_en_guiones_reales(
             f"{nombre}: el documento no cubre el 100% de los bloques de respiracion "
             f"({len(extraidos)} de {len(tiempos.bloques)})"
         )
+
+
+def test_pie_de_escena_ninguna_indicacion_termina_en_separador_de_escena(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    """R-14: el separador `---` de fin de escena no debe colarse pegado al
+    extracto de una indicacion no-locucion del pie de escena, verificado sobre
+    los tres guiones reales (criterio de aceptacion de R-14)."""
+    patron_extracto = re.compile(r'\*\*\[[A-Z_]+\]\*\* \([^)]+\): "(?P<extracto>[^"]*)"')
+    for nombre, texto in texto_guiones_reales.items():
+        resultado, tiempos, detecciones, reescrituras = _pipeline(texto)
+        documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+        for coincidencia in patron_extracto.finditer(documento):
+            extracto = coincidencia.group("extracto")
+            assert not extracto.rstrip().endswith("---"), (
+                f"{nombre}: indicacion con separador de escena colado: {extracto!r}"
+            )
 
 
 def test_documento_abre_legible_como_texto_plano(texto_guiones_reales: dict[str, str]) -> None:

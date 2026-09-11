@@ -32,6 +32,59 @@
 
 ---
 
+### Sesión 2026-09-11 — Ciclo de Programador: R-14 implementada y COMPLETADA
+**Tarea(s):** R-14 (el separador de escena `---` no debe colarse en el texto de una indicación
+no-locución)
+**Estado resultante:** R-14 pasa de `PENDIENTE` a `COMPLETADA` en §1 de `SEGUIMIENTO.md`. Era la
+última R-XX de la cola: §1 queda sin ninguna T-XX/R-XX `PENDIENTE` (solo T-24b BLOQUEADA por
+hardware del dueño). Ningún hallazgo `ABIERTO` de severidad alta en `auditoriacontinua.md` (solo
+`#19`, baja, reconfirmado sin cambios) — no hubo urgencia P-XX que atender antes de esta tarea
+**Commits a develop:** `Programador: R-14 — el separador de escena no se cuela en el texto de una
+indicación` (ver `git log` de esta fecha en `develop`)
+**Migraciones ejecutadas:** ninguna (la ficha de R-14 lo fija como requisito 4: corrección de
+clasificación sobre datos derivados, sin cambio de esquema de `estado.json`)
+**Archivos creados/modificados:** `scripts/clasificador.py` (`_PATRON_SEPARADOR_ESCENA`,
+`_separar_marcador_fin_escena`, integrada en `clasificar_escena`), `scripts/pdf.py` y
+`scripts/documento_revision.py` (`_SENALES_ESTRUCTURALES` gana `"separador_escena"`, misma entrada
+duplicada en los dos módulos), `scripts/convencion.py` (`_SENALES_CONTRACTUALES` gana
+`"separador_escena"`, para que T-10 no proponga "adoptarla"), `references/convencion-guion.md`
+(sección nueva "Separador de fin de escena", requisito 1 de R-14), `DEVELOPERS.md` (párrafo nuevo en
+la sección T-09), `tests/test_clasificador.py` (2 tests nuevos: separador extraído sin perder
+cobertura, y no se inventa uno si no existe), `tests/test_documento_revision.py`,
+`tests/test_pptx.py`, `tests/test_reproductor.py` (1 test cada uno, verificando sobre los tres
+guiones reales que ninguna indicación de `guion-escenas.md`/`tarjetas.json`/la cue del reproductor
+termina en `---`), `fixtures/guion-ejemplo-esperado.md` (fixture golden regenerado a mano tras
+verificar que el único cambio es el esperado: rangos de línea más cortos en las últimas indicaciones
+de cuatro escenas y el `---` fuera del texto de la última), `roadmap/DECISIONES_TECNICAS.md` (una
+decisión nueva), `roadmap/SEGUIMIENTO.md` (cabecera + fila R-14 en §1), `roadmap/HISTORIAL_
+SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy scripts/ tests/`, 68 archivos) · lint ✅ (`ruff check
+scripts/ tests/`) · tests ✅ (564→569, los 5 nuevos en verde) · build ✅
+(`scripts/verificar_salidas.py --fixture`, 14 etapas OK)
+**Health check post-deploy:** N/A — sesión de nube, no puede instalar en `~/.claude/skills/` (nota de
+entorno del protocolo v1.3); entregar es el push a `origin/develop`
+**Decisiones tomadas:** una fila nueva en `DECISIONES_TECNICAS.md` (2026-09-11, R-14): extraer el
+separador en su propio bloque `no_locucion` dentro de `clasificador.py` (origen), en vez de recortar
+la subcadena del `contenido` ya construido (perdería cobertura en silencio) o parchear cada uno de
+los tres consumidores por separado (lo que la propia ficha R-14 ya descartaba al abrirse). Regla
+general dejada en `DEVELOPERS.md`: toda señal puramente estructural nueva se añade a los tres sitios
+que la excluyen (`pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES`,
+`convencion._SENALES_CONTRACTUALES`), no solo a uno
+**Hallazgos del auditor atendidos:** ninguno `ABIERTO` de severidad alta que atender antes de esta
+tarea (revisado `auditoriacontinua.md` al empezar, por protocolo)
+**Hallazgos:** confirmado en la implementación que la primera versión probada (extraer el bloque
+separador sin tocar los tres filtros de "señal estructural") habría dejado el `---` colado como una
+"indicación" propia en las tres salidas y, además, disparaba una propuesta de convención espuria en
+`test_convencion.py` (T-10 detectaba `separador_escena` como señal de inferencia consistente y
+proponía "adoptarla"); corregido añadiendo la nueva señal a los tres conjuntos antes de dar la tarea
+por cerrada, no solo a los dos que ya se habían identificado primero
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** §1 no tiene ninguna T-XX/R-XX `PENDIENTE`; la siguiente sesión de Programador debe
+reconfirmar `auditoriacontinua.md` y, si no hay hallazgo nuevo ni tarea nueva del PM, registrar la
+reconfirmación sin código (mismo patrón que las reconfirmaciones del 2026-09-10)
+
+---
+
 ### Sesión 2026-09-11 — Ciclo de Programador: R-13 implementada y COMPLETADA
 **Tarea(s):** R-13 (duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt`)
 **Estado resultante:** R-13 pasa de `PENDIENTE` a `COMPLETADA` en §1 de `SEGUIMIENTO.md`. R-14 sigue

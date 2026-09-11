@@ -1036,6 +1036,24 @@ def test_indicaciones_no_recitables_no_se_pierden_en_los_guiones_reales(
         )
 
 
+def test_ninguna_cue_termina_en_el_separador_de_escena_en_los_guiones_reales(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    """R-14: el separador `---` de fin de escena no debe colarse pegado al
+    texto de la cue de una indicacion EN PANTALLA/NOTA, verificado sobre los
+    tres guiones reales (criterio de aceptacion de R-14)."""
+    for nombre, texto in texto_guiones_reales.items():
+        resultado, tiempos = _pipeline(texto)
+        pagina = generar_reproductor_html(resultado, tiempos, nombre_guion=nombre)
+        datos = _extraer_datos(pagina)
+        for escena in datos["escenas"]:
+            for bloque in escena["bloques"]:
+                for indicacion in bloque["indicaciones"]:
+                    assert not indicacion.rstrip().endswith("---"), (
+                        f"{nombre}: cue con separador de escena colado: {indicacion!r}"
+                    )
+
+
 def test_guion_js_muestra_la_cue_solo_mientras_el_bloque_ancla_esta_activo() -> None:
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")

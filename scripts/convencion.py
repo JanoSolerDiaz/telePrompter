@@ -37,8 +37,9 @@ _GUION_LARGO = "\u2013"
 # Senales que ya forman parte de la convencion contractual (T-08/T-09, §0.2): no
 # tiene sentido "proponer" adoptarlas, ya estan adoptadas. Incluye tambien las
 # senales estructurales sin contenido recitable propio (linea en blanco, seccion
-# de rotulo vacia): promoverlas a convencion explicita no aporta nada al
-# guionista.
+# de rotulo vacia, separador de fin de escena -- R-14): promoverlas a convencion
+# explicita no aporta nada al guionista, ya se marcan solas (`**EN PANTALLA**`,
+# etc.) sin depender de ninguna inferencia.
 _SENALES_CONTRACTUALES = frozenset(
     {
         "rotulo",
@@ -49,6 +50,7 @@ _SENALES_CONTRACTUALES = frozenset(
         "preambulo",
         "blank",
         "seccion_vacia",
+        "separador_escena",
     }
 )
 

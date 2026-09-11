@@ -67,9 +67,12 @@ _CARPETA_PLANTILLAS = RAIZ / "assets" / "pdf"
 _FIRMA_PNG = b"\x89PNG\r\n\x1a\n"
 
 # Mismo criterio que `documento_revision._SENALES_ESTRUCTURALES`: el encabezado
-# de escena y el rotulo suelto ya se muestran en otro sitio del documento, y una
-# linea en blanco no tiene contenido que listar como indicacion.
-_SENALES_ESTRUCTURALES = frozenset({"encabezado", "blank", "rotulo"})
+# de escena y el rotulo suelto ya se muestran en otro sitio del documento, una
+# linea en blanco no tiene contenido que listar como indicacion, y el separador
+# de fin de escena (R-14, `clasificador._separar_marcador_fin_escena`) no es una
+# indicacion en si mismo, solo el marcador `---` que no debe colarse en la que
+# lo precede.
+_SENALES_ESTRUCTURALES = frozenset({"encabezado", "blank", "rotulo", "separador_escena"})
 
 _NOMBRES_EJECUTABLES_CHROME: tuple[str, ...] = (
     "google-chrome-stable",

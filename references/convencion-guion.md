@@ -48,6 +48,29 @@ Recordatorio interno de producción.
 - `**NOTA**` es lo único que `--para-terceros` omite (ver T-28/T-29); `**EN PANTALLA**`
   y cualquier indicación ambigua sin rótulo claro se mantienen siempre.
 
+## Separador de fin de escena
+
+```
+**EN PANTALLA**
+Texto descriptivo de lo que aparece en pantalla.
+
+---
+
+## BLOQUE N+1 — <título siguiente> (m:ss – m:ss)
+```
+
+- Los tres guiones reales de calibración cierran cada escena con una línea `---`
+  sola (regla horizontal de Markdown, tres o más guiones) antes del encabezado
+  siguiente, sea otra escena o una sección auxiliar (`## Notas de producción`, por
+  ejemplo).
+- No forma parte de la señal que detecta el fin de una escena (T-08 usa los
+  encabezados, no `---`): es puramente cosmético en el `.md` de origen.
+- El clasificador (T-09) lo reconoce cuando es lo último de la escena (tras la
+  última indicación no recitable) y lo separa en su propio bloque `no_locucion`
+  (`senal="separador_escena"`) para que no quede pegado al texto mostrado de esa
+  indicación en `guion-escenas.md`, `tarjetas.json` ni la cue del reproductor —
+  sigue contabilizado, nunca se descarta (R-14, invariante (a) de §0.2).
+
 ## Secciones auxiliares (no son escena)
 
 `Configuracion.secciones_auxiliares`: lista de títulos fijos que nunca se procesan como

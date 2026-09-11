@@ -410,3 +410,20 @@ def test_exportar_pptx_sobre_guiones_reales(
         assert datos["metadatos"]["numero_escenas"] == len(resultado.escenas)
         brief = resultado_pptx.ruta_brief.read_text(encoding="utf-8")
         assert brief.count("### Diapositiva") == len(resultado.escenas)
+
+
+def test_tarjetas_json_ninguna_indicacion_termina_en_separador_de_escena(
+    texto_guiones_reales: dict[str, str], tmp_path: Path
+) -> None:
+    """R-14: el separador `---` de fin de escena no debe colarse pegado al
+    texto de una indicacion de pantalla o nota en `tarjetas.json`, verificado
+    sobre los tres guiones reales (criterio de aceptacion de R-14)."""
+    for nombre, texto in texto_guiones_reales.items():
+        resultado, tiempos = _pipeline(texto)
+        resultado_pptx = exportar_pptx(resultado, tiempos, tmp_path / nombre, nombre_guion=nombre)
+        datos = json.loads(resultado_pptx.ruta_tarjetas_json.read_text(encoding="utf-8"))
+        for tarjeta in datos["escenas"]:
+            for indicacion in tarjeta["indicaciones_pantalla"] + tarjeta["notas_internas"]:
+                assert not indicacion.rstrip().endswith("---"), (
+                    f"{nombre}: indicacion con separador de escena colado: {indicacion!r}"
+                )

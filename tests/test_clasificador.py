@@ -144,6 +144,65 @@ def test_texto_suelto_en_locucion_se_marca_revisar() -> None:
     assert reconstruir(bloques) == "\n".join(escena.contenido.split("\n"))
 
 
+# --- R-14: el separador de escena no se cuela en la indicacion -------------------
+
+
+def test_separador_de_fin_de_escena_no_se_cuela_en_la_indicacion() -> None:
+    """R-14: una escena que termina en **EN PANTALLA** seguida del separador
+    `---` (el patron real de fin de escena de los tres guiones de
+    `fixtures/reales/`) no debe dejar el `---` pegado al `contenido` de esa
+    indicacion. Sigue contabilizado -- invariante (a) -- pero en su propio
+    bloque `no_locucion`/`separador_escena`, y la reconstruccion no pierde
+    nada (requisito 2 de R-14)."""
+    escena = Escena(
+        numero=0,
+        titulo="BLOQUE 0 — Prueba (0:00 – 0:10)",
+        contenido=(
+            "## BLOQUE 0 — Prueba (0:00 – 0:10)\n"
+            "\n"
+            "**LOCUCIÓN**\n"
+            "> Una frase citada.\n"
+            "\n"
+            "**EN PANTALLA**\n"
+            "Descripcion de plano.\n"
+            "\n"
+            "---\n"
+            "\n"
+        ),
+        linea_inicio=10,
+        linea_fin=19,
+    )
+    bloques = clasificar_escena(escena)
+
+    pantalla = [b for b in bloques if b.senal == "rotulo_no_locucion"]
+    assert len(pantalla) == 1
+    assert pantalla[0].contenido.rstrip() == "Descripcion de plano."
+    assert not pantalla[0].contenido.rstrip().endswith("---")
+
+    separadores = [b for b in bloques if b.senal == "separador_escena"]
+    assert len(separadores) == 1
+    assert separadores[0].tipo == TIPO_NO_LOCUCION
+    assert separadores[0].contenido.strip() == "---"
+
+    assert reconstruir(bloques) == "\n".join(escena.contenido.split("\n"))
+
+
+def test_escena_sin_separador_final_no_crea_bloque_separador() -> None:
+    """No regresion: una escena que NO termina en `---` (p. ej. la ultima del
+    guion, sin seccion auxiliar detras) no debe inventarse un bloque
+    `separador_escena` que no existe en el texto de origen."""
+    escena = Escena(
+        numero=0,
+        titulo="BLOQUE 0",
+        contenido=("## BLOQUE 0\n" "\n" "**EN PANTALLA**\n" "Descripcion de plano.\n"),
+        linea_inicio=1,
+        linea_fin=4,
+    )
+    bloques = clasificar_escena(escena)
+    assert not [b for b in bloques if b.senal == "separador_escena"]
+    assert reconstruir(bloques) == "\n".join(escena.contenido.split("\n"))
+
+
 def test_configuracion_de_rotulos_es_sobreescribible() -> None:
     """Requisito 1: rotulos configurables, no fijados a fuego en el codigo."""
     escena = Escena(

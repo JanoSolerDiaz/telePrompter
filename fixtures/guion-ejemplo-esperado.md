@@ -93,7 +93,7 @@ de la otra: la matriz de Eisenhower.
 ### Indicaciones no recitables
 
 - **[NO_LOCUCION]** (líneas 39-40): "B-roll de una bandeja de entrada desbordada y una lista de tareas tachada a medias. Corte a la pizarra digital, todavía…" — rotulo '**EN PANTALLA**': contenido no recitable
-- **[NO_LOCUCION]** (líneas 42-45): "No mostrar el logotipo de ninguna aplicación de tareas concreta: el ejemplo debe quedar genérico para no parecer un anu…" — rotulo '**NOTA**': contenido no recitable
+- **[NO_LOCUCION]** (líneas 42-43): "No mostrar el logotipo de ninguna aplicación de tareas concreta: el ejemplo debe quedar genérico para no parecer un anu…" — rotulo '**NOTA**': contenido no recitable
 
 ---
 
@@ -187,7 +187,7 @@ se elimina directamente de la lista.
 
 ### Indicaciones no recitables
 
-- **[NO_LOCUCION]** (líneas 56-59): "Se dibujan los cuatro cuadrantes en la pizarra, uno a uno, según se van nombrando. Rótulo persistente con las cuatro et…" — rotulo '**EN PANTALLA**': contenido no recitable
+- **[NO_LOCUCION]** (líneas 56-57): "Se dibujan los cuatro cuadrantes en la pizarra, uno a uno, según se van nombrando. Rótulo persistente con las cuatro et…" — rotulo '**EN PANTALLA**': contenido no recitable
 
 ---
 
@@ -289,7 +289,7 @@ de darte la sensación de urgencia constante.
 
 ### Indicaciones no recitables
 
-- **[NO_LOCUCION]** (líneas 68-71): "Las cuatro tareas del ejemplo se van colocando en su cuadrante con una animación sencilla. Al decir "80 %", el número a…" — rotulo '**EN PANTALLA**': contenido no recitable
+- **[NO_LOCUCION]** (líneas 68-69): "Las cuatro tareas del ejemplo se van colocando en su cuadrante con una animación sencilla. Al decir "80 %", el número a…" — rotulo '**EN PANTALLA**': contenido no recitable
 
 ---
 
@@ -365,4 +365,4 @@ que este cuadrante te acaba de reservar.
 
 ### Indicaciones no recitables
 
-- **[NO_LOCUCION]** (líneas 82-85): "Los cuatro cuadrantes completos, en pantalla fija unos segundos antes del cierre. Bumper del curso. ---" — rotulo '**EN PANTALLA**': contenido no recitable
+- **[NO_LOCUCION]** (líneas 82-83): "Los cuatro cuadrantes completos, en pantalla fija unos segundos antes del cierre. Bumper del curso." — rotulo '**EN PANTALLA**': contenido no recitable

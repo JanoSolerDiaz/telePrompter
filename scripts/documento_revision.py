@@ -53,8 +53,9 @@ MARCA_ESTADO_VALIDADO = "VALIDADO"
 # Motivos de clasificacion (T-09) que son estructura del documento, no una
 # "indicacion no recitable" que el dueno tenga que revisar: el propio rotulo
 # (`**EN PANTALLA**` suelto) y el encabezado de escena ya se muestran en otro
-# sitio, y una linea en blanco no tiene contenido que mostrar.
-_SENALES_ESTRUCTURALES = frozenset({"encabezado", "blank", "rotulo"})
+# sitio, una linea en blanco no tiene contenido que mostrar, y el separador de
+# fin de escena (R-14) no es una indicacion en si mismo.
+_SENALES_ESTRUCTURALES = frozenset({"encabezado", "blank", "rotulo", "separador_escena"})
 
 _PATRON_BLOQUE_TEXTO = re.compile(
     r"<!-- bloque escena=(?P<escena>\d+) indice=(?P<indice>\d+) -->"

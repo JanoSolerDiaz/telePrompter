@@ -42,6 +42,12 @@ _PREFIJOS_NO_LOCUCION = ("PANTALLA:", "B-ROLL:", "NOTA:", "IMAGEN:", "TÍTULO:")
 _PATRON_VALLA_CODIGO = re.compile(r"^(```|~~~)")
 _PATRON_TIMESTAMP = re.compile(r"\b\d{1,2}:\d{2}\b")
 _PATRON_ENLACE_SUELTO = re.compile(r"^(https?://\S+|\[[^\]]+\]\(\S+\))$")
+# Separador de fin de escena entre `## BLOQUE N` consecutivos (o antes de una
+# seccion auxiliar), documentado en `references/convencion-guion.md`: una linea
+# de `---` sola (tres o mas guiones, la marca de regla horizontal de Markdown).
+# R-14: se detecta para dejarlo fuera del `contenido` de la ultima indicacion de
+# la escena, sin descartarlo (sigue contabilizado como su propio bloque).
+_PATRON_SEPARADOR_ESCENA = re.compile(r"^-{3,}$")
 
 
 @dataclass
@@ -249,6 +255,35 @@ def _clasificar_seccion_locucion(
     return bloques
 
 
+def _separar_marcador_fin_escena(
+    cuerpo: list[str], base: int
+) -> tuple[list[str], BloqueClasificado | None]:
+    """Extrae, si el cuerpo de la escena termina en el separador `---` (con
+    posibles lineas en blanco detras, requisito 1 de R-14), su propio bloque
+    `no_locucion` -- para que no quede pegado, sin filtrar, al `contenido` de la
+    indicacion no-locucion que lo precede en `guion-escenas.md`, `tarjetas.json`
+    y la cue del reproductor (R-12). Cobertura total intacta (invariante (a)):
+    el separador sigue contabilizado, solo cambia de bloque."""
+    indice_separador = None
+    for indice in range(len(cuerpo) - 1, -1, -1):
+        texto = cuerpo[indice].strip()
+        if not texto:
+            continue
+        if _PATRON_SEPARADOR_ESCENA.match(texto):
+            indice_separador = indice
+        break
+    if indice_separador is None:
+        return cuerpo, None
+    bloque_separador = _bloque(
+        TIPO_NO_LOCUCION,
+        cuerpo[indice_separador:],
+        base + indice_separador,
+        "separador de fin de escena, no se recita",
+        "separador_escena",
+    )
+    return cuerpo[:indice_separador], bloque_separador
+
+
 def _localizar_rotulos(
     cuerpo: list[str], configuracion: Configuracion
 ) -> list[tuple[int, str, str]]:
@@ -294,9 +329,17 @@ def clasificar_escena(
         return bloques
     base_cuerpo = escena.linea_inicio + 1
 
+    cuerpo, bloque_separador = _separar_marcador_fin_escena(cuerpo, base_cuerpo)
+    if not cuerpo:
+        if bloque_separador is not None:
+            bloques.append(bloque_separador)
+        return bloques
+
     rotulos = _localizar_rotulos(cuerpo, configuracion)
     if not rotulos:
         bloques.extend(_inferir_parrafos(cuerpo, base_cuerpo))
+        if bloque_separador is not None:
+            bloques.append(bloque_separador)
         return bloques
 
     primer_indice = rotulos[0][0]
@@ -332,6 +375,8 @@ def clasificar_escena(
                     "rotulo_no_locucion",
                 )
             )
+    if bloque_separador is not None:
+        bloques.append(bloque_separador)
     return bloques
 
 

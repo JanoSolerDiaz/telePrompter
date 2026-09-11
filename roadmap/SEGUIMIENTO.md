@@ -10,28 +10,33 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-11 — **Ciclo de Programador: R-13 implementada y COMPLETADA.**
-`scripts/pptx.py` incorpora `duracion_real_segundos` por escena en `tarjetas.json` (`None` si la
-escena no tiene toma buena, reutilizando `tomas.duracion_toma_buena` tal cual, mismo criterio que
-`srt_alineado.py`/R-05 y `capitulos_youtube.py`/R-07) y `mezcla_duracion_real_y_estimada` de
-cabecera; `duracion_estimada_segundos` no se toca. `generar_tarjetas`/`exportar_pptx` ganan
-`tomas_por_escena` opcional, sin integrarse en el selector automático de T-30 (mismo patrón que
-R-05/R-07: sin el parámetro, comportamiento idéntico a antes de R-13). `references/contrato-
-tarjetas.md` y `contrato-montaje.md` actualizados con la fórmula de rango correcta cuando existe
-`guion-alineado.srt`. 7 tests nuevos (557→564), incluido un cruce con `guion-alineado.srt` en
-`test_integracion_montaje.py` y un test de no regresión sin ninguna toma buena. Cuatro redes en
-verde (`mypy`/`ruff` limpios, 564 tests, `verificar_salidas.py --fixture` catorce etapas OK).
-Reconfirmado antes de empezar: `auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad
-alta (`#19` baja, sin cambios). §1 sin ninguna T-XX/R-XX `PENDIENTE` salvo **R-14** (siguiente tarea
-de la cola) y T-24b (BLOQUEADA por hardware del dueño). Sin cambios en bloqueos, preguntas abiertas
-ni desviaciones.
+**Última actualización:** 2026-09-11 — **Ciclo de Programador: R-14 implementada y COMPLETADA.**
+`scripts/clasificador.py` deja de incluir el separador `---` de fin de escena en el `contenido` de
+la última indicación no-locución de cada escena: `_separar_marcador_fin_escena` lo extrae en su
+propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia
+sobre el resto del cuerpo, sin perder cobertura (invariante (a): sigue contabilizado, solo cambia
+de bloque). La nueva señal se añade a los tres sitios que la necesitan para no colarse como
+"indicación" propia ni proponerse como convención nueva: `pdf._SENALES_ESTRUCTURALES`,
+`documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES` (T-10).
+`references/convencion-guion.md` documenta ahora el separador (requisito 1 de R-14). Fixture golden
+`fixtures/guion-ejemplo-esperado.md` regenerado a mano tras verificar que el único cambio es el
+esperado (rangos de línea más cortos, `---` fuera del texto). 5 tests nuevos (564→569). Cuatro
+redes en verde (`mypy`/`ruff` limpios, 569 tests, `verificar_salidas.py --fixture` catorce etapas
+OK). Verificado sobre los tres guiones reales: cero indicación termina en `---` en
+`guion-escenas.md`, `tarjetas.json` ni la cue del reproductor. Reconfirmado antes de empezar:
+`auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad alta (`#19` baja, sin cambios).
+§1 sin ninguna T-XX/R-XX `PENDIENTE`: R-14 era la última de la cola. Solo T-24b sigue BLOQUEADA por
+hardware del dueño. Sin cambios en bloqueos, preguntas abiertas ni desviaciones.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-11, ciclo de Programador: R-13 implementada y COMPLETADA. `scripts/pptx.py` incorpora
+  `duracion_real_segundos` por escena en `tarjetas.json` y `mezcla_duracion_real_y_estimada` de
+  cabecera, coherente con `guion-alineado.srt`. 7 tests nuevos (557→564). Cuatro redes en verde.
 - 2026-09-10, ciclo de Product Manager: archiva la oleada v4 entera (R-12, ya COMPLETADA) a
-  `ROADMAP_HISTORICO.md` y abre **R-13** (oleada v5, implementada en esta sesión) y **R-14** (fase
-  transversal F-G, sigue `PENDIENTE`), ambas sobre huecos ya verificados en el código. Reconfirmado:
-  `auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad alta.
+  `ROADMAP_HISTORICO.md` y abre **R-13** y **R-14** (fase transversal F-G), ambas sobre huecos ya
+  verificados en el código. Reconfirmado: `auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de
+  severidad alta.
 - 2026-09-10, ciclo de Programador (décimo del día): sin tarea de código pendiente ni novedad que
   reportar. §1 sin ninguna T-XX/R-XX PENDIENTE tras R-12 (ya COMPLETADA); solo T-24b BLOQUEADA por
   hardware del dueño. Cuatro redes en verde (`mypy` limpio, `ruff` limpio, 557 tests, `verificar_
@@ -107,7 +112,7 @@ ni desviaciones.
 | R-11 | Robustez de datos derivados del rodaje (toma buena ambigua, capítulos sobrantes, cobertura cruzada) | **COMPLETADA** | 2026-09-04 | `tomas.duracion_toma_buena` rechaza con `RegistroTomasError` más de una toma `buena` por escena (#16); `capitulos_youtube.calcular_capitulos` expone `titulos_sobrantes` cuando hay más títulos que escenas (#17); nuevo test de coherencia cruzada `.srt` alineado/capítulos de YouTube en `tests/test_integracion_montaje.py` (#18). Fase F-F · `origen: auditoría #16, #17, #18` |
 | R-12 | Cue discreta de indicaciones EN PANTALLA/NOTA en el reproductor | **COMPLETADA** | 2026-09-10 | `reproductor._indicaciones_ancladas_por_indice` ancla cada indicación al ÚLTIMO bloque de respiración que la precede (sin bloque precedente, al primero — requisito 4), reutilizando tal cual la clasificación de T-09 y el filtro pantalla/nota de T-28/T-29 (`pdf.indicaciones_no_recitables`/`es_nota_interna`). `guion.js`/`estilo.css`: cue subordinada (`.cue-indicacion`, visible solo bajo `.bloque--activo`), plegada con el resto de indicadores en `H` (T-23), sin atajo nuevo. Prefijos `Pantalla:`/`Nota:` configurables. 7 tests nuevos (550→557); verificado también visualmente con Playwright/Chromium real. Oleada v4 · `origen: observación de arquitectura del PM (2026-09-08)` |
 | R-13 | Duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt` | **COMPLETADA** | 2026-09-11 | `scripts/pptx.py`: `Tarjeta.duracion_real_segundos` (`None` si la escena no tiene toma buena, `tomas.duracion_toma_buena` reutilizada tal cual) y `ResultadoTarjetas.mezcla_duracion_real_y_estimada` (booleano de cabecera, `true` solo si el conjunto mezcla ambos casos); `duracion_estimada_segundos` intacta (requisito 2). `generar_tarjetas`/`exportar_pptx` ganan `tomas_por_escena` opcional (mismo patrón que `srt_alineado.py`/`capitulos_youtube.py`, no integrado en el selector automático de T-30); sin él, comportamiento idéntico a antes de R-13. `references/contrato-tarjetas.md` y `contrato-montaje.md` actualizados con la fórmula de rango correcta. 7 tests nuevos (557→564), incluido el cruce con `guion-alineado.srt` en `test_integracion_montaje.py`. Oleada v5 · `origen: observación de arquitectura del PM (2026-09-10)` |
-| R-14 | El separador de escena no debe colarse en el texto de una indicación | **PENDIENTE** | 2026-09-10 (PM) | Spec completa en `ROADMAP_PRODUCTO.md`. `clasificador.py` incluye hoy el `---` de fin de escena en el `contenido` de la última indicación no-locución, colándose sin filtrar en `guion-escenas.md`, `tarjetas.json` y la cue del reproductor (R-12). Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
+| R-14 | El separador de escena no debe colarse en el texto de una indicación | **COMPLETADA** | 2026-09-11 | `scripts/clasificador.py`: `_separar_marcador_fin_escena` extrae el `---` de fin de escena (con las líneas en blanco que lo acompañan) en su propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia, en vez de dejarlo pegado al `contenido` de la última indicación. Nueva señal añadida a los tres sitios que la necesitan para no colarse como una "indicación" propia ni proponerse como convención: `pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES`. `references/convencion-guion.md` documenta ahora el separador (requisito 1). Fixture golden `fixtures/guion-ejemplo-esperado.md` regenerado a mano (cambio esperado y verificado línea a línea). 5 tests nuevos (564→569). Verificado sobre los tres guiones reales: cero indicación termina en `---` en `guion-escenas.md`, `tarjetas.json` ni la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta. Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

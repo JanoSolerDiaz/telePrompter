@@ -283,6 +283,23 @@ siguiente encabezado — frecuente entre escenas, antes del `---`),
 nuevo que vuelva a partir en líneas un `contenido` ya construido por T-08/T-09
 debe hacer lo mismo, no asumir que `.splitlines()` es intercambiable.
 
+**Separador de fin de escena, sin colarse en la indicación (R-14):** ese mismo
+`---` (regla horizontal de Markdown) que cierra cada escena antes del siguiente
+encabezado quedaba, hasta R-14, pegado dentro del `contenido` de la última
+sección `no_locucion` de la escena (típicamente `**EN PANTALLA**`/`**NOTA**`),
+colándose sin filtrar en `guion-escenas.md`, `tarjetas.json` y la cue del
+reproductor (R-12) — las tres reutilizan `BloqueClasificado.contenido` tal cual.
+`clasificar_escena` llama primero a `_separar_marcador_fin_escena(cuerpo, base)`:
+si la última línea no en blanco del cuerpo de la escena casa con `---` (tres o
+más guiones), la extrae en su propio bloque `no_locucion` (`senal=
+"separador_escena"`) antes de clasificar rótulos/inferencia sobre el resto —
+sigue contabilizado (invariante (a)), solo cambia de bloque. `pdf._SENALES_
+ESTRUCTURALES` y `documento_revision._SENALES_ESTRUCTURALES` (los dos filtros
+duplicados de "esto no es una indicación en sí misma") y `convencion.
+_SENALES_CONTRACTUALES` (T-10, para que no se proponga "adoptar" una señal
+puramente estructural) ganan la nueva entrada `"separador_escena"`, mismo patrón
+que ya tenían `"blank"`/`"rotulo"`.
+
 ## Convención de guiones (T-10)
 
 `scripts/convencion.py` no descubre la convención (T-08/T-09 ya la implementan) ni
