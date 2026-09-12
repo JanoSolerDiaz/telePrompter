@@ -8,33 +8,27 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-11 (ciclo de PM). **R-13 (oleada v5) y R-14 (fase transversal
-F-G) quedaron COMPLETADA** el mismo día por el Programador que las implementó; ambas oleadas se
-archivan enteras en `ROADMAP_HISTORICO.md` en este ciclo, tal como fija §0.4 de `HOJA_DE_RUTA.md`
-(mover a histórico las oleadas 100 % entregadas). Con esto, **la cola de R-XX de este documento
-queda vacía**: no hay ninguna R-XX `PENDIENTE` ni `EN CURSO` en §1 de `SEGUIMIENTO.md`. Revisión de
-este ciclo antes de declarar la cola vacía: `auditoriacontinua.md` no tiene ningún hallazgo
-`ABIERTO` de producto/arquitectura sin enrutar — de los 21 hallazgos registrados, 20 están
-`RESUELTO` y el único que sigue `ABIERTO` (`#19`, baja, límite teórico y sin escenario reproducido
-de `revalidacion.py`) tiene ya, desde el ciclo de PM del 2026-09-04, la decisión razonada de NO
-abrir una R-XX especulativa mientras no se reproduzca un caso real (`DECISIONES_TECNICAS.md`,
-reconfirmada por el auditor en cada pasada desde entonces sin cambios); este ciclo no encuentra
-motivo para revisar esa decisión. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (bloqueo
-#7 de `SEGUIMIENTO.md` §3 — grabar un curso completo — sigue sin resolverse, así que ni la
-calibración de ppm de R-04 ni el ciclo de mejora de producto tienen todavía evidencia real de
-rodaje). Este ciclo repasa además, con lectura directa del código ya entregado por R-13
-(`scripts/pptx.py`, `references/contrato-tarjetas.md`), si queda alguna inconsistencia de
-arquitectura del mismo tipo que ya motivó R-12/R-13/R-14: ninguna encontrada (el campo
-`duracion_real_segundos` y el aviso `mezcla_duracion_real_y_estimada` de `tarjetas.json` son
-coherentes entre el código y los dos documentos de contrato; la ausencia deliberada de un aviso
-equivalente en `capitulos-youtube.txt` —texto público para YouTube, no JSON interno— ya está
-razonada en `DECISIONES_TECNICAS.md` desde R-11, no es una discrepancia nueva). **No se abre
-ninguna R-XX nueva en este ciclo**: no hay hallazgo de auditoría sin enrutar, no hay feedback real
-de rodaje, y no se ha verificado ningún hueco de arquitectura nuevo — inventar una R-XX sin uno de
-esos tres motivos violaría el propio criterio que ya aplicaron los ciclos de PM del 2026-09-02 y el
-2026-09-04 ("no abrir ninguna R-XX especulativa... sin esa evidencia"). El próximo trabajo de
-producto sale de la primera entrada real de `FEEDBACK.md`, de un hallazgo de auditoría nuevo, o de
-que el dueño grabe el primer curso completo (bloqueo #7) y aporte fricciones reales de rodaje.
+**Última actualización:** 2026-09-12 (ciclo de PM). Se abre **R-15** (fase transversal F-H nueva):
+único hallazgo `ABIERTO` sin enrutar de `auditoriacontinua.md` en esta pasada, `#22` (media,
+2026-09-12) — el contenedor de nube trae un segundo juego de `ruff`/`mypy`/`pytest` preinstalado,
+más nuevo que el pineado en `requirements-dev.txt` y por delante en el `PATH`, que da una señal
+distinta y, en el caso de `mypy`, activamente engañosa (34 errores falsos) a quien lo invoque
+pelado en vez de con `python scripts/ci.py`. Es un hallazgo de calidad/infraestructura, no de
+producto, pero el propio auditor señala que merece una nota explícita en la documentación para que
+ninguna sesión futura pierda tiempo con esa falsa señal — mismo criterio que ya usaron F-D
+(R-08/R-09) y F-F (R-11) para agrupar deuda técnica menor en una R-XX. El otro hallazgo `ABIERTO`,
+`#19` (baja, límite teórico y sin escenario reproducido de `revalidacion.py`), se reconfirma sin
+cambios: sigue con la decisión razonada del ciclo de PM del 2026-09-04 de NO abrir una R-XX
+especulativa mientras no se reproduzca un caso real, reconfirmada por el auditor en cada pasada
+desde entonces (incluida la de hoy) sin novedad; este ciclo no encuentra motivo para revisarla.
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (bloqueo #7 de `SEGUIMIENTO.md` §3 — grabar
+un curso completo — sigue sin resolverse, así que ni la calibración de ppm de R-04 ni el ciclo de
+mejora de producto tienen todavía evidencia real de rodaje). Este ciclo repasa también, con lectura
+directa de `references/contrato-montaje.md` y `references/contrato-tarjetas.md` a la luz de R-13/
+R-14 ya entregadas, si queda alguna inconsistencia de arquitectura del mismo tipo que ya motivó
+R-12/R-13/R-14: ninguna encontrada. No se abre ninguna R-XX de producto especulativa: R-15 es la
+única apertura de este ciclo y tiene origen trazable en un hallazgo real del auditor, no en una
+mejora inventada.
 
 ---
 
@@ -107,13 +101,57 @@ F-G (deuda técnica menor del separador de escena, R-14) tienen sus R-XX en **CO
 `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-11. Su spec completa y cómo se entregó cada
 una vive ahí.
 
-### Cola de producto — vacía en este ciclo
+### Fase transversal F-H — Deuda técnica menor (entorno de verificación)
 
-No hay ninguna R-XX `PENDIENTE` ni `EN CURSO` en `ROADMAP_PRODUCTO.md` a fecha de este ciclo (ver
-nota de cabecera). Es un estado legítimo, no un vacío que rellenar por rellenar: el próximo trabajo
-de producto sale de una entrada real en `FEEDBACK.md`, de un hallazgo de `auditoriacontinua.md` sin
-enrutar, o de que el dueño complete el criterio de salida de la oleada v1 (grabar un curso entero,
-bloqueo #7 de `SEGUIMIENTO.md` §3) y aporte fricciones reales de rodaje.
+Agrupa hallazgos de calidad/infraestructura menores, sin hito de producto propio, con el mismo
+criterio que ya usaron F-D (R-08/R-09), F-F (R-11) y F-G (R-14). Contiene R-15, su única R-XX por
+ahora.
+
+#### R-15 — Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube
+**Oleada / Fase:** F-H · **Migración:** No · **Depende de:** ninguna
+**Origen:** auditoría `#22` (2026-09-12)
+
+**Objetivo:** este contenedor de nube trae, además de las versiones exactas que instala `pip
+install -r requirements-dev.txt` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`, resueltas en
+`sys.executable`), un segundo juego de los mismos tres binarios preinstalado en
+`/root/.local/bin` (`mypy 1.19.1`, `ruff 0.15.8`, `pytest 9.0.2`), con esa ruta por delante en el
+`PATH`. Las cuatro verificaciones reales del protocolo (`scripts/ci.py`, el hook de pre-commit) son
+inmunes porque invocan siempre `sys.executable -m <herramienta>`, nunca el nombre pelado — pero un
+humano o una sesión que teclee `ruff check .`, `mypy scripts tests` o `pytest` a mano en la
+terminal recibe una señal distinta y, en el caso de `mypy`, activamente engañosa: 34 errores falsos
+de `import-not-found` (ese entorno aislado no ve el `pytest` instalado en `dist-packages`), más los
+`Untyped decorator` en cascada que provoca cada decorador de test sin tipos resueltos. El objetivo
+es dejar una advertencia explícita en los dos sitios que cualquier sesión futura consulta antes de
+tocar código, para que nadie pierda tiempo investigando una "regresión de tipos" que no existe.
+
+**Requisitos:**
+1. Añadir una nota breve y visible en `DEVELOPERS.md` (sección de verificación/desarrollo): la
+   única verificación válida es `python scripts/ci.py` (o `python -m mypy`/`python -m ruff`/
+   `python -m pytest` si se ejecutan sueltos); nunca el binario pelado (`ruff`, `mypy`, `pytest`
+   sin `python -m` por delante), porque un contenedor de nube puede traer un segundo juego
+   preinstalado, más nuevo que el pineado en `requirements-dev.txt` y por delante en el `PATH`, que
+   da una señal distinta y en el caso de `mypy` puede devolver errores de `import-not-found` que no
+   existen en la verificación real.
+2. Añadir la misma advertencia, en una frase, a la sección de verificación de `SKILL.md` si la
+   tiene, o como mínimo una referencia a `DEVELOPERS.md` desde ahí.
+3. Tarea puramente documental: sin cambio de comportamiento en `scripts/ci.py` ni en ningún otro
+   módulo — el propio hallazgo `#22` confirma que el protocolo real ya es inmune al binario pelado.
+4. Sin cambio de esquema de `estado.json` ni de `Configuracion`.
+
+**Criterio de aceptación:** `DEVELOPERS.md` contiene la advertencia explícita citando
+`scripts/ci.py` (o `python -m <herramienta>`) como única fuente de verdad de la verificación y
+mencionando el riesgo del binario pelado en un contenedor de nube; cero cambio en `scripts/`,
+`tests/` o `assets/`; la siguiente pasada del auditor verifica la nota y cierra `#22` a `RESUELTO`.
+
+---
+
+### Cola de producto
+
+`ROADMAP_PRODUCTO.md` tiene una única R-XX pendiente en este ciclo: **R-15** (F-H, arriba), origen
+directo de un hallazgo real del auditor (`#22`). No hay ninguna otra R-XX `PENDIENTE` ni `EN CURSO`:
+el resto del roadmap sigue a la espera de una entrada real en `FEEDBACK.md`, de un nuevo hallazgo de
+`auditoriacontinua.md`, o de que el dueño complete el criterio de salida de la oleada v1 (grabar un
+curso entero, bloqueo #7 de `SEGUIMIENTO.md` §3) y aporte fricciones reales de rodaje.
 
 ---
 

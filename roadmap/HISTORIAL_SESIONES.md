@@ -32,6 +32,22 @@
 
 ---
 
+### Sesión 2026-09-12 — Ciclo de Product Manager: abre R-15 (Fase transversal F-H nueva), origen auditoría #22; reconfirma #19 sin cambios
+**Tarea(s):** Ninguna T-XX en curso. Gestión de roadmap: abre **R-15** (documental, advertencia sobre binarios `ruff`/`mypy`/`pytest` pelados en el contenedor de nube frente a los pineados), origen directo del hallazgo `#22` (media, `ABIERTO`) que la pasada del auditor de este mismo día registró. Reconfirma `#19` (baja) sin cambios: sigue con la decisión razonada de no convertirse en R-XX especulativa. `roadmap/FEEDBACK.md` reconfirmado sin ninguna entrada `nuevo`
+**Estado resultante:** R-15 añadida a §1 de `SEGUIMIENTO.md` como `PENDIENTE`; ninguna otra T-XX/R-XX cambia de estado. `ROADMAP_PRODUCTO.md` pasa de cola vacía a una única R-XX pendiente (Fase F-H)
+**Commits a develop:** (ver `git log` de esta fecha en `develop`, commit de PM de este ciclo)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (cabecera actualizada, nueva Fase transversal F-H con la ficha completa de R-15), `roadmap/SEGUIMIENTO.md` (cabecera y fila R-15 en §1), `roadmap/DECISIONES_TECNICAS.md` (fila nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (569, sin cambio) · build ✅ — sin cambio de código en este ciclo (R-15 es solo especificación), se ejecutan igualmente las cuatro redes con `pip install -r requirements-dev.txt` para confirmar que el estado de partida sigue en verde antes del push
+**Health check post-deploy:** no aplica (ciclo de PM, sin instalación de skill)
+**Decisiones tomadas:** fila `2026-09-12 | PM` en `DECISIONES_TECNICAS.md` (abrir R-15 en vez de dejarlo sin tarea trazable o convertirlo en P-XX del programador)
+**Hallazgos del auditor atendidos:** `#22` enrutado a R-15 (PENDIENTE, no resuelto todavía — lo cierra el auditor cuando el programador entregue la nota); `#19` reconfirmado, sin acción (ya tiene su decisión razonada)
+**Hallazgos:** ninguno nuevo por parte del PM
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** la siguiente sesión de Programador implementa R-15 (nota en `DEVELOPERS.md`/`SKILL.md`, sin tocar `scripts/`) y la marca `COMPLETADA` en §1; el siguiente ciclo de PM archiva F-H a histórico cuando eso ocurra. Sin reverts pendientes
+
+---
+
 ### Sesión 2026-09-11 — Ciclo de Product Manager: archiva Oleada v5 (R-13) y Fase F-G (R-14) a histórico; cola de `ROADMAP_PRODUCTO.md` queda vacía, no se abre ninguna R-XX nueva
 **Tarea(s):** Ninguna T-XX/R-XX nueva. Gestión de roadmap: R-13 y R-14, ya `COMPLETADA` por el Programador el mismo día, se archivan enteras (Oleada v5 y Fase transversal F-G) a `roadmap/ROADMAP_HISTORICO.md`, siguiendo §0.4 de `HOJA_DE_RUTA.md`
 **Estado resultante:** Sin cambio de estado en §1 de `SEGUIMIENTO.md` (R-13/R-14 ya constaban `COMPLETADA`); `roadmap/ROADMAP_PRODUCTO.md` queda con la cola de R-XX vacía

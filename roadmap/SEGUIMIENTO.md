@@ -10,17 +10,22 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-11 — **Ciclo de Product Manager: archiva la Oleada v5 (R-13) y la
-Fase transversal F-G (R-14) — ambas ya `COMPLETADA` por el Programador el mismo día — a
-`ROADMAP_HISTORICO.md`.** Sin cambio de estado de ninguna T-XX/R-XX en §1 (R-13/R-14 ya constaban
-`COMPLETADA`); la cola de `ROADMAP_PRODUCTO.md` queda vacía y **no se abre ninguna R-XX nueva**:
-`auditoriacontinua.md` sigue sin ningún hallazgo `ABIERTO` de severidad alta ni sin enrutar (20/21
-`RESUELTO`; el único `#19`, baja, mantiene su decisión razonada de no convertirse en R-XX
-especulativa) y `roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. Sin cambios en bloqueos, preguntas
-abiertas ni desviaciones; sin cambio de código, no aplica la verificación de las cuatro redes.
+**Última actualización:** 2026-09-12 — **Ciclo de Product Manager: abre R-15 (fase transversal F-H
+nueva), origen `auditoría #22`** (media, ABIERTO desde esta misma pasada del auditor 2026-09-12) —
+un segundo juego de `ruff`/`mypy`/`pytest` preinstalado en el contenedor de nube, más nuevo que el
+pineado y por delante en el `PATH`, da señal distinta y engañosa a quien lo invoque pelado; R-15 es
+puramente documental (nota en `DEVELOPERS.md`/`SKILL.md`), sin tocar `scripts/`. **`#19`** (baja)
+reconfirmado sin cambios, mantiene su decisión razonada de no convertirse en R-XX especulativa.
+`roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. Sin cambios en bloqueos, preguntas abiertas ni
+desviaciones; R-15 es solo especificación (NO se programa desde este ciclo), no aplica todavía la
+verificación de las cuatro redes.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-11, ciclo de Product Manager: archiva la Oleada v5 (R-13) y la Fase transversal F-G
+  (R-14) — ambas ya `COMPLETADA` por el Programador el mismo día — a `ROADMAP_HISTORICO.md`. Cola de
+  `ROADMAP_PRODUCTO.md` quedó vacía en ese ciclo (20/21 hallazgos `RESUELTO`, `roadmap/FEEDBACK.md`
+  sin entradas `nuevo`).
 - 2026-09-11, ciclo de Programador: octava reconfirmación del día, sin novedad. Cuatro redes en
   verde (569 tests). Sin trabajo de código pendiente tras R-14.
 - 2026-09-11, ciclo de Programador: séptima reconfirmación del día, sin novedad. Cuatro redes en
@@ -124,6 +129,7 @@ abiertas ni desviaciones; sin cambio de código, no aplica la verificación de l
 | R-12 | Cue discreta de indicaciones EN PANTALLA/NOTA en el reproductor | **COMPLETADA** | 2026-09-10 | `reproductor._indicaciones_ancladas_por_indice` ancla cada indicación al ÚLTIMO bloque de respiración que la precede (sin bloque precedente, al primero — requisito 4), reutilizando tal cual la clasificación de T-09 y el filtro pantalla/nota de T-28/T-29 (`pdf.indicaciones_no_recitables`/`es_nota_interna`). `guion.js`/`estilo.css`: cue subordinada (`.cue-indicacion`, visible solo bajo `.bloque--activo`), plegada con el resto de indicadores en `H` (T-23), sin atajo nuevo. Prefijos `Pantalla:`/`Nota:` configurables. 7 tests nuevos (550→557); verificado también visualmente con Playwright/Chromium real. Oleada v4 · `origen: observación de arquitectura del PM (2026-09-08)` |
 | R-13 | Duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt` | **COMPLETADA** | 2026-09-11 | `scripts/pptx.py`: `Tarjeta.duracion_real_segundos` (`None` si la escena no tiene toma buena, `tomas.duracion_toma_buena` reutilizada tal cual) y `ResultadoTarjetas.mezcla_duracion_real_y_estimada` (booleano de cabecera, `true` solo si el conjunto mezcla ambos casos); `duracion_estimada_segundos` intacta (requisito 2). `generar_tarjetas`/`exportar_pptx` ganan `tomas_por_escena` opcional (mismo patrón que `srt_alineado.py`/`capitulos_youtube.py`, no integrado en el selector automático de T-30); sin él, comportamiento idéntico a antes de R-13. `references/contrato-tarjetas.md` y `contrato-montaje.md` actualizados con la fórmula de rango correcta. 7 tests nuevos (557→564), incluido el cruce con `guion-alineado.srt` en `test_integracion_montaje.py`. Oleada v5 · `origen: observación de arquitectura del PM (2026-09-10)` |
 | R-14 | El separador de escena no debe colarse en el texto de una indicación | **COMPLETADA** | 2026-09-11 | `scripts/clasificador.py`: `_separar_marcador_fin_escena` extrae el `---` de fin de escena (con las líneas en blanco que lo acompañan) en su propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia, en vez de dejarlo pegado al `contenido` de la última indicación. Nueva señal añadida a los tres sitios que la necesitan para no colarse como una "indicación" propia ni proponerse como convención: `pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES`. `references/convencion-guion.md` documenta ahora el separador (requisito 1). Fixture golden `fixtures/guion-ejemplo-esperado.md` regenerado a mano (cambio esperado y verificado línea a línea). 5 tests nuevos (564→569). Verificado sobre los tres guiones reales: cero indicación termina en `---` en `guion-escenas.md`, `tarjetas.json` ni la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta. Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
+| R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **PENDIENTE** | 2026-09-12 (abierta por PM) | Tarea puramente documental: nota en `DEVELOPERS.md` (y referencia desde `SKILL.md`) explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado — un contenedor de nube puede traer un segundo juego preinstalado, más nuevo que el pineado en `requirements-dev.txt` y por delante en el `PATH`, con señal distinta y en el caso de `mypy` falsos `import-not-found`. Spec completa en `ROADMAP_PRODUCTO.md`, Fase F-H. Sin cambio de código ni de `estado.json`. `origen: auditoría #22` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
