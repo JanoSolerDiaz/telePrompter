@@ -36,6 +36,7 @@
 | #20 | 2026-09-05 | Infraestructura / proceso (fuera del código) | media | **RESUELTO** | Diagnóstico original: seis rutinas programadas en vez de tres, en dos tríos con cron idéntico o solapado (`Auditor`/`auditor-teleprompter`, `Product manager`/`product-manager-teleprompter`, `Programador`/`programador-teleprompter`), asumido como coste doble de cómputo sobre la cuenta del dueño. **Corregido el 2026-09-10 por el programador** (sexto ciclo, `DECISIONES_TECNICAS.md`): el trío sin sufijo apunta a otro repositorio del dueño (`centro-estudios-sw`/GestorAcademia), no a este proyecto. **Cerrado en esta pasada con verificación independiente propia, no por transcribir la corrección ajena:** llamada directa a `list_triggers` en esta sesión (2026-09-11) leyendo `session_request.config.sources[].git_repository.url` de las seis rutinas — el campo completo, no solo `name`/`cron_expression` como comprobaban las ~15 reconfirmaciones previas a la corrección: `auditor-teleprompter`/`product-manager-teleprompter`/`programador-teleprompter` → `https://github.com/JanoSolerDiaz/telePrompter` (este repositorio); `Auditor`/`Product manager`/`Programador` (sin sufijo) → `https://github.com/JanoSolerDiaz/centro-estudios-sw` (otro proyecto del dueño). Confirmado: ninguna rutina de *este* proyecto está duplicada, una sola por rol, sin solape de cron. | `SEGUIMIENTO.md` §3 bloqueo #8 · verificado de forma independiente por esta auditoría (2026-09-11) leyendo `git_repository.url` de `list_triggers` |
 | #14 | 2026-09-03 | Invariantes / revalidación | **alta** | **RESUELTO** | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. **Cerrado por P-03** (2026-09-03): `revalidacion.py` ahora persiste entre pasadas qué particiones quedaron pospuestas (`estado.validacion["particiones_pospuestas"]`), así que la pasada siguiente interpreta las anclas del documento con el MISMO esquema de identidad con el que se escribió, en vez de asumir que toda partición aceptada ya está materializada. Efecto: mientras la edición manual siga en el documento, la partición se queda pospuesta sin duplicar ni mal atribuir nada; solo se materializa cuando el dueño deja de tocar el bloque. Dos tests de regresión nuevos en `tests/test_revalidacion.py` reproducen exactamente el escenario de este hallazgo (falla sin el fix) y confirman que la materialización posterior sigue funcionando cuando el conflicto se resuelve. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
 | #21 | 2026-09-09 | Infraestructura / trazabilidad (git) | **alta** | **RESUELTO** | Diagnóstico original (2026-09-09): el historial de `origin/develop` parecía reescrito, colapsando T-00→P-05 en un commit raíz distinto en cada pasada, con commits "citados como vigentes" que `git merge-base --is-ancestor` daba por no-antepasados. **Era un falso positivo del clon superficial (`git clone --depth`) de cada contenedor efímero, no una reescritura real.** El programador ya lo investigó y corrigió el mismo día (`DECISIONES_TECNICAS.md`, primer ciclo 2026-09-09) con `git fetch --unshallow`; **esta auditoría lo reproduce de forma independiente en esta pasada (2026-09-10), no se limita a leer la corrección:** este clon también llegó superficial (`git rev-parse --is-shallow-repository` → `true`); `git fetch --unshallow origin` (operación de solo lectura) trajo el historial completo — **114 commits**, raíz real `f78a92c` ("initial commit") → `e8b9663` (T-00) → …; `git merge-base --is-ancestor 1a40c84 develop` **y** `... 576f6d9 develop` devuelven ambos **"IS ancestor"** tras el `unshallow`, confirmando que ninguno de los dos commits que auditorías previas creyeron "perdidos" lo estaba de verdad. Se corrige aquí a `RESUELTO` (no solo en `DECISIONES_TECNICAS.md`, que el auditor no puede dar por bueno sin repetir la comprobación): el contenido y la trazabilidad commit-a-commit del proyecto están intactos; la causa raíz observable (clon superficial con frontera variable) no es una acción de código y no requiere P-XX. | `origen: corrección del programador 2026-09-09` · reproducido de forma independiente por esta auditoría (2026-09-10) con `git fetch --unshallow` + `git merge-base --is-ancestor` |
+| #22 | 2026-09-12 | Infraestructura / entorno de verificación | media | ABIERTO | Este contenedor trae, además del `mypy`/`ruff`/`pytest` que instala `pip install -r requirements-dev.txt` (versiones exactas pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`, resueltos en `/usr/local/lib/python3.11/dist-packages`, el mismo Python que usa el proyecto), un **segundo juego de los mismos tres binarios preinstalado en `/root/.local/bin`** (`mypy 1.19.1`, `ruff 0.15.8`, `pytest 9.0.2`), con `/root/.local/bin` por delante en el `PATH`. Las cuatro verificaciones del protocolo son inmunes porque `scripts/ci.py` invoca siempre `sys.executable -m <herramienta>` (nunca el nombre pelado) y el hook de pre-commit llama a `python scripts/ci.py` — confirmado leyendo el código, no solo probando. El riesgo es para un humano o una sesión que teclee el comando pelado (`ruff check .`, `mypy scripts tests`, `pytest`) directamente en la terminal, tal como queda escrito literalmente en varias entradas de `HISTORIAL_SESIONES.md`: verificado en esta pasada que el binario pelado da una señal **distinta y engañosa** de la que da la versión pineada — `ruff check .` pelado marca `UP042` en `scripts/salidas.py:48` (`class TipoSalida(str, Enum)`, sugiere heredar de `enum.StrEnum`) que `python -m ruff check .`/`scripts/ci.py` NO marca; `mypy scripts tests` pelado no es solo más estricto, está **roto de verdad para este proyecto**: al vivir en un entorno de Python aislado que no ve `dist-packages`, no encuentra el paquete `pytest` y devuelve **34 errores falsos en 22 archivos** (`import-not-found` de `pytest`, más los `Untyped decorator` en cascada que provoca cada decorador de pytest sin tipos resueltos) donde `python -m mypy scripts/ tests/` (el que de verdad ejecuta el hook) da limpio. Es exactamente el tipo de señal que podría hacer perder tiempo a una sesión futura investigando "34 errores de tipos" que no existen en la verificación real del proyecto. No es un hallazgo de código: ninguna verificación real del protocolo lo sufre, y el origen (qué preinstala este contenedor de nube y en qué orden de `PATH`) no es una decisión de este repositorio. Se registra para que una futura pasada no lo redescubra desde cero y para valorar si conviene una nota explícita en `DEVELOPERS.md`/`SKILL.md` ("verificar siempre con `python scripts/ci.py`, nunca con el binario pelado en un contenedor de nube") que corte de raíz la confusión. | Entorno de contenedor de nube · verificado en esta pasada (2026-09-12) comparando `which`/`--version` de `ruff`/`mypy`/`pytest` pelados contra `python3 -m <herramienta> --version` y ejecutando ambos sobre el mismo código |
 
 ---
 
@@ -44,6 +45,140 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-12 — primera pasada con R-13/R-14 ya implementadas (la del 2026-09-11 las auditó como `PENDIENTE`); hallazgo nuevo `#22` (binarios `ruff`/`mypy` preinstalados en el contenedor dan señal distinta y engañosa frente a los pineados); `#19` reconfirmado sin cambios
+
+**Nota de arranque.** Clon con `develop` en `HEAD` *detached*; `git checkout develop && git pull
+origin develop` resolvió en **fast-forward limpio** (`467833f..2219b6c`, 41 commits) sin ningún
+`reset --hard` ni historial huérfano. El clon **sí llegó superficial** (`git rev-parse
+--is-shallow-repository` → `true`), el mismo síntoma benigno ya diagnosticado por `#21`
+(`RESUELTO`): no se reabre, solo se deja constancia porque reaparece.
+
+**Alcance — primera pasada con R-13 y R-14 ya como código real, no como spec.** La auditoría
+anterior (2026-09-11, commit `7c0c647`) verificó R-12 en profundidad y dejó R-13/R-14
+`PENDIENTE`, confirmando explícitamente que ninguna se había adelantado a medias. Desde entonces,
+el mismo día 2026-09-11, el programador implementó **ambas** (`7f3f9ee` R-13, `df92f6c` R-14) y el
+PM archivó la oleada v5 y la fase F-G a histórico (`2219b6c`), dejando la cola de
+`ROADMAP_PRODUCTO.md` vacía. `git diff --stat 7c0c647 HEAD -- scripts/ tests/ SKILL.md
+PROYECTO.md DEVELOPERS.md references/ assets/ fixtures/ roadmap/` confirma 21 archivos, 959
+inserciones/195 borrados — nada fuera de ese diff. Esta es, por tanto, la primera pasada con
+código de producto real de R-13/R-14 que revisar en profundidad.
+
+**Verificación objetiva de las cuatro redes, independiente, con las versiones PINEADAS
+(`requirements-dev.txt`).** `pip install -r requirements-dev.txt` limpio. `python3 -m mypy
+scripts tests` → limpio, 68 archivos. `python3 -m ruff check scripts/ tests/` (el comando exacto
+de `scripts/ci.py`) → limpio. `python3 -m pytest` → **569 passed**, exacto con el recuento que
+cita `SEGUIMIENTO.md` tras R-13+R-14 (557→564→569). `python3 scripts/verificar_salidas.py
+--fixture` → **las catorce etapas en OK**; `.pptx`/`.pdf` reales siguen LATENTES en este
+contenedor (sin la skill de marca, sin Chrome/Edge) — degradación esperada y documentada, no un
+fallo.
+
+**Revisión en profundidad de R-14 (`scripts/clasificador.py`), con atención específica al
+invariante (b).** Al ver que `_separar_marcador_fin_escena` añade un bloque nuevo (`no_locucion`,
+`senal="separador_escena"`) al final de los bloques de cada escena, la primera pregunta que se
+verificó de propio motu (no solo se dio por buena la nota de `DECISIONES_TECNICAS.md`) fue si
+esto podía desplazar la identidad `(numero_escena, indice_original, mitad)` que usa
+`revalidacion.py` para anclar ediciones manuales — el mismo tipo de fallo que costó `#9`/`#14` en
+su día. Verificado leyendo el código, no asumido: tanto `tiempos.bloques_respiracion_marcados`
+(`scripts/tiempos.py:160-163`) como `troceo.trocear_guion` (`scripts/troceo.py:429-431`) —- los
+dos únicos puntos que alimentan la identidad de revalidación — filtran explícitamente `if
+bloque.tipo == TIPO_LOCUCION` / `if bloque.tipo != TIPO_LOCUCION: continue` **antes** de enumerar
+índices; el nuevo bloque `separador_escena` es `TIPO_NO_LOCUCION`, así que nunca entra en esa
+enumeración y no puede desplazar ningún índice de un bloque de locución existente. Confirmado
+también que el ancla `<!-- bloque escena=N indice=K -->` de `guion-escenas.md`
+(`documento_revision.py`) numera solo esos mismos bloques de respiración (T-11), no las
+indicaciones no-locución, que se listan al pie de la escena sin ancla individual — dos esquemas
+de numeración distintos que no interfieren entre sí. Confirmado además que los tres sitios que
+`R-14` tenía que tocar para no colar `separador_escena` como indicación real están los tres
+actualizados (`pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES`,
+`convencion._SENALES_CONTRACTUALES`), con test de regresión explícito de "no se inventa un bloque
+separador si no hay `---`". Conclusión: R-14 no representa ningún riesgo para el invariante (b),
+y la propia lógica de partición (`_separar_marcador_fin_escena`, que solo mira la última línea no
+en blanco del cuerpo antes de decidir) es correcta y determinista.
+
+**Revisión de R-13 (`scripts/pptx.py`), atención a si `tomas_por_escena` llega a usarse con datos
+reales.** Verificado que `salidas.py` (T-30, el selector automático) no llama en ningún punto a
+`generar_srt_alineado`/`calcular_capitulos`/`exportar_pptx` con `tomas_por_escena` real — ninguno
+de los tres consumidores de "duración real" (R-05, R-07, R-13) está cableado al selector
+automático, algo que R-13 documenta él mismo y que resulta ser **simétrico** con R-05/R-07, no
+una laguna nueva de R-13: los tres son, por diseño, salidas de la fase de montaje que se generan
+aparte (documentado en `SKILL.md` §"cadena de montaje", invocadas directamente cuando existe
+parte de rodaje), no parte de la tanda inicial de T-30. No es un hallazgo. El resto de R-13 es
+correcto: `duracion_real_segundos` se descarta a `None` si es `<= 0` (dato degenerado, no un cero
+real), `duracion_estimada_segundos` queda intacta, y el test de integración
+(`test_integracion_montaje.py`) reconstruye los límites de `guion-alineado.srt` sumando
+`duracion_real_segundos`/`duracion_estimada_segundos` de `tarjetas.json` y los compara exactos.
+
+**Hallazgo nuevo `#22` (media, ABIERTO): binarios `ruff`/`mypy`/`pytest` preinstalados en el
+contenedor, distintos de los pineados, en el `PATH` por delante.** Detectado al ejecutar `ruff
+check .` (sin `python3 -m`) para una comprobación exploratoria y obtener un `UP042` en
+`scripts/salidas.py:48` que `python3 -m ruff check .` no da; investigado hasta la causa (`which
+ruff` → `/root/.local/bin/ruff`, versión **0.15.8**, frente a `python3 -m ruff --version` →
+**0.14.0**, la pineada). Mismo patrón en `mypy`: el binario pelado (`/root/.local/bin/mypy`,
+**1.19.1**) vive en un entorno de Python que no ve el `pytest` recién instalado en
+`dist-packages`, y da **34 errores falsos** (`import-not-found` de `pytest` en la mayoría de los archivos de
+test, más los `Untyped decorator` en cascada) que `python3 -m mypy scripts/ tests/` no reproduce.
+Verificado que las cuatro verificaciones reales del protocolo son inmunes: `scripts/ci.py`
+invoca siempre `sys.executable -m <herramienta>` (nunca el nombre pelado, leído directamente en
+las cuatro `Etapa(...)` de `ETAPAS`) y el hook de pre-commit (`scripts/hooks/pre-commit`) llama a
+`python scripts/ci.py`, no a los binarios sueltos — así que ningún commit real ni ninguna de las
+`~30` reconfirmaciones diarias registradas en `HISTORIAL_SESIONES.md` (que sí citan `python -m
+mypy`/`ruff check .` de forma inconsistente en su texto) corrió jamás contra el juego
+desactualizado. El riesgo es puramente para un humano o una sesión que teclee el comando pelado a
+mano esperando el mismo resultado que `ci.py`. Se registra como hallazgo de infraestructura, no de
+código: no requiere ninguna P-XX de `scripts/`, pero sí vale la pena que el PM valore una nota
+explícita en `DEVELOPERS.md` ("verificar siempre con `python scripts/ci.py`, nunca con el binario
+pelado") para que ninguna sesión futura pierda tiempo interpretando esos 34 errores de `mypy`
+pelado como una regresión real.
+
+**`#19` reevaluado, sin cambios.** `grep` sobre `scripts/revalidacion.py` confirma
+`_particiones_pospuestas_previas` (línea 110) y `_incidencias_anclas_desajustadas` (línea 300)
+presentes y sin modificar desde la última pasada. El límite teórico (comparación de anclas por
+conjunto/cantidad, no por contenido/orden) sigue exacto y sin escenario reproducido. Se mantiene
+`ABIERTO`, baja, sin escalar.
+
+**Coherencia entre lo decidido y lo ejecutado.** `HOJA_DE_RUTA.md` sigue sin ninguna modificación
+posterior a T-17 (documento inmutable, respetado). `ROADMAP_HISTORICO.md`/`ROADMAP_PRODUCTO.md`/
+`SEGUIMIENTO.md`/`DECISIONES_TECNICAS.md` cuentan la misma historia sin contradicciones: R-13/R-14
+`COMPLETADA` y archivadas, cola de `ROADMAP_PRODUCTO.md` vacía, ninguna T-XX/R-XX pendiente salvo
+T-24b (BLOQUEADA, hardware del dueño). La decisión de no extraer una función compartida para
+"real si hay toma buena, estimada si no" (`DECISIONES_TECNICAS.md`, 2026-09-11) es razonable y
+está bien fundamentada: los tres módulos que repiten el patrón (`srt_alineado.py`,
+`capitulos_youtube.py`, `pptx.py`) ya tienen su propia suite verde y tocar los dos primeros solo
+para ahorrar tres líneas no compensa el riesgo. `roadmap/FEEDBACK.md` sigue sin ninguna entrada
+`nuevo`. Sin desviaciones nuevas que añadir a §7 de `SEGUIMIENTO.md`.
+
+**Invariantes de datos, verificados contra el código actual.**
+- **(a) cobertura total:** sostenida; R-14 la refuerza en vez de arriesgarla — el separador de fin
+  de escena sigue contabilizado, solo cambia de bloque, con test de reconstrucción íntegra
+  (`reconstruir(bloques) == "\n".join(...)`) en ambos tests nuevos.
+- **(b) original recuperable / ediciones manuales respetadas:** sostenida, verificado en detalle
+  arriba que R-14 no puede desplazar la identidad `(escena, índice_original, mitad)` porque los
+  dos consumidores de esa identidad filtran a `TIPO_LOCUCION` antes de enumerar.
+- **(c) reproductor autocontenido, sin red:** reverificado por la cuarta red sobre el fixture
+  (`auto-contención: OK`); R-13/R-14 no tocan `reproductor.py`/`guion.js`/`estilo.css` en este
+  ciclo (confirmado por el `git diff --stat` de arriba, ningún archivo de `assets/reproductor/`
+  ni `scripts/reproductor.py` en la lista).
+- **(d) runtime solo biblioteca estándar:** `pyproject.toml` sigue con `dependencies = []`;
+  `mypy`/`ruff`/`pytest` solo en `requirements-dev.txt`, con versiones exactas pineadas — ver
+  `#22` arriba sobre por qué esas versiones exactas importan y qué pasa si no se respetan.
+- **(e) sin número mágico suelto / defaults en `SKILL.md`:** R-13/R-14 no añaden ningún campo de
+  configuración nuevo (`mezcla_duracion_real_y_estimada` es un booleano derivado, no una entrada
+  de `Configuracion`); nada que documentar en `SKILL.md` que no esté ya.
+- **(f) nada se escribe fuera de la carpeta de salida / copia `.bak`:** sostenida, sin cambios en
+  el área.
+
+**Conclusión general.** R-13 y R-14 están bien implementadas, verificadas de forma independiente
+contra el riesgo más probable de cada una (desplazamiento de identidad de revalidación para R-14,
+cableado real de `tomas_por_escena` para R-13) y ninguna de las dos preocupaciones se materializó.
+Las cuatro redes siguen en verde con las versiones pineadas (569 tests). Se abre `#22` (media,
+infraestructura de entorno, no de código): el contenedor de nube trae un segundo juego de
+`ruff`/`mypy`/`pytest` más nuevo que el pineado, delante en el `PATH`, que da señales distintas y
+en el caso de `mypy` activamente engañosas (34 errores falsos) si alguien lo invoca sin `python3
+-m`; el protocolo real (`scripts/ci.py`, el hook) es inmune, verificado leyendo el código. `#19`
+sigue como límite teórico sin escenario reproducido. No queda ningún hallazgo `ABIERTO` de código
+sin enrutar (solo `#19` y el nuevo `#22`, ambos de bajo riesgo real); nada exige tratamiento
+urgente en esta pasada.
 
 ### Auditoría 2026-09-11 — primera pasada con código real que auditar desde R-11 (R-12 implementada y revisada en profundidad); `#20` cerrado con verificación independiente propia (el trío "duplicado" era de otro proyecto del dueño); `#19` reconfirmado sin cambios
 
