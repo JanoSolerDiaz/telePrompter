@@ -8,27 +8,22 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-12 (ciclo de PM). Se abre **R-15** (fase transversal F-H nueva):
-único hallazgo `ABIERTO` sin enrutar de `auditoriacontinua.md` en esta pasada, `#22` (media,
-2026-09-12) — el contenedor de nube trae un segundo juego de `ruff`/`mypy`/`pytest` preinstalado,
-más nuevo que el pineado en `requirements-dev.txt` y por delante en el `PATH`, que da una señal
-distinta y, en el caso de `mypy`, activamente engañosa (34 errores falsos) a quien lo invoque
-pelado en vez de con `python scripts/ci.py`. Es un hallazgo de calidad/infraestructura, no de
-producto, pero el propio auditor señala que merece una nota explícita en la documentación para que
-ninguna sesión futura pierda tiempo con esa falsa señal — mismo criterio que ya usaron F-D
-(R-08/R-09) y F-F (R-11) para agrupar deuda técnica menor en una R-XX. El otro hallazgo `ABIERTO`,
-`#19` (baja, límite teórico y sin escenario reproducido de `revalidacion.py`), se reconfirma sin
-cambios: sigue con la decisión razonada del ciclo de PM del 2026-09-04 de NO abrir una R-XX
-especulativa mientras no se reproduzca un caso real, reconfirmada por el auditor en cada pasada
-desde entonces (incluida la de hoy) sin novedad; este ciclo no encuentra motivo para revisarla.
-`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (bloqueo #7 de `SEGUIMIENTO.md` §3 — grabar
-un curso completo — sigue sin resolverse, así que ni la calibración de ppm de R-04 ni el ciclo de
-mejora de producto tienen todavía evidencia real de rodaje). Este ciclo repasa también, con lectura
-directa de `references/contrato-montaje.md` y `references/contrato-tarjetas.md` a la luz de R-13/
-R-14 ya entregadas, si queda alguna inconsistencia de arquitectura del mismo tipo que ya motivó
-R-12/R-13/R-14: ninguna encontrada. No se abre ninguna R-XX de producto especulativa: R-15 es la
-única apertura de este ciclo y tiene origen trazable en un hallazgo real del auditor, no en una
-mejora inventada.
+**Última actualización:** 2026-09-13 (ciclo de PM). `auditoriacontinua.md` no deja ningún hallazgo
+`ABIERTO` nuevo sin enrutar (`#22`, media, ya enrutado a R-15 el 2026-09-12, sigue `PENDIENTE` de
+implementar por el programador; `#19`, baja, reconfirmado sin cambios en la pasada del auditor de
+hoy, mantiene su decisión razonada de no convertirse en R-XX especulativa). `roadmap/FEEDBACK.md`
+sigue sin ninguna entrada `nuevo` (bloqueo #7 de `SEGUIMIENTO.md` §3 — grabar un curso completo —
+sigue sin resolverse). Con los hallazgos de auditoría ya agotados y sin feedback real de rodaje,
+este ciclo repasa de nuevo `references/contrato-montaje.md` y `references/contrato-tarjetas.md`
+—el contrato exacto con la fase siguiente del propio dueño, el montaje con ffmpeg— y esta vez sí
+encuentra una inconsistencia de arquitectura real, del mismo tipo que ya motivó R-12/R-13/R-14: el
+propio `contrato-montaje.md` **obliga a la cadena de montaje a reimplementar a mano** la fórmula de
+acumulación de duraciones (sumar `duracion_estimada_segundos`/`duracion_real_segundos` en orden)
+solo para saber dónde empieza y termina cada escena, en vez de leerlo ya calculado — exactamente el
+cálculo que T-12/R-13 ya hacen una vez, de forma correcta y probada, dentro de esta skill. Se abre
+**R-16** (oleada v6 nueva) para cerrar esa grieta: añadir `inicio_segundos`/`fin_segundos` ya
+resueltos a cada escena de `tarjetas.json`, antes de que exista una skill de montaje real que
+tenga que descubrir la discrepancia con datos de producción.
 
 ---
 
@@ -145,13 +140,71 @@ mencionando el riesgo del binario pelado en un contenedor de nube; cero cambio e
 
 ---
 
+### Oleada v6 — Cierre del contrato de montaje: límites de escena listos para ffmpeg
+
+Convierte en tarea una inconsistencia de arquitectura verificada en el código y en la documentación
+del propio contrato, con el mismo criterio que ya usaron R-12/R-13/R-14 (observación del PM,
+confirmada leyendo el módulo real antes de escribir la ficha). Contiene R-16, su única R-XX por
+ahora.
+
+#### R-16 — Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json`
+**Oleada / Fase:** v6 · **Migración:** No · **Depende de:** T-33, R-13
+**Origen:** observación de arquitectura del PM (2026-09-13), releyendo `references/contrato-montaje.md`
+a la luz de que la fase siguiente del propio dueño es el montaje con ffmpeg
+
+**Objetivo:** hoy `references/contrato-montaje.md` (T-33) le pide **a la cadena de montaje** que
+derive el rango `[inicio_escena, fin_escena)` de cada escena sumando a mano, en orden,
+`duracion_real_segundos` si existe o si no `duracion_estimada_segundos` (la misma regla que ya
+implementa `mezcla_duracion_real_y_estimada` de R-13) — es la única forma documentada de saber a
+qué escena pertenece un subtítulo de `guion.srt`/`guion-alineado.srt`, y la propia página advierte
+de que esa fórmula deja de ser válida en cuanto existe parte de rodaje. Es exactamente el tipo de
+cálculo que esta skill ya resuelve una sola vez, de forma correcta y probada (T-12
+`tiempos.calcular_tiempos`, R-05, R-13): pedirle a un consumidor externo —hoy sin implementar
+todavía, mañana la propia skill de montaje con ffmpeg— que la reproduzca bit a bit es aceptar un
+punto de deriva silenciosa (redondeos, elegir real vs. estimada escena a escena, un futuro cambio
+en T-12 que la cadena de montaje no se entera de seguir) justo en el borde entre dos sistemas, que
+es donde este tipo de errores es más caro de diagnosticar. Cerrar la grieta ahora —antes de que
+exista una skill de montaje real que la sufra con datos de producción— es más barato que
+descubrirla después.
+
+**Requisitos:**
+1. `Tarjeta` (`scripts/pptx.py`) gana dos campos nuevos, `inicio_segundos`/`fin_segundos` (float),
+   calculados **una sola vez** con la misma regla que ya usa R-13 para elegir real vs. estimada
+   escena a escena, acumulando en el mismo orden en que las escenas aparecen en
+   `resultado.escenas` — nunca una segunda implementación de la lógica de T-12/R-13, reutilizar la
+   que ya exista o extraerla si hace falta compartirla.
+2. `tarjetas_a_diccionario`/`validar_tarjetas` y `references/contrato-tarjetas.md` documentan las
+   dos claves nuevas en la tabla de cada escena. Cambio **aditivo y retrocompatible** (mismo
+   criterio que R-13): no sube `version_contrato`.
+3. `references/contrato-montaje.md` deja de pedirle a la cadena de montaje que "sume las
+   duraciones anteriores": la sección de cómo derivar el tiempo de cada escena pasa a decir que se
+   lean `inicio_segundos`/`fin_segundos` directamente de `tarjetas.json`, dejando la fórmula de
+   acumulación como nota de cómo se calculan (transparencia), no como instrucción a seguir.
+4. Test de integración nuevo o ampliado en `tests/test_integracion_montaje.py`: `inicio_segundos`
+   de la primera escena es `0`; `fin_segundos` de una escena coincide con `inicio_segundos` de la
+   siguiente (sin huecos ni solapes); `fin_segundos` de la última escena coincide con el fin del
+   último subtítulo de `guion.srt` (caso sin parte de rodaje) y de `guion-alineado.srt` (caso con
+   parte de rodaje que mezcla real/estimado, reutilizando el guion sintético que ya prueba R-13).
+5. Sin migración de `estado.json`, sin campo nuevo de `Configuracion` (son datos derivados de T-12,
+   no un valor configurable por el dueño).
+
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/`,
+`inicio_segundos`/`fin_segundos` de `tarjetas.json` reconstruyen exactamente los límites de escena
+que hoy exige calcular a mano `contrato-montaje.md`, tanto con todas las escenas estimadas como con
+un parte de rodaje que mezcla real/estimado; el test de integración cruzada nuevo pasa;
+`contrato-montaje.md` y `contrato-tarjetas.md` quedan actualizados.
+
+---
+
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` tiene una única R-XX pendiente en este ciclo: **R-15** (F-H, arriba), origen
-directo de un hallazgo real del auditor (`#22`). No hay ninguna otra R-XX `PENDIENTE` ni `EN CURSO`:
-el resto del roadmap sigue a la espera de una entrada real en `FEEDBACK.md`, de un nuevo hallazgo de
-`auditoriacontinua.md`, o de que el dueño complete el criterio de salida de la oleada v1 (grabar un
-curso entero, bloqueo #7 de `SEGUIMIENTO.md` §3) y aporte fricciones reales de rodaje.
+`ROADMAP_PRODUCTO.md` tiene dos R-XX pendientes en este ciclo: **R-15** (F-H), origen directo de un
+hallazgo real del auditor (`#22`), y **R-16** (oleada v6), origen en una inconsistencia de
+arquitectura verificada por el PM en el contrato de montaje. No hay ninguna otra R-XX `PENDIENTE`
+ni `EN CURSO`: el resto del roadmap sigue a la espera de una entrada real en `FEEDBACK.md`, de un
+nuevo hallazgo de `auditoriacontinua.md`, o de que el dueño complete el criterio de salida de la
+oleada v1 (grabar un curso entero, bloqueo #7 de `SEGUIMIENTO.md` §3) y aporte fricciones reales de
+rodaje.
 
 ---
 

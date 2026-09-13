@@ -32,6 +32,43 @@
 
 ---
 
+### Sesión 2026-09-13 — Ciclo de Product Manager: abre R-16 (Oleada v6 nueva), inconsistencia de arquitectura del contrato de montaje; #15/#22 reconfirmados sin cambios propios de este ciclo
+**Tarea(s):** Ninguna T-XX en curso. Gestión de roadmap: revisa el registro de hallazgos de
+`auditoriacontinua.md` (pasada del auditor de hoy: `#22` sigue `PENDIENTE` de implementar como R-15,
+sin cambio de estado; `#19` reconfirmado sin cambios, mantiene su decisión razonada de no
+convertirse en R-XX especulativa) y `roadmap/FEEDBACK.md` (sigue sin ninguna entrada `nuevo`). Con
+los hallazgos de auditoría ya agotados, releyó `references/contrato-montaje.md` y
+`references/contrato-tarjetas.md` a la luz de que la fase siguiente del propio dueño es el montaje
+con ffmpeg, y encontró una inconsistencia real: el contrato le pide a la cadena de montaje que
+reimplemente a mano la fórmula de acumulación de duraciones para derivar el rango de cada escena,
+en vez de leerlo ya resuelto. Abre **R-16** (oleada v6): `inicio_segundos`/`fin_segundos` por
+escena en `tarjetas.json`, calculados una sola vez con la misma regla real/estimada de R-13
+**Estado resultante:** R-16 añadida a §1 de `SEGUIMIENTO.md` como `PENDIENTE`; R-15 sigue
+`PENDIENTE` sin cambios (no es tarea de este ciclo, la implementa el programador); ninguna otra
+T-XX/R-XX cambia de estado. `ROADMAP_PRODUCTO.md` pasa de una R-XX pendiente (R-15) a dos (R-15 y
+R-16)
+**Commits a develop:** (ver `git log` de esta fecha en `develop`, commit de PM de este ciclo)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (cabecera actualizada, nueva Oleada
+v6 con la ficha completa de R-16, "Cola de producto" actualizada a dos R-XX pendientes),
+`roadmap/SEGUIMIENTO.md` (cabecera y fila R-16 en §1), `roadmap/DECISIONES_TECNICAS.md` (fila
+nueva), `roadmap/HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** N/A — ciclo de gestión de roadmap, sin cambio de código (`scripts/`,
+`tests/`, `assets/` intactos)
+**Health check post-deploy:** N/A — sin cambio de código
+**Decisiones tomadas:** fila `2026-09-13 | PM` en `DECISIONES_TECNICAS.md` (por qué se abre R-16 en
+vez de dejarla como observación o resolverla solo documentalmente)
+**Hallazgos del auditor atendidos:** ninguno nuevo resuelto; `#22` sigue enrutado a R-15 (sin
+implementar todavía); `#19` reconfirmado sin cambios, sigue sin R-XX propia por decisión razonada
+**Hallazgos:** ninguno de código — observación de arquitectura propia del PM sobre
+`references/contrato-montaje.md`, ya convertida en R-16 con spec completa
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** la siguiente sesión de Programador implementa R-15 (documental) y/o R-16 (datos
+derivados en `tarjetas.json`), en el orden que ya fija §1 de `SEGUIMIENTO.md`; ninguna de las dos
+tiene bloqueo humano ni dependencia sin resolver
+
+---
+
 ### Sesión 2026-09-12 — Ciclo de Product Manager: abre R-15 (Fase transversal F-H nueva), origen auditoría #22; reconfirma #19 sin cambios
 **Tarea(s):** Ninguna T-XX en curso. Gestión de roadmap: abre **R-15** (documental, advertencia sobre binarios `ruff`/`mypy`/`pytest` pelados en el contenedor de nube frente a los pineados), origen directo del hallazgo `#22` (media, `ABIERTO`) que la pasada del auditor de este mismo día registró. Reconfirma `#19` (baja) sin cambios: sigue con la decisión razonada de no convertirse en R-XX especulativa. `roadmap/FEEDBACK.md` reconfirmado sin ninguna entrada `nuevo`
 **Estado resultante:** R-15 añadida a §1 de `SEGUIMIENTO.md` como `PENDIENTE`; ninguna otra T-XX/R-XX cambia de estado. `ROADMAP_PRODUCTO.md` pasa de cola vacía a una única R-XX pendiente (Fase F-H)
