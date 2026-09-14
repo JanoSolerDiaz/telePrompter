@@ -32,6 +32,47 @@
 
 ---
 
+### Sesión 2026-09-14 — Ciclo de Programador: R-16 implementada y COMPLETADA (límites absolutos de escena en `tarjetas.json`)
+**Tarea(s):** R-16 (oleada v6). Revisado antes de elegir tarea: `auditoriacontinua.md` sin ningún
+hallazgo `ABIERTO` de severidad alta (solo `#19` baja y `#22` media, ninguno exige P-XX urgente);
+§1 de `SEGUIMIENTO.md` marca R-16 como la siguiente tarea de código tras R-15 (ya `COMPLETADA`);
+spec completa releída en `ROADMAP_PRODUCTO.md` y decisión de apertura en `DECISIONES_TECNICAS.md`
+(2026-09-13, PM) antes de tocar código.
+**Estado resultante:** COMPLETADA
+**Commits a develop:** (ver push de esta sesión)
+**Migraciones ejecutadas:** ninguna (sin cambio de esquema de `estado.json`, tal como exige el
+requisito 5 de la ficha — son datos derivados de T-12/R-13, no un ajuste del dueño)
+**Archivos creados/modificados:** `scripts/pptx.py` (`Tarjeta.inicio_segundos`/`fin_segundos`,
+`_con_limites_absolutos`, serialización y validación de las dos claves nuevas),
+`tests/test_pptx.py` (2 tests unitarios + ampliación del test de serialización),
+`tests/test_integracion_montaje.py` (3 tests de integración, `itertools.pairwise` para recorrer
+pares de escenas consecutivas), `references/contrato-tarjetas.md` (tabla de claves de escena y
+ejemplo), `references/contrato-montaje.md` (la fórmula de derivación de rango deja de ser
+instrucción a seguir por la cadena de montaje), `SKILL.md` (mención actualizada de `tarjetas.json`),
+`DEVELOPERS.md` (nueva sección "Límites absolutos de escena en `tarjetas.json` (R-16)"),
+`roadmap/DECISIONES_TECNICAS.md` (nueva fila), `roadmap/SEGUIMIENTO.md` (§1 R-16 → COMPLETADA,
+"Última actualización"), este archivo
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(574 passed, 569→574) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin relación con esta tarea — la fixture no
+tiene parte de rodaje, así que ejercita solo la vía sin toma buena)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` del dueño (nota
+de entorno del protocolo v1.3)
+**Decisiones tomadas:** fila `2026-09-14 | R-16` en `DECISIONES_TECNICAS.md` (segunda pasada
+`_con_limites_absolutos` sobre la tupla completa de tarjetas, en vez de un acumulador mutable
+dentro de `_tarjeta_de_escena`)
+**Hallazgos del auditor atendidos:** ninguno — R-16 viene de una observación de arquitectura del
+PM (2026-09-13), no de un hallazgo de `auditoriacontinua.md`
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** con R-16 completada, la cola de `ROADMAP_PRODUCTO.md` vuelve a quedar vacía (el
+PM debe archivar la oleada v6 a `ROADMAP_HISTORICO.md`, igual que hizo con R-13/R-14). La siguiente
+sesión de Programador no tiene tarea de código pendiente salvo que el PM abra una R-XX nueva o el
+auditor escale un hallazgo de severidad alta; revisar `auditoriacontinua.md` (`#19` baja, `#22`
+media, ambos reconfirmados sin cambios) antes de dar por buena la cola vacía.
+
+---
+
 ### Sesión 2026-09-14 — Ciclo de Programador: R-15 implementada y COMPLETADA (advertencia contra el binario pelado en un contenedor de nube)
 **Tarea(s):** R-15 (fase transversal F-H). Revisado antes de elegir tarea: `auditoriacontinua.md`
 sin ningún hallazgo `ABIERTO` de severidad alta (solo `#19` baja y `#22` media, ninguno exige P-XX

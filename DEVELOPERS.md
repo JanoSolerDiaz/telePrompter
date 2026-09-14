@@ -2785,6 +2785,57 @@ fiable en cuanto existía `guion-alineado.srt` real.
   `python scripts/verificar_salidas.py --fixture` sigue en 14 etapas OK sin cambios (la fixture no
   tiene parte de rodaje, así que ejercita la vía sin toma buena).
 
+## Límites absolutos de escena en `tarjetas.json` (R-16)
+
+`origen: observación de arquitectura del PM (2026-09-13)`, oleada v6, depende de T-33 y R-13.
+Objetivo: `references/contrato-montaje.md` (T-33) le pedía a la cadena de montaje reproducir a
+mano, escena a escena, la misma acumulación de duraciones que esta skill ya resolvía dentro de
+`Tarjeta.duracion_real_segundos`/`duracion_estimada_segundos` (R-13) — un cálculo correcto y
+probado en un solo sitio, exigido a un consumidor externo sin ningún margen de error. R-16 cierra
+esa grieta calculando el rango absoluto una sola vez, dentro de la propia skill.
+
+- **Requisito 1 (campos nuevos, calculados una sola vez).** `Tarjeta` gana `inicio_segundos`/
+  `fin_segundos: float`. `_tarjeta_de_escena` construye cada tarjeta con placeholders `0.0`/`0.0`
+  (no conoce, escena a escena, el acumulado de las anteriores); la función nueva
+  `_con_limites_absolutos` hace una segunda pasada sobre la tupla completa de tarjetas —ya en el
+  mismo orden que `resultado.escenas`— acumulando `duracion_usada` (la MISMA regla que ya elige
+  `duracion_real_segundos` si no es `None`, si no `duracion_estimada_segundos`, leída directamente
+  del campo que cada `Tarjeta` ya trae, nunca reimplementada) y reconstruyendo cada tarjeta con
+  `dataclasses.replace`. `generar_tarjetas` encadena esta segunda pasada justo después de construir
+  la tupla, antes de calcular `mezcla_duracion_real_y_estimada`.
+- **Por qué una segunda pasada y no calcularlo en línea en `_tarjeta_de_escena`.** Esa función
+  procesa una escena a la vez y no tiene visibilidad del acumulado de las anteriores sin pasarle un
+  acumulador mutable a través de la comprensión de tupla que arma `generar_tarjetas` — más frágil y
+  menos legible que una pasada explícita separada sobre la lista ya completa, con el mismo coste
+  (recorrer las escenas una vez más, `O(n)`).
+- **Requisito 2 (contratos actualizados, aditivo).** `tarjetas_a_diccionario` serializa las dos
+  claves nuevas por escena; `_CLAVES_ESCENA` las suma como obligatorias (a diferencia de
+  `duracion_real_segundos`/`aviso_desviacion`, que son opcionales/nulables): `inicio_segundos`/
+  `fin_segundos` siempre existen y siempre son `number`, nunca `null`, así que `validar_tarjetas`
+  las trata igual que `duracion_estimada_segundos`. `references/contrato-tarjetas.md` documenta
+  ambas claves en la tabla de escena y en el ejemplo de forma completa; `version_contrato` no sube
+  (mismo criterio que R-13: aditivo y retrocompatible).
+- **Requisito 3 (`contrato-montaje.md` deja de pedir la suma a mano).** La sección "cómo derivar
+  el tiempo de cada escena" pasa a decir, primero, que se lean `inicio_segundos`/`fin_segundos`
+  directamente; la fórmula de acumulación (idéntica a la que ya introdujo R-13) queda como
+  transparencia de cómo se calculan, explícitamente marcada como no ser instrucción a seguir.
+- **Requisito 4 (tests).** `tests/test_pptx.py` gana 2 tests unitarios (sin toma buena, la
+  acumulación usa la estimada y no deja hueco entre escenas; con toma buena, usa la real) más la
+  comprobación de las dos claves nuevas en el test de serialización existente. `tests/
+  test_integracion_montaje.py` gana 3 tests: uno sobre los tres guiones reales que verifica que la
+  primera escena empieza en `0` y que el `fin_segundos` de cada escena coincide exactamente con el
+  `inicio_segundos` de la siguiente (ni hueco ni solape); uno que confirma que el `fin_segundos` de
+  la última escena coincide con el fin del último subtítulo de `guion.srt` en el caso sin parte de
+  rodaje; y uno que confirma lo mismo contra `guion-alineado.srt` en el caso con parte de rodaje que
+  mezcla real/estimado (mismo guion sintético y `tomas_por_escena` que ya usan los tests de R-11/
+  R-13 en ese archivo). 569→574 tests.
+- **Requisito 5 (sin migración, sin campo de `Configuracion`).** Son datos derivados de T-12/R-13,
+  nunca un ajuste del dueño; `tarjetas.json` se regenera en cada validación (T-30), así que no hay
+  ningún esquema persistido que migrar.
+- `python scripts/verificar_salidas.py --fixture` sigue en 14 etapas OK sin cambios (la fixture no
+  tiene parte de rodaje, así que ejercita solo la vía sin toma buena — `inicio_segundos`/
+  `fin_segundos` se calculan igual, acumulando duraciones estimadas).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

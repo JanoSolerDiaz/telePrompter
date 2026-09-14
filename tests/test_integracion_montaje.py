@@ -10,6 +10,7 @@ su propio validador (eso ya lo cubren `tests/test_srt.py` y
 from __future__ import annotations
 
 import json
+from itertools import pairwise
 
 import pytest
 
@@ -225,6 +226,90 @@ def test_tarjetas_json_duracion_real_reconstruye_limites_de_guion_alineado_srt()
 
     assert inicio_escena == pytest.approx(
         alineacion.resultado_tiempos.duracion_total_segundos, abs=1e-6
+    )
+
+
+def test_inicio_y_fin_segundos_de_tarjetas_json_no_dejan_huecos_ni_solapes(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    """Requisitos 1 y 4 de R-16, sobre los tres guiones reales: `inicio_segundos`
+    de la primera escena es `0`, y `fin_segundos` de cada escena coincide
+    exactamente con `inicio_segundos` de la siguiente -- ningun hueco ni
+    solape en la secuencia que la cadena de montaje lee directamente, sin
+    reproducir ninguna suma por su cuenta (`references/contrato-montaje.md`)."""
+    for nombre, texto in texto_guiones_reales.items():
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado, Configuracion())
+        datos_tarjetas = tarjetas_a_diccionario(
+            generar_tarjetas(resultado, tiempos, nombre, Configuracion())
+        )
+        assert validar_tarjetas(datos_tarjetas) == []
+        escenas = datos_tarjetas["escenas"]
+
+        assert escenas[0]["inicio_segundos"] == 0.0, f"{nombre}: primera escena no empieza en 0"
+        for anterior, siguiente in pairwise(escenas):
+            assert anterior["fin_segundos"] == pytest.approx(
+                siguiente["inicio_segundos"], abs=1e-6
+            ), f"{nombre}: hueco o solape entre escena {anterior['numero']} y {siguiente['numero']}"
+            assert anterior["fin_segundos"] == pytest.approx(
+                anterior["inicio_segundos"] + anterior["duracion_estimada_segundos"], abs=1e-6
+            )
+
+
+def test_fin_segundos_de_la_ultima_escena_coincide_con_el_fin_del_srt_correspondiente() -> None:
+    """Requisito 4 de R-16, caso sin parte de rodaje: `fin_segundos` de la
+    ultima escena coincide con el fin del ultimo subtitulo de `guion.srt`
+    (estimado, T-27) -- mismo guion sintetico de dos escenas que usan el
+    resto de tests de este archivo."""
+    resultado = parsear_guion(_guion_con_capitulos_y_tomas(["Primero", "Segundo"], [10, 10]))
+    tiempos = calcular_tiempos(resultado, Configuracion())
+    entradas = generar_entradas_srt(tiempos, Configuracion())
+    datos_tarjetas = tarjetas_a_diccionario(
+        generar_tarjetas(resultado, tiempos, "prueba", Configuracion())
+    )
+    assert validar_tarjetas(datos_tarjetas) == []
+
+    assert datos_tarjetas["escenas"][-1]["fin_segundos"] == pytest.approx(
+        entradas[-1].fin_segundos, abs=1e-6
+    )
+    assert datos_tarjetas["escenas"][-1]["fin_segundos"] == pytest.approx(
+        datos_tarjetas["metadatos"]["duracion_total_segundos"], abs=1e-6
+    )
+
+
+def test_fin_segundos_de_la_ultima_escena_coincide_con_el_fin_de_guion_alineado_srt_con_toma_buena() -> (  # noqa: E501
+    None
+):
+    """Requisito 4 de R-16, caso con parte de rodaje que mezcla real/estimado:
+    `fin_segundos` de la ultima escena coincide con el fin del ultimo
+    subtitulo de `guion-alineado.srt` (R-05) -- mismo guion sintetico y
+    `tomas_por_escena` que ya prueban R-13/R-11 en este archivo, para que
+    ambas salidas partan exactamente del mismo `ResultadoTiempos`."""
+    resultado = parsear_guion(
+        _guion_con_capitulos_y_tomas(["Primero", "Segundo", "Tercero"], [10, 10, 10])
+    )
+    tiempos = calcular_tiempos(resultado, Configuracion())
+    tomas_por_escena = {
+        "1": {
+            "titulo": "Escena 1",
+            "tomas": [{"numero": 1, "duracion_segundos": 5.0, "nota": "", "buena": True}],
+        },
+        "3": {
+            "titulo": "Escena 3",
+            "tomas": [{"numero": 1, "duracion_segundos": 30.0, "nota": "", "buena": True}],
+        },
+    }
+
+    alineacion = reescalar_a_toma_buena(tiempos, tomas_por_escena)
+    entradas_alineadas = generar_entradas_srt(alineacion.resultado_tiempos, Configuracion())
+    datos_tarjetas = tarjetas_a_diccionario(
+        generar_tarjetas(resultado, tiempos, "prueba", Configuracion(), tomas_por_escena)
+    )
+    assert validar_tarjetas(datos_tarjetas) == []
+    assert datos_tarjetas["metadatos"]["mezcla_duracion_real_y_estimada"] is True
+
+    assert datos_tarjetas["escenas"][-1]["fin_segundos"] == pytest.approx(
+        entradas_alineadas[-1].fin_segundos, abs=1e-6
     )
 
 

@@ -10,21 +10,33 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-14 — **Ciclo de Programador: R-15 implementada y COMPLETADA.**
-`DEVELOPERS.md` gana un bloque de cita bajo "Verificación manual" advirtiendo explícitamente contra
-invocar `ruff`/`mypy`/`pytest` pelados en un contenedor de nube (un segundo juego preinstalado más
-nuevo que el pineado, por delante en el `PATH`, con señal distinta y falsos `import-not-found` de
-`mypy`); `SKILL.md` gana la misma advertencia en una frase con remisión, en su sección
-"Verificacion". Tarea puramente documental (requisito 3 de la ficha): cero cambio en `scripts/`,
-`tests/` ni `assets/`. Cuatro redes en verde (`mypy` limpio 68 archivos, `ruff` limpio, 569 tests,
-`verificar_salidas.py --fixture` catorce etapas en OK; `.pptx`/`.pdf` reales LATENTES como siempre
-en este contenedor de nube). Con R-15 completada, queda `#22` para que la siguiente pasada del
-auditor la reevalúe contra el código y la cierre a `RESUELTO`. R-16 (oleada v6) sigue `PENDIENTE`
-de especificación únicamente — el propio PM fijó que no se programa todavía — y es la siguiente
-tarea de código de la cola tras esta. Sin cambios en bloqueos, preguntas abiertas ni desviaciones.
+**Última actualización:** 2026-09-14 — **Ciclo de Programador: R-16 implementada y COMPLETADA.**
+`Tarjeta` (`scripts/pptx.py`) gana `inicio_segundos`/`fin_segundos` por escena, calculados una sola
+vez (`_con_limites_absolutos`) acumulando en el orden de las escenas con la misma regla real-vs-
+estimada que ya elige `duracion_real_segundos` (R-13); `references/contrato-tarjetas.md` documenta
+las dos claves nuevas (aditivo, `version_contrato` no sube) y `references/contrato-montaje.md` deja
+de pedirle a la cadena de montaje que sume las duraciones a mano — ahora lee los dos campos
+directamente, con la fórmula de acumulación como transparencia, no como instrucción. 5 tests nuevos
+(569→574): 2 unitarios en `test_pptx.py` (sin toma buena acumula la estimada sin huecos; con toma
+buena usa la real) y 3 de integración en `test_integracion_montaje.py` (primera escena empieza en
+`0` y no hay hueco/solape entre escenas sobre los tres guiones reales; el `fin_segundos` de la
+última escena coincide con el fin de `guion.srt` sin parte de rodaje y con el de
+`guion-alineado.srt` con parte de rodaje mezclando real/estimado). Cuatro redes en verde (`mypy`
+limpio 68 archivos, `ruff` limpio, 574 tests, `verificar_salidas.py --fixture` catorce etapas en
+OK; `.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube). `DEVELOPERS.md` y
+`SKILL.md` actualizados con la nueva sección/mención. Con R-16 completada, la cola de
+`ROADMAP_PRODUCTO.md` vuelve a quedar vacía — la siguiente sesión de Programador no tiene tarea de
+código pendiente salvo que el PM abra una nueva o el auditor escale un hallazgo. Sin cambios en
+bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificación de R-16.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-14, ciclo de Programador: R-15 implementada y COMPLETADA. `DEVELOPERS.md` gana un bloque
+  de cita bajo "Verificación manual" advirtiendo explícitamente contra invocar `ruff`/`mypy`/
+  `pytest` pelados en un contenedor de nube (un segundo juego preinstalado más nuevo que el
+  pineado, por delante en el `PATH`, con señal distinta y falsos `import-not-found` de `mypy`);
+  `SKILL.md` gana la misma advertencia en una frase con remisión. Tarea puramente documental: cero
+  cambio en `scripts/`, `tests/` ni `assets/`. Cuatro redes en verde (569 tests).
 - 2026-09-13, ciclo de Product Manager: abre R-16 (oleada v6 nueva), origen en una inconsistencia de
   arquitectura del contrato de montaje verificada por el PM (no un hallazgo del auditor):
   `references/contrato-montaje.md` obligaba a la cadena de montaje a reimplementar a mano la
@@ -142,7 +154,7 @@ tarea de código de la cola tras esta. Sin cambios en bloqueos, preguntas abiert
 | R-13 | Duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt` | **COMPLETADA** | 2026-09-11 | `scripts/pptx.py`: `Tarjeta.duracion_real_segundos` (`None` si la escena no tiene toma buena, `tomas.duracion_toma_buena` reutilizada tal cual) y `ResultadoTarjetas.mezcla_duracion_real_y_estimada` (booleano de cabecera, `true` solo si el conjunto mezcla ambos casos); `duracion_estimada_segundos` intacta (requisito 2). `generar_tarjetas`/`exportar_pptx` ganan `tomas_por_escena` opcional (mismo patrón que `srt_alineado.py`/`capitulos_youtube.py`, no integrado en el selector automático de T-30); sin él, comportamiento idéntico a antes de R-13. `references/contrato-tarjetas.md` y `contrato-montaje.md` actualizados con la fórmula de rango correcta. 7 tests nuevos (557→564), incluido el cruce con `guion-alineado.srt` en `test_integracion_montaje.py`. Oleada v5 · `origen: observación de arquitectura del PM (2026-09-10)` |
 | R-14 | El separador de escena no debe colarse en el texto de una indicación | **COMPLETADA** | 2026-09-11 | `scripts/clasificador.py`: `_separar_marcador_fin_escena` extrae el `---` de fin de escena (con las líneas en blanco que lo acompañan) en su propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia, en vez de dejarlo pegado al `contenido` de la última indicación. Nueva señal añadida a los tres sitios que la necesitan para no colarse como una "indicación" propia ni proponerse como convención: `pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES`. `references/convencion-guion.md` documenta ahora el separador (requisito 1). Fixture golden `fixtures/guion-ejemplo-esperado.md` regenerado a mano (cambio esperado y verificado línea a línea). 5 tests nuevos (564→569). Verificado sobre los tres guiones reales: cero indicación termina en `---` en `guion-escenas.md`, `tarjetas.json` ni la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta. Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
 | R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **COMPLETADA** | 2026-09-14 | Tarea puramente documental: nota visible en `DEVELOPERS.md` (bloque de cita bajo "Verificación manual") y frase con remisión en la sección "Verificacion" de `SKILL.md`, explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado. Cero cambio en `scripts/`, `tests/` o `assets/`; cuatro redes en verde (569 tests). `origen: auditoría #22` — queda para la siguiente pasada del auditor cerrar `#22` a `RESUELTO` |
-| R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **PENDIENTE** | 2026-09-13 (abierta por PM) | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano. Cambio aditivo, sin subir `version_contrato`, sin migración de `estado.json` ni campo nuevo de `Configuracion`. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v6. `origen: observación de arquitectura del PM (2026-09-13)` |
+| R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **COMPLETADA** | 2026-09-14 | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez (`_con_limites_absolutos`) con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-tarjetas.md` documenta las dos claves y `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano — ahora las lee directamente. Cambio aditivo, `version_contrato` no sube, sin migración de `estado.json` ni campo nuevo de `Configuracion`. 5 tests nuevos (569→574): 2 unitarios (`test_pptx.py`) y 3 de integración (`test_integracion_montaje.py`, incluida la coherencia con `guion.srt`/`guion-alineado.srt`). Cuatro redes en verde. `origen: observación de arquitectura del PM (2026-09-13)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

@@ -100,51 +100,42 @@ verificada.
 
 ## `tarjetas.json` — cómo derivar el tiempo de cada escena
 
-`tarjetas.json` (`references/contrato-tarjetas.md`, T-29) no lleva un
-`inicio_segundos`/`fin_segundos` absoluto por escena, solo
-`duracion_estimada_segundos` (relativa) en el mismo orden que las escenas
-aparecen en el guion. Como esas duraciones son exactamente las que usó T-12
-para acumular los tiempos del `.srt` (misma fuente única de tiempos,
-`tiempos.calcular_tiempos`), la cadena de montaje puede recuperar el instante
-de inicio de la escena `k` sumando las duraciones de las escenas anteriores:
+Desde **R-16**, `tarjetas.json` (`references/contrato-tarjetas.md`, T-29) trae
+ya resuelto el rango absoluto `[inicio_segundos, fin_segundos)` de cada
+escena: la cadena de montaje **lee esas dos claves directamente**, sin
+reproducir ningún cálculo propio. Cualquier subtítulo de `guion.srt` (o de
+`guion-alineado.srt`, si existe) cuyo intervalo cae dentro de ese rango
+pertenece a esa escena, sin ambigüedad, mientras no haya desviaciones de
+numeración (sección anterior). `fin_segundos` de una escena coincide siempre
+con `inicio_segundos` de la siguiente (sin huecos ni solapes), y el
+`fin_segundos` de la última escena coincide con `metadatos.
+duracion_total_segundos` cuando ninguna escena tiene toma buena, o con el fin
+del último subtítulo de `guion-alineado.srt` cuando alguna la tiene.
+`metadatos.mezcla_duracion_real_y_estimada` sigue avisando si el conjunto
+mezcla escenas con toma buena y sin ella, para que la cadena de montaje sepa
+si hay huecos sin evidencia real detrás de esos límites.
 
-```
-inicio_escena[k] = suma(duracion_estimada_segundos de escenas[0..k-1])
-fin_escena[k]    = inicio_escena[k] + duracion_estimada_segundos de escenas[k]
-```
-
-y la suma de `duracion_estimada_segundos` de todas las escenas es exactamente
-`metadatos.duracion_total_segundos`, que a su vez es el instante en que termina
-el último subtítulo de `guion.srt` (verificado por
-`tests/test_integracion_montaje.py`, T-33). Con ese rango `[inicio_escena,
-fin_escena)` por escena, cualquier subtítulo de `guion.srt` cuyo intervalo cae
-dentro de él pertenece a esa escena, sin ambigüedad, mientras no haya
-desviaciones de numeración (sección anterior).
-
-**Esa fórmula solo es coherente con `guion.srt` (estimado).** En cuanto existe
-un parte de rodaje con al menos una toma buena (R-02) y, con él,
-`guion-alineado.srt` (R-05), los límites de escena reales ya no son los que
-resulta de sumar `duracion_estimada_segundos` — son los que reescala R-05 a
-partir de la toma real. Desde **R-13**, `tarjetas.json` trae ese mismo dato por
-escena (`duracion_real_segundos`, `references/contrato-tarjetas.md`), así que
-la fórmula correcta — coherente con `guion-alineado.srt` cuando existe — es:
+**Cómo se calculan** (transparencia, no instrucción a seguir — la propia
+skill ya hace esta cuenta una sola vez dentro de `scripts/pptx.py`,
+`_con_limites_absolutos`): acumulando en el mismo orden en que las escenas
+aparecen en el guion la duración real de cada escena (`duracion_real_segundos`,
+R-13) si tiene toma buena, o su duración estimada (`duracion_estimada_segundos`,
+T-12) si no —
 
 ```
 duracion_usada[k]  = duracion_real_segundos de escenas[k] si no es null,
                       duracion_estimada_segundos de escenas[k] si lo es
-inicio_escena[k]   = suma(duracion_usada de escenas[0..k-1])
-fin_escena[k]      = inicio_escena[k] + duracion_usada[k]
+inicio_segundos[k] = suma(duracion_usada de escenas[0..k-1])
+fin_segundos[k]    = inicio_segundos[k] + duracion_usada[k]
 ```
 
-`metadatos.mezcla_duracion_real_y_estimada` avisa si el conjunto mezcla ambos
-casos (algunas escenas con toma buena, otras todavía no), para que la cadena de
-montaje sepa, antes de fiarse del campo, si hay huecos sin evidencia real. Sin
-ningún parte de rodaje (`duracion_real_segundos` es `null` en todas), esta
-fórmula coincide exactamente con la anterior — no hay dos fórmulas que
-mantener, solo una que ya elige la fuente correcta escena a escena. Verificado
-por `tests/test_integracion_montaje.py::
-test_tarjetas_json_duracion_real_reconstruye_limites_de_guion_alineado_srt`
-(R-13).
+Antes de R-16, `tarjetas.json` no traía estos dos campos y este documento le
+pedía a la cadena de montaje que reprodujera esta misma acumulación a mano —
+un cálculo que la propia skill ya resolvía correctamente y con tests (T-12,
+R-05, R-13), reproducido bit a bit por un tercero. R-16 cierra esa grieta:
+verificado por `tests/test_integracion_montaje.py::
+test_inicio_y_fin_segundos_de_tarjetas_json_no_dejan_huecos_ni_solapes` y
+`test_fin_segundos_de_la_ultima_escena_coincide_con_el_fin_del_srt_correspondiente`.
 
 ## Qué quedaba fuera de esta tarea (T-33), ya completado por sesiones posteriores
 

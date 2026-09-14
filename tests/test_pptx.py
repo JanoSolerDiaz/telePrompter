@@ -169,6 +169,38 @@ def test_generar_tarjetas_toma_buena_duracion_no_positiva_se_ignora() -> None:
     assert tarjetas.mezcla_duracion_real_y_estimada is False
 
 
+# --- limites absolutos de escena (R-16) ------------------------------------------------
+
+
+def test_generar_tarjetas_limites_absolutos_sin_toma_buena_acumulan_estimada() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos)
+    escena_0 = next(t for t in tarjetas.tarjetas if t.numero == 0)
+    escena_1 = next(t for t in tarjetas.tarjetas if t.numero == 1)
+    assert escena_0.inicio_segundos == 0.0
+    assert escena_0.fin_segundos == escena_0.duracion_estimada_segundos
+    # Sin hueco ni solape: el fin de una escena es el inicio de la siguiente.
+    assert escena_1.inicio_segundos == escena_0.fin_segundos
+    assert escena_1.fin_segundos == escena_1.inicio_segundos + escena_1.duracion_estimada_segundos
+
+
+def test_generar_tarjetas_limites_absolutos_usan_duracion_real_cuando_existe() -> None:
+    """Requisito 1 de R-16: la acumulacion usa `duracion_real_segundos`
+    cuando la escena tiene toma buena, en vez de `duracion_estimada_
+    segundos` -- misma regla que ya elige `mezcla_duracion_real_y_estimada`
+    (R-13), no una segunda implementacion."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tomas_por_escena = {
+        "0": {"tomas": [{"numero": 1, "duracion_segundos": 12.5, "nota": "", "buena": True}]},
+    }
+    tarjetas = generar_tarjetas(resultado, tiempos, tomas_por_escena=tomas_por_escena)
+    escena_0 = next(t for t in tarjetas.tarjetas if t.numero == 0)
+    escena_1 = next(t for t in tarjetas.tarjetas if t.numero == 1)
+    assert escena_0.duracion_real_segundos == 12.5
+    assert escena_0.fin_segundos == 12.5
+    assert escena_1.inicio_segundos == 12.5
+
+
 # --- serializacion y validacion del contrato -----------------------------------------
 
 
@@ -197,6 +229,10 @@ def test_tarjetas_a_diccionario_incluye_duracion_real_y_aviso_de_mezcla() -> Non
     escena_1 = next(e for e in datos["escenas"] if e["numero"] == 1)
     assert escena_0["duracion_real_segundos"] == 9.0
     assert escena_1["duracion_real_segundos"] is None
+    # inicio_segundos/fin_segundos (R-16) tambien pasan por el serializador.
+    assert escena_0["inicio_segundos"] == 0.0
+    assert escena_0["fin_segundos"] == 9.0
+    assert escena_1["inicio_segundos"] == 9.0
 
 
 def test_formatear_tarjetas_json_es_json_serializable_y_valido() -> None:

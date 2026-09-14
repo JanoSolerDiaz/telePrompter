@@ -42,12 +42,23 @@ No se extrae una funcion compartida con esos dos modulos para esta
 decision de real-vs-estimada (ver `DECISIONES_TECNICAS.md`, R-13): son solo
 tres lineas, y tocar `srt_alineado.py`/`capitulos_youtube.py` ya estables
 para ahorrarlas no compensa el riesgo sobre codigo ya verificado.
+
+Limites absolutos de escena (tarea R-16): `Tarjeta` gana `inicio_segundos`/
+`fin_segundos`, calculados una sola vez en `_con_limites_absolutos`
+acumulando en el mismo orden en que las escenas aparecen en
+`resultado.escenas`, con la MISMA regla real-vs-estimada que ya elige
+`duracion_real_segundos` (R-13): real si la escena tiene toma buena, si no
+la estimada. Cierra la grieta de `references/contrato-montaje.md`, que
+hasta ahora le pedia a la cadena de montaje reproducir esta acumulacion a
+mano. Cambio aditivo (no sube `version_contrato`), sin campo nuevo de
+`Configuracion` -- son datos derivados de T-12/R-13, no un ajuste del
+dueno (ver `DECISIONES_TECNICAS.md`, R-16).
 """
 
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -83,6 +94,8 @@ class Tarjeta:
     texto_locucion: str
     indicaciones_pantalla: tuple[str, ...]
     notas_internas: tuple[str, ...]
+    inicio_segundos: float
+    fin_segundos: float
 
 
 @dataclass(frozen=True)
@@ -159,7 +172,39 @@ def _tarjeta_de_escena(
         texto_locucion=" ".join(textos_bloques),
         indicaciones_pantalla=pantalla,
         notas_internas=notas,
+        # Limites absolutos (R-16): se calculan en un segundo paso
+        # (`_con_limites_absolutos`), una vez existen todas las tarjetas en
+        # orden -- placeholder aqui, nunca el valor final.
+        inicio_segundos=0.0,
+        fin_segundos=0.0,
     )
+
+
+def _con_limites_absolutos(tarjetas: tuple[Tarjeta, ...]) -> tuple[Tarjeta, ...]:
+    """Calcula `inicio_segundos`/`fin_segundos` por escena (requisito 1 de
+    R-16), acumulando en el mismo orden en que ya aparecen `tarjetas` (el
+    orden de `resultado.escenas`), con la MISMA regla real-vs-estimada que
+    ya usa `duracion_real_segundos` (R-13): la duracion real de la escena si
+    tiene toma buena, la estimada si no. Una sola pasada, sin reimplementar
+    la eleccion real/estimada -- se lee directamente del campo que cada
+    `Tarjeta` ya trae calculado."""
+    resultado = []
+    acumulado = 0.0
+    for tarjeta in tarjetas:
+        duracion_usada = (
+            tarjeta.duracion_real_segundos
+            if tarjeta.duracion_real_segundos is not None
+            else tarjeta.duracion_estimada_segundos
+        )
+        resultado.append(
+            replace(
+                tarjeta,
+                inicio_segundos=acumulado,
+                fin_segundos=acumulado + duracion_usada,
+            )
+        )
+        acumulado += duracion_usada
+    return tuple(resultado)
 
 
 def generar_tarjetas(
@@ -190,6 +235,7 @@ def generar_tarjetas(
         )
         for escena in resultado.escenas
     )
+    tarjetas = _con_limites_absolutos(tarjetas)
     tiene_real = any(tarjeta.duracion_real_segundos is not None for tarjeta in tarjetas)
     tiene_estimada = any(tarjeta.duracion_real_segundos is None for tarjeta in tarjetas)
     return ResultadoTarjetas(
@@ -234,6 +280,8 @@ def tarjetas_a_diccionario(resultado_tarjetas: ResultadoTarjetas) -> dict[str, A
                 "texto_locucion": tarjeta.texto_locucion,
                 "indicaciones_pantalla": list(tarjeta.indicaciones_pantalla),
                 "notas_internas": list(tarjeta.notas_internas),
+                "inicio_segundos": tarjeta.inicio_segundos,
+                "fin_segundos": tarjeta.fin_segundos,
             }
             for tarjeta in resultado_tarjetas.tarjetas
         ],
@@ -272,6 +320,8 @@ _CLAVES_ESCENA: dict[str, type | tuple[type, ...]] = {
     "texto_locucion": str,
     "indicaciones_pantalla": list,
     "notas_internas": list,
+    "inicio_segundos": (int, float),
+    "fin_segundos": (int, float),
 }
 
 
