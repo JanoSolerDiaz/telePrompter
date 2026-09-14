@@ -10,7 +10,19 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-14 — **Ciclo de Programador: R-16 implementada y COMPLETADA.**
+**Última actualización:** 2026-09-14 — **Ciclo de Programador: reconfirmación sin novedad tras R-16.**
+`auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad alta (solo `#19` baja y `#22`
+media, ninguno exige P-XX urgente); §1 de este documento y `ROADMAP_PRODUCTO.md` confirman la cola
+vacía — ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO` tras R-16 (`COMPLETADA` el mismo día). Sin
+trabajo de código pendiente, esta sesión se limita a reconfirmar las cuatro redes: `mypy` limpio 68
+archivos, `ruff` limpio, 574 tests, `verificar_salidas.py --fixture` catorce etapas en OK (`.pptx`
+latente por el bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos
+esperados). Cero cambios en `scripts/`, `tests/` ni `assets/`. Sin cambios en bloqueos ni preguntas
+abiertas.
+
+**Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
+`DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-14, ciclo de Programador: R-16 implementada y COMPLETADA.
 `Tarjeta` (`scripts/pptx.py`) gana `inicio_segundos`/`fin_segundos` por escena, calculados una sola
 vez (`_con_limites_absolutos`) acumulando en el orden de las escenas con la misma regla real-vs-
 estimada que ya elige `duracion_real_segundos` (R-13); `references/contrato-tarjetas.md` documenta
@@ -28,9 +40,6 @@ OK; `.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube). `DE
 `ROADMAP_PRODUCTO.md` vuelve a quedar vacía — la siguiente sesión de Programador no tiene tarea de
 código pendiente salvo que el PM abra una nueva o el auditor escale un hallazgo. Sin cambios en
 bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificación de R-16.
-
-**Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
-`DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
 - 2026-09-14, ciclo de Programador: R-15 implementada y COMPLETADA. `DEVELOPERS.md` gana un bloque
   de cita bajo "Verificación manual" advirtiendo explícitamente contra invocar `ruff`/`mypy`/
   `pytest` pelados en un contenedor de nube (un segundo juego preinstalado más nuevo que el
