@@ -32,6 +32,41 @@
 
 ---
 
+### Sesión 2026-09-14 — Ciclo de Product Manager: cierra R-15/R-16 al histórico, abre R-17 (`#19`)
+**Tarea(s):** ninguna T-XX de código; gestión de roadmap de producto (rol PM). Leídos primero
+`HOJA_DE_RUTA.md` (solo lectura), `SEGUIMIENTO.md` §1/§3/§5/§6/§7, `ROADMAP_PRODUCTO.md`,
+`FEEDBACK.md` y el registro completo de `auditoriacontinua.md`.
+**Estado resultante:** R-15 y R-16 ya estaban `COMPLETADA` en §1 de `SEGUIMIENTO.md` (Programador,
+mismo día) — este ciclo las archiva en `ROADMAP_HISTORICO.md` (Fase F-H y Oleada v6) y corrige la
+prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`, desactualizada desde 2026-09-13 y ya señalada
+sin corregir en ocho reconfirmaciones sucesivas del Programador. Se abre **R-17** (`PENDIENTE`,
+fase transversal F-I nueva) a partir del hallazgo `#19` de `auditoriacontinua.md` (baja, `ABIERTO`
+desde 2026-09-04, reconfirmado sin cambios en diez pasadas del auditor sin que ninguna sesión lo
+convirtiera antes en tarea trazable). `FEEDBACK.md` sigue sin ninguna entrada `nuevo`: no se abre
+ninguna otra R-XX de producto este ciclo por falta de evidencia real de rodaje.
+**Commits a develop:** (ver push de esta sesión)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/ROADMAP_HISTORICO.md`,
+`roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md` (este
+archivo). Cero cambio en `scripts/`, `tests/`, `assets/` ni `references/` — el rol de PM no programa.
+**Verificaciones pre-push:** N/A — tarea puramente de gestión de roadmap, no toca código; no aplica
+`python scripts/ci.py`. Ninguna de las cuatro redes se ha tocado.
+**Health check post-deploy:** N/A — no hay cambio de código ni de skill instalada.
+**Decisiones tomadas:** ver `DECISIONES_TECNICAS.md`, dos filas nuevas 2026-09-14 (PM): archivo de
+F-H/v6 y apertura de R-17.
+**Hallazgos del auditor atendidos:** `#19` (baja) enrutado a R-17 por primera vez desde su apertura
+(2026-09-04); `#22` (media) ya enrutado a R-15, que este ciclo confirma `COMPLETADA` — su cierre a
+`RESUELTO` en el registro corresponde a la siguiente pasada del auditor, no al PM.
+**Hallazgos:** ninguno nuevo de código; de gestión, ocho ciclos sucesivos de Programador señalaron
+sin corregir la prosa desactualizada de "Cola de producto" — corregida en esta sesión.
+**Tareas autopropuestas (P-XX):** ninguna (rol de PM, no de programador).
+**Próximo paso:** la siguiente sesión de Programador tiene **R-17** disponible en la cola (spec en
+`ROADMAP_PRODUCTO.md` §Fase F-I): investigar primero si la asimetría teórica de
+`_incidencias_anclas_desajustadas` es alcanzable antes de tocar `scripts/revalidacion.py`, zona
+sensible por los hallazgos `#9`/`#14`.
+
+---
+
 ### Sesión 2026-09-14 — Ciclo de Programador: octava reconfirmación del día, sin novedad tras R-16
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 sin ningún hallazgo `ABIERTO` de severidad alta (solo `#19` baja y `#22` media, reconfirmados sin

@@ -30,6 +30,10 @@ criterio que los tres movimientos anteriores.
 Fase transversal F-G (R-14), ambas COMPLETADA por el Programador el mismo día (2026-09-11) y sin
 ningún hito de negocio propio pendiente — mismo criterio que los cuatro movimientos anteriores.
 
+**Movido a histórico el:** 2026-09-14, ciclo de Product Manager. Se añaden la Fase transversal F-H
+(R-15) y la Oleada v6 (R-16), ambas COMPLETADA por el Programador el mismo día (2026-09-14) y sin
+ningún hito de negocio propio pendiente — mismo criterio que los cinco movimientos anteriores.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -561,7 +565,125 @@ la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta.
 
 ---
 
+## Fase transversal F-H — Deuda técnica menor (entorno de verificación)
+
+Agrupa hallazgos de calidad/infraestructura menores, sin hito de producto propio, con el mismo
+criterio que ya usaron F-D (R-08/R-09), F-F (R-11) y F-G (R-14). Contenía R-15, su única R-XX.
+**Entregada 2026-09-14.**
+
+### R-15 — Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube
+**Oleada / Fase:** F-H · **Migración:** No · **Depende de:** ninguna
+**Origen:** auditoría `#22` (2026-09-12)
+
+**Objetivo:** este contenedor de nube trae, además de las versiones exactas que instala `pip
+install -r requirements-dev.txt` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`, resueltas en
+`sys.executable`), un segundo juego de los mismos tres binarios preinstalado en
+`/root/.local/bin` (`mypy 1.19.1`, `ruff 0.15.8`, `pytest 9.0.2`), con esa ruta por delante en el
+`PATH`. Las cuatro verificaciones reales del protocolo (`scripts/ci.py`, el hook de pre-commit) son
+inmunes porque invocan siempre `sys.executable -m <herramienta>`, nunca el nombre pelado — pero un
+humano o una sesión que teclee `ruff check .`, `mypy scripts tests` o `pytest` a mano en la
+terminal recibe una señal distinta y, en el caso de `mypy`, activamente engañosa: 34 errores falsos
+de `import-not-found` (ese entorno aislado no ve el `pytest` instalado en `dist-packages`), más los
+`Untyped decorator` en cascada que provoca cada decorador de test sin tipos resueltos. El objetivo
+es dejar una advertencia explícita en los dos sitios que cualquier sesión futura consulta antes de
+tocar código, para que nadie pierda tiempo investigando una "regresión de tipos" que no existe.
+
+**Requisitos:**
+1. Añadir una nota breve y visible en `DEVELOPERS.md` (sección de verificación/desarrollo): la
+   única verificación válida es `python scripts/ci.py` (o `python -m mypy`/`python -m ruff`/
+   `python -m pytest` si se ejecutan sueltos); nunca el binario pelado (`ruff`, `mypy`, `pytest`
+   sin `python -m` por delante), porque un contenedor de nube puede traer un segundo juego
+   preinstalado, más nuevo que el pineado en `requirements-dev.txt` y por delante en el `PATH`, que
+   da una señal distinta y en el caso de `mypy` puede devolver errores de `import-not-found` que no
+   existen en la verificación real.
+2. Añadir la misma advertencia, en una frase, a la sección de verificación de `SKILL.md` si la
+   tiene, o como mínimo una referencia a `DEVELOPERS.md` desde ahí.
+3. Tarea puramente documental: sin cambio de comportamiento en `scripts/ci.py` ni en ningún otro
+   módulo — el propio hallazgo `#22` confirma que el protocolo real ya es inmune al binario pelado.
+4. Sin cambio de esquema de `estado.json` ni de `Configuracion`.
+
+**Criterio de aceptación:** `DEVELOPERS.md` contiene la advertencia explícita citando
+`scripts/ci.py` (o `python -m <herramienta>`) como única fuente de verdad de la verificación y
+mencionando el riesgo del binario pelado en un contenedor de nube; cero cambio en `scripts/`,
+`tests/` o `assets/`; la siguiente pasada del auditor verifica la nota y cierra `#22` a `RESUELTO`.
+
+**Cómo se entregó:** tarea puramente documental — nota visible en `DEVELOPERS.md` (bloque de cita
+bajo "Verificación manual") y frase con remisión en la sección "Verificación" de `SKILL.md`,
+explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`,
+nunca el binario pelado. Cero cambio en `scripts/`, `tests/` o `assets/`; cuatro redes en verde
+(569 tests).
+
+---
+
+## Oleada v6 — Cierre del contrato de montaje: límites de escena listos para ffmpeg
+
+Convierte en tarea una inconsistencia de arquitectura verificada en el código y en la documentación
+del propio contrato, con el mismo criterio que ya usaron R-12/R-13/R-14 (observación del PM,
+confirmada leyendo el módulo real antes de escribir la ficha). Contenía R-16, su única R-XX.
+**Entregada 2026-09-14.**
+
+### R-16 — Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json`
+**Oleada / Fase:** v6 · **Migración:** No · **Depende de:** T-33, R-13
+**Origen:** observación de arquitectura del PM (2026-09-13), releyendo `references/contrato-montaje.md`
+a la luz de que la fase siguiente del propio dueño es el montaje con ffmpeg
+
+**Objetivo:** hoy `references/contrato-montaje.md` (T-33) le pide **a la cadena de montaje** que
+derive el rango `[inicio_escena, fin_escena)` de cada escena sumando a mano, en orden,
+`duracion_real_segundos` si existe o si no `duracion_estimada_segundos` (la misma regla que ya
+implementa `mezcla_duracion_real_y_estimada` de R-13) — es la única forma documentada de saber a
+qué escena pertenece un subtítulo de `guion.srt`/`guion-alineado.srt`, y la propia página advierte
+de que esa fórmula deja de ser válida en cuanto existe parte de rodaje. Es exactamente el tipo de
+cálculo que esta skill ya resuelve una sola vez, de forma correcta y probada (T-12
+`tiempos.calcular_tiempos`, R-05, R-13): pedirle a un consumidor externo —hoy sin implementar
+todavía, mañana la propia skill de montaje con ffmpeg— que la reproduzca bit a bit es aceptar un
+punto de deriva silenciosa (redondeos, elegir real vs. estimada escena a escena, un futuro cambio
+en T-12 que la cadena de montaje no se entera de seguir) justo en el borde entre dos sistemas, que
+es donde este tipo de errores es más caro de diagnosticar. Cerrar la grieta ahora —antes de que
+exista una skill de montaje real que la sufra con datos de producción— es más barato que
+descubrirla después.
+
+**Requisitos:**
+1. `Tarjeta` (`scripts/pptx.py`) gana dos campos nuevos, `inicio_segundos`/`fin_segundos` (float),
+   calculados **una sola vez** con la misma regla que ya usa R-13 para elegir real vs. estimada
+   escena a escena, acumulando en el mismo orden en que las escenas aparecen en
+   `resultado.escenas` — nunca una segunda implementación de la lógica de T-12/R-13, reutilizar la
+   que ya exista o extraerla si hace falta compartirla.
+2. `tarjetas_a_diccionario`/`validar_tarjetas` y `references/contrato-tarjetas.md` documentan las
+   dos claves nuevas en la tabla de cada escena. Cambio **aditivo y retrocompatible** (mismo
+   criterio que R-13): no sube `version_contrato`.
+3. `references/contrato-montaje.md` deja de pedirle a la cadena de montaje que "sume las
+   duraciones anteriores": la sección de cómo derivar el tiempo de cada escena pasa a decir que se
+   lean `inicio_segundos`/`fin_segundos` directamente de `tarjetas.json`, dejando la fórmula de
+   acumulación como nota de cómo se calculan (transparencia), no como instrucción a seguir.
+4. Test de integración nuevo o ampliado en `tests/test_integracion_montaje.py`: `inicio_segundos`
+   de la primera escena es `0`; `fin_segundos` de una escena coincide con `inicio_segundos` de la
+   siguiente (sin huecos ni solapes); `fin_segundos` de la última escena coincide con el fin del
+   último subtítulo de `guion.srt` (caso sin parte de rodaje) y de `guion-alineado.srt` (caso con
+   parte de rodaje que mezcla real/estimado, reutilizando el guion sintético que ya prueba R-13).
+5. Sin migración de `estado.json`, sin campo nuevo de `Configuracion` (son datos derivados de T-12,
+   no un valor configurable por el dueño).
+
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/`,
+`inicio_segundos`/`fin_segundos` de `tarjetas.json` reconstruyen exactamente los límites de escena
+que hoy exige calcular a mano `contrato-montaje.md`, tanto con todas las escenas estimadas como con
+un parte de rodaje que mezcla real/estimado; el test de integración cruzada nuevo pasa;
+`contrato-montaje.md` y `contrato-tarjetas.md` quedan actualizados.
+
+**Cómo se entregó:** `Tarjeta` (`scripts/pptx.py`) gana `inicio_segundos`/`fin_segundos` por
+escena, calculados una sola vez (`_con_limites_absolutos`) acumulando en el orden de las escenas
+con la misma regla real-vs-estimada que ya elige `duracion_real_segundos` (R-13);
+`references/contrato-tarjetas.md` documenta las dos claves nuevas (aditivo, `version_contrato` no
+sube) y `references/contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las
+duraciones a mano — ahora lee los dos campos directamente, con la fórmula de acumulación como
+transparencia, no como instrucción. 5 tests nuevos (569→574): 2 unitarios en `test_pptx.py` y 3 de
+integración en `test_integracion_montaje.py` (primera escena empieza en `0` y no hay hueco/solape
+entre escenas sobre los tres guiones reales; el `fin_segundos` de la última escena coincide con el
+fin de `guion.srt` sin parte de rodaje y con el de `guion-alineado.srt` con parte de rodaje
+mezclando real/estimado).
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
-2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11.)*
+2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14.)*

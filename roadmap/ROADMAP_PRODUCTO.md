@@ -8,22 +8,21 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-13 (ciclo de PM). `auditoriacontinua.md` no deja ningún hallazgo
-`ABIERTO` nuevo sin enrutar (`#22`, media, ya enrutado a R-15 el 2026-09-12, sigue `PENDIENTE` de
-implementar por el programador; `#19`, baja, reconfirmado sin cambios en la pasada del auditor de
-hoy, mantiene su decisión razonada de no convertirse en R-XX especulativa). `roadmap/FEEDBACK.md`
-sigue sin ninguna entrada `nuevo` (bloqueo #7 de `SEGUIMIENTO.md` §3 — grabar un curso completo —
-sigue sin resolverse). Con los hallazgos de auditoría ya agotados y sin feedback real de rodaje,
-este ciclo repasa de nuevo `references/contrato-montaje.md` y `references/contrato-tarjetas.md`
-—el contrato exacto con la fase siguiente del propio dueño, el montaje con ffmpeg— y esta vez sí
-encuentra una inconsistencia de arquitectura real, del mismo tipo que ya motivó R-12/R-13/R-14: el
-propio `contrato-montaje.md` **obliga a la cadena de montaje a reimplementar a mano** la fórmula de
-acumulación de duraciones (sumar `duracion_estimada_segundos`/`duracion_real_segundos` en orden)
-solo para saber dónde empieza y termina cada escena, en vez de leerlo ya calculado — exactamente el
-cálculo que T-12/R-13 ya hacen una vez, de forma correcta y probada, dentro de esta skill. Se abre
-**R-16** (oleada v6 nueva) para cerrar esa grieta: añadir `inicio_segundos`/`fin_segundos` ya
-resueltos a cada escena de `tarjetas.json`, antes de que exista una skill de montaje real que
-tenga que descubrir la discrepancia con datos de producción.
+**Última actualización:** 2026-09-14 (ciclo de PM). §1 de `SEGUIMIENTO.md` (fuente autoritativa)
+confirma que el Programador completó tanto **R-15** como **R-16** el 2026-09-14: la cola de este
+documento, que llevaba desde el 2026-09-13 sin corregir pese a que siete reconfirmaciones sucesivas
+del Programador ya lo habían señalado como prosa desactualizada, queda ahora al día. Las dos oleadas
+entregadas (F-H y v6) se mueven a `ROADMAP_HISTORICO.md`. `auditoriacontinua.md` conserva un único
+hallazgo `ABIERTO` sin enrutar todavía: `#19` (baja, invariantes/revalidación), abierto desde
+2026-09-04 y reconfirmado sin cambios en las diez pasadas siguientes del auditor, siempre con la
+misma nota: es una asimetría teórica en `_incidencias_anclas_desajustadas`
+(`scripts/revalidacion.py`) sin escenario reproducido. Diez pasadas de reconfirmación sin que nadie
+lo convierta en tarea es más que suficiente para que se pierda de vista; se abre **R-17** (fase
+transversal **F-I** nueva) para cerrarlo formalmente, con el mismo criterio de deuda técnica menor
+agrupada que ya usaron F-D/F-F/F-G/F-H. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`
+(bloqueo #7 de `SEGUIMIENTO.md` §3 — grabar un curso completo — sigue sin resolverse); sin feedback
+real de rodaje, este ciclo no encuentra motivo para abrir ninguna R-XX de producto especulativa más
+allá de R-17.
 
 ---
 
@@ -96,115 +95,71 @@ F-G (deuda técnica menor del separador de escena, R-14) tienen sus R-XX en **CO
 `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-11. Su spec completa y cómo se entregó cada
 una vive ahí.
 
-### Fase transversal F-H — Deuda técnica menor (entorno de verificación)
+### Fase transversal F-H y Oleada v6 — entregadas
 
-Agrupa hallazgos de calidad/infraestructura menores, sin hito de producto propio, con el mismo
-criterio que ya usaron F-D (R-08/R-09), F-F (R-11) y F-G (R-14). Contiene R-15, su única R-XX por
+La fase F-H (advertencia sobre el binario "pelado" en un contenedor de nube, R-15) y la oleada v6
+(límites absolutos de escena en `tarjetas.json`, R-16) tienen sus R-XX en **COMPLETADA** en §1 de
+`SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movieron a
+`ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-14. Su spec completa y cómo se entregó cada
+una vive ahí.
+
+### Fase transversal F-I — Deuda técnica menor (revalidación)
+
+Agrupa hallazgos de calidad menores, sin hito de producto propio, con el mismo criterio que ya
+usaron F-D (R-08/R-09), F-F (R-11), F-G (R-14) y F-H (R-15). Contiene R-17, su única R-XX por
 ahora.
 
-#### R-15 — Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube
-**Oleada / Fase:** F-H · **Migración:** No · **Depende de:** ninguna
-**Origen:** auditoría `#22` (2026-09-12)
+#### R-17 — Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas`
+**Oleada / Fase:** F-I · **Migración:** No · **Depende de:** ninguna
+**Origen:** auditoría `#19` (2026-09-04), reconfirmada sin cambios en las diez pasadas siguientes del auditor
 
-**Objetivo:** este contenedor de nube trae, además de las versiones exactas que instala `pip
-install -r requirements-dev.txt` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`, resueltas en
-`sys.executable`), un segundo juego de los mismos tres binarios preinstalado en
-`/root/.local/bin` (`mypy 1.19.1`, `ruff 0.15.8`, `pytest 9.0.2`), con esa ruta por delante en el
-`PATH`. Las cuatro verificaciones reales del protocolo (`scripts/ci.py`, el hook de pre-commit) son
-inmunes porque invocan siempre `sys.executable -m <herramienta>`, nunca el nombre pelado — pero un
-humano o una sesión que teclee `ruff check .`, `mypy scripts tests` o `pytest` a mano en la
-terminal recibe una señal distinta y, en el caso de `mypy`, activamente engañosa: 34 errores falsos
-de `import-not-found` (ese entorno aislado no ve el `pytest` instalado en `dist-packages`), más los
-`Untyped decorator` en cascada que provoca cada decorador de test sin tipos resueltos. El objetivo
-es dejar una advertencia explícita en los dos sitios que cualquier sesión futura consulta antes de
-tocar código, para que nadie pierda tiempo investigando una "regresión de tipos" que no existe.
+**Objetivo:** `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`, defensa en profundidad
+de P-04 sobre el hallazgo #14) compara, escena a escena, el **conjunto** de índices de ancla
+previstos contra los realmente leídos del documento (`previstas != escenas_leidas[numero_escena]`,
+ambos `set[int]`). El hallazgo `#19` señala una asimetría teórica: esta comparación por conjunto
+detecta un índice de más, de menos o distinto, pero nunca se ha verificado si existe algún camino
+por el que dos disposiciones distintas de anclas pudieran producir el mismo conjunto de índices por
+escena sin que el aviso salte — el propio auditor lleva diez pasadas (2026-09-04 a 2026-09-14)
+reconfirmándolo como "sin escenario reproducido", nunca como un fallo real. Diez reconfirmaciones
+sin resolución es ya más caro en atención de sesión futura que cerrarlo una vez, en cualquiera de
+los dos sentidos posibles.
 
 **Requisitos:**
-1. Añadir una nota breve y visible en `DEVELOPERS.md` (sección de verificación/desarrollo): la
-   única verificación válida es `python scripts/ci.py` (o `python -m mypy`/`python -m ruff`/
-   `python -m pytest` si se ejecutan sueltos); nunca el binario pelado (`ruff`, `mypy`, `pytest`
-   sin `python -m` por delante), porque un contenedor de nube puede traer un segundo juego
-   preinstalado, más nuevo que el pineado en `requirements-dev.txt` y por delante en el `PATH`, que
-   da una señal distinta y en el caso de `mypy` puede devolver errores de `import-not-found` que no
-   existen en la verificación real.
-2. Añadir la misma advertencia, en una frase, a la sección de verificación de `SKILL.md` si la
-   tiene, o como mínimo una referencia a `DEVELOPERS.md` desde ahí.
-3. Tarea puramente documental: sin cambio de comportamiento en `scripts/ci.py` ni en ningún otro
-   módulo — el propio hallazgo `#22` confirma que el protocolo real ya es inmune al binario pelado.
-4. Sin cambio de esquema de `estado.json` ni de `Configuracion`.
+1. Investigar, leyendo `identidad_por_ancla`/`texto_editado_por_ancla` y sus dos únicos
+   productores (`tiempos.bloques_respiracion_marcados`, `troceo.trocear_guion`, ambos ya revisados
+   por la auditoría de R-14), si existe una secuencia real de ediciones/particiones que produzca,
+   para una misma escena, dos disposiciones de anclas distintas con el mismo conjunto de índices.
+   No asumir la respuesta de partida en ningún sentido.
+2. **Si se encuentra un escenario real:** endurecer la comparación para que compruebe la identidad
+   exacta de cada ancla (no solo la cardinalidad/conjunto de índices por escena), añadiendo un test
+   de regresión que reproduzca el escenario encontrado (falla sin el fix, pasa con él), mismo patrón
+   que los tests de `#9`/`#14`.
+3. **Si se confirma que es inalcanzable** dado el resto de invariantes del módulo (p. ej. porque la
+   identidad `(escena, índice_original, mitad)` es inyectiva por construcción): añadir un test que
+   deje esa prueba por escrito (no solo una nota en un docstring) y actualizar el registro de
+   `auditoriacontinua.md` — a través del propio informe de esta tarea, nunca editando el documento
+   del auditor directamente (§0.4: es el único archivo que modifica el auditor) — para que la
+   siguiente pasada del auditor pueda cerrar `#19` a `RESUELTO` en vez de reconfirmarlo indefinidamente.
+4. Cualquiera de los dos caminos es una tarea de calidad interna: cero cambio de esquema de
+   `estado.json` ni de `Configuracion`, y ningún cambio de comportamiento observable por el dueño
+   fuera de la propia corrección si el escenario resulta real.
 
-**Criterio de aceptación:** `DEVELOPERS.md` contiene la advertencia explícita citando
-`scripts/ci.py` (o `python -m <herramienta>`) como única fuente de verdad de la verificación y
-mencionando el riesgo del binario pelado en un contenedor de nube; cero cambio en `scripts/`,
-`tests/` o `assets/`; la siguiente pasada del auditor verifica la nota y cierra `#22` a `RESUELTO`.
-
----
-
-### Oleada v6 — Cierre del contrato de montaje: límites de escena listos para ffmpeg
-
-Convierte en tarea una inconsistencia de arquitectura verificada en el código y en la documentación
-del propio contrato, con el mismo criterio que ya usaron R-12/R-13/R-14 (observación del PM,
-confirmada leyendo el módulo real antes de escribir la ficha). Contiene R-16, su única R-XX por
-ahora.
-
-#### R-16 — Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json`
-**Oleada / Fase:** v6 · **Migración:** No · **Depende de:** T-33, R-13
-**Origen:** observación de arquitectura del PM (2026-09-13), releyendo `references/contrato-montaje.md`
-a la luz de que la fase siguiente del propio dueño es el montaje con ffmpeg
-
-**Objetivo:** hoy `references/contrato-montaje.md` (T-33) le pide **a la cadena de montaje** que
-derive el rango `[inicio_escena, fin_escena)` de cada escena sumando a mano, en orden,
-`duracion_real_segundos` si existe o si no `duracion_estimada_segundos` (la misma regla que ya
-implementa `mezcla_duracion_real_y_estimada` de R-13) — es la única forma documentada de saber a
-qué escena pertenece un subtítulo de `guion.srt`/`guion-alineado.srt`, y la propia página advierte
-de que esa fórmula deja de ser válida en cuanto existe parte de rodaje. Es exactamente el tipo de
-cálculo que esta skill ya resuelve una sola vez, de forma correcta y probada (T-12
-`tiempos.calcular_tiempos`, R-05, R-13): pedirle a un consumidor externo —hoy sin implementar
-todavía, mañana la propia skill de montaje con ffmpeg— que la reproduzca bit a bit es aceptar un
-punto de deriva silenciosa (redondeos, elegir real vs. estimada escena a escena, un futuro cambio
-en T-12 que la cadena de montaje no se entera de seguir) justo en el borde entre dos sistemas, que
-es donde este tipo de errores es más caro de diagnosticar. Cerrar la grieta ahora —antes de que
-exista una skill de montaje real que la sufra con datos de producción— es más barato que
-descubrirla después.
-
-**Requisitos:**
-1. `Tarjeta` (`scripts/pptx.py`) gana dos campos nuevos, `inicio_segundos`/`fin_segundos` (float),
-   calculados **una sola vez** con la misma regla que ya usa R-13 para elegir real vs. estimada
-   escena a escena, acumulando en el mismo orden en que las escenas aparecen en
-   `resultado.escenas` — nunca una segunda implementación de la lógica de T-12/R-13, reutilizar la
-   que ya exista o extraerla si hace falta compartirla.
-2. `tarjetas_a_diccionario`/`validar_tarjetas` y `references/contrato-tarjetas.md` documentan las
-   dos claves nuevas en la tabla de cada escena. Cambio **aditivo y retrocompatible** (mismo
-   criterio que R-13): no sube `version_contrato`.
-3. `references/contrato-montaje.md` deja de pedirle a la cadena de montaje que "sume las
-   duraciones anteriores": la sección de cómo derivar el tiempo de cada escena pasa a decir que se
-   lean `inicio_segundos`/`fin_segundos` directamente de `tarjetas.json`, dejando la fórmula de
-   acumulación como nota de cómo se calculan (transparencia), no como instrucción a seguir.
-4. Test de integración nuevo o ampliado en `tests/test_integracion_montaje.py`: `inicio_segundos`
-   de la primera escena es `0`; `fin_segundos` de una escena coincide con `inicio_segundos` de la
-   siguiente (sin huecos ni solapes); `fin_segundos` de la última escena coincide con el fin del
-   último subtítulo de `guion.srt` (caso sin parte de rodaje) y de `guion-alineado.srt` (caso con
-   parte de rodaje que mezcla real/estimado, reutilizando el guion sintético que ya prueba R-13).
-5. Sin migración de `estado.json`, sin campo nuevo de `Configuracion` (son datos derivados de T-12,
-   no un valor configurable por el dueño).
-
-**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/`,
-`inicio_segundos`/`fin_segundos` de `tarjetas.json` reconstruyen exactamente los límites de escena
-que hoy exige calcular a mano `contrato-montaje.md`, tanto con todas las escenas estimadas como con
-un parte de rodaje que mezcla real/estimado; el test de integración cruzada nuevo pasa;
-`contrato-montaje.md` y `contrato-tarjetas.md` quedan actualizados.
+**Criterio de aceptación:** la incertidumbre queda resuelta con evidencia en código (test nuevo) en
+uno de los dos sentidos — comparación endurecida con regresión que la ejercita, o prueba explícita
+de que el escenario es inalcanzable —, documentado en `DECISIONES_TECNICAS.md` con el razonamiento
+seguido; la siguiente pasada del auditor puede cerrar `#19` sin tener que seguir reconfirmando la
+misma nota teórica.
 
 ---
 
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` tiene dos R-XX pendientes en este ciclo: **R-15** (F-H), origen directo de un
-hallazgo real del auditor (`#22`), y **R-16** (oleada v6), origen en una inconsistencia de
-arquitectura verificada por el PM en el contrato de montaje. No hay ninguna otra R-XX `PENDIENTE`
-ni `EN CURSO`: el resto del roadmap sigue a la espera de una entrada real en `FEEDBACK.md`, de un
-nuevo hallazgo de `auditoriacontinua.md`, o de que el dueño complete el criterio de salida de la
-oleada v1 (grabar un curso entero, bloqueo #7 de `SEGUIMIENTO.md` §3) y aporte fricciones reales de
-rodaje.
+`ROADMAP_PRODUCTO.md` tiene una única R-XX pendiente en este ciclo: **R-17** (F-I), origen directo
+de un hallazgo del auditor (`#19`) que llevaba diez pasadas sin convertirse en tarea. No hay
+ninguna otra R-XX `PENDIENTE` ni `EN CURSO`: el resto del roadmap sigue a la espera de una entrada
+real en `FEEDBACK.md`, de un nuevo hallazgo de `auditoriacontinua.md`, o de que el dueño complete el
+criterio de salida de la oleada v1 (grabar un curso entero, bloqueo #7 de `SEGUIMIENTO.md` §3) y
+aporte fricciones reales de rodaje.
 
 ---
 

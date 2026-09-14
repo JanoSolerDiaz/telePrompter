@@ -10,26 +10,26 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-14 — **Ciclo de Programador: octava reconfirmación del día, sin
-novedad tras R-16.** `auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad alta (solo
-`#19` baja y `#22` media, ninguno exige P-XX urgente); §1 de este documento (fuente autoritativa)
-confirma R-15 y R-16 `COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md`
-§"Cola de producto" sigue con la misma prosa desactualizada (fechada 2026-09-13, anterior a R-16) ya
-señalada en las siete sesiones anteriores del día — se reconfirma que es prosa sin corregir del PM,
-no una tarea real. Sin trabajo de código pendiente, esta sesión se limita a reconfirmar las cuatro
-redes: `mypy` limpio 68 archivos, `ruff` limpio, 574 tests, `verificar_salidas.py --fixture` catorce
-etapas en OK (`.pptx` latente por el bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en
-este contenedor, ambos esperados). Cero cambios en `scripts/`, `tests/` ni `assets/`. Sin cambios en
-bloqueos ni preguntas abiertas. Nota de arranque: esta vez el clon llegó con `develop` local apuntando
-al commit obsoleto de siempre (`467833f`, 2026-09-08, herencia de la reescritura de `#21`) mientras
-`origin/develop` ya estaba en `34d4b9b` (séptima reconfirmación); `git checkout develop` fue limpio
-pero `git pull origin develop` no pudo hacer fast-forward por falta de ancestro común (los dos
-historiales han divergido desde la reescritura de `#21`) y hubo que usar
-`git reset --hard origin/develop` tras verificar que el árbol de trabajo estaba limpio y que
-`467833f` no tenía ningún commit sin empujar, así que no hubo pérdida.
+**Última actualización:** 2026-09-14 — **Ciclo de Product Manager (tras la octava reconfirmación del
+Programador).** `ROADMAP_PRODUCTO.md` §"Cola de producto" corregida: ya no repite la prosa
+desactualizada del 2026-09-13 que ocho sesiones sucesivas del Programador venían señalando —
+confirmado en este ciclo que R-15 y R-16 están `COMPLETADA` (ver filas de §1), así que la Fase F-H y
+la Oleada v6 se archivan en `ROADMAP_HISTORICO.md`. Revisado `auditoriacontinua.md`: `#22` (media)
+ya cerró su enrutamiento con R-15 `COMPLETADA` (queda que la siguiente pasada del auditor lo pase a
+`RESUELTO`, no es acción del PM); `#19` (baja) seguía `ABIERTO` sin ninguna R-XX ni entrada de
+backlog desde que se detectó el 2026-09-04 — diez pasadas de reconfirmación del auditor sin que
+nadie lo convirtiera en tarea, pese al mandato de §0 de enrutar todo hallazgo `ABIERTO`. Se abre
+**R-17** (fase transversal **F-I** nueva) para cerrarlo formalmente, con instrucción explícita de
+investigar primero si el escenario es alcanzable antes de tocar código de revalidación (área
+sensible, ver invariante (c) y hallazgos `#9`/`#14`). `roadmap/FEEDBACK.md` sigue sin ninguna
+entrada `nuevo` (bloqueo #7 de §3 — grabar un curso completo — sigue sin resolverse); sin feedback
+real de rodaje, no se abre ninguna otra R-XX de producto especulativa este ciclo. Sin cambios en
+bloqueos (§3) ni preguntas abiertas (§6); sin desviaciones nuevas en §7.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-14, ciclo de Programador: octava reconfirmación del día, sin novedad tras R-16. Cuatro
+  redes en verde (574 tests). Sin trabajo de código pendiente.
 - 2026-09-14, ciclo de Programador: séptima reconfirmación del día, sin novedad tras R-16. Cuatro
   redes en verde (574 tests). Sin trabajo de código pendiente.
 - 2026-09-14, ciclo de Programador: sexta reconfirmación del día, sin novedad tras R-16. Cuatro
@@ -186,6 +186,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-14 | El separador de escena no debe colarse en el texto de una indicación | **COMPLETADA** | 2026-09-11 | `scripts/clasificador.py`: `_separar_marcador_fin_escena` extrae el `---` de fin de escena (con las líneas en blanco que lo acompañan) en su propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia, en vez de dejarlo pegado al `contenido` de la última indicación. Nueva señal añadida a los tres sitios que la necesitan para no colarse como una "indicación" propia ni proponerse como convención: `pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES`. `references/convencion-guion.md` documenta ahora el separador (requisito 1). Fixture golden `fixtures/guion-ejemplo-esperado.md` regenerado a mano (cambio esperado y verificado línea a línea). 5 tests nuevos (564→569). Verificado sobre los tres guiones reales: cero indicación termina en `---` en `guion-escenas.md`, `tarjetas.json` ni la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta. Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
 | R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **COMPLETADA** | 2026-09-14 | Tarea puramente documental: nota visible en `DEVELOPERS.md` (bloque de cita bajo "Verificación manual") y frase con remisión en la sección "Verificacion" de `SKILL.md`, explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado. Cero cambio en `scripts/`, `tests/` o `assets/`; cuatro redes en verde (569 tests). `origen: auditoría #22` — queda para la siguiente pasada del auditor cerrar `#22` a `RESUELTO` |
 | R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **COMPLETADA** | 2026-09-14 | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez (`_con_limites_absolutos`) con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-tarjetas.md` documenta las dos claves y `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano — ahora las lee directamente. Cambio aditivo, `version_contrato` no sube, sin migración de `estado.json` ni campo nuevo de `Configuracion`. 5 tests nuevos (569→574): 2 unitarios (`test_pptx.py`) y 3 de integración (`test_integracion_montaje.py`, incluida la coherencia con `guion.srt`/`guion-alineado.srt`). Cuatro redes en verde. `origen: observación de arquitectura del PM (2026-09-13)` |
+| R-17 | Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`) | PENDIENTE | 2026-09-14 (abierta por PM) | Spec completa en `ROADMAP_PRODUCTO.md` §Fase F-I. `origen: auditoría #19` (abierto 2026-09-04, reconfirmado sin cambios en diez pasadas sucesivas del auditor sin que nadie lo convirtiera en tarea hasta ahora) |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
