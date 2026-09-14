@@ -10,28 +10,28 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-14 — **Ciclo de Programador: sexta reconfirmación del día, sin
+**Última actualización:** 2026-09-14 — **Ciclo de Programador: séptima reconfirmación del día, sin
 novedad tras R-16.** `auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad alta (solo
 `#19` baja y `#22` media, ninguno exige P-XX urgente); §1 de este documento (fuente autoritativa)
 confirma R-15 y R-16 `COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md`
 §"Cola de producto" sigue con la misma prosa desactualizada (fechada 2026-09-13, anterior a R-16) ya
-señalada en las cinco sesiones anteriores del día — se reconfirma que es prosa sin corregir del PM,
+señalada en las seis sesiones anteriores del día — se reconfirma que es prosa sin corregir del PM,
 no una tarea real. Sin trabajo de código pendiente, esta sesión se limita a reconfirmar las cuatro
 redes: `mypy` limpio 68 archivos, `ruff` limpio, 574 tests, `verificar_salidas.py --fixture` catorce
 etapas en OK (`.pptx` latente por el bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en
 este contenedor, ambos esperados). Cero cambios en `scripts/`, `tests/` ni `assets/`. Sin cambios en
-bloqueos ni preguntas abiertas. Nota de arranque: el clon local volvió a llegar con `HEAD` detached en
-el commit más reciente de `origin/develop` (`5617e53`), pero el puntero de la rama local `develop`
-seguía en el mismo commit obsoleto de siempre (`467833f`, 2026-09-08 — la misma situación
-pre-reescritura ya diagnosticada y cerrada por `#21`, reconstruida por el `git clone --depth` de cada
-contenedor efímero); esta vez `git checkout develop` + `git pull origin develop` no pudo hacer
-fast-forward (historiales sin ancestro común, herencia directa de la reescritura de `#21`) y hubo que
-usar `git reset --hard origin/develop` para realinear — verificado antes de tocar nada que el árbol
-de trabajo ya estaba limpio (`git status`) y que `467833f` no tenía ningún commit posterior sin
+bloqueos ni preguntas abiertas. Nota de arranque: mismo escenario que la sesión anterior — el clon
+local llegó con `HEAD` detached en el commit más reciente de `origin/develop` (`9ec91f9`) mientras el
+puntero de la rama local `develop` seguía en el commit obsoleto de siempre (`467833f`, 2026-09-08,
+herencia de la reescritura de `#21`); `git checkout develop` + `git pull origin develop` no pudo
+hacer fast-forward por falta de ancestro común y hubo que usar `git reset --hard origin/develop`
+tras verificar que el árbol de trabajo estaba limpio y que `467833f` no tenía ningún commit sin
 empujar, así que no hubo pérdida.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-14, ciclo de Programador: sexta reconfirmación del día, sin novedad tras R-16. Cuatro
+  redes en verde (574 tests). Sin trabajo de código pendiente.
 - 2026-09-14, ciclo de Programador: quinta reconfirmación del día, sin novedad tras R-16. Cuatro
   redes en verde (574 tests). Sin trabajo de código pendiente.
 - 2026-09-14, ciclo de Programador: cuarta reconfirmación del día, sin novedad tras R-16. Cuatro
