@@ -32,6 +32,47 @@
 
 ---
 
+### Sesión 2026-09-14 — Ciclo de Programador: tercera reconfirmación del día, sin novedad tras R-16
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+sin ningún hallazgo `ABIERTO` de severidad alta (solo `#19` baja y `#22` media, reconfirmados sin
+cambios, ninguno exige P-XX urgente); §1 de `SEGUIMIENTO.md` (fuente autoritativa) confirma R-15 y
+R-16 `COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md` §"Cola de
+producto" sigue con la misma prosa desactualizada (fechada 2026-09-13, anterior a R-16) ya señalada
+en la sesión anterior — se reconfirma que es prosa sin corregir del PM, no una tarea real; §1 de
+`SEGUIMIENTO.md` sigue mandando como fuente de estado. Nota de arranque distinta de las dos
+reconfirmaciones anteriores: `git checkout develop` encontró el `HEAD` local *detached* con el
+puntero de rama `develop` apuntando a un commit obsoleto (`467833f`, 2026-09-08 — anterior a la
+reescritura de historial que el auditor ya diagnosticó y cerró en `#21`); `git pull` no pudo
+reconciliar por divergencia de raíz sin ancestro común. Investigado antes de tocar nada: el commit
+`467833f` no tenía ningún trabajo posterior sin empujar (es historia pre-reescritura, ya superada),
+y `origin/develop` (`a3ffbfe`) es la única fuente autoritativa — `git reset --hard origin/develop`
+realineó el clon sin pérdida real, con el árbol de trabajo ya limpio antes de la operación
+(verificado con `git status`).
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` («Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(574 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx` latente por el
+bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en una
+sesión de nube)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` del dueño (nota
+de entorno del protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva de producto/arquitectura; se deja constancia operativa (no de
+diseño) del `git reset --hard origin/develop` de arranque en esta misma entrada, sin fila nueva en
+`DECISIONES_TECNICAS.md` por no tratarse de una decisión técnica del proyecto
+**Hallazgos del auditor atendidos:** ninguno — `#19`/`#22` siguen `ABIERTO` sin cambios, sin escalar
+**Hallazgos:** ninguno nuevo de código; se reconfirma la prosa desactualizada de "Cola de producto"
+en `ROADMAP_PRODUCTO.md` ya señalada en la sesión anterior
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** sin cambios respecto a las dos sesiones anteriores — la siguiente sesión de
+Programador sigue sin tarea de código pendiente salvo que el PM abra una R-XX nueva o el auditor
+escale un hallazgo de severidad alta. El siguiente ciclo de PM podría refrescar la prosa de "Cola de
+producto" en `ROADMAP_PRODUCTO.md` para que deje de nombrar R-15/R-16 como pendientes.
+
+---
+
 ### Sesión 2026-09-14 — Ciclo de Programador: segunda reconfirmación del día, sin novedad tras R-16
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 sin ningún hallazgo `ABIERTO` de severidad alta (solo `#19` baja y `#22` media, reconfirmados sin
