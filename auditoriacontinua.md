@@ -46,6 +46,81 @@
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
 
+### Auditoría 2026-09-14 — pasada de reconfirmación sin cambios de código (R-16 abierta el día anterior, todavía sin implementar; R-15 sigue igual); ningún hallazgo nuevo
+
+**Nota de arranque.** Clon con `develop` en `HEAD` *detached* en 45 commits; `git checkout develop
+&& git pull origin develop` resolvió en **fast-forward limpio** (`467833f..ad41bc1`) sin ningún
+`reset --hard` ni historial huérfano. El clon **sí llegó superficial** (`git rev-parse
+--is-shallow-repository` → `true`), el mismo síntoma benigno ya diagnosticado y cerrado por `#21`:
+no se reabre, solo se deja constancia porque reaparece en cada contenedor nuevo. Confirmado además,
+al revisar `HOJA_DE_RUTA.md`, que su único commit posterior a T-17 en este clon (`f9cf521`,
+2026-09-08) es exactamente el patrón `new file mode` ya diagnosticado por `#21` (reintroducción del
+árbol completo por un commit de reconfirmación en un clon superficial), no una modificación de
+contenido: el documento sigue inmutable.
+
+**Alcance — cero cambio de código desde la pasada anterior.** `git diff --stat e21a662 HEAD` (e21a662
+es el commit de la propia auditoría del 2026-09-13) da como único cambio 4 archivos de `roadmap/`
+(`DECISIONES_TECNICAS.md`, `HISTORIAL_SESIONES.md`, `ROADMAP_PRODUCTO.md`, `SEGUIMIENTO.md`), cero
+líneas en `scripts/`, `tests/`, `assets/` ni `references/`. El único commit posterior (`ad41bc1`, PM)
+abre **R-16** (oleada v6: `inicio_segundos`/`fin_segundos` por escena en `tarjetas.json`), sin tocar
+código. No hay, por tanto, código nuevo que auditar en profundidad esta vez; esta pasada es una
+reconfirmación objetiva de las cuatro redes más una revisión de coherencia de la nueva spec R-16 y de
+si algo se ha movido en los hallazgos `ABIERTO`.
+
+**Verificación objetiva de las cuatro redes, independiente, con las versiones PINEADAS
+(`requirements-dev.txt`).** `pip install -r requirements-dev.txt` limpio. `python3 -m mypy scripts
+tests` → limpio, 68 archivos. `python3 -m ruff check scripts/ tests/` (el comando exacto de
+`scripts/ci.py`) → limpio. `python3 -m pytest` → **569 passed**, igual que las dos pasadas anteriores
+(coherente con que no hay código nuevo). `python3 scripts/verificar_salidas.py --fixture` → las
+catorce etapas en **OK**; `.pptx`/`.pdf` reales siguen LATENTES en este contenedor (sin la skill de
+marca, sin Chrome/Edge) — degradación esperada y documentada, no un fallo. Verificado además, contando
+la tupla por AST en vez de fiarme de una cuenta visual, que `scripts/verificar_salidas.py`
+(`PATRONES_RECURSO_EXTERNO`) conserva sus **13 patrones** intactos (invariante del reproductor
+autocontenido, R-09) y que la copia `.bak-<marca>` antes de sobrescribir sigue presente en los cinco
+puntos que tocan archivos del dueño o de instalación (`convencion.py`, `documento_revision.py`,
+`entrada.py`, `feedback.py`, `instalar_skill.py`) — invariante (d)/(f) sin regresión.
+
+**`#22` reevaluado: sigue ABIERTO, correctamente — R-15 sigue sin implementar.** Confirmado que
+`DEVELOPERS.md` y `SKILL.md` siguen sin ninguna mención a "pelado" (`grep -n pelado` no encuentra nada
+en ninguno de los dos). Reproducido de nuevo, sin depender de la nota de pasadas anteriores: el binario
+pelado sigue en `/root/.local/bin` (`ruff 0.15.8`, `mypy 1.19.1`, `pytest 9.0.2`), por delante en el
+`PATH`, distinto de las versiones pineadas que resuelve `python3 -m <herramienta>` (`ruff 0.14.0`,
+`mypy 1.18.2`). `SEGUIMIENTO.md` §1 sigue con `R-15 | ... | PENDIENTE`, coherente con
+`ROADMAP_PRODUCTO.md`. Se mantiene `#22` en `ABIERTO`, media, sin escalar.
+
+**`#19` reevaluado, sin cambios.** `git diff --stat e21a662 HEAD -- scripts/revalidacion.py` da vacío:
+`_particiones_pospuestas_previas` e `_incidencias_anclas_desajustadas` siguen presentes y sin
+modificar. El límite teórico (comparación de anclas por conjunto/cantidad, no por contenido/orden)
+sigue exacto y sin escenario reproducido. Se mantiene `ABIERTO`, baja, sin escalar.
+
+**Revisión de coherencia de la spec R-16 (todavía sin implementar, solo documento).** Leída la ficha
+completa en `ROADMAP_PRODUCTO.md` y la fila correspondiente de `DECISIONES_TECNICAS.md`. La
+justificación de apertura es sólida: `references/contrato-montaje.md` (T-33) hoy exige a un
+consumidor externo reimplementar a mano la misma fórmula de acumulación real/estimada que R-13 ya
+resuelve una sola vez y con tests — cerrar esa grieta antes de que exista una skill de montaje real
+que la sufra con datos de producción es coherente con el criterio ya aplicado a R-08/R-09/R-11/R-14
+(deuda técnica agrupada, tratada en cuanto se identifica en vez de esperar a que duela). Los cuatro
+requisitos y el criterio de aceptación son concretos y verificables (límites sin huecos ni solapes,
+reutilizar la lógica de T-12/R-13 sin una segunda implementación, cambio aditivo sin subir
+`version_contrato`, sin campo nuevo de `Configuracion` por no ser un valor ajustable por el dueño) —
+respetan los invariantes (e) y (f) de §0.2 tal y como están redactados, sin necesidad de código
+todavía para confirmarlo. No se ha adelantado ningún cambio a medias: `grep -n
+"inicio_segundos\|fin_segundos" scripts/pptx.py` no devuelve nada, confirmando que la tarea sigue
+siendo pura especificación, sin implementación parcial que revisar.
+
+**Coherencia entre lo decidido y lo ejecutado.** `HOJA_DE_RUTA.md` sigue sin ninguna modificación de
+contenido posterior a T-17 (documento inmutable, respetado; ver nota de arranque sobre el falso
+positivo de `f9cf521`). El ciclo de PM del 2026-09-13 que abre R-16 es internamente coherente en los
+cuatro documentos que toca (`ROADMAP_PRODUCTO.md`, `SEGUIMIENTO.md` §1 y su cabecera,
+`DECISIONES_TECNICAS.md`, `HISTORIAL_SESIONES.md`) y no reabre ni contradice ningún hallazgo cerrado:
+el propio commit deja constancia de que `#22` ya está enrutado a R-15 (pendiente de implementar) y
+`#19` reconfirmado sin cambios. `SEGUIMIENTO.md` §7 no tiene ninguna desviación nueva que registrar
+(idéntica a la pasada anterior); §3 (bloqueos) y §6 (preguntas al dueño) sin cambios.
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Ningún hallazgo nuevo en esta pasada: la
+revisión de invariantes (auto-contención, `.bak`, cobertura total del guion, biblioteca estándar en
+runtime) no encontró ninguna grieta que las 23 pasadas anteriores no hubieran ya cubierto, y no había
+código nuevo que pudiera introducir una.
+
 ### Auditoría 2026-09-13 — pasada de reconfirmación sin cambios de código (R-15 abierta el día anterior, todavía sin implementar); ningún hallazgo nuevo
 
 **Nota de arranque.** Clon con `develop` en `HEAD` *detached* en 43 commits; `git checkout develop
