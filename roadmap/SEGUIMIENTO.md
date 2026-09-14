@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-14 — **Ciclo de Programador: cuarta reconfirmación del día, sin
+**Última actualización:** 2026-09-14 — **Ciclo de Programador: quinta reconfirmación del día, sin
 novedad tras R-16.** `auditoriacontinua.md` sin ningún hallazgo `ABIERTO` de severidad alta (solo
 `#19` baja y `#22` media, ninguno exige P-XX urgente); §1 de este documento (fuente autoritativa)
 confirma R-15 y R-16 `COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. Nota: la prosa de
@@ -21,13 +21,16 @@ de código pendiente, esta sesión se limita a reconfirmar las cuatro redes: `my
 archivos, `ruff` limpio, 574 tests, `verificar_salidas.py --fixture` catorce etapas en OK (`.pptx`
 latente por el bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos
 esperados). Cero cambios en `scripts/`, `tests/` ni `assets/`. Sin cambios en bloqueos ni preguntas
-abiertas. Nota de arranque: el clon local llegó de nuevo con `HEAD` detached en un puntero de
-`develop` obsoleto (2026-09-08, la misma situación pre-reescritura ya diagnosticada y cerrada por
-`#21`, reconstruida por el `git clone --depth` de cada contenedor efímero); `git checkout -B develop
-origin/develop` lo realineó sin pérdida, con el árbol de trabajo ya limpio antes de la operación.
+abiertas. Nota de arranque: el clon local volvió a llegar con `HEAD` detached en el mismo puntero de
+`develop` obsoleto (`467833f`, 2026-09-08 — la misma situación pre-reescritura ya diagnosticada y
+cerrada por `#21`, reconstruida por el `git clone --depth` de cada contenedor efímero); verificado
+antes de tocar nada que el árbol de trabajo ya estaba limpio y que `467833f` no tenía ningún commit
+posterior sin empujar; `git checkout -B develop origin/develop` lo realineó sin pérdida.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-14, ciclo de Programador: cuarta reconfirmación del día, sin novedad tras R-16. Cuatro
+  redes en verde (574 tests). Sin trabajo de código pendiente.
 - 2026-09-14, ciclo de Programador: tercera reconfirmación del día, sin novedad tras R-16. Cuatro
   redes en verde (574 tests). Sin trabajo de código pendiente.
 - 2026-09-14, ciclo de Programador: segunda reconfirmación del día, sin novedad tras R-16. Cuatro
