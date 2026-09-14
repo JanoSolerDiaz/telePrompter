@@ -10,21 +10,26 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-13 — **Ciclo de Product Manager: abre R-16 (oleada v6 nueva)**,
-origen en una inconsistencia de arquitectura del contrato de montaje verificada por el PM (no un
-hallazgo del auditor): `references/contrato-montaje.md` obliga hoy a la cadena de montaje a
-reimplementar a mano la fórmula de acumulación de duraciones para saber dónde empieza y termina
-cada escena; R-16 añade `inicio_segundos`/`fin_segundos` ya resueltos a `tarjetas.json` (mismo
-patrón que R-13), para que ese cálculo se haga una sola vez, aquí, antes de que exista una skill de
-montaje real que lo sufra con datos de producción. `#22` (media) sigue `PENDIENTE` de implementar
-como R-15 (sin cambios desde el 2026-09-12, no es tarea de este ciclo). `#19` (baja) reconfirmado
-sin cambios por el auditor, mantiene su decisión razonada de no convertirse en R-XX especulativa.
-`roadmap/FEEDBACK.md` sigue sin entradas `nuevo`. Sin cambios en bloqueos, preguntas abiertas ni
-desviaciones; R-16 es solo especificación (NO se programa desde este ciclo), no aplica todavía la
-verificación de las cuatro redes.
+**Última actualización:** 2026-09-14 — **Ciclo de Programador: R-15 implementada y COMPLETADA.**
+`DEVELOPERS.md` gana un bloque de cita bajo "Verificación manual" advirtiendo explícitamente contra
+invocar `ruff`/`mypy`/`pytest` pelados en un contenedor de nube (un segundo juego preinstalado más
+nuevo que el pineado, por delante en el `PATH`, con señal distinta y falsos `import-not-found` de
+`mypy`); `SKILL.md` gana la misma advertencia en una frase con remisión, en su sección
+"Verificacion". Tarea puramente documental (requisito 3 de la ficha): cero cambio en `scripts/`,
+`tests/` ni `assets/`. Cuatro redes en verde (`mypy` limpio 68 archivos, `ruff` limpio, 569 tests,
+`verificar_salidas.py --fixture` catorce etapas en OK; `.pptx`/`.pdf` reales LATENTES como siempre
+en este contenedor de nube). Con R-15 completada, queda `#22` para que la siguiente pasada del
+auditor la reevalúe contra el código y la cierre a `RESUELTO`. R-16 (oleada v6) sigue `PENDIENTE`
+de especificación únicamente — el propio PM fijó que no se programa todavía — y es la siguiente
+tarea de código de la cola tras esta. Sin cambios en bloqueos, preguntas abiertas ni desviaciones.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-13, ciclo de Product Manager: abre R-16 (oleada v6 nueva), origen en una inconsistencia de
+  arquitectura del contrato de montaje verificada por el PM (no un hallazgo del auditor):
+  `references/contrato-montaje.md` obligaba a la cadena de montaje a reimplementar a mano la
+  fórmula de acumulación de duraciones; R-16 añade `inicio_segundos`/`fin_segundos` ya resueltos a
+  `tarjetas.json` (mismo patrón que R-13). Solo especificación, no se programa desde ese ciclo.
 - 2026-09-12, ciclo de Product Manager: abre R-15 (fase transversal F-H nueva), origen `auditoría
   #22` (media) — un segundo juego de `ruff`/`mypy`/`pytest` preinstalado en el contenedor de nube da
   señal distinta y engañosa a quien lo invoque pelado; R-15 es puramente documental. `#19`
@@ -136,7 +141,7 @@ verificación de las cuatro redes.
 | R-12 | Cue discreta de indicaciones EN PANTALLA/NOTA en el reproductor | **COMPLETADA** | 2026-09-10 | `reproductor._indicaciones_ancladas_por_indice` ancla cada indicación al ÚLTIMO bloque de respiración que la precede (sin bloque precedente, al primero — requisito 4), reutilizando tal cual la clasificación de T-09 y el filtro pantalla/nota de T-28/T-29 (`pdf.indicaciones_no_recitables`/`es_nota_interna`). `guion.js`/`estilo.css`: cue subordinada (`.cue-indicacion`, visible solo bajo `.bloque--activo`), plegada con el resto de indicadores en `H` (T-23), sin atajo nuevo. Prefijos `Pantalla:`/`Nota:` configurables. 7 tests nuevos (550→557); verificado también visualmente con Playwright/Chromium real. Oleada v4 · `origen: observación de arquitectura del PM (2026-09-08)` |
 | R-13 | Duración real por escena en `tarjetas.json`, coherente con `guion-alineado.srt` | **COMPLETADA** | 2026-09-11 | `scripts/pptx.py`: `Tarjeta.duracion_real_segundos` (`None` si la escena no tiene toma buena, `tomas.duracion_toma_buena` reutilizada tal cual) y `ResultadoTarjetas.mezcla_duracion_real_y_estimada` (booleano de cabecera, `true` solo si el conjunto mezcla ambos casos); `duracion_estimada_segundos` intacta (requisito 2). `generar_tarjetas`/`exportar_pptx` ganan `tomas_por_escena` opcional (mismo patrón que `srt_alineado.py`/`capitulos_youtube.py`, no integrado en el selector automático de T-30); sin él, comportamiento idéntico a antes de R-13. `references/contrato-tarjetas.md` y `contrato-montaje.md` actualizados con la fórmula de rango correcta. 7 tests nuevos (557→564), incluido el cruce con `guion-alineado.srt` en `test_integracion_montaje.py`. Oleada v5 · `origen: observación de arquitectura del PM (2026-09-10)` |
 | R-14 | El separador de escena no debe colarse en el texto de una indicación | **COMPLETADA** | 2026-09-11 | `scripts/clasificador.py`: `_separar_marcador_fin_escena` extrae el `---` de fin de escena (con las líneas en blanco que lo acompañan) en su propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia, en vez de dejarlo pegado al `contenido` de la última indicación. Nueva señal añadida a los tres sitios que la necesitan para no colarse como una "indicación" propia ni proponerse como convención: `pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES`. `references/convencion-guion.md` documenta ahora el separador (requisito 1). Fixture golden `fixtures/guion-ejemplo-esperado.md` regenerado a mano (cambio esperado y verificado línea a línea). 5 tests nuevos (564→569). Verificado sobre los tres guiones reales: cero indicación termina en `---` en `guion-escenas.md`, `tarjetas.json` ni la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta. Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
-| R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **PENDIENTE** | 2026-09-12 (abierta por PM) | Tarea puramente documental: nota en `DEVELOPERS.md` (y referencia desde `SKILL.md`) explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado — un contenedor de nube puede traer un segundo juego preinstalado, más nuevo que el pineado en `requirements-dev.txt` y por delante en el `PATH`, con señal distinta y en el caso de `mypy` falsos `import-not-found`. Spec completa en `ROADMAP_PRODUCTO.md`, Fase F-H. Sin cambio de código ni de `estado.json`. `origen: auditoría #22` |
+| R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **COMPLETADA** | 2026-09-14 | Tarea puramente documental: nota visible en `DEVELOPERS.md` (bloque de cita bajo "Verificación manual") y frase con remisión en la sección "Verificacion" de `SKILL.md`, explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado. Cero cambio en `scripts/`, `tests/` o `assets/`; cuatro redes en verde (569 tests). `origen: auditoría #22` — queda para la siguiente pasada del auditor cerrar `#22` a `RESUELTO` |
 | R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **PENDIENTE** | 2026-09-13 (abierta por PM) | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano. Cambio aditivo, sin subir `version_contrato`, sin migración de `estado.json` ni campo nuevo de `Configuracion`. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v6. `origen: observación de arquitectura del PM (2026-09-13)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>

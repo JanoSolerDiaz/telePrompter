@@ -32,6 +32,35 @@
 
 ---
 
+### Sesión 2026-09-14 — Ciclo de Programador: R-15 implementada y COMPLETADA (advertencia contra el binario pelado en un contenedor de nube)
+**Tarea(s):** R-15 (fase transversal F-H). Revisado antes de elegir tarea: `auditoriacontinua.md`
+sin ningún hallazgo `ABIERTO` de severidad alta (solo `#19` baja y `#22` media, ninguno exige P-XX
+urgente); §1 de `SEGUIMIENTO.md` marca R-15 como la siguiente tarea de código pendiente (R-16 sigue
+solo especificación, el propio PM fijó que no se programa todavía).
+**Estado resultante:** COMPLETADA
+**Commits a develop:** (ver push de esta sesión)
+**Migraciones ejecutadas:** ninguna (sin cambio de esquema de `estado.json`, tal como exige el
+requisito 4 de la ficha)
+**Archivos creados/modificados:** `DEVELOPERS.md` (bloque de cita bajo "Verificación manual"),
+`SKILL.md` (frase con remisión en "Verificacion"), `roadmap/DECISIONES_TECNICAS.md` (nueva fila),
+`roadmap/SEGUIMIENTO.md` (§1 R-15 → COMPLETADA, "Última actualización"), este archivo
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(569 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf` reales
+LATENTES como siempre en este contenedor de nube, sin relación con esta tarea)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` del dueño (nota
+de entorno del protocolo v1.3)
+**Decisiones tomadas:** fila `2026-09-14 | R-15 (advertencia contra el binario pelado en un
+contenedor de nube)` en `DECISIONES_TECNICAS.md`
+**Hallazgos del auditor atendidos:** `#22` (media) — nota documental entregada; queda para la
+siguiente pasada del auditor reevaluarla contra el código y cerrarla a `RESUELTO`
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** la siguiente tarea de código pendiente es R-16 (oleada v6, límites absolutos de
+escena en `tarjetas.json`) en cuanto el PM la programe desde especificación; hasta entonces, ciclo
+de reconfirmación de las cuatro redes y del registro de hallazgos
+
+---
+
 ### Sesión 2026-09-13 — Ciclo de Product Manager: abre R-16 (Oleada v6 nueva), inconsistencia de arquitectura del contrato de montaje; #15/#22 reconfirmados sin cambios propios de este ciclo
 **Tarea(s):** Ninguna T-XX en curso. Gestión de roadmap: revisa el registro de hallazgos de
 `auditoriacontinua.md` (pasada del auditor de hoy: `#22` sigue `PENDIENTE` de implementar como R-15,

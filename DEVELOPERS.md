@@ -50,6 +50,18 @@ python -m pytest -q
 python scripts/verificar_salidas.py --fixture
 ```
 
+> **Nunca el binario "pelado" (`ruff`, `mypy`, `pytest` sin `python -m` por delante).**
+> `scripts/ci.py` (por tanto también el hook de pre-commit) invoca siempre
+> `sys.executable -m <herramienta>`, así que ambos usan las versiones exactas pineadas en
+> `requirements-dev.txt`. Un contenedor de nube puede traer un segundo juego de los mismos
+> tres binarios preinstalado en otra ruta por delante en el `PATH`, más nuevo que el
+> pineado, que da una señal **distinta** — y en el caso de `mypy`, activamente engañosa:
+> errores `import-not-found` sobre `pytest` (y los `Untyped decorator` en cascada que
+> arrastran) que no existen en la verificación real del proyecto. La única verificación
+> válida es `python scripts/ci.py`, o si hace falta suelto, `python -m mypy`/`python -m
+> ruff`/`python -m pytest` como arriba — nunca el nombre pelado en la terminal.
+> (`origen: auditoría #22`, R-15.)
+
 ## Salida al usuario y diagnóstico (T-02)
 
 Dos módulos, dos audiencias, ninguna se mezcla con la otra:
