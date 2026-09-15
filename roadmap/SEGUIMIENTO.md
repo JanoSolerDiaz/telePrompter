@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-15 — **Ciclo de Programador: segunda reconfirmación tras R-17,
+**Última actualización:** 2026-09-15 — **Ciclo de Programador: tercera reconfirmación tras R-17,
 sin novedad.** Revisado antes de elegir tarea: `auditoriacontinua.md` conserva un único hallazgo
 `ABIERTO` (`#19`, baja, ya enrutado y cerrado por R-17 — su reapertura a `RESUELTO` es tarea
 exclusiva del auditor, §0.4, no de esta sesión); §1 de este documento (fuente autoritativa)
@@ -24,6 +24,8 @@ cambios en bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-15, ciclo de Programador: segunda reconfirmación tras R-17, sin novedad. Cuatro redes en
+  verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: primera reconfirmación tras R-17, sin novedad. Cuatro redes en
   verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: R-17 implementada y COMPLETADA. Investigado el hallazgo #19
