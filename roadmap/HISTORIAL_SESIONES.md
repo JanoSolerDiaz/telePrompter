@@ -32,6 +32,36 @@
 
 ---
 
+### Sesión 2026-09-15 — Ciclo de Programador: novena reconfirmación tras R-17, sin novedad
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+conserva un único hallazgo `ABIERTO` (`#19`, baja), ya cerrado por la vía de R-17 (COMPLETADA);
+reabrirlo a `RESUELTO` en el registro del auditor sigue siendo tarea exclusiva de ese rol (§0.4), no
+de esta sesión. §1 de `SEGUIMIENTO.md` (fuente autoritativa) confirma R-17 `COMPLETADA` y ninguna
+R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md` §"Cola de producto" sigue con la misma
+prosa desactualizada que listaba R-17 como pendiente (ya no lo es) y sin archivar la fase F-I a
+`ROADMAP_HISTORICO.md` — ambas tareas del PM, no del Programador. Nota de arranque: el clon llegó ya
+en `develop`, sincronizado sin diferencias con `origin/develop` tras un fast-forward de dos commits
+(la octava reconfirmación) — `git status` limpio, sin necesidad de `reset --hard`.
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` («Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+latentes como siempre en sesión de nube)
+**Health check post-deploy:** N/A — no aplica en sesión de nube (nota de entorno del protocolo)
+**Decisiones tomadas:** ninguna nueva
+**Hallazgos del auditor atendidos:** ninguno (único `ABIERTO`, `#19`, ya enrutado a R-17 completada;
+su cierre a `RESUELTO` es tarea exclusiva del auditor)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** ninguno de código salvo que el PM abra una R-XX nueva o el auditor escale un
+hallazgo. Pendiente de otro rol (no del Programador): actualizar la prosa de "Cola de producto" en
+`ROADMAP_PRODUCTO.md` y archivar la fase F-I a `ROADMAP_HISTORICO.md`.
+
+---
+
 ### Sesión 2026-09-15 — Ciclo de Programador: octava reconfirmación tras R-17, sin novedad
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 conserva un único hallazgo `ABIERTO` (`#19`, baja), ya cerrado por la vía de R-17 (COMPLETADA);
