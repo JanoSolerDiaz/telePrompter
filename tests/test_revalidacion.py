@@ -114,6 +114,30 @@ _GUION_ESCENA_DE_DOS_BLOQUES = f"""# Guion de prueba
 > Cierre breve de la escena.
 """
 
+# Guion para R-17 (investigacion del hallazgo #19): una escena con DOS bloques de
+# origen, los DOS candidatos a particion (ambos largos y sin puntuacion interna),
+# para poder tener dos disposiciones de `particiones_pospuestas` del MISMO tamaño
+# (un unico indice pospuesto) pero con MIEMBRO distinto -- el escenario que
+# `_incidencias_anclas_desajustadas` no distingue por comparar solo cardinalidad.
+_PRIMER_BLOQUE_DOS_PARTICIONES = (
+    "Hemos revisado proyectos completos durante toda la semana pasada sin "
+    "parar ni un solo momento para descansar del todo."
+)
+_SEGUNDO_BLOQUE_DOS_PARTICIONES = (
+    "Compramos nuevas sillas para toda la oficina completa sin parar en "
+    "ningun momento del dia entero completo."
+)
+_GUION_ESCENA_DOS_PARTICIONES = f"""# Guion de prueba
+
+## BLOQUE 1 — Escena uno (0:00 – 0:40)
+
+**LOCUCIÓN**
+
+> {_PRIMER_BLOQUE_DOS_PARTICIONES}
+>
+> {_SEGUNDO_BLOQUE_DOS_PARTICIONES}
+"""
+
 
 def _configuracion() -> Configuracion:
     return Configuracion(
@@ -591,6 +615,96 @@ def test_incidencia_cuando_las_anclas_del_documento_no_son_las_previstas(
 
     assert any(
         "bloque(s) anclado(s) y se esperaban" in incidencia.mensaje
+        for incidencia in segunda.incidencias
+    )
+
+
+def test_disposicion_pospuesta_corrompida_con_mismo_tamano_no_pierde_ni_duplica_contenido(
+    tmp_path: Path,
+) -> None:
+    """Cierre de R-17 sobre el hallazgo #19: `_incidencias_anclas_desajustadas`
+    compara, por escena, el CONJUNTO/cardinalidad de indices de ancla previstos
+    contra los leidos -- nunca la identidad exacta de cada uno. La pregunta que
+    dejaba abierta el #19 era si dos disposiciones DISTINTAS de
+    `particiones_pospuestas` (incidencia P-04/#9) podian producir el mismo
+    conjunto de indices por escena sin que el aviso saltara.
+
+    La respuesta, verificada aqui: SI puede pasar, pero solo corrompiendo
+    `estado.validacion["particiones_pospuestas"]` a mano entre pasadas -- bajo
+    operacion normal `pospuestas_previas` (linea `_particiones_pospuestas_previas`)
+    es siempre exactamente el valor que la pasada anterior persistio
+    (`_guardar_particiones_pospuestas`), nunca se recalcula de otro modo, asi que
+    coincide por construccion con la disposicion real del documento vigente. Es
+    la MISMA precondicion (estado.json alterado) que ya cubria P-04 para el caso
+    de tamaño distinto (`test_incidencia_cuando_las_anclas_del_documento_no_son_
+    las_previstas`), aqui con el tamaño IGUAL (un unico indice pospuesto) y el
+    MIEMBRO distinto (el indice 1 en vez del 0 real).
+
+    Aun asi, el invariante (a) de §0.2 (nada se pierde ni se duplica en
+    silencio) sigue intacto: `identidad_por_ancla` (para interpretar el
+    documento) y la materializacion final (para reconstruirlo) usan la MISMA
+    disposicion -- aunque sea la corrompida -- de forma autoconsistente, asi que
+    cada posicion se relee y se reescribe con el mismo criterio y el documento
+    se reconstruye completo, sin perder ni duplicar una sola palabra. El unico
+    efecto observable es que la incidencia de conflicto edicion/particion
+    (P-04) cita el numero de bloque equivocado (1, no 0) DENTRO de la escena
+    correcta -- un defecto cosmetico del mensaje, no una perdida de texto. No
+    hay ninguna señal disponible en una sola pasada para detectar esa
+    disposicion corrompida sin volver a desconfiar del propio dato que
+    P-04 ya decidio no validar mas alla del tipo (ver su docstring): endurecer
+    la comparacion no cerraria ningun hueco de contenido real, solo anadiria
+    complejidad. Decision completa en `DECISIONES_TECNICAS.md`, R-17."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path, _GUION_ESCENA_DOS_PARTICIONES)
+    resultado = parsear_guion(_GUION_ESCENA_DOS_PARTICIONES, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+
+    particiones = [
+        r for r in estado_reescrituras(estado) if r.familia == FAMILIA_PARTICION_RESPIRACION
+    ]
+    assert len(particiones) == 2  # los dos bloques de la escena son candidatos
+
+    doc1_aceptado = doc1
+    for reescritura in particiones:
+        doc1_aceptado = _marcar_decision(doc1_aceptado, reescritura.id, "ACEPTAR")
+
+    texto_manual = "Texto editado a mano sobre el primer bloque completo de la escena uno."
+    doc1_editado = doc1_aceptado.replace(_PRIMER_BLOQUE_DOS_PARTICIONES, texto_manual)
+
+    primera = revalidar_guion(resultado, doc1_editado, estado, configuracion)
+    assert estado.validacion["particiones_pospuestas"] == {"1": [0]}  # disposicion real
+    textos_1 = _textos_de_escena(primera, 1)
+    assert texto_manual in textos_1
+
+    doc2 = generar_documento_revision(
+        resultado,
+        primera.resultado_tiempos,
+        primera.detecciones,
+        primera.reescrituras,
+        configuracion,
+        nombre_guion="prueba",
+    )
+
+    # Corrupcion deliberada: mismo TAMAÑO (un indice pospuesto), MIEMBRO distinto.
+    estado.validacion["particiones_pospuestas"] = {"1": [1]}
+
+    segunda = revalidar_guion(resultado, doc2, estado, configuracion)
+    textos_2 = _textos_de_escena(segunda, 1)
+
+    # La comprobacion de cardinalidad no dispara: exactamente la asimetria del #19.
+    assert not any(
+        "bloque(s) anclado(s) y se esperaban" in incidencia.mensaje
+        for incidencia in segunda.incidencias
+    )
+    # Pero el invariante (a) sigue intacto: mismo contenido, sin perdida ni duplicado.
+    assert textos_2 == textos_1
+    assert texto_manual in textos_2
+
+    # Unico efecto observable: la incidencia de conflicto cita el bloque
+    # equivocado (1, no 0) dentro de la escena correcta -- cosmetico, no de
+    # contenido.
+    assert any(
+        "Escena 1, bloque 1:" in incidencia.mensaje and "edición manual" in incidencia.mensaje
         for incidencia in segunda.incidencias
     )
 

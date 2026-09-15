@@ -10,24 +10,35 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-14 — **Ciclo de Product Manager (tras la octava reconfirmación del
-Programador).** `ROADMAP_PRODUCTO.md` §"Cola de producto" corregida: ya no repite la prosa
-desactualizada del 2026-09-13 que ocho sesiones sucesivas del Programador venían señalando —
-confirmado en este ciclo que R-15 y R-16 están `COMPLETADA` (ver filas de §1), así que la Fase F-H y
-la Oleada v6 se archivan en `ROADMAP_HISTORICO.md`. Revisado `auditoriacontinua.md`: `#22` (media)
-ya cerró su enrutamiento con R-15 `COMPLETADA` (queda que la siguiente pasada del auditor lo pase a
-`RESUELTO`, no es acción del PM); `#19` (baja) seguía `ABIERTO` sin ninguna R-XX ni entrada de
-backlog desde que se detectó el 2026-09-04 — diez pasadas de reconfirmación del auditor sin que
-nadie lo convirtiera en tarea, pese al mandato de §0 de enrutar todo hallazgo `ABIERTO`. Se abre
-**R-17** (fase transversal **F-I** nueva) para cerrarlo formalmente, con instrucción explícita de
-investigar primero si el escenario es alcanzable antes de tocar código de revalidación (área
-sensible, ver invariante (c) y hallazgos `#9`/`#14`). `roadmap/FEEDBACK.md` sigue sin ninguna
-entrada `nuevo` (bloqueo #7 de §3 — grabar un curso completo — sigue sin resolverse); sin feedback
-real de rodaje, no se abre ninguna otra R-XX de producto especulativa este ciclo. Sin cambios en
-bloqueos (§3) ni preguntas abiertas (§6); sin desviaciones nuevas en §7.
+**Última actualización:** 2026-09-15 — **Ciclo de Programador: R-17 implementada y COMPLETADA.**
+Investigado el hallazgo #19 (`_incidencias_anclas_desajustadas` compara solo cardinalidad de anclas
+por escena, no identidad exacta): bajo operación normal la identidad `(escena, índice_original,
+mitad)` es inyectiva por construcción (`pospuestas_previas` siempre coincide con lo que la pasada
+anterior persistió en `estado.json`); el único camino para que la comparación no dispare pese a una
+disposición distinta exige corromper `estado.validacion["particiones_pospuestas"]` a mano entre
+pasadas — la misma precondición ya conocida de P-04 para el caso de tamaño distinto, aquí con
+tamaño igual y miembro distinto. Verificado con test nuevo que incluso en ese escenario corrompido
+el invariante (a) de §0.2 (nada se pierde ni se duplica en silencio) sigue intacto: interpretación y
+reconstrucción usan la misma disposición de forma autoconsistente, así que el documento se
+reconstruye completo; el único efecto observable es que la incidencia de conflicto edición/partición
+cita el número de bloque equivocado dentro de la escena correcta (cosmético, no pérdida de texto).
+No se endurece la comparación de anclas: no hay señal independiente disponible en una sola pasada
+para detectar esa corrupción, y no hay ningún hueco de contenido real que cerrar. 1 test nuevo
+(574→575) en `tests/test_revalidacion.py`; docstring de `_incidencias_anclas_desajustadas` ampliado
+con la conclusión. Cuatro redes en verde (mypy limpio 68 archivos, ruff limpio, 575 tests,
+`verificar_salidas.py --fixture` catorce etapas OK). Razonamiento completo en
+`DECISIONES_TECNICAS.md`. Con R-17 completada, `ROADMAP_PRODUCTO.md` vuelve a quedar sin ninguna
+R-XX `PENDIENTE`/`EN CURSO`; queda para la siguiente pasada del auditor pasar `#19` de `ABIERTO` a
+`RESUELTO` citando este test (no es acción de esta sesión: `auditoriacontinua.md` es de escritura
+exclusiva del auditor, §0.4). Sin cambios en bloqueos (§3) ni preguntas abiertas (§6); sin
+desviaciones nuevas en §7.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-14, ciclo de Product Manager: `ROADMAP_PRODUCTO.md` §"Cola de producto" corregida (ya no
+  repite la prosa desactualizada del 2026-09-13); R-15 y R-16 confirmadas `COMPLETADA`, Fase F-H y
+  Oleada v6 archivadas en `ROADMAP_HISTORICO.md`. Abre **R-17** (fase F-I nueva) a partir del
+  hallazgo `#19` (diez pasadas de reconfirmación del auditor sin que nadie lo convirtiera en tarea).
 - 2026-09-14, ciclo de Programador: octava reconfirmación del día, sin novedad tras R-16. Cuatro
   redes en verde (574 tests). Sin trabajo de código pendiente.
 - 2026-09-14, ciclo de Programador: séptima reconfirmación del día, sin novedad tras R-16. Cuatro
@@ -186,7 +197,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-14 | El separador de escena no debe colarse en el texto de una indicación | **COMPLETADA** | 2026-09-11 | `scripts/clasificador.py`: `_separar_marcador_fin_escena` extrae el `---` de fin de escena (con las líneas en blanco que lo acompañan) en su propio bloque `no_locucion` (`senal="separador_escena"`) antes de clasificar rótulos/inferencia, en vez de dejarlo pegado al `contenido` de la última indicación. Nueva señal añadida a los tres sitios que la necesitan para no colarse como una "indicación" propia ni proponerse como convención: `pdf._SENALES_ESTRUCTURALES`, `documento_revision._SENALES_ESTRUCTURALES` y `convencion._SENALES_CONTRACTUALES`. `references/convencion-guion.md` documenta ahora el separador (requisito 1). Fixture golden `fixtures/guion-ejemplo-esperado.md` regenerado a mano (cambio esperado y verificado línea a línea). 5 tests nuevos (564→569). Verificado sobre los tres guiones reales: cero indicación termina en `---` en `guion-escenas.md`, `tarjetas.json` ni la cue del reproductor; reconstrucción íntegra (invariante (a)) intacta. Fase F-G · `origen: observación de arquitectura de R-12 (2026-09-10)` |
 | R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **COMPLETADA** | 2026-09-14 | Tarea puramente documental: nota visible en `DEVELOPERS.md` (bloque de cita bajo "Verificación manual") y frase con remisión en la sección "Verificacion" de `SKILL.md`, explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado. Cero cambio en `scripts/`, `tests/` o `assets/`; cuatro redes en verde (569 tests). `origen: auditoría #22` — queda para la siguiente pasada del auditor cerrar `#22` a `RESUELTO` |
 | R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **COMPLETADA** | 2026-09-14 | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez (`_con_limites_absolutos`) con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-tarjetas.md` documenta las dos claves y `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano — ahora las lee directamente. Cambio aditivo, `version_contrato` no sube, sin migración de `estado.json` ni campo nuevo de `Configuracion`. 5 tests nuevos (569→574): 2 unitarios (`test_pptx.py`) y 3 de integración (`test_integracion_montaje.py`, incluida la coherencia con `guion.srt`/`guion-alineado.srt`). Cuatro redes en verde. `origen: observación de arquitectura del PM (2026-09-13)` |
-| R-17 | Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`) | PENDIENTE | 2026-09-14 (abierta por PM) | Spec completa en `ROADMAP_PRODUCTO.md` §Fase F-I. `origen: auditoría #19` (abierto 2026-09-04, reconfirmado sin cambios en diez pasadas sucesivas del auditor sin que nadie lo convirtiera en tarea hasta ahora) |
+| R-17 | Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`) | **COMPLETADA** | 2026-09-15 | Spec completa en `ROADMAP_PRODUCTO.md` §Fase F-I. `origen: auditoría #19` (abierto 2026-09-04, reconfirmado sin cambios en diez pasadas sucesivas del auditor). Investigada y cerrada por la vía del requisito 3 (con matiz): bajo operación normal la identidad es inyectiva por construcción (`pospuestas_previas` siempre coincide con lo que la pasada anterior persistió); el único escenario que rompe la comparación por cardinalidad exige corromper `estado.validacion["particiones_pospuestas"]` a mano (misma precondición ya conocida de P-04), y se verificó con test nuevo que incluso ahí el invariante (a) — nada se pierde ni se duplica — sigue intacto, con un único efecto cosmético (número de bloque erróneo en la incidencia de conflicto, escena correcta). 1 test nuevo (574→575) en `tests/test_revalidacion.py`. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

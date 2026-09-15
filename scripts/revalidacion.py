@@ -313,7 +313,28 @@ def _incidencias_anclas_desajustadas(
     reconstruccion vuelve a ser optimista y el #14 reaparece) y un ancla que el
     dueno borre al editar. En ambos, revalidar es lo correcto -- abortar
     dejaria al dueno sin tiempos ni salidas por algo que puede ser cosmetico
-    -- pero hacerlo en silencio es lo que hacia dano."""
+    -- pero hacerlo en silencio es lo que hacia dano.
+
+    R-17 (hallazgo #19): esta comparacion es por CONJUNTO/cardinalidad de
+    indices, no por identidad exacta de cada ancla -- en teoria, dos
+    disposiciones de `particiones_pospuestas` (P-04) del MISMO tamaño pero con
+    MIEMBRO distinto podrian coincidir en el conjunto de indices por escena sin
+    disparar el aviso. Investigado y verificado con un caso real: solo es
+    alcanzable corrompiendo `estado.validacion["particiones_pospuestas"]` a
+    mano entre pasadas (bajo operacion normal `pospuestas_previas` es siempre
+    el mismo valor que la pasada anterior persistio, nunca diverge de la
+    disposicion real) -- la misma precondicion, ya conocida, que cubre P-04
+    para el caso de tamaño distinto. Y aun en ese caso, el invariante (a) de
+    §0.2 no se rompe: interpretar y reconstruir usan la MISMA disposicion de
+    forma autoconsistente, asi que el contenido se reconstruye completo, sin
+    perdida ni duplicado -- solo la incidencia de conflicto edicion/particion
+    (P-04) puede citar el numero de bloque equivocado dentro de la escena
+    correcta. No hay ninguna señal disponible en una sola pasada para detectar
+    esa corrupcion sin desconfiar del propio dato que P-04 ya decidio no
+    validar mas alla del tipo, asi que endurecer esta comparacion no cerraria
+    ningun hueco de contenido real. Ver
+    `test_disposicion_pospuesta_corrompida_con_mismo_tamano_no_pierde_ni_
+    duplica_contenido` (`tests/test_revalidacion.py`) y `DECISIONES_TECNICAS.md`."""
     escenas_previstas: dict[int, set[int]] = {}
     for numero_escena, indice in identidad_por_ancla:
         escenas_previstas.setdefault(numero_escena, set()).add(indice)

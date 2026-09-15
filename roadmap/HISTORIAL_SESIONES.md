@@ -32,6 +32,59 @@
 
 ---
 
+### Sesión 2026-09-15 — Ciclo de Programador: R-17 implementada y COMPLETADA (hallazgo `#19`)
+**Tarea(s):** R-17 (fase transversal F-I, spec en `ROADMAP_PRODUCTO.md`). Sin urgencias P-XX (único
+hallazgo `ABIERTO` de `auditoriacontinua.md`, `#19`, ya enrutado a esta misma R-17).
+**Estado resultante:** COMPLETADA. `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`)
+investigada a fondo: se construyó y verificó con código (no solo razonamiento) el escenario teórico
+que el hallazgo `#19` dejaba abierto — dos disposiciones de `particiones_pospuestas` del mismo
+tamaño pero distinto miembro, que hacen coincidir el conjunto de índices de ancla por escena sin
+disparar la incidencia de cardinalidad. Confirmado que solo es alcanzable corrompiendo
+`estado.validacion["particiones_pospuestas"]` a mano entre pasadas (bajo operación normal la
+identidad es inyectiva por construcción: `pospuestas_previas` siempre es el valor que la pasada
+anterior persistió) — misma precondición ya conocida de P-04. Verificado además que, incluso en ese
+escenario corrompido, el invariante (a) de §0.2 no se rompe: interpretación y reconstrucción usan la
+misma disposición de forma autoconsistente y el documento se reconstruye completo sin pérdida ni
+duplicado; el único efecto observable es un número de bloque equivocado (escena correcta) en la
+incidencia de conflicto edición/partición. Se cierra por la vía del requisito 3 de la ficha
+(inalcanzable bajo operación normal, con el matiz de que el caso de corrupción deliberada se deja
+probado y documentado en vez de ignorado) — no se toca la lógica de comparación: no hay señal
+independiente disponible para detectar esa corrupción sin volver a desconfiar de un dato que P-04 ya
+decidió no validar más allá del tipo, y no queda ningún hueco de contenido real que cerrar.
+**Commits a develop:** (ver `git log` tras el push de esta sesión — mensaje: "R-17: investiga y
+cierra el hallazgo #19 de `_incidencias_anclas_desajustadas`, sin pérdida de contenido verificada")
+**Migraciones ejecutadas:** ninguna (cero cambio de esquema de `estado.json` ni de `Configuracion`,
+tal como exige el requisito 4 de la ficha).
+**Archivos creados/modificados:** `scripts/revalidacion.py` (docstring de
+`_incidencias_anclas_desajustadas` ampliado con la conclusión de R-17, sin cambio de lógica);
+`tests/test_revalidacion.py` (1 test nuevo,
+`test_disposicion_pospuesta_corrompida_con_mismo_tamano_no_pierde_ni_duplica_contenido`, más los
+guiones sintéticos `_GUION_ESCENA_DOS_PARTICIONES`/`_PRIMER_BLOQUE_DOS_PARTICIONES`/
+`_SEGUNDO_BLOQUE_DOS_PARTICIONES` que lo sustentan); `roadmap/SEGUIMIENTO.md` (§1 fila R-17 a
+`COMPLETADA`, cabecera "Última actualización"); `roadmap/DECISIONES_TECNICAS.md` (fila nueva R-17);
+`roadmap/HISTORIAL_SESIONES.md` (esta entrada).
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575, antes 574) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin cambio respecto a sesiones previas).
+**Health check post-deploy:** No aplica — sesión de nube (nota de entorno del protocolo, T-32 ya
+instalada en la máquina del dueño en una sesión anterior; esta sesión no toca esa instalación).
+**Decisiones tomadas:** fila `2026-09-15 | R-17 (hallazgo #19, _incidencias_anclas_desajustadas)` en
+`DECISIONES_TECNICAS.md`.
+**Hallazgos del auditor atendidos:** `#19` (baja) — investigado y cerrado con evidencia de código;
+queda para la siguiente pasada del auditor pasarlo de `ABIERTO` a `RESUELTO` citando este test (no
+es acción de esta sesión: `auditoriacontinua.md` es de escritura exclusiva del auditor).
+**Hallazgos:** ninguno nuevo. Se confirma que el invariante (a) de §0.2 se sostiene incluso bajo la
+corrupción deliberada de `estado.validacion["particiones_pospuestas"]` explorada aquí.
+**Tareas autopropuestas (P-XX):** ninguna — el hallazgo ya tenía R-XX asignada (R-17) por el ciclo de
+PM del 2026-09-14, no hacía falta una P-XX nueva.
+**Próximo paso:** con R-17 completada, `ROADMAP_PRODUCTO.md` vuelve a quedar sin ninguna R-XX
+`PENDIENTE`/`EN CURSO` (su prosa de "Cola de producto" queda desactualizada hasta que un ciclo de PM
+la corrija y archive F-I a `ROADMAP_HISTORICO.md`, mismo patrón que F-D/F-F/F-G/F-H). La siguiente
+sesión de Programador no tiene tarea de código pendiente salvo que el PM abra una nueva R-XX o el
+auditor escale un hallazgo nuevo.
+
+---
+
 ### Sesión 2026-09-14 — Ciclo de Product Manager: cierra R-15/R-16 al histórico, abre R-17 (`#19`)
 **Tarea(s):** ninguna T-XX de código; gestión de roadmap de producto (rol PM). Leídos primero
 `HOJA_DE_RUTA.md` (solo lectura), `SEGUIMIENTO.md` §1/§3/§5/§6/§7, `ROADMAP_PRODUCTO.md`,

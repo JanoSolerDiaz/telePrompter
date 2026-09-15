@@ -762,6 +762,25 @@ para el siguiente ciclo.
   retirar la edición, como demuestra el propio test de P-03 --, y un aviso que
   promete algo que no ocurre enseña a ignorar el informe. Ver las filas de
   P-04 en `DECISIONES_TECNICAS.md`.
+- **Cierre de la asimetría teórica de `_incidencias_anclas_desajustadas` (R-17,
+  hallazgo #19).** Esa función compara, por escena, el CONJUNTO/cardinalidad
+  de índices de ancla, no la identidad exacta de cada uno. R-17 investigó con
+  código (no solo razonamiento) si dos disposiciones distintas de
+  `particiones_pospuestas` del MISMO tamaño podían coincidir en cardinalidad
+  sin disparar el aviso: sí pueden, pero solo corrompiendo
+  `estado.validacion["particiones_pospuestas"]` a mano entre pasadas -- bajo
+  operación normal ese valor es siempre el que la pasada anterior persistió,
+  así que la identidad `(escena, índice_original, mitad)` es inyectiva por
+  construcción. Y aun en ese escenario corrompido, el invariante (a) no se
+  rompe: interpretar y reconstruir usan la misma disposición de forma
+  autoconsistente, así que el documento se reconstruye completo sin pérdida
+  ni duplicado -- solo la incidencia de conflicto puede citar el número de
+  bloque equivocado (escena correcta), un defecto cosmético del mensaje. No
+  se endurece la comparación: no hay ninguna señal independiente disponible
+  en una sola pasada para detectar esa corrupción. Ver
+  `test_disposicion_pospuesta_corrompida_con_mismo_tamano_no_pierde_ni_
+  duplica_contenido` en `tests/test_revalidacion.py` y la fila de R-17 en
+  `DECISIONES_TECNICAS.md`.
 
 ## Reproductor: esqueleto autocontenido (T-18)
 
