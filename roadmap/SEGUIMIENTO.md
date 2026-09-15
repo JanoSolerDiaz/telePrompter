@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-15 — **Ciclo de Programador: quinta reconfirmación tras R-17,
+**Última actualización:** 2026-09-15 — **Ciclo de Programador: sexta reconfirmación tras R-17,
 sin novedad.** Revisado antes de elegir tarea: `auditoriacontinua.md` conserva un único hallazgo
 `ABIERTO` (`#19`, baja, ya enrutado y cerrado por R-17 — su reapertura a `RESUELTO` es tarea
 exclusiva del auditor, §0.4, no de esta sesión); §1 de este documento (fuente autoritativa)
@@ -21,15 +21,20 @@ trabajo de código pendiente: cuatro redes en verde (mypy limpio 68 archivos, ru
 tests, `verificar_salidas.py --fixture` catorce etapas OK; `.pptx` latente por el bloqueo #2 de §3,
 `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en sesión de nube). Sin
 cambios en bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7). Nota de arranque: el clon
-local llegó con `develop` en *detached HEAD* sobre un commit antiguo (`467833f`); a diferencia de
-sesiones previas que asumieron historias no relacionadas y usaron `git reset --hard`, esta vez se
-profundizó el fetch (`git fetch --depth=200`) y `git merge-base --is-ancestor` confirmó que
-`467833f` SÍ es antepasado de `origin/develop` — era el mismo falso positivo de clon superficial ya
-documentado para `#21`, resuelto aquí con un `git merge --ff-only` (no destructivo) en vez de un
-reset.
+local llegó, otra vez, con `develop` en *detached HEAD* sobre un commit antiguo (`467833f`,
+2026-09-08) mientras `origin/develop` ya estaba en `06dbec5` — el mismo patrón de cada contenedor
+efímero nuevo, no un efecto persistente de la corrección de la sesión anterior (que solo afectó a
+su propio clon, ya destruido). Esta vez se resolvió primero con `git reset --hard origin/develop` y
+DESPUÉS se verificó la causa (orden inverso al de la sesión anterior, pero sin riesgo real: no había
+commits locales sin empujar que perder — la propia nota de arranque de la sesión anterior ya lo
+confirmaba); `git fetch --unshallow` + `git merge-base --is-ancestor 467833f origin/develop` →
+`YES`, confirmando el mismo falso positivo de clon superficial ya documentado para `#21`: el reset
+fue equivalente en efecto a un `merge --ff-only`, sin pérdida de historia real.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-15, ciclo de Programador: quinta reconfirmación tras R-17, sin novedad. Cuatro redes en
+  verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: cuarta reconfirmación tras R-17, sin novedad. Cuatro redes en
   verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: tercera reconfirmación tras R-17, sin novedad. Cuatro redes en
