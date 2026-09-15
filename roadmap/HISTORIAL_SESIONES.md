@@ -32,6 +32,56 @@
 
 ---
 
+### Sesión 2026-09-15 — Ciclo de Programador: quinta reconfirmación tras R-17, sin novedad
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+conserva un único hallazgo `ABIERTO` (`#19`, baja), ya cerrado por la vía de R-17 (COMPLETADA);
+reabrirlo a `RESUELTO` en el registro del auditor sigue siendo tarea exclusiva de ese rol (§0.4), no
+de esta sesión. §1 de `SEGUIMIENTO.md` (fuente autoritativa) confirma R-17 `COMPLETADA` y ninguna
+R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md` §"Cola de producto" sigue con la misma
+prosa desactualizada que listaba R-17 como pendiente (ya no lo es) y sin archivar la fase F-I a
+`ROADMAP_HISTORICO.md` — ambas tareas del PM, no del Programador. Nota de arranque: el clon local
+llegó, otra vez, con `develop` en *detached HEAD* apuntando a un commit antiguo (`467833f`,
+2026-09-08); a diferencia de la sesión anterior (que, con `git merge-base` vacío sobre un fetch
+superficial, concluyó "historias no relacionadas" y usó `git reset --hard origin/develop`), esta
+sesión profundizó el fetch (`git fetch --depth=200 origin develop`) antes de concluir nada: con más
+historial visible, `git merge-base develop origin/develop` sí devolvió un ancestro común
+(`467833f`) y `git merge-base --is-ancestor 467833f origin/develop` confirmó `YES` — el mismo falso
+positivo de clon superficial que ya documentó la corrección de `#21` (`DECISIONES_TECNICAS.md`,
+2026-09-09), aplicado esta vez a la comparación `develop` vs. `origin/develop` en vez de a un commit
+suelto. Con ancestría confirmada, se usó `git merge --ff-only origin/develop` (no destructivo, falla
+si no es fast-forward) en vez de `reset --hard`: incluso cuando la sesión previa no perdió trabajo
+real (no había commits locales sin empujar), un `--ff-only` evita depender de haber verificado bien
+el árbol de trabajo antes de un reset, y es preferible cuando la profundidad del fetch es ajustable
+sin coste.
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` («Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx` latente por el
+bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en una
+sesión de nube)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` del dueño (nota
+de entorno del protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva de producto/arquitectura; la comprobación de ancestría con
+fetch profundizado es una reconfirmación operativa de la causa raíz ya documentada para `#21`, no
+una decisión técnica nueva, y no genera fila nueva en `DECISIONES_TECNICAS.md`
+**Hallazgos del auditor atendidos:** ninguno — `#19` sigue `ABIERTO` en el registro del auditor
+(cerrarlo a `RESUELTO` es acción exclusiva de ese rol), sin escalar
+**Hallazgos:** ninguno nuevo. Se deja constancia (no es tarea del Programador tocar
+`ROADMAP_PRODUCTO.md`) de que su §"Cola de producto" sigue sin actualizar tras R-17 COMPLETADA
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** la siguiente sesión (Programador, Auditor o PM) repite el mismo orden de lectura
+(`auditoriacontinua.md` primero, luego §1 de `SEGUIMIENTO.md`). Le corresponde al Auditor pasar
+`#19` a `RESUELTO` en su propio registro (ya cerrado en la práctica por R-17); al PM, actualizar la
+prosa de "Cola de producto" en `ROADMAP_PRODUCTO.md` y archivar la fase F-I. Si el clon vuelve a
+llegar con `develop` en *detached HEAD* sobre un commit antiguo: profundizar el fetch
+(`git fetch --depth=N` creciente) y comprobar ancestría real antes de asumir historias no
+relacionadas o recurrir a `reset --hard`.
+
+---
+
 ### Sesión 2026-09-15 — Ciclo de Programador: cuarta reconfirmación tras R-17, sin novedad
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 conserva un único hallazgo `ABIERTO` (`#19`, baja), ya cerrado por la vía de R-17 (COMPLETADA);
