@@ -32,6 +32,38 @@
 
 ---
 
+### Sesión 2026-09-15 (PM) — Cola de producto corregida, Fase F-I archivada, ninguna R-XX nueva
+**Tarea(s):** ninguna T-XX/R-XX de código; ciclo de gestión de roadmap (PM).
+**Estado resultante:** N/A (documental). §1 no cambia de estado en ningún ID: ya era exacto (R-17
+`COMPLETADA`, ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`).
+**Commits a develop:** ver commit de esta sesión (roadmap y documentación únicamente).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (prosa de cabecera y "Cola de
+producto" corregidas, Fase F-I retirada del cuerpo vivo), `roadmap/ROADMAP_HISTORICO.md` (F-I/R-17
+archivada con spec completa y "Cómo se entregó"), `roadmap/SEGUIMIENTO.md` (cabecera actualizada),
+`roadmap/DECISIONES_TECNICAS.md` (nueva fila de decisión), `roadmap/HISTORIAL_SESIONES.md` (esta
+entrada).
+**Verificaciones pre-push:** N/A — sin cambios en `scripts/`, `tests/` ni `assets/`; no aplica la
+verificación de código.
+**Health check post-deploy:** N/A (sin cambio de código ni de skill instalada).
+**Decisiones tomadas:** fila `2026-09-15 | PM | ...` en `DECISIONES_TECNICAS.md` — se corrige la
+prosa desactualizada y se archiva F-I; no se abre ninguna R-XX nueva por falta de hallazgo o
+feedback real que lo justifique.
+**Hallazgos del auditor atendidos:** ninguno nuevo; `#19` reconfirmado como ya enrutado y entregado
+por R-17 (su paso a `RESUELTO` en el registro del auditor sigue siendo tarea exclusiva de ese rol).
+**Hallazgos:** ninguno nuevo. Releídos `references/contrato-montaje.md` y `references/contrato-
+tarjetas.md` sin encontrar ninguna grieta de arquitectura pendiente (el contrato de montaje queda
+cerrado desde R-16).
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin ninguna R-XX/T-XX pendiente, la siguiente sesión de Programador solo tiene
+que reconfirmar las cuatro redes en verde. El roadmap sigue a la espera de una entrada real en
+`roadmap/FEEDBACK.md`, de un nuevo hallazgo `ABIERTO` en `auditoriacontinua.md`, o de que el dueño
+complete el criterio de salida de la oleada v1 (grabar un curso entero, bloqueo #7 de
+`SEGUIMIENTO.md` §3) y aporte fricciones reales de rodaje — la entrada que más haría avanzar el
+roadmap de producto en este momento.
+
+---
+
 ### Sesión 2026-09-15 — Ciclo de Programador: novena reconfirmación tras R-17, sin novedad
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 conserva un único hallazgo `ABIERTO` (`#19`, baja), ya cerrado por la vía de R-17 (COMPLETADA);

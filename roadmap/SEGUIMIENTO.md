@@ -10,22 +10,26 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-15 — **Ciclo de Programador: novena reconfirmación tras R-17,
-sin novedad.** Revisado antes de elegir tarea: `auditoriacontinua.md` conserva un único hallazgo
-`ABIERTO` (`#19`, baja, ya enrutado y cerrado por R-17 — su reapertura a `RESUELTO` es tarea
-exclusiva del auditor, §0.4, no de esta sesión); §1 de este documento (fuente autoritativa)
-confirma R-17 `COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md`
-§"Cola de producto" sigue con la misma prosa desactualizada (todavía lista R-17 como pendiente) y
-sin archivar la fase F-I a `ROADMAP_HISTORICO.md` (ambas tareas del PM, no del Programador). Sin
-trabajo de código pendiente: cuatro redes en verde (mypy limpio 68 archivos, ruff limpio, 575
-tests, `verificar_salidas.py --fixture` catorce etapas OK; `.pptx` latente por el bloqueo #2 de §3,
-`.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en sesión de nube). Sin
-cambios en bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7). Nota de arranque: el clon
-local llegó ya en `develop`, sincronizado con `origin/develop` tras un fast-forward de dos commits
-(la octava reconfirmación) — `git status` limpio antes de tocar nada.
+**Última actualización:** 2026-09-15 — **Ciclo de Product Manager: prosa de "Cola de producto"
+corregida (R-17 ya `COMPLETADA`, no pendiente) y Fase transversal F-I archivada.** `ROADMAP_
+PRODUCTO.md` llevaba desde el 2026-09-14 con R-17 listada como pendiente pese a que el Programador
+la completó ese mismo día — la desactualización que nueve reconfirmaciones sucesivas del
+Programador venían señalando sin corregir. Corregida en este ciclo; F-I se mueve a `ROADMAP_
+HISTORICO.md`, mismo criterio que F-D/F-E/F-F/F-G/F-H. Releído el registro completo de hallazgos
+de `auditoriacontinua.md` (único `ABIERTO`: `#19`, baja, ya con R-17 asignada y entregada — su paso
+a `RESUELTO` sigue siendo tarea exclusiva del auditor, §0.4) y `roadmap/FEEDBACK.md` (sin ninguna
+entrada `nuevo`): nada que convertir en R-XX este ciclo. Releídos también `references/contrato-
+montaje.md` y `references/contrato-tarjetas.md` en busca de otra grieta de arquitectura del mismo
+tipo que ya motivó R-12/R-13/R-14/R-16: el contrato de montaje queda cerrado por R-16, sin ninguna
+pendiente. **No se abre ninguna R-XX nueva este ciclo** — sin feedback real de rodaje (bloqueo #7
+de §3, todavía sin resolver), no hay motivo para producto especulativo; decisión razonada en
+`DECISIONES_TECNICAS.md`. §1 de este documento no cambia de estado en ningún ID (ya era exacto).
+Sin cambios en bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-15, ciclo de Programador: novena reconfirmación tras R-17, sin novedad. Cuatro redes en
+  verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: octava reconfirmación tras R-17, sin novedad. Cuatro redes en
   verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: séptima reconfirmación tras R-17, sin novedad. Cuatro redes en

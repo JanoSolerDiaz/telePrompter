@@ -8,21 +8,24 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-14 (ciclo de PM). §1 de `SEGUIMIENTO.md` (fuente autoritativa)
-confirma que el Programador completó tanto **R-15** como **R-16** el 2026-09-14: la cola de este
-documento, que llevaba desde el 2026-09-13 sin corregir pese a que siete reconfirmaciones sucesivas
-del Programador ya lo habían señalado como prosa desactualizada, queda ahora al día. Las dos oleadas
-entregadas (F-H y v6) se mueven a `ROADMAP_HISTORICO.md`. `auditoriacontinua.md` conserva un único
-hallazgo `ABIERTO` sin enrutar todavía: `#19` (baja, invariantes/revalidación), abierto desde
-2026-09-04 y reconfirmado sin cambios en las diez pasadas siguientes del auditor, siempre con la
-misma nota: es una asimetría teórica en `_incidencias_anclas_desajustadas`
-(`scripts/revalidacion.py`) sin escenario reproducido. Diez pasadas de reconfirmación sin que nadie
-lo convierta en tarea es más que suficiente para que se pierda de vista; se abre **R-17** (fase
-transversal **F-I** nueva) para cerrarlo formalmente, con el mismo criterio de deuda técnica menor
-agrupada que ya usaron F-D/F-F/F-G/F-H. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`
-(bloqueo #7 de `SEGUIMIENTO.md` §3 — grabar un curso completo — sigue sin resolverse); sin feedback
-real de rodaje, este ciclo no encuentra motivo para abrir ninguna R-XX de producto especulativa más
-allá de R-17.
+**Última actualización:** 2026-09-15 (ciclo de PM). §1 de `SEGUIMIENTO.md` (fuente autoritativa)
+confirma que el Programador completó **R-17** el mismo día en que se abrió (2026-09-14) y encadenó
+nueve pasadas de reconfirmación sin ningún trabajo de código pendiente: la cola de este documento
+llevaba desde entonces listando R-17 como pendiente pese a estar ya `COMPLETADA`, prosa
+desactualizada del mismo tipo que ya había señalado el propio Programador en siete
+reconfirmaciones antes de la corrección del 2026-09-14. Se corrige aquí y la fase transversal F-I
+se mueve a `ROADMAP_HISTORICO.md`, mismo criterio que F-D/F-E/F-F/F-G/F-H. `auditoriacontinua.md`
+(registro de hallazgos íntegro releído en este ciclo) no conserva ningún hallazgo `ABIERTO`
+pendiente de enrutar: el único que quedaba, `#19`, sigue formalmente `ABIERTO` en el registro del
+auditor a la espera de que su propia siguiente pasada lo cierre a `RESUELTO` (solo el auditor
+edita ese documento, §0.4), pero ya tiene R-17 asignada y entregada — no requiere ninguna R-XX
+nueva. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (bloqueo #7 de `SEGUIMIENTO.md` §3
+— grabar un curso completo — sigue sin resolverse, es la fuente de fricciones reales de rodaje que
+más haría avanzar este roadmap). Revisados también `references/contrato-montaje.md` y
+`references/contrato-tarjetas.md` en busca de otra grieta de arquitectura del mismo tipo que abrió
+R-12/R-13/R-14/R-16: el contrato de montaje queda cerrado por R-16 (límites absolutos de escena ya
+resueltos, nada que un consumidor externo deba recalcular a mano). Sin feedback real de rodaje ni
+hallazgo nuevo, este ciclo no encuentra motivo para abrir ninguna R-XX de producto especulativa.
 
 ---
 
@@ -103,63 +106,30 @@ La fase F-H (advertencia sobre el binario "pelado" en un contenedor de nube, R-1
 `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-14. Su spec completa y cómo se entregó cada
 una vive ahí.
 
-### Fase transversal F-I — Deuda técnica menor (revalidación)
+### Fase transversal F-I — entregada
 
-Agrupa hallazgos de calidad menores, sin hito de producto propio, con el mismo criterio que ya
-usaron F-D (R-08/R-09), F-F (R-11), F-G (R-14) y F-H (R-15). Contiene R-17, su única R-XX por
-ahora.
-
-#### R-17 — Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas`
-**Oleada / Fase:** F-I · **Migración:** No · **Depende de:** ninguna
-**Origen:** auditoría `#19` (2026-09-04), reconfirmada sin cambios en las diez pasadas siguientes del auditor
-
-**Objetivo:** `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`, defensa en profundidad
-de P-04 sobre el hallazgo #14) compara, escena a escena, el **conjunto** de índices de ancla
-previstos contra los realmente leídos del documento (`previstas != escenas_leidas[numero_escena]`,
-ambos `set[int]`). El hallazgo `#19` señala una asimetría teórica: esta comparación por conjunto
-detecta un índice de más, de menos o distinto, pero nunca se ha verificado si existe algún camino
-por el que dos disposiciones distintas de anclas pudieran producir el mismo conjunto de índices por
-escena sin que el aviso salte — el propio auditor lleva diez pasadas (2026-09-04 a 2026-09-14)
-reconfirmándolo como "sin escenario reproducido", nunca como un fallo real. Diez reconfirmaciones
-sin resolución es ya más caro en atención de sesión futura que cerrarlo una vez, en cualquiera de
-los dos sentidos posibles.
-
-**Requisitos:**
-1. Investigar, leyendo `identidad_por_ancla`/`texto_editado_por_ancla` y sus dos únicos
-   productores (`tiempos.bloques_respiracion_marcados`, `troceo.trocear_guion`, ambos ya revisados
-   por la auditoría de R-14), si existe una secuencia real de ediciones/particiones que produzca,
-   para una misma escena, dos disposiciones de anclas distintas con el mismo conjunto de índices.
-   No asumir la respuesta de partida en ningún sentido.
-2. **Si se encuentra un escenario real:** endurecer la comparación para que compruebe la identidad
-   exacta de cada ancla (no solo la cardinalidad/conjunto de índices por escena), añadiendo un test
-   de regresión que reproduzca el escenario encontrado (falla sin el fix, pasa con él), mismo patrón
-   que los tests de `#9`/`#14`.
-3. **Si se confirma que es inalcanzable** dado el resto de invariantes del módulo (p. ej. porque la
-   identidad `(escena, índice_original, mitad)` es inyectiva por construcción): añadir un test que
-   deje esa prueba por escrito (no solo una nota en un docstring) y actualizar el registro de
-   `auditoriacontinua.md` — a través del propio informe de esta tarea, nunca editando el documento
-   del auditor directamente (§0.4: es el único archivo que modifica el auditor) — para que la
-   siguiente pasada del auditor pueda cerrar `#19` a `RESUELTO` en vez de reconfirmarlo indefinidamente.
-4. Cualquiera de los dos caminos es una tarea de calidad interna: cero cambio de esquema de
-   `estado.json` ni de `Configuracion`, y ningún cambio de comportamiento observable por el dueño
-   fuera de la propia corrección si el escenario resulta real.
-
-**Criterio de aceptación:** la incertidumbre queda resuelta con evidencia en código (test nuevo) en
-uno de los dos sentidos — comparación endurecida con regresión que la ejercita, o prueba explícita
-de que el escenario es inalcanzable —, documentado en `DECISIONES_TECNICAS.md` con el razonamiento
-seguido; la siguiente pasada del auditor puede cerrar `#19` sin tener que seguir reconfirmando la
-misma nota teórica.
+La fase F-I (deuda técnica menor sobre la asimetría teórica de `_incidencias_anclas_desajustadas`,
+R-17) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio
+propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-09-15). Su spec
+completa y cómo se entregó viven ahí.
 
 ---
 
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` tiene una única R-XX pendiente en este ciclo: **R-17** (F-I), origen directo
-de un hallazgo del auditor (`#19`) que llevaba diez pasadas sin convertirse en tarea. No hay
-ninguna otra R-XX `PENDIENTE` ni `EN CURSO`: el resto del roadmap sigue a la espera de una entrada
-real en `FEEDBACK.md`, de un nuevo hallazgo de `auditoriacontinua.md`, o de que el dueño complete el
-criterio de salida de la oleada v1 (grabar un curso entero, bloqueo #7 de `SEGUIMIENTO.md` §3) y
-aporte fricciones reales de rodaje.
+`ROADMAP_PRODUCTO.md` no tiene, en este ciclo, ninguna R-XX `PENDIENTE` ni `EN CURSO`: la última,
+R-17, quedó `COMPLETADA` el 2026-09-14 y se archiva arriba. `roadmap/FEEDBACK.md` no tiene ninguna
+entrada `nuevo` y el registro de hallazgos de `auditoriacontinua.md` no tiene ningún `ABIERTO`
+pendiente de enrutar (el único que quedaba, `#19`, ya tiene R-17 asignada y entregada; su cierre a
+`RESUELTO` en el registro del auditor es tarea exclusiva del auditor, §0.4). El roadmap sigue a la
+espera de una entrada real en `FEEDBACK.md`, de un nuevo hallazgo de `auditoriacontinua.md`, o de
+que el dueño complete el criterio de salida de la oleada v1 (grabar un curso entero, bloqueo #7 de
+`SEGUIMIENTO.md` §3) y aporte fricciones reales de rodaje — la fuente de valor más alta para las
+próximas R-XX, y la que este roadmap lleva más tiempo sin poder aprovechar. Sin ese input, este
+ciclo no abre ninguna R-XX de producto especulativa: revisados `references/contrato-montaje.md` y
+`references/contrato-tarjetas.md` en busca de otra grieta de arquitectura del mismo tipo que ya dio
+R-12/R-13/R-14/R-16, no aparece ninguna pendiente — el contrato con la fase de montaje queda
+cerrado desde R-16.
 
 ---
 

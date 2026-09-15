@@ -34,6 +34,10 @@ ningún hito de negocio propio pendiente — mismo criterio que los cuatro movim
 (R-15) y la Oleada v6 (R-16), ambas COMPLETADA por el Programador el mismo día (2026-09-14) y sin
 ningún hito de negocio propio pendiente — mismo criterio que los cinco movimientos anteriores.
 
+**Movido a histórico el:** 2026-09-15, ciclo de Product Manager. Se añade la Fase transversal F-I
+(R-17), COMPLETADA por el Programador el mismo día en que se abrió (2026-09-14) y sin ningún hito
+de negocio propio pendiente — mismo criterio que los seis movimientos anteriores.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -683,7 +687,66 @@ mezclando real/estimado).
 
 ---
 
+## Fase transversal F-I — Deuda técnica menor (revalidación)
+
+Agrupa hallazgos de calidad menores, sin hito de producto propio, con el mismo criterio que ya
+usaron F-D (R-08/R-09), F-F (R-11), F-G (R-14) y F-H (R-15). Contenía R-17, su única R-XX.
+**Entregada 2026-09-14** (COMPLETADA el mismo día en que se abrió).
+
+### R-17 — Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas`
+**Oleada / Fase:** F-I · **Migración:** No · **Depende de:** ninguna
+**Origen:** auditoría `#19` (2026-09-04), reconfirmada sin cambios en las diez pasadas siguientes del auditor
+
+**Objetivo:** `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`, defensa en profundidad
+de P-04 sobre el hallazgo #14) compara, escena a escena, el **conjunto** de índices de ancla
+previstos contra los realmente leídos del documento (`previstas != escenas_leidas[numero_escena]`,
+ambos `set[int]`). El hallazgo `#19` señala una asimetría teórica: esta comparación por conjunto
+detecta un índice de más, de menos o distinto, pero nunca se ha verificado si existe algún camino
+por el que dos disposiciones distintas de anclas pudieran producir el mismo conjunto de índices por
+escena sin que el aviso salte — el propio auditor lleva diez pasadas (2026-09-04 a 2026-09-14)
+reconfirmándolo como "sin escenario reproducido", nunca como un fallo real. Diez reconfirmaciones
+sin resolución es ya más caro en atención de sesión futura que cerrarlo una vez, en cualquiera de
+los dos sentidos posibles.
+
+**Requisitos:**
+1. Investigar, leyendo `identidad_por_ancla`/`texto_editado_por_ancla` y sus dos únicos
+   productores (`tiempos.bloques_respiracion_marcados`, `troceo.trocear_guion`, ambos ya revisados
+   por la auditoría de R-14), si existe una secuencia real de ediciones/particiones que produzca,
+   para una misma escena, dos disposiciones de anclas distintas con el mismo conjunto de índices.
+   No asumir la respuesta de partida en ningún sentido.
+2. **Si se encuentra un escenario real:** endurecer la comparación para que compruebe la identidad
+   exacta de cada ancla (no solo la cardinalidad/conjunto de índices por escena), añadiendo un test
+   de regresión que reproduzca el escenario encontrado (falla sin el fix, pasa con él), mismo patrón
+   que los tests de `#9`/`#14`.
+3. **Si se confirma que es inalcanzable** dado el resto de invariantes del módulo (p. ej. porque la
+   identidad `(escena, índice_original, mitad)` es inyectiva por construcción): añadir un test que
+   deje esa prueba por escrito (no solo una nota en un docstring) y actualizar el registro de
+   `auditoriacontinua.md` — a través del propio informe de esta tarea, nunca editando el documento
+   del auditor directamente (§0.4: es el único archivo que modifica el auditor) — para que la
+   siguiente pasada del auditor pueda cerrar `#19` a `RESUELTO` en vez de reconfirmarlo indefinidamente.
+4. Cualquiera de los dos caminos es una tarea de calidad interna: cero cambio de esquema de
+   `estado.json` ni de `Configuracion`, y ningún cambio de comportamiento observable por el dueño
+   fuera de la propia corrección si el escenario resulta real.
+
+**Criterio de aceptación:** la incertidumbre queda resuelta con evidencia en código (test nuevo) en
+uno de los dos sentidos — comparación endurecida con regresión que la ejercita, o prueba explícita
+de que el escenario es inalcanzable —, documentado en `DECISIONES_TECNICAS.md` con el razonamiento
+seguido; la siguiente pasada del auditor puede cerrar `#19` sin tener que seguir reconfirmando la
+misma nota teórica.
+
+**Cómo se entregó:** investigada y cerrada por la vía del requisito 3 (con matiz): bajo operación
+normal la identidad es inyectiva por construcción (`pospuestas_previas` siempre coincide con lo que
+la pasada anterior persistió); el único escenario que rompe la comparación por cardinalidad exige
+corromper `estado.validacion["particiones_pospuestas"]` a mano (misma precondición ya conocida de
+P-04), y se verificó con test nuevo que incluso ahí el invariante (a) — nada se pierde ni se
+duplica — sigue intacto, con un único efecto cosmético (número de bloque erróneo en la incidencia
+de conflicto, escena correcta). 1 test nuevo (574→575) en `tests/test_revalidacion.py`. Cuatro
+redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
-2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14.)*
+2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
+de F-I (R-17), 2026-09-15.)*
