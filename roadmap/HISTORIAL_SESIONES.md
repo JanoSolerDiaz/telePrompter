@@ -32,6 +32,47 @@
 
 ---
 
+### Sesión 2026-09-15 — Ciclo de Programador: séptima reconfirmación tras R-17, sin novedad
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+conserva un único hallazgo `ABIERTO` (`#19`, baja), ya cerrado por la vía de R-17 (COMPLETADA);
+reabrirlo a `RESUELTO` en el registro del auditor sigue siendo tarea exclusiva de ese rol (§0.4), no
+de esta sesión. §1 de `SEGUIMIENTO.md` (fuente autoritativa) confirma R-17 `COMPLETADA` y ninguna
+R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md` §"Cola de producto" sigue con la misma
+prosa desactualizada que listaba R-17 como pendiente (ya no lo es) y sin archivar la fase F-I a
+`ROADMAP_HISTORICO.md` — ambas tareas del PM, no del Programador. Nota de arranque: el clon local
+llegó, otra vez, con `develop` en *detached HEAD*; tras `git checkout develop` la rama local quedó
+en un commit antiguo (`467833f`, 2026-09-08) con raíz injertada por el clon superficial, sin
+ancestro común aparente con `origin/develop` (ya en `b558050`, 2026-09-15) porque las raíces
+injertadas de cada clon difieren en hash — mismo patrón de cada contenedor efímero nuevo. Esta
+sesión resolvió primero con `git reset --hard origin/develop` (sin riesgo real: no había commits
+locales sin empujar, la propia rama local de siete días de antigüedad solo repetía el mismo tipo de
+reconfirmaciones ya superadas por `origin/develop`) y verificó la causa raíz después: `git fetch
+--unshallow origin` + `git merge-base --is-ancestor 467833f origin/develop` → `YES` (162 commits
+reales, raíz verdadera `f78a92c`), confirmando una vez más el mismo falso positivo de clon
+superficial ya documentado para `#21` — el reset fue equivalente en efecto a un `merge --ff-only`,
+sin pérdida de historia real.
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` («Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx` latente por el
+bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en una
+sesión de nube)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` del dueño (nota
+de entorno del protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva de producto/arquitectura; la reconfirmación de la causa raíz
+con `fetch --unshallow` es una verificación operativa de lo ya documentado para `#21`, no una
+decisión técnica nueva, y no genera fila nueva en `DECISIONES_TECNICAS.md`
+**Hallazgos del auditor atendidos:** ninguno (nada nuevo desde la última pasada del auditor)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** sin tarea de código pendiente. La siguiente sesión de Programador repite esta
+reconfirmación salvo que el PM abra tarea nueva o el auditor escale un hallazgo a severidad alta.
+
+---
+
 ### Sesión 2026-09-15 — Ciclo de Programador: sexta reconfirmación tras R-17, sin novedad
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 conserva un único hallazgo `ABIERTO` (`#19`, baja), ya cerrado por la vía de R-17 (COMPLETADA);
