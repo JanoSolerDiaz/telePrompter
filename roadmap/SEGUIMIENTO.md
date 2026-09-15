@@ -10,30 +10,27 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-15 — **Ciclo de Programador: séptima reconfirmación tras R-17,
+**Última actualización:** 2026-09-15 — **Ciclo de Programador: octava reconfirmación tras R-17,
 sin novedad.** Revisado antes de elegir tarea: `auditoriacontinua.md` conserva un único hallazgo
 `ABIERTO` (`#19`, baja, ya enrutado y cerrado por R-17 — su reapertura a `RESUELTO` es tarea
 exclusiva del auditor, §0.4, no de esta sesión); §1 de este documento (fuente autoritativa)
 confirma R-17 `COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md`
-§"Cola de producto" sigue con prosa desactualizada (todavía lista R-17 como pendiente) y sin
-archivar la fase F-I a `ROADMAP_HISTORICO.md` (ambas tareas del PM, no del Programador). Sin
+§"Cola de producto" sigue con la misma prosa desactualizada (todavía lista R-17 como pendiente) y
+sin archivar la fase F-I a `ROADMAP_HISTORICO.md` (ambas tareas del PM, no del Programador). Sin
 trabajo de código pendiente: cuatro redes en verde (mypy limpio 68 archivos, ruff limpio, 575
 tests, `verificar_salidas.py --fixture` catorce etapas OK; `.pptx` latente por el bloqueo #2 de §3,
 `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en sesión de nube). Sin
-cambios en bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7). Nota de arranque: el clon
-local llegó, otra vez, en *detached HEAD*; tras `git checkout develop` la rama local quedó en un
-commit antiguo (`467833f`, 2026-09-08, con raíz injertada `4cdbe40` por el clon superficial) frente
-a `origin/develop` ya en `b558050` (2026-09-15) — sin ancestro común aparente porque las raíces
-injertadas de cada clon difieren en hash. Mismo patrón de cada contenedor efímero nuevo, no un
-efecto persistente de correcciones anteriores. Resuelto con `git reset --hard origin/develop` (sin
-riesgo: no había commits locales sin empujar) y verificada la causa después: `git fetch --unshallow
-origin` + `git merge-base --is-ancestor 467833f origin/develop` → `YES` (162 commits reales, raíz
-verdadera `f78a92c`), confirmando una vez más el mismo falso positivo de clon superficial ya
-documentado para `#21`: el reset fue equivalente en efecto a un `merge --ff-only`, sin pérdida de
-historia real.
+cambios en bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7). Nota de arranque: esta vez
+el clon local llegó ya en `develop`, sincronizado con `origin/develop` sin necesidad de
+`reset --hard` (a diferencia de las últimas pasadas, que encontraron *detached HEAD* o una rama
+local rezagada) — `git status` limpio antes de tocar nada.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-15, ciclo de Programador: séptima reconfirmación tras R-17, sin novedad. Cuatro redes en
+  verde (575 tests). Sin trabajo de código pendiente. Nota de arranque: clon local en *detached
+  HEAD* con rama rezagada, resuelto con `git reset --hard origin/develop` (sin pérdida de historia
+  real, verificado con `merge-base --is-ancestor`).
 - 2026-09-15, ciclo de Programador: sexta reconfirmación tras R-17, sin novedad. Cuatro redes en
   verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: quinta reconfirmación tras R-17, sin novedad. Cuatro redes en
