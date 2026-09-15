@@ -10,12 +10,13 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-15 — **Ciclo de Programador: primera reconfirmación tras R-17,
+**Última actualización:** 2026-09-15 — **Ciclo de Programador: segunda reconfirmación tras R-17,
 sin novedad.** Revisado antes de elegir tarea: `auditoriacontinua.md` conserva un único hallazgo
-`ABIERTO` (`#19`, baja, ya enrutado y cerrado por R-17 el mismo día — su reapertura a `RESUELTO` es
-tarea exclusiva del auditor, §0.4, no de esta sesión); §1 de este documento (fuente autoritativa)
+`ABIERTO` (`#19`, baja, ya enrutado y cerrado por R-17 — su reapertura a `RESUELTO` es tarea
+exclusiva del auditor, §0.4, no de esta sesión); §1 de este documento (fuente autoritativa)
 confirma R-17 `COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md`
-sigue sin archivar la fase F-I a `ROADMAP_HISTORICO.md` (tarea del PM, no del Programador). Sin
+§"Cola de producto" sigue con prosa desactualizada (todavía lista R-17 como pendiente) y sin
+archivar la fase F-I a `ROADMAP_HISTORICO.md` (ambas tareas del PM, no del Programador). Sin
 trabajo de código pendiente: cuatro redes en verde (mypy limpio 68 archivos, ruff limpio, 575
 tests, `verificar_salidas.py --fixture` catorce etapas OK; `.pptx` latente por el bloqueo #2 de §3,
 `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en sesión de nube). Sin
@@ -23,6 +24,8 @@ cambios en bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-15, ciclo de Programador: primera reconfirmación tras R-17, sin novedad. Cuatro redes en
+  verde (575 tests). Sin trabajo de código pendiente.
 - 2026-09-15, ciclo de Programador: R-17 implementada y COMPLETADA. Investigado el hallazgo #19
   (`_incidencias_anclas_desajustadas` compara solo cardinalidad de anclas, no identidad exacta):
   bajo operación normal la identidad es inyectiva por construcción; el único camino para que la
