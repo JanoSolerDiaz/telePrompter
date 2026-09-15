@@ -32,6 +32,42 @@
 
 ---
 
+### Sesión 2026-09-15 — Ciclo de Programador: primera reconfirmación tras R-17, sin novedad
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+conserva un único hallazgo `ABIERTO` (`#19`, baja) que la sesión anterior del mismo día ya cerró por
+la vía de R-17 (COMPLETADA); reabrirlo a `RESUELTO` en el registro del auditor es tarea exclusiva de
+ese rol (§0.4), no de esta sesión. §1 de `SEGUIMIENTO.md` (fuente autoritativa) confirma R-17
+`COMPLETADA` y ninguna R-XX/T-XX `PENDIENTE` ni `EN CURSO`. `ROADMAP_PRODUCTO.md` sigue sin archivar
+la fase F-I a `ROADMAP_HISTORICO.md` (tarea del PM). Nota de arranque: el clon local llegó con
+`develop` en *detached HEAD*, apuntando a un commit obsoleto (`467833f`, 2026-09-08) sin relación de
+ancestro con `origin/develop` (`b9b6bcb`, 2026-09-15) tras el fetch; verificado primero que el árbol
+de trabajo estaba limpio (`git status`) y que `467833f` no tenía ningún commit propio sin empujar
+(mismos 50 commits que llevan semanas quedando atrás en cada clon efímero, herencia conocida de la
+reescritura de `#21`), se usó `git checkout -B develop origin/develop` para realinear sin pérdida.
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` («Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx` latente por el
+bloqueo #2 de §3, `.pdf` latente por falta de Chrome/Edge en este contenedor, ambos esperados en una
+sesión de nube)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` del dueño (nota
+de entorno del protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva de producto/arquitectura; el realineado de arranque es
+operativo, no una decisión técnica del proyecto, y no genera fila nueva en `DECISIONES_TECNICAS.md`
+**Hallazgos del auditor atendidos:** ninguno — `#19` sigue `ABIERTO` en el registro del auditor
+(cerrarlo a `RESUELTO` es acción exclusiva de ese rol), sin escalar
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** la siguiente sesión (Programador, Auditor o PM) repite el mismo orden de lectura
+(`auditoriacontinua.md` primero, luego §1 de `SEGUIMIENTO.md`). Le corresponde al Auditor pasar `#19`
+de `ABIERTO` a `RESUELTO` citando el test de R-17, y al PM archivar la fase F-I a
+`ROADMAP_HISTORICO.md`; ninguna de las dos es tarea del Programador. Sin reverts pendientes.
+
+---
+
 ### Sesión 2026-09-15 — Ciclo de Programador: R-17 implementada y COMPLETADA (hallazgo `#19`)
 **Tarea(s):** R-17 (fase transversal F-I, spec en `ROADMAP_PRODUCTO.md`). Sin urgencias P-XX (único
 hallazgo `ABIERTO` de `auditoriacontinua.md`, `#19`, ya enrutado a esta misma R-17).
