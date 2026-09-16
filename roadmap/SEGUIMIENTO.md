@@ -10,13 +10,13 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-16 — **Ciclo de Programador: decimoséptima reconfirmación tras
+**Última actualización:** 2026-09-16 — **Ciclo de Programador: decimoctava reconfirmación tras
 R-17, sin novedad de código.** Revisado antes de elegir tarea: `auditoriacontinua.md` sigue con un
 único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la sesión anterior;
 ninguno de severidad alta, así que no aplica P-XX urgente (§0.3). §1 de este documento (fuente
 autoritativa) sigue sin ninguna T-XX/R-XX `PENDIENTE` ni `EN CURSO`; `ROADMAP_PRODUCTO.md`
 §"Cola de producto" confirma lo mismo (y sigue con la fecha de cierre de R-17 equivocada —
-"2026-09-14" en vez de "2026-09-15" — señalada por siete sesiones anteriores y todavía sin corregir
+"2026-09-14" en vez de "2026-09-15" — señalada por ocho sesiones anteriores y todavía sin corregir
 por el PM; `#24` ya deja constancia de esto mismo con una sugerencia explícita para el PM —que el
 propio ciclo de reconfirmación del Programador quede autorizado a corregir esa prosa cuando solo
 refleje un estado que este §1 ya registra como `COMPLETADA`— pero es una sugerencia no decidida, no
@@ -28,6 +28,7 @@ bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-16, ciclo de Programador: decimoséptima reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Programador: decimosexta reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Programador: decimoquinta reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Programador: decimocuarta reconfirmación tras R-17, sin novedad de código.

@@ -32,6 +32,43 @@
 
 ---
 
+### Sesión 2026-09-16 — Ciclo de Programador: decimoctava reconfirmación tras R-17, sin novedad de código
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+sigue con un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la
+sesión anterior; ninguno de severidad alta, así que no aplica P-XX urgente (§0.3). §1 de
+`SEGUIMIENTO.md` (fuente autoritativa) confirma que no hay ninguna T-XX/R-XX `PENDIENTE` ni
+`EN CURSO` tras R-17; `ROADMAP_PRODUCTO.md` §"Cola de producto" coincide, y sigue con la fecha de
+cierre de R-17 equivocada ("2026-09-14" en vez de "2026-09-15") que ocho sesiones anteriores ya
+habían señalado como fuera del alcance del Programador. `#24` propone que el Programador quede
+autorizado a corregir esa prosa por sí solo cuando se limite a reflejar un estado ya `COMPLETADA`
+en este §1, pero sigue siendo una sugerencia para el PM, no una autorización vigente del dueño ni
+del PM — así que esta sesión tampoco la toca, y deja constancia otra vez para no perder el hilo.
+Nota de arranque: el clon llegó con `develop` desactualizado respecto a `origin/develop` (doce
+commits por delante, todos ya conocidos: la reconfirmación anterior y las once previas de
+Programador/PM/auditor); resuelto con `git checkout develop && git pull origin develop`
+(fast-forward limpio, sin pérdida de historia).
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera «Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+latentes como siempre en sesión de nube)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` (nota de entorno,
+protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva
+**Hallazgos del auditor atendidos:** ninguno (`#24` reconfirmado sin cambios, no es tarea del
+Programador)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** ninguna tarea de código pendiente. La siguiente sesión de Programador repite esta
+reconfirmación salvo que el PM abra una nueva R-XX, el auditor escale un hallazgo de severidad alta,
+o el dueño/PM autoricen explícitamente al Programador a corregir la fecha de `ROADMAP_PRODUCTO.md`
+que señala `#24`.
+
+---
+
 ### Sesión 2026-09-16 — Ciclo de Programador: decimoséptima reconfirmación tras R-17, sin novedad de código
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 sigue con un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la
