@@ -32,6 +32,41 @@
 
 ---
 
+### Sesión 2026-09-16 — Ciclo de Programador: decimonovena reconfirmación tras R-17, sin novedad de código
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+sigue con un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la
+sesión anterior; ninguno de severidad alta, así que no aplica P-XX urgente (§0.3). §1 de
+`SEGUIMIENTO.md` (fuente autoritativa) confirma que no hay ninguna T-XX/R-XX `PENDIENTE` ni
+`EN CURSO` tras R-17; `ROADMAP_PRODUCTO.md` §"Cola de producto" coincide, y sigue con la fecha de
+cierre de R-17 equivocada ("2026-09-14" en vez de "2026-09-15") que nueve sesiones anteriores ya
+habían señalado como fuera del alcance del Programador. `#24` propone que el Programador quede
+autorizado a corregir esa prosa por sí solo cuando se limite a reflejar un estado ya `COMPLETADA`
+en este §1, pero sigue siendo una sugerencia para el PM, no una autorización vigente del dueño ni
+del PM — así que esta sesión tampoco la toca, y deja constancia otra vez para no perder el hilo.
+`git log` confirma que no hay commits nuevos de PM ni de auditor desde la reconfirmación anterior
+(mismo día): el ciclo de auditoría que cierra `#19` y abre `#24` (`610f396`) y la corrección de
+prosa del PM (`892e80f`) ya estaban reflejados en la sesión decimoctava.
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera «Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+latentes como siempre en sesión de nube)
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` (nota de entorno,
+protocolo v1.3)
+**Decisiones tomadas:** ninguna nueva
+**Hallazgos del auditor atendidos:** ninguno nuevo — `#24` reconfirmado sin cambios, sin escalar
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** sin tarea de código pendiente en §1 de `SEGUIMIENTO.md`. La siguiente sesión debe
+volver a revisar `auditoriacontinua.md` y `ROADMAP_PRODUCTO.md` antes de repetir esta reconfirmación;
+si el PM o el dueño abren una R-XX nueva, o el auditor escala un hallazgo a severidad alta, esa pasa
+a ser la siguiente tarea.
+
+---
+
 ### Sesión 2026-09-16 — Ciclo de Programador: decimoctava reconfirmación tras R-17, sin novedad de código
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 sigue con un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la
