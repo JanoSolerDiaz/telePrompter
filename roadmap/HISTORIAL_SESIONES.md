@@ -32,6 +32,43 @@
 
 ---
 
+### Sesión 2026-09-16 — Ciclo de Programador: décima reconfirmación tras R-17, sin novedad de código
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+registra ahora un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso, abierto por la
+auditoría del 2026-09-16 — patrón recurrente de latencia entre "completado en código" y "prosa de
+`ROADMAP_PRODUCTO.md` actualizada"); ninguno de severidad alta, así que no aplica P-XX urgente
+(§0.3). §1 de `SEGUIMIENTO.md` (fuente autoritativa) confirma que no hay ninguna T-XX/R-XX
+`PENDIENTE` ni `EN CURSO` tras R-17; `ROADMAP_PRODUCTO.md` §"Cola de producto" (ya corregida por el
+ciclo de PM del 2026-09-15, `892e80f`) coincide. Nota de arranque: el clon llegó con la rama
+`develop` en *detached HEAD*, cuatro commits por detrás de `origin/develop` (el ciclo de PM y el de
+auditoría del 2026-09-15/16); resuelto con `git checkout develop && git pull origin develop`
+(fast-forward limpio, sin pérdida de historia).
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera «Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+latentes como siempre en sesión de nube)
+**Health check post-deploy:** N/A — no aplica en sesión de nube (nota de entorno del protocolo)
+**Decisiones tomadas:** ninguna nueva
+**Hallazgos del auditor atendidos:** ninguno (único `ABIERTO`, `#24`, es de proceso y de escritura
+exclusiva del PM/auditor, no del Programador)
+**Hallazgos:** uno nuevo, fuera del alcance de esta sesión para corregir (documento gestionado por
+el PM, §0.4): la propia corrección de prosa del ciclo de PM del 2026-09-15 (`892e80f`) dejó una
+fecha equivocada en `ROADMAP_PRODUCTO.md` §"Cola de producto" — dice que "R-17 quedó `COMPLETADA`
+el 2026-09-14", pero el commit real de R-17 (`b9b6bcb`) y la fila de R-17 en `SEGUIMIENTO.md` §1
+fechan su cierre el 2026-09-15. Distinto del hallazgo `#24` del auditor (que habla de la latencia en
+actualizar el estado, no de una fecha incorrecta dentro de una prosa ya dada por corregida); se deja
+constancia en `SEGUIMIENTO.md` («Última actualización») para que el PM lo ajuste en su próximo ciclo.
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** ninguno de código salvo que el PM abra una R-XX nueva o el auditor escale un
+hallazgo. Pendiente de otro rol (no del Programador): corregir la fecha de cierre de R-17 en
+`ROADMAP_PRODUCTO.md` §"Cola de producto" (2026-09-14 → 2026-09-15).
+
+---
+
 ### Sesión 2026-09-15 (PM) — Cola de producto corregida, Fase F-I archivada, ninguna R-XX nueva
 **Tarea(s):** ninguna T-XX/R-XX de código; ciclo de gestión de roadmap (PM).
 **Estado resultante:** N/A (documental). §1 no cambia de estado en ningún ID: ya era exacto (R-17
