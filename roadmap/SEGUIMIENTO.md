@@ -10,25 +10,21 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-16 — **Ciclo de Programador: décima reconfirmación tras R-17,
-sin novedad de código.** Revisado antes de elegir tarea: `auditoriacontinua.md` registra un único
-hallazgo `ABIERTO` (`#24`, baja, puramente de proceso — el mismo patrón de latencia PM/roadmap que
-originó R-17, ahora confirmado recurrente por la auditoría del 2026-09-16); ninguno de severidad
-alta, así que no aplica P-XX urgente (§0.3). §1 de este documento (fuente autoritativa) sigue sin
-ninguna T-XX/R-XX `PENDIENTE` ni `EN CURSO`; `ROADMAP_PRODUCTO.md` §"Cola de producto" confirma lo
-mismo. Cuatro redes en verde (`mypy` limpio 68 archivos, `ruff` limpio, 575 tests, `verificar_
-salidas.py --fixture` catorce etapas OK; `.pptx`/`.pdf` LATENTES como siempre en este contenedor de
-nube). **Hallazgo nuevo de esta sesión, fuera del alcance del Programador para corregir** (`ROADMAP_
-PRODUCTO.md` lo gestiona el PM, §0.4): la propia corrección de prosa del ciclo de PM del 2026-09-15
-(`892e80f`) dejó una fecha equivocada — dice que "R-17 quedó `COMPLETADA` el 2026-09-14", pero tanto
-el commit real de R-17 (`b9b6bcb`, 2026-09-15 06:18 UTC) como la fila de R-17 en este mismo §1 fechan
-su cierre el 2026-09-15. No es el mismo hecho que ya cubre `#24` (que habla de la latencia en
-actualizar el estado, no de una fecha incorrecta dentro de una prosa que ya se dio por corregida); se
-deja constancia aquí para que el PM lo ajuste en su próximo ciclo. Sin cambios en bloqueos (§3),
-preguntas abiertas (§6) ni desviaciones (§7).
+**Última actualización:** 2026-09-16 — **Ciclo de Programador: undécima reconfirmación tras R-17,
+sin novedad de código.** Revisado antes de elegir tarea: `auditoriacontinua.md` sigue con un único
+hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la sesión anterior;
+ninguno de severidad alta, así que no aplica P-XX urgente (§0.3). §1 de este documento (fuente
+autoritativa) sigue sin ninguna T-XX/R-XX `PENDIENTE` ni `EN CURSO`; `ROADMAP_PRODUCTO.md`
+§"Cola de producto" confirma lo mismo (y sigue con la fecha de cierre de R-17 equivocada —
+"2026-09-14" en vez de "2026-09-15" — señalada por la sesión anterior y todavía sin corregir por el
+PM; no es tarea del Programador, se deja constancia otra vez para no perderla). Cuatro redes en
+verde (`mypy` limpio 68 archivos, `ruff` limpio, 575 tests, `verificar_salidas.py --fixture` catorce
+etapas OK; `.pptx`/`.pdf` LATENTES como siempre en este contenedor de nube). Sin cambios en bloqueos
+(§3), preguntas abiertas (§6) ni desviaciones (§7).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-16, ciclo de Programador: décima reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Auditoría: cierra `#19` (R-17 verificada en profundidad), abre `#24` (patrón
   recurrente de latencia PM/roadmap, confirmado).
 - 2026-09-15, ciclo de Product Manager: prosa de "Cola de producto" corregida (R-17 ya `COMPLETADA`,
