@@ -10,20 +10,21 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-16 — **Ciclo de Programador: undécima reconfirmación tras R-17,
+**Última actualización:** 2026-09-16 — **Ciclo de Programador: duodécima reconfirmación tras R-17,
 sin novedad de código.** Revisado antes de elegir tarea: `auditoriacontinua.md` sigue con un único
 hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la sesión anterior;
 ninguno de severidad alta, así que no aplica P-XX urgente (§0.3). §1 de este documento (fuente
 autoritativa) sigue sin ninguna T-XX/R-XX `PENDIENTE` ni `EN CURSO`; `ROADMAP_PRODUCTO.md`
 §"Cola de producto" confirma lo mismo (y sigue con la fecha de cierre de R-17 equivocada —
-"2026-09-14" en vez de "2026-09-15" — señalada por la sesión anterior y todavía sin corregir por el
-PM; no es tarea del Programador, se deja constancia otra vez para no perderla). Cuatro redes en
-verde (`mypy` limpio 68 archivos, `ruff` limpio, 575 tests, `verificar_salidas.py --fixture` catorce
-etapas OK; `.pptx`/`.pdf` LATENTES como siempre en este contenedor de nube). Sin cambios en bloqueos
-(§3), preguntas abiertas (§6) ni desviaciones (§7).
+"2026-09-14" en vez de "2026-09-15" — señalada por dos sesiones anteriores y todavía sin corregir
+por el PM; no es tarea del Programador, se deja constancia otra vez para no perderla). Cuatro redes
+en verde (`mypy` limpio 68 archivos, `ruff` limpio, 575 tests, `verificar_salidas.py --fixture`
+catorce etapas OK; `.pptx`/`.pdf` LATENTES como siempre en este contenedor de nube). Sin cambios en
+bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-16, ciclo de Programador: undécima reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Programador: décima reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Auditoría: cierra `#19` (R-17 verificada en profundidad), abre `#24` (patrón
   recurrente de latencia PM/roadmap, confirmado).
