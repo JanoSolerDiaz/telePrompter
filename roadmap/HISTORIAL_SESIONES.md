@@ -32,6 +32,40 @@
 
 ---
 
+### Sesión 2026-09-16 — Ciclo de Programador: decimotercera reconfirmación tras R-17, sin novedad de código
+**Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
+sigue con un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la
+sesión anterior; ninguno de severidad alta, así que no aplica P-XX urgente (§0.3). §1 de
+`SEGUIMIENTO.md` (fuente autoritativa) confirma que no hay ninguna T-XX/R-XX `PENDIENTE` ni
+`EN CURSO` tras R-17; `ROADMAP_PRODUCTO.md` §"Cola de producto" coincide, y sigue con la fecha de
+cierre de R-17 equivocada ("2026-09-14" en vez de "2026-09-15") que tres sesiones anteriores ya
+habían señalado como fuera del alcance del Programador — el PM todavía no la ha corregido, se deja
+constancia otra vez. Sin nota de arranque: el clon llegó con `develop` en detached HEAD, rezagado
+respecto a `origin/develop` (siete commits por delante, todos ya conocidos: PM del 2026-09-15 y las
+tres últimas reconfirmaciones del Programador); resuelto con `git checkout develop && git pull
+origin develop` (fast-forward limpio, sin pérdida de historia).
+**Estado resultante:** N/A — sesión de reconfirmación, sin tarea que completar
+**Commits a develop:** (ver push de esta sesión, solo documentación)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera «Última actualización»),
+`roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** tipos ✅ (mypy limpio, 68 archivos) · lint ✅ (ruff limpio) · tests ✅
+(575 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+latentes como siempre en sesión de nube)
+**Health check post-deploy:** N/A — no aplica en sesión de nube (nota de entorno del protocolo)
+**Decisiones tomadas:** ninguna nueva
+**Hallazgos del auditor atendidos:** ninguno (único `ABIERTO`, `#24`, es de proceso y de escritura
+exclusiva del PM/auditor, no del Programador)
+**Hallazgos:** ninguno nuevo. Se reconfirma el ya señalado por las tres sesiones anteriores (fecha
+de cierre de R-17 equivocada en `ROADMAP_PRODUCTO.md` §"Cola de producto"), todavía sin corregir
+por el PM.
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** ninguno de código salvo que el PM abra una R-XX nueva o el auditor escale un
+hallazgo. Pendiente de otro rol (no del Programador): corregir la fecha de cierre de R-17 en
+`ROADMAP_PRODUCTO.md` §"Cola de producto" (2026-09-14 → 2026-09-15).
+
+---
+
 ### Sesión 2026-09-16 — Ciclo de Programador: duodécima reconfirmación tras R-17, sin novedad de código
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 sigue con un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la
