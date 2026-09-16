@@ -32,6 +32,55 @@
 
 ---
 
+### Sesión 2026-09-16 — Ciclo de Product Manager: abre R-18 (oleada v7 nueva)
+**Tarea(s):** gestión de roadmap de producto (rol PM, no programa código). Releído el registro
+completo de `auditoriacontinua.md`: la auditoría del mismo día cerró `#19` (R-17 verificada en
+profundidad) y dejó un único hallazgo `ABIERTO`, `#24` (baja, puramente de proceso — latencia entre
+"completado en código" y prosa de `ROADMAP_PRODUCTO.md` actualizada, con una sugerencia explícita
+para el PM). No es un hallazgo de producto ni de arquitectura de código: es una pregunta de
+gobernanza (¿puede el Programador corregir por sí solo esa prosa cuando solo refleja un estado que
+§1 de `SEGUIMIENTO.md` ya registra como `COMPLETADA`?) que cambiaría el reparto de acceso de §0.4 de
+`HOJA_DE_RUTA.md` — protocolo que solo cambia el dueño — así que se deja como pregunta abierta nueva
+(#11 de §6) en vez de decidirse aquí o de enrutarse a una R-XX. `roadmap/FEEDBACK.md` releído: sigue
+sin ninguna entrada `nuevo`. Releído esta vez `scripts/salidas.py` (T-30, el selector de salidas real
+que el dueño contesta en cada validación) junto con `references/contrato-montaje.md`/
+`contrato-tarjetas.md`, buscando otra grieta de arquitectura del mismo tipo que ya dio R-12/R-13/
+R-14/R-16: aparece una. Las salidas que dependen de tomas reales de rodaje —`guion-alineado.srt`
+(R-05), `capitulos-youtube.txt` (R-07) y los campos reales de `tarjetas.json` (R-13/R-16)— están
+completas, probadas y estables desde hace semanas, pero huérfanas del único flujo real: `_generar_
+pptx`/`_generar_srt` de `scripts/salidas.py` nunca leen `estado.tomas` ni se lo pasan a `pptx.
+exportar_pptx`, y `capitulos_youtube.py` ni siquiera es una opción de `TipoSalida` — las tres solo se
+ejercitan hoy con `tomas_por_escena={}` dentro de `verificar_salidas.py --fixture`, deliberadamente
+vacío. Se abre **R-18** (spec completa en `ROADMAP_PRODUCTO.md` §Oleada v7) para cerrar esa grieta
+antes de que el dueño grabe el primer curso completo (bloqueo #7 de `SEGUIMIENTO.md` §3) y dependa
+de que estas salidas reflejen sus tomas reales sin invocar nada a mano. Sin migración de
+`estado.json`, sin campo nuevo de `Configuracion`, sin tocar la convención de marcado ni la
+identidad visual del reproductor — dentro de los límites de autonomía de §0.3.
+**Estado resultante:** R-18 abierta como `PENDIENTE` en §1 de `SEGUIMIENTO.md`, lista para que la
+próxima sesión de Programador la implemente
+**Commits a develop:** (ver push de esta sesión, solo documentación de roadmap)
+**Migraciones ejecutadas:** ninguna (no aplica a un ciclo de PM)
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (cabecera, §Oleada v7 con la ficha
+completa de R-18, §"Cola de producto"), `roadmap/SEGUIMIENTO.md` (cabecera, §1 fila R-18, §6
+pregunta #11, callout "PARA EL DUEÑO"), `roadmap/DECISIONES_TECNICAS.md` (dos filas nuevas: apertura
+de R-18 y tratamiento de `#24`), `roadmap/HISTORIAL_SESIONES.md` (este archivo)
+**Verificaciones pre-push:** N/A — ciclo de PM, no toca `scripts/`, `tests/` ni `assets/`; no aplica
+`python scripts/ci.py`
+**Health check post-deploy:** N/A — ciclo de PM, sin cambio de código que instalar
+**Decisiones tomadas:** dos filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-16): apertura de R-18
+y tratamiento de `#24` como pregunta abierta en vez de R-XX o decisión unilateral del PM
+**Hallazgos del auditor atendidos:** `#24` (baja, proceso) — enrutado a pregunta abierta #11 de §6,
+no a R-XX ni a decisión del PM, por ser un cambio de protocolo reservado al dueño
+**Hallazgos:** grieta de arquitectura nueva (no de auditoría): el selector de salidas real (T-30)
+nunca conecta con `estado.tomas`, dejando huérfanas tres salidas ya construidas por R-05/R-07/R-13/
+R-16 — enrutada a R-18
+**Tareas autopropuestas (P-XX):** ninguna (es tarea del PM, no del Programador)
+**Próximo paso:** la siguiente sesión de Programador implementa **R-18** (única R-XX `PENDIENTE` en
+§1), con spec completa en `ROADMAP_PRODUCTO.md` §Oleada v7. El dueño tiene una pregunta nueva sin
+responder en §6 (#11), sin urgencia.
+
+---
+
 ### Sesión 2026-09-16 — Ciclo de Programador: decimonovena reconfirmación tras R-17, sin novedad de código
 **Tarea(s):** ninguna T-XX/R-XX de código. Revisado antes de elegir tarea: `auditoriacontinua.md`
 sigue con un único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la

@@ -10,24 +10,30 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-16 — **Ciclo de Programador: decimonovena reconfirmación tras
-R-17, sin novedad de código.** Revisado antes de elegir tarea: `auditoriacontinua.md` sigue con un
-único hallazgo `ABIERTO` (`#24`, baja, puramente de proceso), sin cambios desde la sesión anterior;
-ninguno de severidad alta, así que no aplica P-XX urgente (§0.3). §1 de este documento (fuente
-autoritativa) sigue sin ninguna T-XX/R-XX `PENDIENTE` ni `EN CURSO`; `ROADMAP_PRODUCTO.md`
-§"Cola de producto" confirma lo mismo (y sigue con la fecha de cierre de R-17 equivocada —
-"2026-09-14" en vez de "2026-09-15" — señalada por nueve sesiones anteriores y todavía sin corregir
-por el PM; `#24` ya deja constancia de esto mismo con una sugerencia explícita para el PM —que el
-propio ciclo de reconfirmación del Programador quede autorizado a corregir esa prosa cuando solo
-refleje un estado que este §1 ya registra como `COMPLETADA`— pero es una sugerencia no decidida, no
-una autorización vigente: sigue sin ser tarea del Programador tocar el documento de otro rol sin esa
-decisión explícita del dueño o del PM, así que se deja constancia otra vez, sin corregirlo). Cuatro
-redes en verde (`mypy` limpio 68 archivos, `ruff` limpio, 575 tests, `verificar_salidas.py --fixture`
-catorce etapas OK; `.pptx`/`.pdf` LATENTES como siempre en este contenedor de nube). Sin cambios en
-bloqueos (§3), preguntas abiertas (§6) ni desviaciones (§7).
+**Última actualización:** 2026-09-16 — **Ciclo de Product Manager: abre R-18 (oleada v7 nueva).**
+Releído el registro completo de `auditoriacontinua.md`: la auditoría del mismo día cerró `#19`
+(R-17 verificada en profundidad) y dejó un único `ABIERTO`, `#24` (baja, puramente de proceso —
+latencia entre "completado en código" y prosa de `ROADMAP_PRODUCTO.md` actualizada). No es un
+hallazgo de producto ni de código: es una pregunta de gobernanza (¿puede el Programador corregir por
+sí solo la prosa de "Cola de producto" cuando solo refleja un estado que este §1 ya registra como
+`COMPLETADA`?) que cambiaría el reparto de acceso de §0.4 de `HOJA_DE_RUTA.md` — protocolo que solo
+cambia el dueño — así que se deja como pregunta abierta nueva en §6 (#11) en vez de decidirse aquí o
+de enrutarse a una R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Releído esta vez
+`scripts/salidas.py` (T-30, el selector de salidas real) junto con los contratos de montaje: aparece
+una grieta de arquitectura del mismo tipo que ya dio R-12/R-13/R-14/R-16 — las salidas basadas en
+tomas reales (`guion-alineado.srt` de R-05, `capitulos-youtube.txt` de R-07, los campos reales de
+`tarjetas.json` de R-13/R-16) están completas y probadas pero nunca llegan al selector real: éste
+nunca lee `estado.tomas` ni se lo pasa a `pptx.exportar_pptx`, y `capitulos_youtube.py` ni siquiera
+es una opción seleccionable. Se abre **R-18** (spec completa en `ROADMAP_PRODUCTO.md` §Oleada v7)
+para cerrarla antes de que el dueño grabe el primer curso completo (bloqueo #7) y dependa de que
+estas salidas reflejen sus tomas reales sin invocar nada a mano. Añadida como `PENDIENTE` en §1.
+Cuatro redes en verde reconfirmadas por el Programador en su última pasada (575 tests); sin cambios
+en bloqueos (§3) ni desviaciones (§7).
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-16, ciclo de Programador: decimonovena reconfirmación tras R-17, sin novedad de código.
+  Cuatro redes en verde (575 tests). Auditoría del mismo día cierra `#19` y abre `#24`.
 - 2026-09-16, ciclo de Programador: decimoctava reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Programador: decimoséptima reconfirmación tras R-17, sin novedad de código.
 - 2026-09-16, ciclo de Programador: decimosexta reconfirmación tras R-17, sin novedad de código.
@@ -168,7 +174,10 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 > ## ⚑ PARA EL DUEÑO — empieza por aquí
 > Lo único que el proyecto necesita de ti está en dos sitios de este documento:
 > - **§3 Bloqueos** = tu lista de tareas. **El #8 (rutinas "duplicadas") era una falsa alarma: corregido hoy (2026-09-10).** Ninguna sesión anterior había comparado el repositorio real de cada rutina, solo el nombre; el trío sin sufijo (`Auditor`/`Product manager`/`Programador`) resulta pertenecer a otro proyecto tuyo (`centro-estudios-sw`/GestorAcademia), no a teleprompter — su prompt lo dice explícitamente. Las tres rutinas de *este* proyecto (`auditor-teleprompter`, `product-manager-teleprompter`, `programador-teleprompter`) están cada una sola, sin solape: no hay coste doble que resolver aquí. Si quieres, revisa por tu cuenta si el trío de `centro-estudios-sw` tiene un problema similar, pero eso es asunto de ese otro repositorio. Los tres bloqueos que quedan siguen **sin urgencia** (aportar el paquete de `480-branded-pptx` cuando lo tengas, probar el clicker Bluetooth real contra el mapa de teclas ya implementado en T-24 cuando lo consigas, y grabar un curso completo con la skill instalada, que es lo que arrancaría el primer feedback real de rodaje) — **ninguno frena el desarrollo**. La instalación de la skill (T-32) ya la hiciste y quedó resuelta.
-> - **§6 Preguntas abiertas** = tus decisiones. **Ninguna pendiente**: las diez están resueltas.
+> - **§6 Preguntas abiertas** = tus decisiones. **Una pendiente: la #11** (2026-09-16, sin urgencia)
+>   — si el ciclo de reconfirmación del Programador puede corregir por sí solo la prosa de "Cola de
+>   producto" cuando solo refleja un estado que §1 ya registra como `COMPLETADA`. Las otras diez ya
+>   están resueltas.
 >
 > Para control (no exige acción): `DECISIONES_TECNICAS.md` (qué decidió el agente y por qué — sustituye a leer código), `auditoriacontinua.md` (hallazgos abiertos), y aquí §7 (desviaciones) y §5 (P-XX; veta escribiendo `REVERTIR`).
 
@@ -230,6 +239,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **COMPLETADA** | 2026-09-14 | Tarea puramente documental: nota visible en `DEVELOPERS.md` (bloque de cita bajo "Verificación manual") y frase con remisión en la sección "Verificacion" de `SKILL.md`, explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado. Cero cambio en `scripts/`, `tests/` o `assets/`; cuatro redes en verde (569 tests). `origen: auditoría #22` — queda para la siguiente pasada del auditor cerrar `#22` a `RESUELTO` |
 | R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **COMPLETADA** | 2026-09-14 | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez (`_con_limites_absolutos`) con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-tarjetas.md` documenta las dos claves y `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano — ahora las lee directamente. Cambio aditivo, `version_contrato` no sube, sin migración de `estado.json` ni campo nuevo de `Configuracion`. 5 tests nuevos (569→574): 2 unitarios (`test_pptx.py`) y 3 de integración (`test_integracion_montaje.py`, incluida la coherencia con `guion.srt`/`guion-alineado.srt`). Cuatro redes en verde. `origen: observación de arquitectura del PM (2026-09-13)` |
 | R-17 | Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`) | **COMPLETADA** | 2026-09-15 | Spec completa en `ROADMAP_PRODUCTO.md` §Fase F-I. `origen: auditoría #19` (abierto 2026-09-04, reconfirmado sin cambios en diez pasadas sucesivas del auditor). Investigada y cerrada por la vía del requisito 3 (con matiz): bajo operación normal la identidad es inyectiva por construcción (`pospuestas_previas` siempre coincide con lo que la pasada anterior persistió); el único escenario que rompe la comparación por cardinalidad exige corromper `estado.validacion["particiones_pospuestas"]` a mano (misma precondición ya conocida de P-04), y se verificó con test nuevo que incluso ahí el invariante (a) — nada se pierde ni se duplica — sigue intacto, con un único efecto cosmético (número de bloque erróneo en la incidencia de conflicto, escena correcta). 1 test nuevo (574→575) en `tests/test_revalidacion.py`. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
+| R-18 | Integrar en el selector de salidas (T-30, `scripts/salidas.py`) las salidas que dependen de tomas reales: `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07, hoy ni siquiera seleccionable) y los campos reales de `tarjetas.json` (R-13/R-16) | **PENDIENTE** | 2026-09-16 | Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v7. `origen: observación de arquitectura del PM` (2026-09-16) — el selector real nunca lee `estado.tomas` ni se lo pasa a `pptx.exportar_pptx`, y `capitulos_youtube.py` no es opción de `TipoSalida`; las tres salidas solo se ejercitan hoy con `tomas_por_escena={}` dentro del health check. Sin migración, sin campo nuevo de `Configuracion` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
@@ -294,6 +304,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | 8 | **Poppins no está instalada en esta máquina** (Figtree sí, Montserrat no). ¿Instalas Poppins, o cambiamos a Figtree? | T-28, T-29 · `origen: auditoría #3` | **Poppins instalada** (2026-08-31). Verificado: 5 archivos — Bold, SemiBold, Medium, Regular y Light —, que cubren toda la escala tipográfica de la guía de marca. La decisión se mantiene y ahora sí es efectiva. |
 | 9 | **T-24 depende del clicker Bluetooth, que el dueño no tiene.** ¿Se bloquea la tarea entera (y con ella T-25 y T-26, que dependen de ella en cascada) o se parte? | T-24, T-25, T-26 | **Partirla** (2026-09-02). El clicker se identifica como un teclado corriente, así que el mapa completo, el antirrebote y la ayuda `?` son implementables y testeables sin hardware; lo único que exige el mando físico es saber qué botón manda qué tecla. **T-24 se implementa con alcance reducido** (requisitos 1, 3, 4 y la mitad software del 2) y **la calibración sale a T-24b, BLOQUEADA hasta nuevo aviso del dueño**. FASE B4 continúa: T-25 y T-26 no se bloquean. **Nota del mismo día:** la sesión de nube de T-24 corrió en paralelo sin conocer esta decisión y entregó exactamente ese alcance, así que T-24 quedó COMPLETADA y la decisión no revierte nada — solo formaliza T-24b. → §1, §3.5 y §7. |
 | 10 | **El paquete de `480-branded-pptx` sigue sin estar disponible.** ¿Se bloquea T-29 (y con ella T-30, T-31, T-32 y T-33 en cascada)? | T-29, T-30 | **No se bloquea** (2026-09-02). T-29 ya está especificada para funcionar con la skill de marca ausente: su requisito 4 y su criterio de aceptación exigen que se generen `tarjetas.json` y el brief, que la salida se marque latente y que no falle. Se implementa entera; **solo la generación real del `.pptx` queda latente** hasta que el dueño aporte el paquete (bloqueo §3.2). → §1, §3.2 y §7. |
+| 11 | El auditor (`auditoriacontinua.md` #24, 2026-09-16) señala que la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md` lleva reconfirmaciones enteras desactualizada tras completarse una R-XX, y sugiere que el propio ciclo de reconfirmación del Programador quede autorizado a corregirla por sí solo cuando se limite a reflejar un estado que este §1 ya registra como `COMPLETADA` (sin ninguna decisión de producto nueva de por medio), en vez de esperar al siguiente ciclo de PM completo. Es un cambio de quién escribe en qué documento (§0.4 de `HOJA_DE_RUTA.md`), protocolo que solo cambia el dueño — el PM no puede concedérselo por su cuenta. ¿Autorizas esa excepción puntual (solo prosa de estado ya reflejado en §1, nunca una decisión de producto), o prefieres que la prosa siga esperando al siguiente ciclo de PM? | §0.4, `ROADMAP_PRODUCTO.md` | *(pendiente)* |
 
 ---
 
