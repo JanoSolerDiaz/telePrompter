@@ -32,6 +32,34 @@
 
 ---
 
+### Sesión 2026-09-17 — Ciclo de Programador: cuarta reconfirmación tras R-18, sin novedad de código
+**Tarea(s):** ninguna T-XX/R-XX `PENDIENTE` en §1 de `SEGUIMIENTO.md` (R-18 sigue `COMPLETADA`).
+Releído el registro de hallazgos de `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`,
+baja, de proceso, ya enrutado a la pregunta #11 de §6, todavía sin respuesta del dueño) — ninguna
+urgencia de severidad alta que atender como P-XX antes de la cola normal. La cola de
+`ROADMAP_PRODUCTO.md` sigue mostrando R-18 en su prosa de "Cola de producto" pese a estar ya
+`COMPLETADA` en §1 — corregirla sigue siendo tarea del próximo ciclo de Product Manager (§0.4: ese
+documento lo gestiona el PM), no de este ciclo de Programador, así que se deja intacta.
+**Estado resultante:** sin cambio (reconfirmación)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (§1, cabecera); `roadmap/
+HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (583, sin cambio) · build ✅
+(`verificar_salidas.py --fixture`, catorce etapas OK)
+**Health check post-deploy:** N/A — sesión de nube, sin acceso a `~/.claude/skills/` (nota de
+entorno del protocolo v1.3; T-32 ya lo resolvió en la máquina real del dueño en su momento)
+**Decisiones tomadas:** ninguna nueva.
+**Hallazgos del auditor atendidos:** ninguno (el único `ABIERTO`, `#24`, es de proceso y sigue
+enrutado a la pregunta #11 de §6, sin tocar).
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** el mismo de la sesión anterior — sin trabajo de código pendiente; la siguiente
+sesión de Programador vuelve a reconfirmar salvo que el PM abra una R-XX nueva, el auditor escale
+un hallazgo a severidad alta, o el dueño responda la pregunta #11 de §6.
+
+---
+
 ### Sesión 2026-09-17 — Ciclo de Programador: tercera reconfirmación tras R-18, sin novedad de código
 **Tarea(s):** ninguna T-XX/R-XX `PENDIENTE` en §1 de `SEGUIMIENTO.md` (R-18 sigue `COMPLETADA`).
 Releído el registro de hallazgos de `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`,
