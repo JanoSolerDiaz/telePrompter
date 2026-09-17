@@ -10,35 +10,27 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-17 — **Ciclo de Programador: R-18 implementada y COMPLETADA.**
-`scripts/salidas.py` (T-30) gana `tomas_por_escena` opcional en `generar_salidas_seleccionadas`
-(`EstadoProyecto.tomas` tal cual, sin abrir `estado.json` por su cuenta): con al menos una toma
-`buena`, seleccionar `SRT` genera también `guion-alineado.srt` (R-05) bajo el mismo `TipoSalida.SRT`,
-y seleccionar `PPTX` pasa las tomas a `exportar_pptx` para duración real y límites absolutos reales
-(R-13/R-16) en `tarjetas.json` — ambas sin ninguna acción manual del dueño. `TipoSalida` gana una
-quinta opción, `CAPITULOS_YOUTUBE`, generada con `capitulos_youtube.generar_capitulos_youtube`; sin
-sección `Capítulos` en el guion, la salida queda `SalidaOmitida` con el motivo exacto — nunca fallo
-ni `SalidaLatente`. `verificar_salidas.py::verificar_generacion` se corrige para distinguir esa
-omisión esperada de un fallo real (antes de R-18 cualquier omisión con las cuatro salidas siempre
-seleccionadas solo podía venir de una excepción real; desde R-18 ya no). Sin ninguna toma
-registrada, las cinco salidas se comportan exactamente igual que antes de R-18 — verificado con un
-test de regresión byte a byte sobre los tres guiones reales de `fixtures/reales/`, no solo ausencia
-de error (criterio de aceptación literal de la ficha). 8 tests nuevos (575→583). Cuatro redes en
-verde (`mypy` limpio 68 archivos, `ruff` limpio, 583 tests, `verificar_salidas.py --fixture` catorce
-etapas OK — la etapa "Generación de salidas" pasa de 5 a 6 archivos generados sobre
-`guion-ejemplo.md`, se suma `capitulos-youtube.txt`). `DEVELOPERS.md` gana una sección nueva y
-corrige tres afirmaciones ahora falsas en las secciones de R-05/R-07/R-13 que decían que sus salidas
-"no se integran en el selector de T-30"; `SKILL.md` actualiza la sección del selector de salidas a
-las cinco opciones y al nuevo comportamiento con parte de rodaje. Antes de elegir tarea se releyó
-`auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de proceso, ya enrutado a la
-pregunta #11 de §6, sin respuesta del dueño todavía) — ningún hallazgo de severidad alta que atender
-como urgencia P-XX. Sin cambios en bloqueos (§3) ni desviaciones (§7). Con R-18 completada, la cola
-de `ROADMAP_PRODUCTO.md` vuelve a quedar vacía — archivar la oleada v7 a `ROADMAP_HISTORICO.md` y
-corregir la prosa de "Cola de producto" es tarea del próximo ciclo de Product Manager (§0.4), no de
-este ciclo de Programador.
+**Última actualización:** 2026-09-17 — **Ciclo de Programador: primera reconfirmación tras R-18, sin
+novedad de código.** Releído `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de
+proceso, ya enrutado a la pregunta #11 de §6, sin respuesta del dueño todavía) — ningún hallazgo de
+severidad alta que atender como urgencia P-XX. §1 sin ninguna T-XX/R-XX `PENDIENTE` (R-18 ya
+`COMPLETADA`; la spec de `ROADMAP_PRODUCTO.md` sigue sin R-XX nueva). La prosa de "Cola de producto"
+de `ROADMAP_PRODUCTO.md` sigue listando R-18 como pendiente, desactualizada tras su cierre en código
+— corregirla es tarea del próximo ciclo de Product Manager (§0.4: ese documento lo gestiona el PM,
+el programador solo lee su spec), no de este ciclo. Cuatro redes en verde: `mypy` limpio 68 archivos,
+`ruff` limpio, 583 tests (sin cambio respecto a la sesión anterior), `verificar_salidas.py --fixture`
+catorce etapas OK. Sin cambios en bloqueos (§3), preguntas (§6) ni desviaciones (§7). Sin trabajo de
+código pendiente.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-17, ciclo de Programador: R-18 implementada y COMPLETADA. `scripts/salidas.py` (T-30) gana
+  `tomas_por_escena` opcional en `generar_salidas_seleccionadas`: con al menos una toma `buena`,
+  `SRT` genera también `guion-alineado.srt` (R-05) y `PPTX` pasa las tomas a `exportar_pptx` para
+  duración real y límites absolutos reales (R-13/R-16); `TipoSalida` gana `CAPITULOS_YOUTUBE`
+  (quinta opción, R-07). Sin toma registrada, comportamiento idéntico a antes de R-18 (regresión
+  byte a byte verificada). 8 tests nuevos (575→583). Cuatro redes en verde. `DEVELOPERS.md` y
+  `SKILL.md` actualizados. Auditoría reconfirma `#24` (baja, de proceso) como único `ABIERTO`.
 - 2026-09-16, ciclo de Product Manager: abre R-18 (oleada v7 nueva), origen en una grieta de
   arquitectura verificada por el PM releyendo `scripts/salidas.py` junto con los contratos de
   montaje: las salidas basadas en tomas reales (R-05/R-07/R-13/R-16) estaban completas y probadas
