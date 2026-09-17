@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-17 — **Ciclo de Programador: octava reconfirmación tras R-18, sin
+**Última actualización:** 2026-09-17 — **Ciclo de Programador: novena reconfirmación tras R-18, sin
 novedad de código.** Releído `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de
 proceso, ya enrutado a la pregunta #11 de §6, sin respuesta del dueño todavía) — ningún hallazgo de
 severidad alta que atender como urgencia P-XX. §1 sin ninguna T-XX/R-XX `PENDIENTE` (R-18 sigue
@@ -24,6 +24,8 @@ desviaciones (§7). Sin trabajo de código pendiente.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-17, ciclo de Programador: octava reconfirmación tras R-18, sin novedad de código. Cuatro
+  redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso).
 - 2026-09-17, ciclo de Programador: séptima reconfirmación tras R-18, sin novedad de código. Cuatro
   redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso).
 - 2026-09-17, ciclo de Programador: sexta reconfirmación tras R-18, sin novedad de código. Cuatro
