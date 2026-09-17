@@ -1,8 +1,9 @@
 """Selector de salidas por validacion (tarea T-30).
 
-Ata en una sola canalizacion los cuatro generadores ya completos --
-`reproductor.py` (T-18), `srt.py` (T-27), `pdf.py` (T-28) y `pptx.py`
-(T-29) -- sin duplicar ni una linea de lo que cada uno ya hace:
+Ata en una sola canalizacion los generadores ya completos --
+`reproductor.py` (T-18), `srt.py` (T-27), `pdf.py` (T-28), `pptx.py`
+(T-29) y, desde R-18, `srt_alineado.py` (R-05) y `capitulos_youtube.py`
+(R-07) -- sin duplicar ni una linea de lo que cada uno ya hace:
 
 1. `construir_pregunta_salidas` arma la pregunta de opcion multiple
    (requisito 1) con la ultima seleccion registrada en
@@ -25,6 +26,17 @@ Ata en una sola canalizacion los cuatro generadores ya completos --
    (contenedor generico ya reservado desde T-07, sin migracion nueva:
    T-30 no la requiere) para que la proxima pregunta sugiera la misma
    seleccion.
+
+R-18 conecta este selector con `estado.tomas` (el parte de rodaje de R-02):
+`generar_salidas_seleccionadas` gana un parametro opcional `tomas_por_escena`
+que quien ya tiene el `EstadoProyecto` cargado le entrega tal cual, sin que
+este modulo abra `estado.json` por su cuenta. Con al menos una toma `buena`,
+seleccionar `SRT` genera ademas `guion-alineado.srt` (R-05) junto al `guion.srt`
+de siempre, y seleccionar `PPTX` pasa las tomas a `exportar_pptx` para que
+`tarjetas.json` lleve duracion real y limites absolutos (R-13/R-16). Sin
+tomas, el comportamiento de ambas es identico al de antes de R-18. `TipoSalida`
+gana ademas una quinta opcion, `CAPITULOS_YOUTUBE` (R-07), inalcanzable hasta
+ahora desde este selector.
 """
 
 from __future__ import annotations
@@ -34,6 +46,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from capitulos_youtube import generar_capitulos_youtube, guardar_capitulos_youtube
 from config import Configuracion
 from estado import EstadoProyecto, marca_de_tiempo
 from parser import ResultadoParseo
@@ -42,17 +55,20 @@ from pptx import exportar_pptx
 from presentacion import Nivel, mostrar, titulo
 from reproductor import generar_reproductor_html, guardar_reproductor
 from srt import exportar_srt, guardar_srt
+from srt_alineado import generar_srt_alineado, guardar_srt_alineado
 from tiempos import ResultadoTiempos
 
 
 class TipoSalida(str, Enum):
-    """Las cuatro salidas de la skill (requisito 1), en el orden en que se
-    ofrecen siempre en la pregunta y en el resumen."""
+    """Las cinco salidas de la skill (requisito 1 de T-30, quinta opcion
+    de R-18), en el orden en que se ofrecen siempre en la pregunta y en el
+    resumen."""
 
     HTML = "html"
     PPTX = "pptx"
     PDF = "pdf"
     SRT = "srt"
+    CAPITULOS_YOUTUBE = "capitulos_youtube"
 
 
 DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
@@ -60,6 +76,7 @@ DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
     TipoSalida.PPTX: "Presentación .pptx con marca 480",
     TipoSalida.PDF: "Documento .pdf con marca 480",
     TipoSalida.SRT: "Subtítulos .srt borrador",
+    TipoSalida.CAPITULOS_YOUTUBE: "Capítulos de YouTube con marcas de tiempo (.txt)",
 }
 
 TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
@@ -67,6 +84,7 @@ TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
     TipoSalida.PPTX,
     TipoSalida.PDF,
     TipoSalida.SRT,
+    TipoSalida.CAPITULOS_YOUTUBE,
 )
 
 
@@ -83,7 +101,7 @@ class OpcionSalida:
 @dataclass(frozen=True)
 class PreguntaSeleccionSalidas:
     """La pregunta que Claude formula al dueno en cada validacion
-    (requisito 1). `opciones` trae siempre las cuatro salidas; la
+    (requisito 1). `opciones` trae siempre las cinco salidas; la
     seleccion final la decide el dueno, nunca este modulo."""
 
     opciones: tuple[OpcionSalida, ...]
@@ -108,7 +126,7 @@ def _ultima_seleccion(estado: EstadoProyecto) -> tuple[TipoSalida, ...] | None:
 def construir_pregunta_salidas(estado: EstadoProyecto) -> PreguntaSeleccionSalidas:
     """Construye la pregunta de opcion multiple (requisito 1) con la
     ultima seleccion marcada como sugerencia (requisito 2); a falta de
-    historico, sugiere las cuatro salidas."""
+    historico, sugiere las cinco salidas."""
     sugerencia = _ultima_seleccion(estado)
     sugeridas = sugerencia if sugerencia is not None else TODAS_LAS_SALIDAS
     return PreguntaSeleccionSalidas(
@@ -211,11 +229,23 @@ def _generar_srt(
     carpeta_salida: Path,
     nombre_guion: str,
     configuracion: Configuracion,
+    tomas_por_escena: dict[str, Any],
 ) -> list[ArchivoGenerado]:
     del resultado, nombre_guion  # el .srt no necesita ni el parseo ni el nombre
     contenido = exportar_srt(resultado_tiempos, configuracion)
     ruta = guardar_srt(contenido, carpeta_salida, configuracion)
-    return [ArchivoGenerado(TipoSalida.SRT, ruta, ruta.stat().st_size)]
+    generadas = [ArchivoGenerado(TipoSalida.SRT, ruta, ruta.stat().st_size)]
+
+    if tomas_por_escena:
+        contenido_alineado, alineacion = generar_srt_alineado(
+            resultado_tiempos, tomas_por_escena, configuracion
+        )
+        if alineacion.escenas_alineadas:
+            ruta_alineado = guardar_srt_alineado(contenido_alineado, carpeta_salida, configuracion)
+            generadas.append(
+                ArchivoGenerado(TipoSalida.SRT, ruta_alineado, ruta_alineado.stat().st_size)
+            )
+    return generadas
 
 
 def _generar_pdf(
@@ -249,9 +279,10 @@ def _generar_pptx(
     carpeta_salida: Path,
     nombre_guion: str,
     configuracion: Configuracion,
+    tomas_por_escena: dict[str, Any],
 ) -> tuple[list[ArchivoGenerado], list[SalidaLatente]]:
     resultado_pptx = exportar_pptx(
-        resultado, resultado_tiempos, carpeta_salida, nombre_guion, configuracion
+        resultado, resultado_tiempos, carpeta_salida, nombre_guion, configuracion, tomas_por_escena
     )
     generadas = [
         ArchivoGenerado(
@@ -268,6 +299,25 @@ def _generar_pptx(
     return generadas, [SalidaLatente(TipoSalida.PPTX, resultado_pptx.mensaje)]
 
 
+def _generar_capitulos_youtube(
+    resultado: ResultadoParseo,
+    resultado_tiempos: ResultadoTiempos,
+    carpeta_salida: Path,
+    nombre_guion: str,
+    configuracion: Configuracion,
+    tomas_por_escena: dict[str, Any],
+) -> tuple[list[ArchivoGenerado], list[SalidaOmitida]]:
+    del nombre_guion  # los capitulos no llevan el nombre del guion en el archivo
+    contenido, calculo = generar_capitulos_youtube(
+        resultado, resultado_tiempos, tomas_por_escena, configuracion
+    )
+    if contenido is None:
+        motivo = calculo.motivo_sin_generar or "el guion no aporta ningun capitulo que generar."
+        return [], [SalidaOmitida(TipoSalida.CAPITULOS_YOUTUBE, motivo)]
+    ruta = guardar_capitulos_youtube(contenido, carpeta_salida)
+    return [ArchivoGenerado(TipoSalida.CAPITULOS_YOUTUBE, ruta, ruta.stat().st_size)], []
+
+
 def generar_salidas_seleccionadas(
     seleccion: SeleccionSalidas,
     resultado: ResultadoParseo,
@@ -275,13 +325,20 @@ def generar_salidas_seleccionadas(
     carpeta_salida: Path,
     nombre_guion: str = "guion",
     configuracion: Configuracion | None = None,
+    tomas_por_escena: dict[str, Any] | None = None,
 ) -> ResumenSalidas:
     """Genera cada salida seleccionada de forma independiente (requisito
     3): la excepcion de una nunca impide las demas -- se captura y se
     convierte en una `SalidaOmitida` con el motivo del fallo, en vez de
     propagarse y tumbar la pasada entera. Las no seleccionadas quedan
-    omitidas con un motivo neutro."""
+    omitidas con un motivo neutro.
+
+    `tomas_por_escena` (R-18) es `EstadoProyecto.tomas` tal cual -- quien ya
+    tiene el `EstadoProyecto` cargado se lo entrega, este modulo no abre
+    `estado.json` por su cuenta. Omitido (`None`), el comportamiento de
+    `SRT`/`PPTX`/`CAPITULOS_YOUTUBE` es identico al de antes de R-18."""
     configuracion = configuracion or Configuracion()
+    tomas_por_escena = tomas_por_escena or {}
     generadas: list[ArchivoGenerado] = []
     omitidas: list[SalidaOmitida] = []
     latentes: list[SalidaLatente] = []
@@ -300,7 +357,12 @@ def generar_salidas_seleccionadas(
             elif tipo is TipoSalida.SRT:
                 generadas.extend(
                     _generar_srt(
-                        resultado, resultado_tiempos, carpeta_salida, nombre_guion, configuracion
+                        resultado,
+                        resultado_tiempos,
+                        carpeta_salida,
+                        nombre_guion,
+                        configuracion,
+                        tomas_por_escena,
                     )
                 )
             elif tipo is TipoSalida.PDF:
@@ -311,10 +373,26 @@ def generar_salidas_seleccionadas(
                 latentes.extend(nuevas_latentes)
             elif tipo is TipoSalida.PPTX:
                 nuevas, nuevas_latentes = _generar_pptx(
-                    resultado, resultado_tiempos, carpeta_salida, nombre_guion, configuracion
+                    resultado,
+                    resultado_tiempos,
+                    carpeta_salida,
+                    nombre_guion,
+                    configuracion,
+                    tomas_por_escena,
                 )
                 generadas.extend(nuevas)
                 latentes.extend(nuevas_latentes)
+            elif tipo is TipoSalida.CAPITULOS_YOUTUBE:
+                nuevas, nuevas_omitidas = _generar_capitulos_youtube(
+                    resultado,
+                    resultado_tiempos,
+                    carpeta_salida,
+                    nombre_guion,
+                    configuracion,
+                    tomas_por_escena,
+                )
+                generadas.extend(nuevas)
+                omitidas.extend(nuevas_omitidas)
         except Exception as excepcion:  # una salida rota no tumba la pasada
             omitidas.append(SalidaOmitida(tipo, f"fallo al generar: {excepcion}"))
 

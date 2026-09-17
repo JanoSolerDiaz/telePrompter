@@ -2013,11 +2013,12 @@ ya anotado como trabajo futuro en `references/contrato-montaje.md` (T-33).
   verdad, se generan con `tomas_por_escena={}`: el resultado cae por completo
   a la estimación de T-12 (todas las escenas en `escenas_sin_toma_buena`) sin
   que eso sea un fallo — mismo criterio que la salida `.pptx` LATENTE de T-29
-  cuando la skill de marca no está instalada. No se integra en el selector de
-  T-30 (`salidas.py`): ese selector genera las cuatro salidas sin depender de
-  un parte de rodaje, y el `.srt` alineado solo tiene sentido una vez existe
-  al menos una toma buena — se genera aparte, cuando el dueño entrega ese
-  parte de rodaje.
+  cuando la skill de marca no está instalada. En 2026-09-03 (R-05) no se
+  integraba en el selector de T-30 (`salidas.py`): ese selector generaba las
+  cuatro salidas sin depender de un parte de rodaje. **Superado por R-18**
+  (2026-09-16, ver esa sección más abajo): `salidas.py` ya conoce
+  `estado.tomas` y genera este archivo también, en cuanto hay al menos una
+  toma buena.
 - **Verificación.** `tests/test_srt_alineado.py` (nuevo, 7 tests) cubre: una
   escena con toma buena se reescala exactamente a esa duración; una escena sin
   toma buena conserva su estimación original sin tocar; sin ninguna toma buena
@@ -2106,9 +2107,11 @@ reimplementar reglas de guion por su cuenta.
   escenas), así que esta etapa genera contenido real, no NO APLICABLE; sin
   ningún parte de rodaje real en esta máquina, cae por completo a la
   estimación de T-12 (nota de tiempos estimados incluida), latente de la misma
-  forma que el `.srt` alineado — sin que eso sea un fallo. No se integra en el
-  selector de T-30 (`salidas.py`): igual que el `.srt` alineado, depende de un
-  parte de rodaje que ese selector no pide.
+  forma que el `.srt` alineado — sin que eso sea un fallo. En 2026-09-03 (R-07)
+  no se integraba en el selector de T-30 (`salidas.py`): igual que el `.srt`
+  alineado, dependía de un parte de rodaje que ese selector no pedía.
+  **Superado por R-18** (2026-09-16, ver esa sección más abajo): es ya la
+  quinta opción de `TipoSalida`, generada dentro de la misma canalización.
 - **Verificación.** `tests/test_capitulos_youtube.py` (nuevo, 17 tests) cubre:
   emparejamiento posicional de títulos y escenas (incluida una lista de
   títulos más corta que el número de escenas); sin sección `Capítulos` (guion
@@ -2447,7 +2450,7 @@ documento_revision.py  compone todo lo anterior en guion-escenas.md (una sola pa
 revalidacion.py   relee guion-escenas.md, respeta ediciones manuales, recalcula tiempos
 reproductor.py / srt.py / pdf.py / pptx.py   generan cada salida a partir de
                                               ResultadoParseo + ResultadoTiempos
-salidas.py        selector: las cuatro salidas a la vez, fallo/latencia aislados por salida
+salidas.py        selector: las cinco salidas a la vez, fallo/latencia aislados por salida
 tomas.py          registro de tomas por escena (estado.tomas); duracion_toma_buena
   ├── srt_alineado.py      reescala srt.py a la duración real de la toma buena
   └── capitulos_youtube.py empareja Capítulos (parser.py) con escenas, tiempo real o estimado
@@ -2762,10 +2765,12 @@ fiable en cuanto existía `guion-alineado.srt` real.
   `duracion_estimada_segundos` no se toca (requisito 2): sigue siendo la única fuente para
   `guion.srt` (T-27) y `guion-escenas.md` (T-16). `generar_tarjetas`/`exportar_pptx` ganan un
   parámetro opcional `tomas_por_escena` al final de su firma (compatible con las llamadas
-  posicionales existentes, p. ej. en `tests/test_integracion_montaje.py`); omitido (el caso del
-  selector automático de T-30, `salidas.py`, que no conoce el parte de rodaje), el comportamiento
-  es idéntico al de antes de R-13 — mismo patrón de "no integrado en el selector automático" que
-  ya usan `srt_alineado.py`/`capitulos_youtube.py`.
+  posicionales existentes, p. ej. en `tests/test_integracion_montaje.py`); omitido, el
+  comportamiento es idéntico al de antes de R-13. En 2026-09-11 el selector automático de T-30
+  (`salidas.py`) todavía no conocía el parte de rodaje — mismo patrón de "no integrado en el
+  selector automático" que `srt_alineado.py`/`capitulos_youtube.py`. **Superado por R-18**
+  (2026-09-16, ver esa sección más abajo): `salidas.py` ya le pasa `estado.tomas` a
+  `exportar_pptx` cuando lo hay.
 - **Decisión de no extraer una función compartida (ver `DECISIONES_TECNICAS.md`, 2026-09-11).**
   La ficha de R-13 dejaba explícitamente como decisión del programador si extraer a `tomas.py`
   la regla "real si hay toma buena positiva, estimada si no" para que los tres módulos la
@@ -2854,6 +2859,85 @@ esa grieta calculando el rango absoluto una sola vez, dentro de la propia skill.
 - `python scripts/verificar_salidas.py --fixture` sigue en 14 etapas OK sin cambios (la fixture no
   tiene parte de rodaje, así que ejercita solo la vía sin toma buena — `inicio_segundos`/
   `fin_segundos` se calculan igual, acumulando duraciones estimadas).
+
+## Conectar el selector de salidas con el parte de rodaje real (R-18)
+
+`origen: observación de arquitectura del PM (2026-09-16)`, oleada v7, depende de T-30, R-02, R-05,
+R-07, R-13 y R-16. Objetivo: `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07) y los
+campos reales de `tarjetas.json` (R-13/R-16) llevaban semanas completos, probados y estables, pero
+huérfanos del único flujo real por el que el dueño interactúa con la skill: la pregunta de opción
+múltiple de cada validación (T-30, `scripts/salidas.py`). El propio selector nunca leía
+`estado.tomas` ni se lo pasaba a `pptx.exportar_pptx`, y `capitulos_youtube.py` ni siquiera era una
+opción de `TipoSalida` — la única ruta que los ejercitaba era la fixture de
+`verificar_salidas.py --fixture`, deliberadamente con `tomas_por_escena={}`. Misma clase de grieta
+que ya motivó R-12/R-13/R-14/R-16: la funcionalidad ya existía y el contrato la documentaba, pero no
+llegaba al único flujo real.
+
+- **Requisito 1 (`generar_salidas_seleccionadas` recibe el parte de rodaje).** Gana un parámetro
+  opcional `tomas_por_escena: dict[str, Any] | None = None` — `EstadoProyecto.tomas` tal cual, mismo
+  contenedor que ya consumen `srt_alineado.py`/`capitulos_youtube.py`/`pptx.py` desde R-05/R-07/R-13.
+  Quien ya tiene el `EstadoProyecto` cargado se lo entrega; `salidas.py` sigue sin abrir
+  `estado.json` por su cuenta, igual que hacía antes de R-18 con todo lo demás. Omitido, se
+  normaliza a `{}` (mismo patrón que `pptx.py`/`capitulos_youtube.py`/`srt_alineado.py`), así que
+  todo el código existente que llama a `generar_salidas_seleccionadas` sin el parámetro nuevo
+  (`verificar_salidas.py`, entre otros) sigue funcionando sin cambios.
+- **Requisito 2 (`SRT` genera también el alineado en cuanto hay una toma buena).** `_generar_srt`
+  sigue generando `guion.srt` (T-27) siempre igual; si `tomas_por_escena` no está vacío, llama
+  además a `srt_alineado.generar_srt_alineado` y, solo si `ResultadoAlineacion.escenas_alineadas` no
+  está vacía (al menos una escena con evidencia real), guarda `guion-alineado.srt` como un segundo
+  `ArchivoGenerado` bajo el mismo `TipoSalida.SRT` — mismo patrón que ya usan `_generar_pdf`/
+  `_generar_pptx`, que devuelven más de un archivo bajo un mismo tipo. Sin tomas o con tomas sin
+  ninguna marcada `buena`, el resultado es exactamente un archivo, igual que antes de R-18.
+- **Requisito 3 (`PPTX` pasa el parte de rodaje a `exportar_pptx`).** `_generar_pptx` reenvía
+  `tomas_por_escena` tal cual al parámetro que `exportar_pptx` ya exponía desde R-13 (hasta ahora,
+  siempre omitido por este selector). `tarjetas.json` lleva duración real y límites absolutos reales
+  para las escenas con toma buena sin ninguna acción manual del dueño; sin tomas, comportamiento
+  idéntico al de antes de R-18.
+- **Requisito 4 (`CAPITULOS_YOUTUBE`, quinta opción de `TipoSalida`).** Añadida a
+  `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA` tras `SRT` (sigue siendo una única pregunta de opción
+  múltiple, ahora con cinco filas). `_generar_capitulos_youtube` llama a
+  `capitulos_youtube.generar_capitulos_youtube` con `tomas_por_escena` (marcas reales donde hay toma
+  buena, estimadas donde no — igual que ya hacía `verificar_salidas.py --fixture` a mano). Cuando el
+  guion no trae sección `Capítulos` o no llega a una marca por encima del umbral configurado,
+  `contenido` es `None` y la salida queda como `SalidaOmitida` con el motivo exacto que ya devolvía
+  `calcular_capitulos`/`formatear_capitulos_youtube` — nunca como fallo (no lleva el prefijo
+  `"fallo al generar:"` que sí usa el `except` genérico) ni como `SalidaLatente` (no depende de
+  ninguna dependencia externa ausente, a diferencia de `.pdf`/`.pptx`).
+- **Requisito 5 (formas que no cambian).** `ResumenSalidas`/`registrar_generacion`/
+  `estado.salidas_generadas` no cambian de forma: la ruta nueva solo añade entradas a
+  `generadas`/`omitidas` con los tipos ya definidos (`SRT` puede aparecer dos veces en `generadas`,
+  mismo patrón que `PDF`/`PPTX`).
+- **Requisito 6 (sin migración, sin campo de `Configuracion`).** Usa `estado.tomas`, presente desde
+  R-02 sin cambio de esquema; son datos derivados de lo que el dueño ya registró durante el rodaje,
+  no un ajuste suyo.
+- **`verificar_salidas.py`.** La etapa "Generación de salidas" (T-30) ejecuta ahora la canalización
+  completa con las cinco salidas seleccionadas a la vez; sobre `fixtures/guion-ejemplo.md` (que sí
+  trae su propia sección `Capítulos`) genera también `capitulos-youtube.txt` dentro de esa misma
+  pasada, sin ningún parte de rodaje (el guion de verificación nunca se grabó de verdad). La etapa
+  distingue ahora un fallo real (motivo con el prefijo `"fallo al generar:"`) de una omisión
+  esperada (p. ej. un guion sin sección `Capítulos`, que antes de R-18 nunca podía ocurrir con las
+  cuatro salidas siempre seleccionadas) — antes de esta distinción, cualquier omisión con las cinco
+  salidas seleccionadas habría hecho fallar la etapa entera aunque no fuera un error de código. Las
+  etapas "Generación del .srt alineado"/"Generación de capítulos de YouTube" (R-05/R-07) se
+  mantienen aparte, sin cambios: siguen ejercitando cada módulo de forma aislada con
+  `tomas_por_escena={}` explícito.
+- **Verificación.** `tests/test_salidas.py` gana 8 tests: sin tomas, `SRT` genera solo el estimado;
+  con una toma buena, genera también el alineado (dos `ArchivoGenerado` bajo `TipoSalida.SRT`); con
+  tomas mas ninguna `buena`, sigue generando solo el estimado; `PPTX` con tomas incluye duración real
+  y límites absolutos en `tarjetas.json`; `CAPITULOS_YOUTUBE` es la quinta opción de
+  `TODAS_LAS_SALIDAS`; su contenido generado coincide con la llamada directa a
+  `capitulos_youtube.generar_capitulos_youtube`; sin sección `Capítulos` queda omitida sin ser fallo
+  ni latente; y un test de regresión explícito sobre los tres guiones reales de `fixtures/reales/`
+  sin ninguna toma registrada que compara, byte a byte, el HTML/`.srt`/HTML de impresión/
+  `tarjetas.json` generados por `generar_salidas_seleccionadas` contra la llamada directa a cada
+  generador de bajo nivel (criterio de aceptación literal: idéntico al de antes de R-18). Los tests
+  ya existentes de `test_pptx_latente_no_impide_las_otras_tres` y
+  `test_no_seleccionadas_quedan_omitidas_sin_generar_archivo` se actualizan para la quinta salida
+  (el guion sintético de este archivo no trae sección `Capítulos` a propósito, así que
+  `CAPITULOS_YOUTUBE` queda omitida por ese motivo cuando está seleccionada, sin que afecte a las
+  demás). 575→583 tests. `python scripts/verificar_salidas.py --fixture` sigue en 14 etapas OK; la
+  etapa "Generación de salidas" pasa de 5 a 6 archivos generados sobre `guion-ejemplo.md` (se suma
+  `capitulos-youtube.txt`).
 
 ## Suite de tests (T-03)
 

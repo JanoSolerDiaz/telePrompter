@@ -10,28 +10,40 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-16 — **Ciclo de Product Manager: abre R-18 (oleada v7 nueva).**
-Releído el registro completo de `auditoriacontinua.md`: la auditoría del mismo día cerró `#19`
-(R-17 verificada en profundidad) y dejó un único `ABIERTO`, `#24` (baja, puramente de proceso —
-latencia entre "completado en código" y prosa de `ROADMAP_PRODUCTO.md` actualizada). No es un
-hallazgo de producto ni de código: es una pregunta de gobernanza (¿puede el Programador corregir por
-sí solo la prosa de "Cola de producto" cuando solo refleja un estado que este §1 ya registra como
-`COMPLETADA`?) que cambiaría el reparto de acceso de §0.4 de `HOJA_DE_RUTA.md` — protocolo que solo
-cambia el dueño — así que se deja como pregunta abierta nueva en §6 (#11) en vez de decidirse aquí o
-de enrutarse a una R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Releído esta vez
-`scripts/salidas.py` (T-30, el selector de salidas real) junto con los contratos de montaje: aparece
-una grieta de arquitectura del mismo tipo que ya dio R-12/R-13/R-14/R-16 — las salidas basadas en
-tomas reales (`guion-alineado.srt` de R-05, `capitulos-youtube.txt` de R-07, los campos reales de
-`tarjetas.json` de R-13/R-16) están completas y probadas pero nunca llegan al selector real: éste
-nunca lee `estado.tomas` ni se lo pasa a `pptx.exportar_pptx`, y `capitulos_youtube.py` ni siquiera
-es una opción seleccionable. Se abre **R-18** (spec completa en `ROADMAP_PRODUCTO.md` §Oleada v7)
-para cerrarla antes de que el dueño grabe el primer curso completo (bloqueo #7) y dependa de que
-estas salidas reflejen sus tomas reales sin invocar nada a mano. Añadida como `PENDIENTE` en §1.
-Cuatro redes en verde reconfirmadas por el Programador en su última pasada (575 tests); sin cambios
-en bloqueos (§3) ni desviaciones (§7).
+**Última actualización:** 2026-09-17 — **Ciclo de Programador: R-18 implementada y COMPLETADA.**
+`scripts/salidas.py` (T-30) gana `tomas_por_escena` opcional en `generar_salidas_seleccionadas`
+(`EstadoProyecto.tomas` tal cual, sin abrir `estado.json` por su cuenta): con al menos una toma
+`buena`, seleccionar `SRT` genera también `guion-alineado.srt` (R-05) bajo el mismo `TipoSalida.SRT`,
+y seleccionar `PPTX` pasa las tomas a `exportar_pptx` para duración real y límites absolutos reales
+(R-13/R-16) en `tarjetas.json` — ambas sin ninguna acción manual del dueño. `TipoSalida` gana una
+quinta opción, `CAPITULOS_YOUTUBE`, generada con `capitulos_youtube.generar_capitulos_youtube`; sin
+sección `Capítulos` en el guion, la salida queda `SalidaOmitida` con el motivo exacto — nunca fallo
+ni `SalidaLatente`. `verificar_salidas.py::verificar_generacion` se corrige para distinguir esa
+omisión esperada de un fallo real (antes de R-18 cualquier omisión con las cuatro salidas siempre
+seleccionadas solo podía venir de una excepción real; desde R-18 ya no). Sin ninguna toma
+registrada, las cinco salidas se comportan exactamente igual que antes de R-18 — verificado con un
+test de regresión byte a byte sobre los tres guiones reales de `fixtures/reales/`, no solo ausencia
+de error (criterio de aceptación literal de la ficha). 8 tests nuevos (575→583). Cuatro redes en
+verde (`mypy` limpio 68 archivos, `ruff` limpio, 583 tests, `verificar_salidas.py --fixture` catorce
+etapas OK — la etapa "Generación de salidas" pasa de 5 a 6 archivos generados sobre
+`guion-ejemplo.md`, se suma `capitulos-youtube.txt`). `DEVELOPERS.md` gana una sección nueva y
+corrige tres afirmaciones ahora falsas en las secciones de R-05/R-07/R-13 que decían que sus salidas
+"no se integran en el selector de T-30"; `SKILL.md` actualiza la sección del selector de salidas a
+las cinco opciones y al nuevo comportamiento con parte de rodaje. Antes de elegir tarea se releyó
+`auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de proceso, ya enrutado a la
+pregunta #11 de §6, sin respuesta del dueño todavía) — ningún hallazgo de severidad alta que atender
+como urgencia P-XX. Sin cambios en bloqueos (§3) ni desviaciones (§7). Con R-18 completada, la cola
+de `ROADMAP_PRODUCTO.md` vuelve a quedar vacía — archivar la oleada v7 a `ROADMAP_HISTORICO.md` y
+corregir la prosa de "Cola de producto" es tarea del próximo ciclo de Product Manager (§0.4), no de
+este ciclo de Programador.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-16, ciclo de Product Manager: abre R-18 (oleada v7 nueva), origen en una grieta de
+  arquitectura verificada por el PM releyendo `scripts/salidas.py` junto con los contratos de
+  montaje: las salidas basadas en tomas reales (R-05/R-07/R-13/R-16) estaban completas y probadas
+  pero nunca llegaban al selector real de T-30. Auditoría del mismo día cierra `#19` y abre `#24`
+  (enrutado a la pregunta #11 de §6).
 - 2026-09-16, ciclo de Programador: decimonovena reconfirmación tras R-17, sin novedad de código.
   Cuatro redes en verde (575 tests). Auditoría del mismo día cierra `#19` y abre `#24`.
 - 2026-09-16, ciclo de Programador: decimoctava reconfirmación tras R-17, sin novedad de código.
@@ -239,7 +251,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-15 | Advertir explícitamente contra el binario "pelado" de `ruff`/`mypy`/`pytest` en un contenedor de nube | **COMPLETADA** | 2026-09-14 | Tarea puramente documental: nota visible en `DEVELOPERS.md` (bloque de cita bajo "Verificación manual") y frase con remisión en la sección "Verificacion" de `SKILL.md`, explicando que la única verificación válida es `python scripts/ci.py` / `python -m <herramienta>`, nunca el binario pelado. Cero cambio en `scripts/`, `tests/` o `assets/`; cuatro redes en verde (569 tests). `origen: auditoría #22` — queda para la siguiente pasada del auditor cerrar `#22` a `RESUELTO` |
 | R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **COMPLETADA** | 2026-09-14 | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez (`_con_limites_absolutos`) con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-tarjetas.md` documenta las dos claves y `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano — ahora las lee directamente. Cambio aditivo, `version_contrato` no sube, sin migración de `estado.json` ni campo nuevo de `Configuracion`. 5 tests nuevos (569→574): 2 unitarios (`test_pptx.py`) y 3 de integración (`test_integracion_montaje.py`, incluida la coherencia con `guion.srt`/`guion-alineado.srt`). Cuatro redes en verde. `origen: observación de arquitectura del PM (2026-09-13)` |
 | R-17 | Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`) | **COMPLETADA** | 2026-09-15 | Spec completa en `ROADMAP_PRODUCTO.md` §Fase F-I. `origen: auditoría #19` (abierto 2026-09-04, reconfirmado sin cambios en diez pasadas sucesivas del auditor). Investigada y cerrada por la vía del requisito 3 (con matiz): bajo operación normal la identidad es inyectiva por construcción (`pospuestas_previas` siempre coincide con lo que la pasada anterior persistió); el único escenario que rompe la comparación por cardinalidad exige corromper `estado.validacion["particiones_pospuestas"]` a mano (misma precondición ya conocida de P-04), y se verificó con test nuevo que incluso ahí el invariante (a) — nada se pierde ni se duplica — sigue intacto, con un único efecto cosmético (número de bloque erróneo en la incidencia de conflicto, escena correcta). 1 test nuevo (574→575) en `tests/test_revalidacion.py`. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
-| R-18 | Integrar en el selector de salidas (T-30, `scripts/salidas.py`) las salidas que dependen de tomas reales: `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07, hoy ni siquiera seleccionable) y los campos reales de `tarjetas.json` (R-13/R-16) | **PENDIENTE** | 2026-09-16 | Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v7. `origen: observación de arquitectura del PM` (2026-09-16) — el selector real nunca lee `estado.tomas` ni se lo pasa a `pptx.exportar_pptx`, y `capitulos_youtube.py` no es opción de `TipoSalida`; las tres salidas solo se ejercitan hoy con `tomas_por_escena={}` dentro del health check. Sin migración, sin campo nuevo de `Configuracion` |
+| R-18 | Integrar en el selector de salidas (T-30, `scripts/salidas.py`) las salidas que dependen de tomas reales: `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07, hoy ni siquiera seleccionable) y los campos reales de `tarjetas.json` (R-13/R-16) | **COMPLETADA** | 2026-09-17 | `scripts/salidas.py`: `generar_salidas_seleccionadas` gana `tomas_por_escena` opcional (`EstadoProyecto.tomas` tal cual); con al menos una toma `buena`, `SRT` genera también `guion-alineado.srt` (R-05) bajo el mismo `TipoSalida.SRT`, y `PPTX` pasa las tomas a `exportar_pptx` para duración real/límites absolutos (R-13/R-16). `TipoSalida` gana `CAPITULOS_YOUTUBE` (quinta opción), generado con `capitulos_youtube.generar_capitulos_youtube`; sin sección `Capítulos`, queda `SalidaOmitida` con el motivo exacto, nunca fallo ni latente. `verificar_salidas.py::verificar_generacion` distingue ahora un fallo real (prefijo `"fallo al generar:"`) de esa omisión esperada. Sin tomas, comportamiento idéntico al de antes de R-18 (test de regresión byte a byte sobre los tres guiones reales). 8 tests nuevos (575→583). Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

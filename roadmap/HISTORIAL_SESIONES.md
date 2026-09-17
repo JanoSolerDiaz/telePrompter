@@ -32,6 +32,49 @@
 
 ---
 
+### Sesión 2026-09-17 — Ciclo de Programador: R-18 implementada y COMPLETADA
+**Tarea(s):** R-18 (única `PENDIENTE` en §1 de `SEGUIMIENTO.md`, spec completa en
+`ROADMAP_PRODUCTO.md` §Oleada v7). Releído primero el registro de hallazgos de
+`auditoriacontinua.md`: un único `ABIERTO` (`#24`, baja, de proceso, ya enrutado a la pregunta #11
+de §6, sin respuesta del dueño) — ninguna urgencia de severidad alta que atender como P-XX antes de
+la cola normal.
+**Estado resultante:** COMPLETADA
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna (R-18 no la requería: usa `estado.tomas`, presente desde R-02)
+**Archivos creados/modificados:** `scripts/salidas.py` (parámetro `tomas_por_escena`, `TipoSalida.
+CAPITULOS_YOUTUBE`, `_generar_capitulos_youtube`); `scripts/verificar_salidas.py` (distingue fallo
+real de omisión esperada en `verificar_generacion`, docstring del módulo actualizado); `tests/
+test_salidas.py` (8 tests nuevos, 2 tests existentes actualizados para la quinta salida); `SKILL.md`
+(sección del selector de salidas); `DEVELOPERS.md` (sección nueva "Conectar el selector de salidas
+con el parte de rodaje real (R-18)", tres correcciones a afirmaciones de R-05/R-07/R-13 que ya no
+eran ciertas, diagrama de arquitectura); `roadmap/SEGUIMIENTO.md` (§1, cabecera); `roadmap/
+DECISIONES_TECNICAS.md` (2 filas nuevas).
+**Verificaciones pre-push:** tipos ✅ · lint ✅ · tests ✅ (583, antes 575) · build ✅
+(`verificar_salidas.py --fixture`, catorce etapas OK)
+**Health check post-deploy:** N/A — sesión de nube, sin acceso a `~/.claude/skills/` (nota de
+entorno del protocolo v1.3; T-32 ya lo resolvió en la máquina real del dueño en su momento)
+**Decisiones tomadas:** 2 filas nuevas en `DECISIONES_TECNICAS.md` (2026-09-17): (1) `_generar_srt`
+siempre llama a `srt_alineado.generar_srt_alineado` cuando `tomas_por_escena` no está vacío y decide
+por `ResultadoAlineacion.escenas_alineadas`, en vez de reimplementar en `salidas.py` el criterio de
+"qué es una toma buena"; (2) `verificar_generacion` distingue un fallo real de una omisión esperada
+mirando el prefijo `"fallo al generar:"` del motivo, en vez de acoplarse a la lista concreta de
+tipos que hoy pueden omitirse sin ser fallo.
+**Hallazgos del auditor atendidos:** ninguno (el único `ABIERTO`, `#24`, es de proceso y no de
+código; sigue enrutado a la pregunta #11 de §6, sin tocar).
+**Hallazgos:** ninguno nuevo. Al releer `scripts/verificar_salidas.py` se detectó que la etapa
+"Generación de salidas" habría empezado a fallar en falso en cuanto el guion de verificación (o su
+respaldo en `fixtures/reales/`) dejara de traer sección `Capítulos`, porque la comprobación previa
+trataba cualquier `SalidaOmitida` de una salida seleccionada como fallo — cierto solo mientras
+`CAPITULOS_YOUTUBE` no podía quedar omitida sin ser un error de código. Corregido en la misma sesión
+(ver decisión de `DECISIONES_TECNICAS.md` arriba) antes de que llegara a manifestarse.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** con R-18 completada, `ROADMAP_PRODUCTO.md` vuelve a quedar sin ninguna R-XX
+`PENDIENTE` — archivar la oleada v7 a `ROADMAP_HISTORICO.md` y corregir la prosa de "Cola de
+producto" es tarea del próximo ciclo de Product Manager (§0.4: `ROADMAP_PRODUCTO.md` lo gestiona el
+PM), no de un ciclo de Programador. Sin ningún revert pendiente.
+
+---
+
 ### Sesión 2026-09-16 — Ciclo de Product Manager: abre R-18 (oleada v7 nueva)
 **Tarea(s):** gestión de roadmap de producto (rol PM, no programa código). Releído el registro
 completo de `auditoriacontinua.md`: la auditoría del mismo día cerró `#19` (R-17 verificada en

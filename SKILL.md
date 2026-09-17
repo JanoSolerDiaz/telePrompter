@@ -294,15 +294,17 @@ Si `480-branded-pptx` o su dependencia, la skill `pptx`, no están instaladas en
 | Rutas de las skills de marca | `~/.claude/skills/480-branded-pptx` y `~/.claude/skills/pptx` | Solo se comprueba que la carpeta existe; ausentes → salida `.pptx` latente, nunca falla |
 | Notas internas en `tarjetas.json` | incluidas | `--para-terceros` las vacía del propio JSON, no solo del deck |
 
-## Selector de salidas por validación (T-30)
+## Selector de salidas por validación (T-30, R-18)
 
-Cada vez que se valida, la skill pregunta cuáles de las cuatro salidas generar (reproductor `.html`, `.pptx`, `.pdf`, `.srt`) en una única pregunta de opción múltiple — nunca decide en silencio. La última selección se recuerda en `estado.json` como **sugerencia** marcada en la propia pregunta, no como una decisión que se aplica sola; sin ninguna selección previa, sugiere las cuatro.
+Cada vez que se valida, la skill pregunta cuáles de las cinco salidas generar (reproductor `.html`, `.pptx`, `.pdf`, `.srt`, capítulos de YouTube `.txt`) en una única pregunta de opción múltiple — nunca decide en silencio. La última selección se recuerda en `estado.json` como **sugerencia** marcada en la propia pregunta, no como una decisión que se aplica sola; sin ninguna selección previa, sugiere las cinco.
 
-Las salidas seleccionadas se generan de forma independiente: el fallo o la latencia de una (Chrome/Edge ausente para el `.pdf` real, la skill de marca ausente para el `.pptx` real) nunca impide las demás. El resumen final lista la ruta y el tamaño de cada archivo generado, y el motivo de cada salida omitida (no seleccionada, o fallida) o latente (seleccionada, con lo generable ya en disco, pendiente de una dependencia externa).
+Las salidas seleccionadas se generan de forma independiente: el fallo o la latencia de una (Chrome/Edge ausente para el `.pdf` real, la skill de marca ausente para el `.pptx` real) nunca impide las demás. El resumen final lista la ruta y el tamaño de cada archivo generado, y el motivo de cada salida omitida (no seleccionada, fallida, o sin datos de los que partir) o latente (seleccionada, con lo generable ya en disco, pendiente de una dependencia externa).
+
+Desde R-18, el propio selector lee el parte de rodaje (`estado.tomas`, R-02) que quien lo invoca ya tiene cargado: en cuanto una escena tiene una toma marcada `buena`, seleccionar `.srt` genera también `guion-alineado.srt` (R-05) junto al `.srt` estimado de siempre, y seleccionar `.pptx` hace que `tarjetas.json` lleve duración real y límites absolutos reales (R-13/R-16) — sin ninguna acción manual del dueño. Los capítulos de YouTube (quinta opción) usan tiempo real donde hay toma buena y estimado donde no, con aviso explícito si se mezclan (R-07); si el guion no trae sección `Capítulos` o no llega a una sola marca por encima del umbral configurado, esa salida queda omitida con el motivo exacto, nunca como fallo. Sin ningún parte de rodaje, las cinco salidas se comportan exactamente igual que antes de R-18.
 
 | Opción | Por defecto | Nota |
 |--------|-------------|------|
-| Salidas seleccionadas | pregunta cada vez | Sin selección previa, sugiere las cuatro; con histórico, sugiere la última selección registrada en `estado.json` |
+| Salidas seleccionadas | pregunta cada vez | Sin selección previa, sugiere las cinco; con histórico, sugiere la última selección registrada en `estado.json` |
 
 ## Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12)
 

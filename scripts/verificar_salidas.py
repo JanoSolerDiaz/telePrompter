@@ -33,13 +33,17 @@ skill no este instalada -- nunca falla por su ausencia. El `.srt` alineado
 rodaje real (el guion de verificacion nunca se grabo): caen por completo a la
 duracion estimada de T-12, latentes de la misma forma que el `.pptx` sin la
 skill de marca, sin que eso sea un fallo. "Generación de salidas" (T-30)
-ejecuta la canalizacion completa con las cuatro salidas seleccionadas a la vez
+ejecuta la canalizacion completa con las cinco salidas seleccionadas a la vez
 y refleja esa misma latencia del `.pptx` sin fallar por ella (requisito 3: el
-fallo o la latencia de una salida no impide las demas) -- ni el `.srt`
-alineado ni los capitulos de YouTube forman parte de esa canalizacion todavia
-porque ambos dependen de un parte de rodaje que el selector de T-30 no pide.
-"Guion de ejemplo" (T-32) ya es OK: `fixtures/guion-ejemplo.md` existe y tiene
-contenido. Responde al hallazgo #4 del auditor.
+fallo o la latencia de una salida no impide las demas). Desde R-18 el propio
+selector de T-30 conoce `estado.tomas` y genera tambien los capitulos de
+YouTube (quinta opcion de `TipoSalida`) dentro de esa misma canalizacion; esta
+etapa se ejecuta sin ningun parte de rodaje (`tomas_por_escena` por defecto),
+asi que el `.srt` alineado no llega a generarse como archivo aparte (ninguna
+escena tiene toma buena) mientras que los capitulos si, porque
+`fixtures/guion-ejemplo.md` ya trae su propia seccion `Capítulos` sin depender
+de tomas reales. "Guion de ejemplo" (T-32) ya es OK: `fixtures/guion-ejemplo.md`
+existe y tiene contenido. Responde al hallazgo #4 del auditor.
 """
 
 from __future__ import annotations
@@ -211,9 +215,14 @@ def generar_reproductor_fixture() -> Resultado:
 
 def verificar_generacion() -> Resultado:
     """Ejecuta la canalizacion completa del selector de salidas (T-30) sobre
-    el mismo guion de verificacion que usan las demas etapas: las cuatro
+    el mismo guion de verificacion que usan las demas etapas: las cinco
     salidas seleccionadas a la vez, generacion independiente (el fallo de una
-    no impide las demas) y el resumen final."""
+    no impide las demas) y el resumen final. Desde R-18, `CAPITULOS_YOUTUBE`
+    seleccionada puede quedar omitida sin ser un fallo real (requisito 4: el
+    guion no trae seccion `Capítulos`, o no llega a una marca) -- se distingue
+    de un fallo real porque `salidas.py` solo antepone el prefijo
+    `fallo al generar:` a una excepcion de verdad, nunca a esa omision
+    esperada."""
     ruta_guion = _ruta_guion_para_verificar()
     if ruta_guion is None:
         return Resultado(
@@ -238,17 +247,22 @@ def verificar_generacion() -> Resultado:
             "FALLO",
             f"no se pudo ejecutar la canalizacion sobre {ruta_guion.name}: {excepcion}",
         )
-    if resumen.omitidas:
-        motivos = "; ".join(f"{o.tipo.value}: {o.motivo}" for o in resumen.omitidas)
+    fallos_reales = [o for o in resumen.omitidas if o.motivo.startswith("fallo al generar:")]
+    if fallos_reales:
+        motivos = "; ".join(f"{o.tipo.value}: {o.motivo}" for o in fallos_reales)
         return Resultado(
             "Generación de salidas",
             "FALLO",
-            f"con las cuatro salidas seleccionadas, alguna fallo: {motivos}",
+            f"con las cinco salidas seleccionadas, alguna fallo de verdad: {motivos}",
         )
     detalle = f"{len(resumen.generadas)} archivo(s) generados sobre {ruta_guion.name}."
     if resumen.latentes:
         detalle += " Latentes: " + "; ".join(
             f"{latente.tipo.value} ({latente.motivo})" for latente in resumen.latentes
+        )
+    if resumen.omitidas:
+        detalle += " Omitidas (esperado, no un fallo): " + "; ".join(
+            f"{o.tipo.value} ({o.motivo})" for o in resumen.omitidas
         )
     return Resultado("Generación de salidas", "OK", detalle)
 
