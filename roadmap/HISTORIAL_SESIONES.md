@@ -32,6 +32,44 @@
 
 ---
 
+### Sesión 2026-09-17 — Ciclo de Product Manager: archiva la Oleada v7 (R-18); ninguna R-XX nueva
+**Tarea(s):** gestión de roadmap, sin tocar `scripts/`/`tests/`/`assets/`. Archiva la Oleada v7
+(R-18) a `roadmap/ROADMAP_HISTORICO.md` — estaba `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el
+ciclo de Programador del mismo día (583 tests, cuatro redes en verde, reconfirmada sin novedad en
+nueve pasadas posteriores) y sin ningún hito de negocio propio pendiente. Corrige de paso la prosa
+de "Cola de producto" de `ROADMAP_PRODUCTO.md`, que nueve reconfirmaciones sucesivas del
+Programador venían señalando como desactualizada sin poder corregirla — el mismo patrón de latencia
+que registra `auditoriacontinua.md` como hallazgo `#24` (que sigue `ABIERTO` solo como pregunta de
+gobernanza en §6 #11, sin respuesta del dueño todavía). Releído el registro de hallazgos íntegro
+(único `ABIERTO`: `#24`) y `roadmap/FEEDBACK.md` (sigue sin ninguna entrada `nuevo`). Revisada de
+nuevo la arquitectura del encaje con el rodaje real y el montaje (`scripts/salidas.py` tras su
+propio cambio, `scripts/calibracion.py`, `scripts/tomas.py`, `references/contrato-montaje.md`) en
+busca de una grieta del mismo tipo que motivó R-12 a R-18: ninguna encontrada. **No se abre ninguna
+R-XX nueva este ciclo** — razonado en `DECISIONES_TECNICAS.md`: sin hallazgo de auditoría, feedback
+real o grieta de arquitectura verificada, cualquier R-XX sería especulativa; el bloqueo #7 de
+`SEGUIMIENTO.md` §3 (grabar un curso completo) sigue siendo la única fuente capaz de motivar la
+siguiente mejora genuina.
+**Estado resultante:** sin cambio de estado en §1 (R-18 ya estaba `COMPLETADA`; ninguna R-XX nueva)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md` (cabecera, archiva Oleada v7,
+"Cola de producto" vacía); `roadmap/ROADMAP_HISTORICO.md` (Oleada v7 completa); `roadmap/
+SEGUIMIENTO.md` (cabecera); `roadmap/DECISIONES_TECNICAS.md` (fila de esta decisión); `roadmap/
+HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** N/A — sesión de gestión de roadmap, sin cambio de código; no se
+invocan las cuatro verificaciones porque ningún archivo de `scripts/`/`tests/`/`assets/` cambia
+**Health check post-deploy:** N/A — sin cambio de código que instalar
+**Decisiones tomadas:** fila `2026-09-17 | PM` en `DECISIONES_TECNICAS.md` (archivar Oleada v7 y no
+abrir R-XX nueva este ciclo, con las alternativas descartadas y su motivo)
+**Hallazgos del auditor atendidos:** ninguno nuevo (`#24` sigue `ABIERTO`, correctamente enrutado a
+la pregunta #11 de §6, a la espera del dueño — nada más que este ciclo pueda hacer sobre él)
+**Hallazgos:** ninguno nuevo
+**Tareas autopropuestas (P-XX):** ninguna
+**Próximo paso:** para el Programador, ninguna T-XX/R-XX `PENDIENTE` en §1 — sigue reconfirmando
+salvo que el dueño responda la pregunta #11 de §6, el auditor escale un hallazgo, o el dueño grabe
+el primer curso completo (bloqueo #7) y aporte el feedback real que reabriría el roadmap de
+producto
+
 ### Sesión 2026-09-17 — Ciclo de Programador: novena reconfirmación tras R-18, sin novedad de código
 **Tarea(s):** ninguna T-XX/R-XX `PENDIENTE` en §1 de `SEGUIMIENTO.md` (R-18 sigue `COMPLETADA`).
 Releído el registro de hallazgos de `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`,

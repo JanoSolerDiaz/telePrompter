@@ -10,20 +10,28 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-17 — **Ciclo de Programador: novena reconfirmación tras R-18, sin
-novedad de código.** Releído `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de
-proceso, ya enrutado a la pregunta #11 de §6, sin respuesta del dueño todavía) — ningún hallazgo de
-severidad alta que atender como urgencia P-XX. §1 sin ninguna T-XX/R-XX `PENDIENTE` (R-18 sigue
-`COMPLETADA`; la spec de `ROADMAP_PRODUCTO.md` sigue sin R-XX nueva). La prosa de "Cola de producto"
-de `ROADMAP_PRODUCTO.md` sigue listando R-18 como pendiente, desactualizada tras su cierre en código
-— corregirla sigue siendo tarea del próximo ciclo de Product Manager (§0.4: ese documento lo
-gestiona el PM, el programador solo lee su spec), no de este ciclo. Cuatro redes en verde: `mypy`
-limpio 68 archivos, `ruff` limpio, 583 tests (sin cambio respecto a la sesión anterior),
-`verificar_salidas.py --fixture` catorce etapas OK. Sin cambios en bloqueos (§3), preguntas (§6) ni
-desviaciones (§7). Sin trabajo de código pendiente.
+**Última actualización:** 2026-09-17 — **Ciclo de Product Manager: archiva la Oleada v7 (R-18) a
+`ROADMAP_HISTORICO.md`** — estaba `COMPLETADA` en este §1 desde el ciclo de Programador del mismo
+día (583 tests, cuatro redes en verde, reconfirmada sin novedad en nueve pasadas posteriores) y sin
+ningún hito de negocio propio pendiente. De paso corrige la prosa de "Cola de producto" de
+`ROADMAP_PRODUCTO.md`, que nueve reconfirmaciones sucesivas del Programador venían señalando como
+desactualizada sin poder corregirla (mismo patrón que registra `auditoriacontinua.md` #24). Releído
+el registro de hallazgos íntegro: sigue con un único `ABIERTO` (`#24`, baja, de proceso, ya enrutado
+a la pregunta #11 de este §6, todavía sin respuesta del dueño) — ninguna acción de este ciclo
+pendiente sobre él. `roadmap/FEEDBACK.md` releído: sigue sin ninguna entrada `nuevo`. Revisada de
+nuevo la arquitectura del encaje con el rodaje real y el montaje (`scripts/salidas.py` tras su
+propio cambio, `scripts/calibracion.py`, `scripts/tomas.py`, `references/contrato-montaje.md`) en
+busca de una grieta del mismo tipo que motivó R-12 a R-18: ninguna encontrada. **No se abre ninguna
+R-XX nueva este ciclo** — razonado en `DECISIONES_TECNICAS.md`: sin hallazgo de auditoría, feedback
+real o grieta de arquitectura verificada, abrir una sería especulativa, y el bloqueo #7 de este §3
+(grabar un curso completo) sigue siendo la única fuente capaz de motivar la siguiente mejora
+genuina. Cola de `ROADMAP_PRODUCTO.md` queda vacía. Sin cambios en bloqueos (§3) ni desviaciones
+(§7); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-17, ciclo de Programador: novena reconfirmación tras R-18, sin novedad de código. Cuatro
+  redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso).
 - 2026-09-17, ciclo de Programador: octava reconfirmación tras R-18, sin novedad de código. Cuatro
   redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso).
 - 2026-09-17, ciclo de Programador: séptima reconfirmación tras R-18, sin novedad de código. Cuatro

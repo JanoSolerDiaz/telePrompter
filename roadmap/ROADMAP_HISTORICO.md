@@ -38,6 +38,13 @@ ningún hito de negocio propio pendiente — mismo criterio que los cinco movimi
 (R-17), COMPLETADA por el Programador el mismo día en que se abrió (2026-09-14) y sin ningún hito
 de negocio propio pendiente — mismo criterio que los seis movimientos anteriores.
 
+**Movido a histórico el:** 2026-09-17, ciclo de Product Manager. Se añade la Oleada v7 (R-18),
+COMPLETADA por el Programador el mismo día en que se abrió (2026-09-16→17) y sin ningún hito de
+negocio propio pendiente — mismo criterio que los siete movimientos anteriores. Este movimiento
+corrige además la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`, que llevaba listando R-18
+como pendiente pese a estar ya `COMPLETADA` en §1 de `SEGUIMIENTO.md` — el mismo patrón de latencia
+que `auditoriacontinua.md` registra como hallazgo `#24`.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -742,6 +749,94 @@ P-04), y se verificó con test nuevo que incluso ahí el invariante (a) — nada
 duplica — sigue intacto, con un único efecto cosmético (número de bloque erróneo en la incidencia
 de conflicto, escena correcta). 1 test nuevo (574→575) en `tests/test_revalidacion.py`. Cuatro
 redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`.
+
+---
+
+## Oleada v7 — Cerrar el hueco entre el registro de tomas reales y el selector de salidas
+
+Las tomas registradas durante el rodaje (R-02/R-03) ya alimentaban tres salidas completas y
+probadas desde hacía semanas — `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07) y los
+campos reales de `tarjetas.json` (R-13/R-16) — pero ninguna de las tres era alcanzable a través del
+único punto de entrada real que usa el dueño: el selector de salidas de cada validación (T-30,
+`scripts/salidas.py`). Contenía R-18, su única R-XX. **Entregada 2026-09-17** (COMPLETADA el mismo
+ciclo del Programador en que se implementó, tras abrirse el día anterior).
+
+### R-18 — Integrar en el selector de salidas (T-30) las salidas que dependen de tomas reales
+**Oleada / Fase:** v7 · **Migración:** No · **Depende de:** T-30, R-02, R-05, R-07, R-13, R-16
+**Origen:** observación de arquitectura del PM (2026-09-16), releyendo `scripts/salidas.py` a la luz
+de que la fase siguiente del propio dueño es el montaje con ffmpeg
+
+**Objetivo:** `scripts/salidas.py` (T-30) es el único sitio donde el dueño pide de verdad que se
+generen salidas — la pregunta de opción múltiple de cada validación. Hasta esta tarea, sin embargo,
+ignoraba por completo `estado.tomas` (el registro de tomas de R-02, ya persistido sin migración):
+`_generar_pptx` llamaba a `exportar_pptx` sin `tomas_por_escena`, así que `tarjetas.json` nunca
+llevaba `duracion_real_segundos`/`inicio_segundos`/`fin_segundos` reales aunque el dueño ya hubiera
+marcado tomas buenas; `_generar_srt` solo producía el `.srt` estimado (T-27), nunca
+`guion-alineado.srt` (R-05); y `capitulos_youtube.py` (R-07) ni siquiera era una opción de
+`TipoSalida` — la única ruta que lo ejercitaba era la fixture de `verificar_salidas.py --fixture`,
+deliberadamente con `tomas_por_escena={}`. El dueño habría tenido que saber que existían tres
+módulos más y saber invocarlos aparte, justo en el momento — después de grabar, camino del montaje
+con ffmpeg — en que más importaba que la skill entregara sola los datos reales sin que nadie se lo
+pidiera a mano. Es la misma clase de grieta que ya motivó R-12/R-13/R-14/R-16: la funcionalidad ya
+existía, estaba probada y el contrato la documentaba, pero no llegaba al único flujo real por el
+que el dueño interactúa con la skill.
+
+**Requisitos:**
+1. `scripts/salidas.py` lee `estado.tomas` (tal cual, mismo contenedor que ya consumen
+   `srt_alineado.py`/`capitulos_youtube.py`/`pptx.py` desde R-05/R-07/R-13) y lo pasa como
+   `tomas_por_escena` allí donde haga falta — quien llama a `generar_salidas_seleccionadas` (la
+   sesión que ya tiene el `EstadoProyecto` cargado) se lo entrega, sin que este módulo necesite abrir
+   ni conocer `estado.json` por su cuenta.
+2. Seleccionar `SRT` sigue generando siempre `guion.srt` (T-27, estimado, comportamiento actual
+   intacto); además, en cuanto `tomas_por_escena` contenga al menos una toma marcada `buena`, la
+   misma pasada genera también `guion-alineado.srt` (R-05) como un segundo `ArchivoGenerado` bajo el
+   mismo `TipoSalida.SRT` — mismo patrón que ya usan `_generar_pdf`/`_generar_pptx`, que ya devuelven
+   más de un archivo bajo un mismo tipo. Sin tomas registradas, se genera exactamente lo mismo que
+   antes (solo `guion.srt`): cambio aditivo, nunca una regresión.
+3. Seleccionar `PPTX` pasa `tomas_por_escena` a `exportar_pptx`, de modo que `tarjetas.json` incluya
+   duración real y límites absolutos reales (R-13/R-16) en cuanto haya tomas registradas, sin
+   ninguna acción manual del dueño. Sin tomas, comportamiento idéntico al anterior.
+4. `TipoSalida` gana una quinta opción, `CAPITULOS_YOUTUBE` ("Capítulos de YouTube con marcas de
+   tiempo (`.txt`)"), añadida a `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA` junto a las cuatro ya
+   existentes (requisito 1 de T-30: sigue siendo una única pregunta de opción múltiple, ahora con
+   cinco filas en vez de cuatro). Se genera con `capitulos_youtube.generar_capitulos_youtube`,
+   pasando `tomas_por_escena` (usa marcas reales si hay tomas, estimadas si no — igual que ya hacía
+   `verificar_salidas.py --fixture`). Cuando el guion no trae sección `Capítulos` o no llega a una
+   sola marca por encima de `capitulos_youtube_marca_minima_segundos`, la salida queda como
+   `SalidaOmitida` con el motivo exacto que ya devuelve `formatear_capitulos_youtube` al dar `None`
+   — nunca como fallo ni como `SalidaLatente` (no depende de nada externo ausente, a diferencia de
+   `.pdf`/`.pptx`).
+5. `ResumenSalidas`/`registrar_generacion`/`estado.salidas_generadas` no cambian de forma: la nueva
+   ruta solo añade entradas a `generadas`/`omitidas` con los tipos ya definidos, sin romper la
+   serialización ni la sugerencia de la próxima pregunta (requisito 2 de T-30).
+6. Sin migración de `estado.json` (usa `estado.tomas`, presente desde R-02 sin cambio de esquema) y
+   sin campo nuevo de `Configuracion` (son datos derivados de lo ya registrado por el dueño durante
+   el rodaje, no un ajuste suyo).
+
+**Criterio de aceptación:** sobre un guion sintético con al menos una escena con una toma marcada
+`buena` en `estado.tomas` (mismo patrón de fixture que ya usan R-13/R-16 en
+`tests/test_integracion_montaje.py`), llamar a `generar_salidas_seleccionadas` con `SRT`
+seleccionado produce tanto `guion.srt` como `guion-alineado.srt`, y con `PPTX` seleccionado
+`tarjetas.json` trae `duracion_real_segundos`/`inicio_segundos`/`fin_segundos` reales para esa
+escena. `CAPITULOS_YOUTUBE` aparece como quinta opción de `construir_pregunta_salidas` y, generado,
+coincide con lo que produce `verificar_salidas.py --fixture` en las mismas condiciones. Sobre los
+tres guiones reales de `fixtures/reales/` **sin ninguna toma registrada**, el resultado completo de
+`generar_salidas_seleccionadas` (archivos generados, bytes, omitidas) es idéntico al de antes de
+R-18 — test de regresión explícito, no solo ausencia de error.
+
+**Cómo se entregó:** `scripts/salidas.py` gana el parámetro opcional `tomas_por_escena` en
+`generar_salidas_seleccionadas`; con al menos una toma `buena`, `SRT` genera también
+`guion-alineado.srt` bajo el mismo `TipoSalida.SRT` (`_generar_srt` llama siempre a
+`srt_alineado.generar_srt_alineado` cuando `tomas_por_escena` no está vacío y decide por
+`ResultadoAlineacion.escenas_alineadas`, no por una inspección manual del diccionario crudo — misma
+fuente de verdad que ya usan los tests de integración de R-11) y `PPTX` pasa las tomas a
+`exportar_pptx` para duración real y límites absolutos reales (R-13/R-16). `TipoSalida` gana
+`CAPITULOS_YOUTUBE` (quinta opción). Sin toma registrada, comportamiento idéntico al de antes de
+R-18 (regresión byte a byte verificada sobre los tres guiones reales). `verificar_salidas.py::
+verificar_generacion` distingue un fallo real de una omisión esperada por el prefijo
+`"fallo al generar:"` del motivo, en vez de tratar cualquier `SalidaOmitida` como fallo de la etapa
+(necesario porque `CAPITULOS_YOUTUBE` ya puede quedar omitida de forma legítima). 8 tests nuevos
+(575→583). Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md`.
 
 ---
 
