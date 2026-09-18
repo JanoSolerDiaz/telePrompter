@@ -10,22 +10,26 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-18 — **Ciclo de Programador: tercera reconfirmación tras el
+**Última actualización:** 2026-09-18 — **Ciclo de Programador: cuarta reconfirmación tras el
 archivado de R-18 (PM) y la auditoría en profundidad del mismo día, sin novedad de código.** Sin
 ninguna T-XX/R-XX `PENDIENTE` en este §1 (cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM
-del 2026-09-17). Releído el registro de hallazgos de `auditoriacontinua.md`: sigue con un único
-`ABIERTO` (`#24`, baja, de proceso, enrutado a la pregunta #11 de este §6, todavía sin respuesta del
-dueño) — ninguna urgencia de severidad alta que atender como P-XX antes de la cola normal. Cuatro
-redes en verde, verificadas de forma independiente en esta sesión con las versiones pineadas de
-`requirements-dev.txt` (vía `python scripts/ci.py`): `mypy` limpio (68 archivos), `ruff` limpio, 583
-tests (sin cambio), `verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/`.pdf`
-reales siguen LATENTES en este contenedor de nube, como siempre). Sin cambios en bloqueos (§3) ni
-desviaciones (§7); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño. Sin trabajo de
-código pendiente; la siguiente sesión de Programador vuelve a reconfirmar salvo que el PM abra una
-R-XX nueva, el auditor escale un hallazgo a severidad alta, o el dueño responda la pregunta #11.
+del 2026-09-17, reconfirmada vacía también en la auditoría del mismo día). Releído el registro de
+hallazgos de `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de proceso, enrutado
+a la pregunta #11 de este §6, todavía sin respuesta del dueño) — ninguna urgencia de severidad alta
+que atender como P-XX antes de la cola normal. Cuatro redes en verde, verificadas de forma
+independiente en esta sesión con las versiones pineadas de `requirements-dev.txt` (vía `python
+scripts/ci.py`): `mypy` limpio (68 archivos), `ruff` limpio, 583 tests (sin cambio),
+`verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/`.pdf` reales siguen LATENTES
+en este contenedor de nube, como siempre). Sin cambios en bloqueos (§3) ni desviaciones (§7);
+pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño. Sin trabajo de código pendiente; la
+siguiente sesión de Programador vuelve a reconfirmar salvo que el PM abra una R-XX nueva, el auditor
+escale un hallazgo a severidad alta, o el dueño responda la pregunta #11.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-18, ciclo de Programador: tercera reconfirmación tras R-18 y la auditoría en profundidad,
+  sin novedad de código. Cuatro redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`:
+  `#24` (baja, de proceso).
 - 2026-09-18, ciclo de Programador: segunda reconfirmación tras R-18 y la auditoría en profundidad,
   sin novedad de código. Cuatro redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`:
   `#24` (baja, de proceso).
