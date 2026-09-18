@@ -10,26 +10,29 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-17 — **Ciclo de Product Manager: archiva la Oleada v7 (R-18) a
-`ROADMAP_HISTORICO.md`** — estaba `COMPLETADA` en este §1 desde el ciclo de Programador del mismo
-día (583 tests, cuatro redes en verde, reconfirmada sin novedad en nueve pasadas posteriores) y sin
-ningún hito de negocio propio pendiente. De paso corrige la prosa de "Cola de producto" de
-`ROADMAP_PRODUCTO.md`, que nueve reconfirmaciones sucesivas del Programador venían señalando como
-desactualizada sin poder corregirla (mismo patrón que registra `auditoriacontinua.md` #24). Releído
-el registro de hallazgos íntegro: sigue con un único `ABIERTO` (`#24`, baja, de proceso, ya enrutado
-a la pregunta #11 de este §6, todavía sin respuesta del dueño) — ninguna acción de este ciclo
-pendiente sobre él. `roadmap/FEEDBACK.md` releído: sigue sin ninguna entrada `nuevo`. Revisada de
-nuevo la arquitectura del encaje con el rodaje real y el montaje (`scripts/salidas.py` tras su
-propio cambio, `scripts/calibracion.py`, `scripts/tomas.py`, `references/contrato-montaje.md`) en
-busca de una grieta del mismo tipo que motivó R-12 a R-18: ninguna encontrada. **No se abre ninguna
-R-XX nueva este ciclo** — razonado en `DECISIONES_TECNICAS.md`: sin hallazgo de auditoría, feedback
-real o grieta de arquitectura verificada, abrir una sería especulativa, y el bloqueo #7 de este §3
-(grabar un curso completo) sigue siendo la única fuente capaz de motivar la siguiente mejora
-genuina. Cola de `ROADMAP_PRODUCTO.md` queda vacía. Sin cambios en bloqueos (§3) ni desviaciones
-(§7); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño.
+**Última actualización:** 2026-09-18 — **Ciclo de Programador: primera reconfirmación tras el
+archivado de R-18 (PM) y la auditoría en profundidad del mismo día, sin novedad de código.** Sin
+ninguna T-XX/R-XX `PENDIENTE` en este §1 (cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM
+del 2026-09-17). Releído el registro de hallazgos de `auditoriacontinua.md` tras la auditoría en
+profundidad del mismo día (revisión completa de R-18 contra su ficha archivada, cero hallazgos
+nuevos): sigue con un único `ABIERTO` (`#24`, baja, de proceso, enrutado a la pregunta #11 de este
+§6, todavía sin respuesta del dueño) — ninguna urgencia de severidad alta que atender como P-XX
+antes de la cola normal. Cuatro redes en verde, verificadas de forma independiente en esta sesión
+con las versiones pineadas de `requirements-dev.txt`: `mypy` limpio (68 archivos), `ruff` limpio,
+583 tests (sin cambio), `verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/
+`.pdf` reales siguen LATENTES en este contenedor de nube, como siempre). Sin cambios en bloqueos
+(§3) ni desviaciones (§7); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño. Sin
+trabajo de código pendiente; la siguiente sesión de Programador vuelve a reconfirmar salvo que el
+PM abra una R-XX nueva, el auditor escale un hallazgo a severidad alta, o el dueño responda la
+pregunta #11.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-18, ciclo de Auditoría: revisión en profundidad de R-18 ya implementada (integración de
+  tomas reales en el selector T-30); cero hallazgos nuevos. Único `ABIERTO`: `#24` (baja, de
+  proceso), reconfirmado sin que el patrón que lo motivó se repita una tercera vez.
+- 2026-09-17, ciclo de Product Manager: archiva la Oleada v7 (R-18) a `ROADMAP_HISTORICO.md` y
+  corrige la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`. Cola de producto queda vacía.
 - 2026-09-17, ciclo de Programador: novena reconfirmación tras R-18, sin novedad de código. Cuatro
   redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso).
 - 2026-09-17, ciclo de Programador: octava reconfirmación tras R-18, sin novedad de código. Cuatro
