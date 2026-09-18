@@ -33,7 +33,7 @@
 | #17 | 2026-09-04 | Cobertura / salida derivada | baja | **RESUELTO** | `capitulos_youtube.calcular_capitulos` descartaba en silencio los títulos de capítulo sobrantes cuando había más filas en la sección «Capítulos» que escenas en el guion. **Cerrado por R-11** (2026-09-04), verificado de nuevo en esta pasada: `ResultadoCapitulos.titulos_sobrantes` (`scripts/capitulos_youtube.py`) expone los títulos que no llegaron a emparejarse por exceso, con el propio docstring citando este hallazgo por número. Fila corregida de ABIERTO a RESUELTO en esta pasada, igual que `#15`/`#16`. | R-11 |
 | #18 | 2026-09-04 | Calidad / cobertura de tests | baja | **RESUELTO** | No existía test de integración cruzada entre `guion-alineado.srt` (R-05) y `capitulos-youtube.txt` (R-07) que confirmara marcas de tiempo mutuamente coherentes. **Cerrado por R-11** (2026-09-04), verificado de nuevo en esta pasada: `tests/test_integracion_montaje.py::test_srt_alineado_y_capitulos_youtube_son_coherentes_entre_si` reproduce exactamente ese cruce con un guion sintético de capítulos + tomas. Fila corregida de ABIERTO a RESUELTO en esta pasada. | R-11 |
 | #19 | 2026-09-04 | Invariantes / revalidación (residual de #14) | baja | **RESUELTO** | El endurecimiento de P-04 (`_incidencias_anclas_desajustadas`) compara, por escena, solo el **conjunto/cantidad** de índices de ancla esperados contra los reales — no su contenido ni orden. Diez pasadas sucesivas de reconfirmación (2026-09-04 a 2026-09-14) sin escenario reproducido; el PM enrutó el hallazgo a **R-17** (fase F-I, commit `9c90b8e`, 2026-09-14) con instrucción de investigar primero antes de tocar `revalidacion.py`. **Cerrado por R-17** (`b9b6bcb`, 2026-09-15), verificado en esta pasada leyendo el diff completo y el test nuevo: la asimetría teórica **sí es real** (se construyó un caso concreto: dos disposiciones de `particiones_pospuestas` del mismo tamaño con miembro distinto — `{1}` en vez de `{0}` — coinciden en cardinalidad sin disparar el aviso), pero solo es alcanzable corrompiendo `estado.validacion["particiones_pospuestas"]` a mano entre pasadas — misma precondición ya conocida de P-04 — porque bajo operación normal esa disposición siempre coincide con la que la pasada anterior persistió (identidad inyectiva por construcción). Verificado además, no solo asumido, que incluso en el escenario corrompido el invariante (a) (nada se pierde ni se duplica) sigue intacto: interpretación y reconstrucción usan la misma disposición de forma autoconsistente y el documento se reconstruye completo; el único efecto observable es que la incidencia de conflicto P-04 puede citar el número de bloque equivocado dentro de la escena correcta (defecto cosmético del mensaje, no de contenido). No se endurece la comparación por decisión razonada (no hay señal independiente para detectar la corrupción sin desconfiar del dato que P-04 ya decidió no validar más allá del tipo). Test de regresión `test_disposicion_pospuesta_corrompida_con_mismo_tamano_no_pierde_ni_duplica_contenido` (`tests/test_revalidacion.py`) reproduce el caso construido y confirma ambas partes de la conclusión. 574→575 tests. | `scripts/revalidacion.py` · límite residual de P-04 · cerrado por **R-17** (F-I), commit `b9b6bcb`, 2026-09-15 |
-| #24 | 2026-09-16 | Proceso / coherencia roadmap-código | baja | ABIERTO | Patrón recurrente de latencia entre "tarea completada en código" y "prosa de `ROADMAP_PRODUCTO.md` actualizada para reflejarlo": ocurrió antes de la corrección del ciclo de PM del 2026-09-14 (ocho reconfirmaciones sucesivas del Programador señalando la prosa desactualizada de "Cola de producto" sin que nadie la corrigiera) y ha vuelto a ocurrir de forma prácticamente idéntica con R-17 — completada en código el 2026-09-15 a las 06:18 (`b9b6bcb`), pero `ROADMAP_PRODUCTO.md` siguió listándola como pendiente durante **nueve reconfirmaciones sucesivas del Programador** (07:10 a 15:08, mismo día) hasta que un ciclo de PM la corrigió a las 19:12 (`892e80f`). Es la segunda vez que se repite el mismo patrón pese a que la auditoría del 2026-09-15 dejó constancia expresa de "vigilar si el patrón se repite" — ya no es un hecho aislado. **No hay ningún riesgo real de trazabilidad**: `SEGUIMIENTO.md` §1 (la fuente autoritativa de estado, según su propio encabezado) reflejó `R-17 COMPLETADA` con la fecha correcta desde el primer ciclo de PM que la tocó, y ninguna decisión se tomó apoyándose en la prosa desactualizada de `ROADMAP_PRODUCTO.md` — es un documento narrativo secundario, no la fuente de verdad. El coste real es atención de sesión futura (nueve reconfirmaciones del Programador dedicando parte de su informe a señalar, sin corregir, algo que no es su documento). Se registra como hallazgo trazable, no como nota de vigilancia suelta, precisamente porque la vigilancia sin tarea ya falló una vez (es el mismo defecto de proceso que motivó abrir R-17 a partir de `#19`: un hallazgo señalado repetidamente sin enrutarse a acción). Sugerencia para el PM, no prescriptiva: que el propio ciclo de reconfirmación del Programador esté autorizado a corregir por sí solo la prosa de "Cola de producto" cuando se limite a reflejar un estado que `SEGUIMIENTO.md` §1 ya registra como `COMPLETADA` (sin decisión de producto nueva que tomar), en vez de esperar a que un ciclo de PM completo la alcance. **Reconfirmado en la pasada 2026-09-17: sigue ABIERTO, correctamente.** El PM no se lo concedió por su cuenta (leído su razonamiento del 2026-09-16 en `DECISIONES_TECNICAS.md`: cambiar quién escribe en qué documento es protocolo de §0.4, que solo cambia el dueño) y lo enruta como pregunta nueva #11 de `SEGUIMIENTO.md` §6, todavía `(pendiente)` de respuesta del dueño. Es la gestión correcta del hallazgo — no un hallazgo de código que este auditor deba resolver — así que se mantiene `ABIERTO` hasta que el dueño responda la #11. | `roadmap/ROADMAP_PRODUCTO.md` · patrón ya señalado como "a vigilar" en la auditoría 2026-09-15, confirmado recurrente el 2026-09-16, enrutado a `SEGUIMIENTO.md` §6 #11 el mismo día |
+| #24 | 2026-09-16 | Proceso / coherencia roadmap-código | baja | ABIERTO | Patrón recurrente de latencia entre "tarea completada en código" y "prosa de `ROADMAP_PRODUCTO.md` actualizada para reflejarlo": ocurrió antes de la corrección del ciclo de PM del 2026-09-14 (ocho reconfirmaciones sucesivas del Programador señalando la prosa desactualizada de "Cola de producto" sin que nadie la corrigiera) y ha vuelto a ocurrir de forma prácticamente idéntica con R-17 — completada en código el 2026-09-15 a las 06:18 (`b9b6bcb`), pero `ROADMAP_PRODUCTO.md` siguió listándola como pendiente durante **nueve reconfirmaciones sucesivas del Programador** (07:10 a 15:08, mismo día) hasta que un ciclo de PM la corrigió a las 19:12 (`892e80f`). Es la segunda vez que se repite el mismo patrón pese a que la auditoría del 2026-09-15 dejó constancia expresa de "vigilar si el patrón se repite" — ya no es un hecho aislado. **No hay ningún riesgo real de trazabilidad**: `SEGUIMIENTO.md` §1 (la fuente autoritativa de estado, según su propio encabezado) reflejó `R-17 COMPLETADA` con la fecha correcta desde el primer ciclo de PM que la tocó, y ninguna decisión se tomó apoyándose en la prosa desactualizada de `ROADMAP_PRODUCTO.md` — es un documento narrativo secundario, no la fuente de verdad. El coste real es atención de sesión futura (nueve reconfirmaciones del Programador dedicando parte de su informe a señalar, sin corregir, algo que no es su documento). Se registra como hallazgo trazable, no como nota de vigilancia suelta, precisamente porque la vigilancia sin tarea ya falló una vez (es el mismo defecto de proceso que motivó abrir R-17 a partir de `#19`: un hallazgo señalado repetidamente sin enrutarse a acción). Sugerencia para el PM, no prescriptiva: que el propio ciclo de reconfirmación del Programador esté autorizado a corregir por sí solo la prosa de "Cola de producto" cuando se limite a reflejar un estado que `SEGUIMIENTO.md` §1 ya registra como `COMPLETADA` (sin decisión de producto nueva que tomar), en vez de esperar a que un ciclo de PM completo la alcance. **Reconfirmado en la pasada 2026-09-17: sigue ABIERTO, correctamente.** El PM no se lo concedió por su cuenta (leído su razonamiento del 2026-09-16 en `DECISIONES_TECNICAS.md`: cambiar quién escribe en qué documento es protocolo de §0.4, que solo cambia el dueño) y lo enruta como pregunta nueva #11 de `SEGUIMIENTO.md` §6, todavía `(pendiente)` de respuesta del dueño. Es la gestión correcta del hallazgo — no un hallazgo de código que este auditor deba resolver — así que se mantiene `ABIERTO` hasta que el dueño responda la #11. **Reconfirmado de nuevo en la pasada 2026-09-18, tras completarse R-18: la pregunta #11 sigue `(pendiente)` en `SEGUIMIENTO.md` §6 y esta vez la prosa de "Cola de producto" SÍ se actualizó en el mismo ciclo de PM que archivó R-18 (`DECISIONES_TECNICAS.md`, 2026-09-17), sin ninguna reconfirmación de más señalándolo — el patrón que motivó el hallazgo no se ha repetido una tercera vez. Sigue `ABIERTO` porque la pregunta de gobernanza en sí no tiene respuesta, no porque haya vuelto a fallar.** | `roadmap/ROADMAP_PRODUCTO.md` · patrón ya señalado como "a vigilar" en la auditoría 2026-09-15, confirmado recurrente el 2026-09-16, enrutado a `SEGUIMIENTO.md` §6 #11 el mismo día |
 | #20 | 2026-09-05 | Infraestructura / proceso (fuera del código) | media | **RESUELTO** | Diagnóstico original: seis rutinas programadas en vez de tres, en dos tríos con cron idéntico o solapado (`Auditor`/`auditor-teleprompter`, `Product manager`/`product-manager-teleprompter`, `Programador`/`programador-teleprompter`), asumido como coste doble de cómputo sobre la cuenta del dueño. **Corregido el 2026-09-10 por el programador** (sexto ciclo, `DECISIONES_TECNICAS.md`): el trío sin sufijo apunta a otro repositorio del dueño (`centro-estudios-sw`/GestorAcademia), no a este proyecto. **Cerrado en esta pasada con verificación independiente propia, no por transcribir la corrección ajena:** llamada directa a `list_triggers` en esta sesión (2026-09-11) leyendo `session_request.config.sources[].git_repository.url` de las seis rutinas — el campo completo, no solo `name`/`cron_expression` como comprobaban las ~15 reconfirmaciones previas a la corrección: `auditor-teleprompter`/`product-manager-teleprompter`/`programador-teleprompter` → `https://github.com/JanoSolerDiaz/telePrompter` (este repositorio); `Auditor`/`Product manager`/`Programador` (sin sufijo) → `https://github.com/JanoSolerDiaz/centro-estudios-sw` (otro proyecto del dueño). Confirmado: ninguna rutina de *este* proyecto está duplicada, una sola por rol, sin solape de cron. | `SEGUIMIENTO.md` §3 bloqueo #8 · verificado de forma independiente por esta auditoría (2026-09-11) leyendo `git_repository.url` de `list_triggers` |
 | #14 | 2026-09-03 | Invariantes / revalidación | **alta** | **RESUELTO** | **Reproducido de forma independiente en esta auditoría** (no solo verificado a mano, como constaba en `DECISIONES_TECNICAS.md` al cerrar P-02): el límite que P-02 dejó explícitamente sin cerrar es más grave de lo que su propia nota describe. Escenario: en una revalidación coinciden una edición manual y la aceptación de una partición sobre el mismo bloque de origen (conflicto correctamente pospuesto por P-02/#9); en la revalidación INMEDIATAMENTE POSTERIOR, sin que el dueño toque nada más, el emparejamiento ancla→identidad no solo atribuye mal el contenido: **duplica el bloque siguiente de la misma escena.** Con un guion de prueba de dos bloques en la escena 1 (edición manual + partición aceptada sobre el bloque 0, bloque 1 intacto), la segunda revalidación produce 3 bloques en la escena donde debería haber 2, con el texto del bloque 1 repetido dos veces (una de ellas bajo la identidad equivocada, la mitad `'b'` de la partición del bloque 0) y la partición aceptada por el dueño sin materializarse nunca en dos mitades reales. Es contenido duplicado y mal atribuido en `guion-escenas.md`, generado en silencio, sin incidencia que lo señale ni test que lo cubra — exactamente el tipo de fallo que el invariante (c) existe para prevenir. Reproducción paso a paso en la narrativa de esta pasada, más abajo. **Cerrado por P-03** (2026-09-03): `revalidacion.py` ahora persiste entre pasadas qué particiones quedaron pospuestas (`estado.validacion["particiones_pospuestas"]`), así que la pasada siguiente interpreta las anclas del documento con el MISMO esquema de identidad con el que se escribió, en vez de asumir que toda partición aceptada ya está materializada. Efecto: mientras la edición manual siga en el documento, la partición se queda pospuesta sin duplicar ni mal atribuir nada; solo se materializa cuando el dueño deja de tocar el bloque. Dos tests de regresión nuevos en `tests/test_revalidacion.py` reproducen exactamente el escenario de este hallazgo (falla sin el fix) y confirman que la materialización posterior sigue funcionando cuando el conflicto se resuelve. | `revalidacion.py` · invariante (c) · límite conocido de P-02 |
 | #21 | 2026-09-09 | Infraestructura / trazabilidad (git) | **alta** | **RESUELTO** | Diagnóstico original (2026-09-09): el historial de `origin/develop` parecía reescrito, colapsando T-00→P-05 en un commit raíz distinto en cada pasada, con commits "citados como vigentes" que `git merge-base --is-ancestor` daba por no-antepasados. **Era un falso positivo del clon superficial (`git clone --depth`) de cada contenedor efímero, no una reescritura real.** El programador ya lo investigó y corrigió el mismo día (`DECISIONES_TECNICAS.md`, primer ciclo 2026-09-09) con `git fetch --unshallow`; **esta auditoría lo reproduce de forma independiente en esta pasada (2026-09-10), no se limita a leer la corrección:** este clon también llegó superficial (`git rev-parse --is-shallow-repository` → `true`); `git fetch --unshallow origin` (operación de solo lectura) trajo el historial completo — **114 commits**, raíz real `f78a92c` ("initial commit") → `e8b9663` (T-00) → …; `git merge-base --is-ancestor 1a40c84 develop` **y** `... 576f6d9 develop` devuelven ambos **"IS ancestor"** tras el `unshallow`, confirmando que ninguno de los dos commits que auditorías previas creyeron "perdidos" lo estaba de verdad. Se corrige aquí a `RESUELTO` (no solo en `DECISIONES_TECNICAS.md`, que el auditor no puede dar por bueno sin repetir la comprobación): el contenido y la trazabilidad commit-a-commit del proyecto están intactos; la causa raíz observable (clon superficial con frontera variable) no es una acción de código y no requiere P-XX. | `origen: corrección del programador 2026-09-09` · reproducido de forma independiente por esta auditoría (2026-09-10) con `git fetch --unshallow` + `git merge-base --is-ancestor` |
@@ -47,6 +47,118 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-09-18 — revisión en profundidad de R-18 ya implementada (integración de tomas reales en el selector T-30); cero hallazgos nuevos; `#24` reconfirmado ABIERTO sin haber vuelto a repetirse el patrón que lo motivó
+
+**Nota de arranque.** Clon superficial al arrancar (`git rev-parse --is-shallow-repository` →
+`true`, síntoma benigno ya cerrado por `#21`, no se reabre). `git checkout develop && git pull
+origin develop` resolvió en **fast-forward limpio** (`1e9855f..a59d75c`), sin ningún `reset --hard`
+ni divergencia real. `git fetch --unshallow origin` trajo el historial completo para diferenciar
+con garantías desde el commit de la auditoría anterior (`056c797`, 2026-09-17).
+
+**Alcance desde la última auditoría (`056c797`).** `git diff --stat 056c797..HEAD` toca
+`scripts/salidas.py` (102 líneas), `scripts/verificar_salidas.py` (36 líneas) y
+`tests/test_salidas.py` (259 líneas) como único cambio de código real, más `DEVELOPERS.md` y
+`SKILL.md` (documentación) y cuatro documentos de `roadmap/`; `scripts/`, `tests/`, `assets/` y
+`references/` sin tocar fuera de esos tres archivos (`git diff --stat 056c797..HEAD -- assets/
+references/` vacío). Los once commits del rango son la implementación de **R-18** (`f14bf07`),
+nueve reconfirmaciones sucesivas del Programador sin cambio de código, y un ciclo de PM
+(`a59d75c`) que archiva la Oleada v7 y corrige la prosa de "Cola de producto". `git status` con
+árbol de trabajo limpio desde el inicio.
+
+**Verificación objetiva de las cuatro redes, independiente, con las versiones PINEADAS
+(`requirements-dev.txt`).** `pip install -r requirements-dev.txt` limpio. `python3 -m mypy
+scripts/ tests/` → limpio, **68 archivos**. `python3 -m ruff check .` → "All checks passed!".
+**Nota reproducida de nuevo, no solo citada: el binario "pelado" (`which ruff` → `/root/.local/
+bin/ruff 0.15.8`, por delante en el `PATH`) marca `UP042` en `scripts/salidas.py:62`
+(`class TipoSalida(str, Enum)`) que `python3 -m ruff` (pineado, `0.14.0`) NO marca — exactamente el
+mismo síntoma que documenta el hallazgo `#22` (cerrado por R-15), reconfirmado aquí de primera mano
+en el código ya modificado por R-18, no una regresión.** `python3 -m pytest` → **583 passed**,
+coincide con el recuento que cita el propio commit de R-18 (575→583). `python3
+scripts/ci.py` (la única invocación real del protocolo) → **CI en VERDE**, las cuatro
+verificaciones incluidas. `python3 scripts/verificar_salidas.py --fixture` → las **catorce etapas
+en OK**, incluidas las dos nuevas de R-18 ("Generación/Validez del .srt alineado" y "Generación/
+Validez de capítulos de YouTube"); `.pptx`/`.pdf` reales siguen LATENTES en este contenedor (sin la
+skill de marca, sin Chrome/Edge) — degradación esperada, no un fallo.
+
+**Verificación independiente de los invariantes de datos (§0.2), no solo releídos de la
+documentación.** `grep -rln "copia_seguridad\s*=" scripts/*.py` → exactamente los mismos
+**cuatro** sitios que `#23` (`documento_revision.py`, `entrada.py`, `feedback.py`,
+`instalar_skill.py`); las dos salidas nuevas de R-18 (`guion-alineado.srt`, `capitulos-
+youtube.txt`) son artefactos generados de nuevo en cada pasada, no archivos del dueño que se
+relean como entrada, así que el invariante (d) no les aplica — mismo razonamiento ya asentado para
+`convencion-guiones.md`. `PATRONES_RECURSO_EXTERNO` (`scripts/verificar_salidas.py`), leído por
+código (no contado a mano), sigue en **13** patrones intactos. `grep -rEn "^import |^from "
+scripts/*.py` sobre los 33 módulos de `scripts/`: ninguna importación de un paquete de terceros —
+solo biblioteca estándar (`re`, `json`, `pathlib`, `dataclasses`, `enum`, `typing`, `datetime`,
+`hashlib`, `shutil`, `subprocess`, `tomllib`, `base64`, `html`, `struct`, `unicodedata`,
+`concurrent.futures`, `logging`…) — invariante de runtime sin dependencias intacto. `guardar_
+capitulos_youtube`/`guardar_srt_alineado` (los dos escritores nuevos que ejercita R-18 por primera
+vez desde el selector real) declaran `encoding="utf-8"` y `newline="\n"` explícitos, igual que el
+resto de escritores del proyecto. Tests de reconstrucción del invariante (a) localizados en
+`test_clasificador.py`, `test_normalizacion.py`, `test_revalidacion.py` y `test_troceo.py`, sin
+cambios desde la pasada anterior.
+
+**Revisión en profundidad de R-18 (`scripts/salidas.py`, `scripts/verificar_salidas.py`,
+`tests/test_salidas.py`) — la spec que la auditoría del 2026-09-17 dejó pendiente de revisar en
+cuanto se implementara.** Leído el diff completo de `f14bf07`, no solo el mensaje del commit,
+contra los seis requisitos de la ficha archivada en `ROADMAP_HISTORICO.md`:
+- **Requisito de no regresión (comportamiento idéntico sin tomas):** `tests/
+  test_salidas.py::test_regresion_guiones_reales_sin_tomas_identica_a_antes_de_r18` compara, sobre
+  los tres guiones reales de `fixtures/reales/`, la salida completa de `generar_salidas_
+  seleccionadas` con y sin el parámetro `tomas_por_escena` (ausente por defecto,
+  `tomas_por_escena or {}` en la línea 348) — confirmado leyendo el test, no asumido por el nombre.
+- **`.srt` alineado condicionado a evidencia real, no a la mera presencia del parámetro:**
+  `_generar_srt` (línea ~229) llama SIEMPRE a `generar_srt_alineado` cuando `tomas_por_escena` no
+  está vacío, pero solo añade `guion-alineado.srt` a `generadas` si `alineacion.escenas_alineadas`
+  es no vacío — la decisión razonada en `DECISIONES_TECNICAS.md` (2026-09-17, primera fila de R-18)
+  de preguntarle al resultado de la reescala en vez de inspeccionar el diccionario crudo a mano se
+  verifica cierta en el código, no solo en la prosa. `test_srt_con_tomas_sin_ninguna_buena_no_
+  genera_el_alineado` reproduce exactamente el caso límite (tomas registradas, ninguna `buena`) y
+  confirma que no aparece un segundo archivo redundante.
+- **`CAPITULOS_YOUTUBE` nunca fallo silencioso, nunca `SalidaLatente` indebida:** `_generar_
+  capitulos_youtube` devuelve `SalidaOmitida` con el motivo exacto (`calculo.motivo_sin_generar`)
+  cuando `generar_capitulos_youtube` devuelve `contenido=None` — nunca propaga una excepción ni la
+  marca latente. `verificar_salidas.py::verificar_generacion` distingue esa omisión esperada de un
+  fallo real mirando el prefijo literal `"fallo al generar:"` (el único que antepone el `except`
+  genérico de `generar_salidas_seleccionadas`), tal como razona la segunda decisión de R-18 en
+  `DECISIONES_TECNICAS.md` — verificado leyendo `verificar_generacion` línea a línea, no solo la
+  cita del commit. `test_capitulos_youtube_sin_seccion_queda_omitida_nunca_latente_ni_fallo` cubre
+  exactamente esta distinción.
+- **Generación independiente (requisito 3 heredado de T-30) conservada con la quinta opción:** el
+  `try`/`except` por tipo de salida dentro del bucle de `generar_salidas_seleccionadas` envuelve
+  también la rama nueva de `CAPITULOS_YOUTUBE`, sin ningún camino que pueda tumbar las demás
+  salidas seleccionadas.
+- **Sin campo nuevo de `Configuracion` ni migración de `estado.json`:** confirmado con `git diff
+  056c797..HEAD -- scripts/config.py scripts/migraciones/` vacío — coherente con que `estado.tomas`
+  ya existía desde R-02 y el cambio es aditivo puro sobre datos ya persistidos.
+- **Brief/contrato de `tarjetas.json` sin romper compatibilidad:** `_generar_pptx` pasa `tomas_por_
+  escena` a `exportar_pptx` (ya lo aceptaba desde R-13/R-16); `test_pptx_con_tomas_incluye_
+  duracion_real` confirma que las claves aditivas siguen apareciendo igual desde el selector real,
+  no solo desde la llamada directa que ya probaba R-13.
+
+Los seis requisitos de la ficha están satisfechos y verificados en código, no solo en la narrativa
+del commit. Sin hallazgo.
+
+**Coherencia entre lo decidido y lo ejecutado.** Las tres decisiones de R-18 registradas en
+`DECISIONES_TECNICAS.md` el 2026-09-17 (la regla de "preguntarle al resultado, no al diccionario
+crudo" para el `.srt` alineado; el prefijo `"fallo al generar:"` para distinguir omisión esperada
+de fallo real; y el cierre de ciclo del PM sin abrir ninguna R-XX especulativa) se contrastaron
+contra el código real en el punto anterior y coinciden palabra por palabra con lo implementado —
+ninguna quedó como intención sin ejecutar. `SEGUIMIENTO.md` §7 (desviaciones) sin filas nuevas desde
+la pasada anterior. §3 (bloqueos) sin cambios: el #7 (grabar un curso completo) sigue siendo, como
+ya señalaba la propia ficha de R-18, la fricción real de rodaje que más valor aportaría, y ninguno
+de los tres bloqueos abiertos frena el desarrollo. `roadmap/FEEDBACK.md` reverificado
+(`grep -n nuevo`): sigue sin ninguna entrada real, solo la fila de plantilla. El registro de
+hallazgos queda con un único `ABIERTO` (`#24`, baja, de proceso) — reconfirmado arriba con una nota
+nueva: esta vez la prosa de "Cola de producto" se corrigió en el mismo ciclo de PM que archivó
+R-18, sin que se acumulara ninguna reconfirmación de más señalándola, así que el patrón que motivó
+el hallazgo no se ha repetido una tercera vez — sigue `ABIERTO` únicamente porque la pregunta de
+gobernanza #11 de `SEGUIMIENTO.md` §6 sigue sin respuesta del dueño, no porque haya vuelto a
+fallar. Recomendación para la próxima auditoría: sin ninguna R-XX pendiente ni hallazgo de código
+abierto, lo único que puede generar trabajo nuevo de producto es el bloqueo #7 (rodaje real) o una
+respuesta del dueño a la pregunta #11 — hasta entonces, cada pasada sin cambios de código es una
+reconfirmación más de un proyecto en estado saneado, no una omisión de la auditoría.
 
 ### Auditoría 2026-09-17 — sin cambios de código desde la pasada anterior; revisión de la apertura de R-18 (spec, todavía sin implementar) y reconfirmación de `#24` (correctamente enrutado a `SEGUIMIENTO.md` §6 #11, pendiente del dueño)
 
