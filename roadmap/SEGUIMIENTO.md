@@ -10,12 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-18 — **Ciclo de Programador: octava reconfirmación tras el
-archivado de R-18 (PM) y la auditoría en profundidad del mismo día, sin novedad de código.** Sin
-ninguna T-XX/R-XX `PENDIENTE` en este §1 (cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM
-del 2026-09-17, reconfirmada vacía también en la auditoría del mismo día y en la "Cola de producto"
-del propio `ROADMAP_PRODUCTO.md`, releída de nuevo en esta sesión). Releído el registro de hallazgos
-de `auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de proceso, enrutado a la
+**Última actualización:** 2026-09-18 — **Ciclo de Programador: novena reconfirmación tras el
+archivado de R-18 (PM) y la auditoría en profundidad, sin novedad de código.** Sin ninguna T-XX/R-XX
+`PENDIENTE` en este §1 (cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM del 2026-09-17,
+reconfirmada vacía también en la auditoría del mismo día y en la "Cola de producto" del propio
+`ROADMAP_PRODUCTO.md`, releída de nuevo en esta sesión). Releído el registro de hallazgos de
+`auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de proceso, enrutado a la
 pregunta #11 de este §6, todavía sin respuesta del dueño) — ninguna urgencia de severidad alta que
 atender como P-XX antes de la cola normal. Cuatro redes en verde, verificadas de forma independiente
 en esta sesión con las versiones pineadas de `requirements-dev.txt` (vía `python scripts/ci.py`):
@@ -28,6 +28,9 @@ el dueño responda la pregunta #11.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-18, ciclo de Programador: octava reconfirmación tras R-18 y la auditoría en profundidad,
+  sin novedad de código. Cuatro redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`:
+  `#24` (baja, de proceso).
 - 2026-09-18, ciclo de Programador: séptima reconfirmación tras R-18 y la auditoría en profundidad,
   sin novedad de código. Cuatro redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`:
   `#24` (baja, de proceso).
