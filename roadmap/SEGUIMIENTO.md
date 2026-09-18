@@ -10,24 +10,32 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-18 — **Ciclo de Programador: décima reconfirmación tras el
-archivado de R-18 (PM) y la auditoría en profundidad, sin novedad de código.** Sin ninguna T-XX/R-XX
-`PENDIENTE` en este §1 (cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM del 2026-09-17,
-reconfirmada vacía también en la auditoría del mismo día y en la "Cola de producto" del propio
-`ROADMAP_PRODUCTO.md`, releída de nuevo en esta sesión). Releído el registro de hallazgos de
-`auditoriacontinua.md`: sigue con un único `ABIERTO` (`#24`, baja, de proceso, enrutado a la
-pregunta #11 de este §6, todavía sin respuesta del dueño) — ninguna urgencia de severidad alta que
-atender como P-XX antes de la cola normal. Cuatro redes en verde, verificadas de forma independiente
-en esta sesión con las versiones pineadas de `requirements-dev.txt` (vía `python scripts/ci.py`):
-`mypy` limpio (68 archivos), `ruff` limpio, 583 tests (sin cambio), `verificar_salidas.py --fixture`
-con las catorce etapas en OK (`.pptx`/`.pdf` reales siguen LATENTES en este contenedor de nube, como
-siempre). Sin cambios en bloqueos (§3) ni desviaciones (§7); pregunta #11 de §6 sigue *(pendiente)*
-de respuesta del dueño. Sin trabajo de código pendiente; la siguiente sesión de Programador vuelve a
-reconfirmar salvo que el PM abra una R-XX nueva, el auditor escale un hallazgo a severidad alta, o
-el dueño responda la pregunta #11.
+**Última actualización:** 2026-09-18 — **Ciclo de Product Manager: reconfirmación de cola vacía,
+sin R-XX nueva.** Releído el registro de hallazgos de `auditoriacontinua.md` completo: un único
+`ABIERTO` (`#24`, baja, de proceso) y ya enrutado correctamente a la pregunta #11 de este §6 —no es
+un hallazgo de producto/arquitectura que convertir en R-XX, es una pregunta de gobernanza que solo
+el dueño puede responder—, así que no hay nada que incorporar de la auditoría en este ciclo.
+Releído `roadmap/FEEDBACK.md`: sigue sin ninguna entrada `nuevo` que volcar al roadmap. Revisada de
+nuevo la arquitectura del encaje con el rodaje real (`scripts/salidas.py`, `scripts/calibracion.py`,
+`scripts/tomas.py`) buscando una grieta del mismo tipo que motivó R-12 a R-18: sin encontrar
+ninguna — `salidas.py` ya reparte las cinco salidas de forma independiente con las tomas reales
+integradas (R-18), `calibracion.py` sigue fuera del selector automático por diseño explícito de su
+propia ficha (propuesta de ppm que exige aceptación expresa del dueño, no un artefacto de montaje),
+y `tomas.py` ya rechaza con error el único dato corrupto conocido (más de una toma `buena` por
+escena, R-11). **No se abre ninguna R-XX en este ciclo**, mismo criterio ya razonado por los ciclos
+de PM del 2026-09-11, el 2026-09-15 y el 2026-09-17: abrir una R-XX especulativa solo para no dejar
+la cola vacía iría contra el principio de producto de no diseñar sobre hipótesis sin evidencia real
+de rodaje. El bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse y sigue siendo la
+única fuente capaz de motivar la siguiente mejora genuina. `ROADMAP_PRODUCTO.md` actualizado con la
+misma reconfirmación. Sin cambios en §1 (nada que archivar: la oleada v7/R-18 ya se movió a
+`ROADMAP_HISTORICO.md` el 2026-09-17), §3 (bloqueos) ni §7 (desviaciones); pregunta #11 de §6 sigue
+*(pendiente)* de respuesta del dueño.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-18, ciclo de Programador: décima reconfirmación tras el archivado de R-18 (PM) y la
+  auditoría en profundidad, sin novedad de código. Cuatro redes en verde (583 tests). Único
+  `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso).
 - 2026-09-18, ciclo de Programador: novena reconfirmación tras R-18 y la auditoría en profundidad,
   sin novedad de código. Cuatro redes en verde (583 tests). Único `ABIERTO` de `auditoriacontinua.md`:
   `#24` (baja, de proceso).

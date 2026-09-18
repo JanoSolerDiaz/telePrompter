@@ -8,30 +8,27 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-17 (ciclo de PM). **R-18 (oleada v7) archivada a
-`ROADMAP_HISTORICO.md`:** está `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el ciclo de Programador
-del mismo día (583 tests, cuatro redes en verde, reconfirmada sin novedad en nueve pasadas
-posteriores) y sin ningún hito de negocio propio pendiente. Este movimiento cierra, de paso, el
-propio patrón que motivó el hallazgo `#24` del auditor (prosa de "Cola de producto" desactualizada
-tras el cierre en código) — esta vez sin dejar que se acumulen más reconfirmaciones señalándolo:
-`#24` sigue `ABIERTO` en `auditoriacontinua.md` solo como pregunta de gobernanza (§6 #11 de
-`SEGUIMIENTO.md`, sobre quién puede corregir esta prosa y cuándo, todavía sin respuesta del dueño),
-no porque quedara una instancia más del propio problema sin corregir.
+**Última actualización:** 2026-09-18 (ciclo de PM). **Reconfirmación de cola vacía, sin R-XX
+nueva.** Desde el ciclo anterior (2026-09-17, que archivó R-18/oleada v7 a `ROADMAP_HISTORICO.md`)
+no hay ningún commit de código nuevo — solo diez reconfirmaciones sucesivas del Programador y una
+auditoría en profundidad, ambas sin novedad (ver `SEGUIMIENTO.md`). Releído el registro de
+hallazgos íntegro de `auditoriacontinua.md`: un único `ABIERTO` (`#24`, baja, de proceso), ya
+enrutado correctamente a la pregunta #11 de §6 de `SEGUIMIENTO.md` — es una pregunta de gobernanza
+sobre quién puede corregir la prosa de este documento, no un hallazgo de producto o arquitectura
+que este roadmap deba convertir en R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
 
-Releído el registro de hallazgos íntegro: un único `ABIERTO` (`#24`, baja, de proceso, ya enrutado
-correctamente a la pregunta #11, sin ninguna acción de este documento pendiente). `roadmap/
-FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Revisada de nuevo la arquitectura en busca de una
-grieta del mismo tipo que ya motivó R-12/R-13/R-14/R-16/R-18 — esta vez sobre `scripts/salidas.py`
-tras su propio cambio, `scripts/calibracion.py` y `scripts/tomas.py`, los módulos que tocan más de
-cerca el encaje con el rodaje real y el montaje — sin encontrar ninguna: el contrato de montaje ya
-resuelve `inicio_segundos`/`fin_segundos` (R-16) y las salidas que dependen de tomas reales ya
-llegan al selector real (R-18); `calibracion.py` (R-04) sigue deliberadamente fuera de ese selector,
-por diseño explícito de su propia ficha (una propuesta de ppm que exige aceptación expresa del
-dueño en una pasada aparte, no un artefacto de montaje que deba generarse solo). **No se abre
-ninguna R-XX nueva en este ciclo** — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
-completo) sigue sin resolverse y sigue siendo la única fuente de fricción real de rodaje capaz de
-motivar la siguiente mejora genuina, mismo criterio ya razonado por los ciclos de PM del 2026-09-11
-y el 2026-09-15 en `DECISIONES_TECNICAS.md`.
+Revisada de nuevo la arquitectura del encaje con el rodaje real y el montaje —`scripts/salidas.py`
+(ya con R-18 integrada), `scripts/calibracion.py` y `scripts/tomas.py`— en busca de una grieta del
+mismo tipo que motivó R-12 a R-18: sin encontrar ninguna. `salidas.py` reparte las cinco salidas de
+forma independiente con las tomas reales ya conectadas; `calibracion.py` (R-04) sigue
+deliberadamente fuera del selector automático, por diseño explícito de su propia ficha (una
+propuesta de ppm que exige aceptación expresa del dueño en una pasada aparte, no un artefacto de
+montaje que deba generarse solo); `tomas.py` ya rechaza con error el único dato corrupto conocido
+(más de una toma `buena` por escena, R-11). **No se abre ninguna R-XX nueva en este ciclo** — el
+bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso completo) sigue sin resolverse y sigue siendo la
+única fuente de fricción real de rodaje capaz de motivar la siguiente mejora genuina, mismo
+criterio ya razonado por los ciclos de PM del 2026-09-11, el 2026-09-15 y el 2026-09-17 en
+`DECISIONES_TECNICAS.md`.
 
 ---
 

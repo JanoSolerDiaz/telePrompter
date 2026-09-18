@@ -32,6 +32,45 @@
 
 ---
 
+### Sesión 2026-09-18 — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva
+**Tarea(s):** ninguna. Cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM del 2026-09-17
+(archivado de la Oleada v7/R-18); sin commits de código desde entonces, solo diez reconfirmaciones
+del Programador y una auditoría en profundidad, ambas sin novedad.
+**Estado resultante:** sin cambio (reconfirmación, documental)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/
+ROADMAP_PRODUCTO.md` (cabecera "Última actualización"), `roadmap/HISTORIAL_SESIONES.md` (esta
+entrada)
+**Verificaciones pre-push:** N/A — sesión sin cambios de código (solo documentación de roadmap)
+**Health check post-deploy:** N/A — sesión de nube, sin cambios de código que instalar
+**Decisiones tomadas:** ninguna nueva; se reaplica el criterio ya registrado en
+`DECISIONES_TECNICAS.md` (ciclos de PM del 2026-09-11 y 2026-09-15) de no abrir una R-XX
+especulativa solo para no dejar la cola vacía.
+**Hallazgos del auditor atendidos:** releído el registro completo de `auditoriacontinua.md`. Único
+`ABIERTO`: `#24` (baja, de proceso), ya enrutado a la pregunta #11 de `SEGUIMIENTO.md` §6 — pregunta
+de gobernanza, no un hallazgo de producto/arquitectura que corresponda convertir en R-XX aquí.
+Ninguna acción de este ciclo sobre `auditoriacontinua.md` (documento de escritura exclusiva del
+Auditor).
+**Feedback revisado:** `roadmap/FEEDBACK.md` releído íntegro; sigue sin ninguna entrada `nuevo` que
+volcar al roadmap.
+**Revisión de arquitectura (propia, sin hallazgo de auditoría de por medio):** releídos
+`scripts/salidas.py` (T-30 + R-18 ya integrada), `scripts/calibracion.py` (R-04) y `scripts/tomas.py`
+(R-02/R-11) en busca de una grieta del mismo tipo que motivó R-12 a R-18 entre el encaje de datos
+reales de rodaje y las salidas de montaje. Sin encontrar ninguna: las cinco salidas de `salidas.py`
+ya reciben las tomas reales de forma independiente; `calibracion.py` permanece fuera del selector
+automático por diseño explícito de su propia ficha (propuesta de ppm que exige aceptación expresa
+del dueño); `tomas.py` ya rechaza con `RegistroTomasError` el único dato corrupto conocido (más de
+una toma `buena` por escena).
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin trabajo de código pendiente para el Programador. La cola de
+`ROADMAP_PRODUCTO.md` sigue vacía; la única fuente capaz de motivar la siguiente R-XX genuina es el
+bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso completo con la skill instalada) o una entrada
+real en `FEEDBACK.md`/`auditoriacontinua.md`. El siguiente ciclo de PM vuelve a reconfirmar salvo
+que aparezca una de esas tres señales, o el dueño responda la pregunta #11 de §6.
+
+---
+
 ### Sesión 2026-09-18 — Ciclo de Programador: décima reconfirmación tras el archivado de R-18 y la auditoría en profundidad, sin novedad de código
 **Tarea(s):** ninguna T-XX/R-XX `PENDIENTE` en §1 de `SEGUIMIENTO.md` (cola de `ROADMAP_PRODUCTO.md`
 vacía desde el ciclo de PM del 2026-09-17, reconfirmada vacía también en la auditoría del mismo día
