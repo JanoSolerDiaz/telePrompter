@@ -8,14 +8,17 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-18 (ciclo de PM). **Reconfirmación de cola vacía, sin R-XX
-nueva.** Desde el ciclo anterior (2026-09-17, que archivó R-18/oleada v7 a `ROADMAP_HISTORICO.md`)
-no hay ningún commit de código nuevo — solo diez reconfirmaciones sucesivas del Programador y una
-auditoría en profundidad, ambas sin novedad (ver `SEGUIMIENTO.md`). Releído el registro de
-hallazgos íntegro de `auditoriacontinua.md`: un único `ABIERTO` (`#24`, baja, de proceso), ya
-enrutado correctamente a la pregunta #11 de §6 de `SEGUIMIENTO.md` — es una pregunta de gobernanza
-sobre quién puede corregir la prosa de este documento, no un hallazgo de producto o arquitectura
-que este roadmap deba convertir en R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
+**Última actualización:** 2026-09-19 (ciclo de PM). **Reconfirmación de cola vacía, sin R-XX
+nueva (sexto ciclo de PM consecutivo sin apertura).** Desde el ciclo del 2026-09-17 (que archivó
+R-18/oleada v7 a `ROADMAP_HISTORICO.md`) no hay ningún commit de código nuevo — solo diez
+reconfirmaciones sucesivas del Programador y dos auditorías en profundidad (2026-09-18 y
+2026-09-19), todas sin novedad (ver `SEGUIMIENTO.md`). Releído el registro de hallazgos íntegro de
+`auditoriacontinua.md`: un único `ABIERTO` (`#24`, baja, de proceso), ya enrutado correctamente a
+la pregunta #11 de §6 de `SEGUIMIENTO.md` — es una pregunta de gobernanza sobre quién puede
+corregir la prosa de este documento, no un hallazgo de producto o arquitectura que este roadmap
+deba convertir en R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Barrido propio del
+código (`scripts/`, `references/`, `SKILL.md`, `DEVELOPERS.md`) en busca de `TODO`/`pendiente`/
+`futuro`/`no implementado` sin resolver: sin resultados accionables.
 
 Revisada de nuevo la arquitectura del encaje con el rodaje real y el montaje —`scripts/salidas.py`
 (ya con R-18 integrada), `scripts/calibracion.py` y `scripts/tomas.py`— en busca de una grieta del

@@ -10,29 +10,37 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-18 — **Ciclo de Product Manager: reconfirmación de cola vacía,
-sin R-XX nueva.** Releído el registro de hallazgos de `auditoriacontinua.md` completo: un único
-`ABIERTO` (`#24`, baja, de proceso) y ya enrutado correctamente a la pregunta #11 de este §6 —no es
-un hallazgo de producto/arquitectura que convertir en R-XX, es una pregunta de gobernanza que solo
-el dueño puede responder—, así que no hay nada que incorporar de la auditoría en este ciclo.
-Releído `roadmap/FEEDBACK.md`: sigue sin ninguna entrada `nuevo` que volcar al roadmap. Revisada de
-nuevo la arquitectura del encaje con el rodaje real (`scripts/salidas.py`, `scripts/calibracion.py`,
-`scripts/tomas.py`) buscando una grieta del mismo tipo que motivó R-12 a R-18: sin encontrar
-ninguna — `salidas.py` ya reparte las cinco salidas de forma independiente con las tomas reales
-integradas (R-18), `calibracion.py` sigue fuera del selector automático por diseño explícito de su
-propia ficha (propuesta de ppm que exige aceptación expresa del dueño, no un artefacto de montaje),
-y `tomas.py` ya rechaza con error el único dato corrupto conocido (más de una toma `buena` por
-escena, R-11). **No se abre ninguna R-XX en este ciclo**, mismo criterio ya razonado por los ciclos
-de PM del 2026-09-11, el 2026-09-15 y el 2026-09-17: abrir una R-XX especulativa solo para no dejar
-la cola vacía iría contra el principio de producto de no diseñar sobre hipótesis sin evidencia real
-de rodaje. El bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse y sigue siendo la
-única fuente capaz de motivar la siguiente mejora genuina. `ROADMAP_PRODUCTO.md` actualizado con la
-misma reconfirmación. Sin cambios en §1 (nada que archivar: la oleada v7/R-18 ya se movió a
+**Última actualización:** 2026-09-19 — **Ciclo de Product Manager: reconfirmación de cola vacía,
+sin R-XX nueva (sexto ciclo de PM consecutivo sin apertura).** Releído el registro de hallazgos de
+`auditoriacontinua.md` completo, incluida la auditoría en profundidad del mismo día (`a3e8acc`,
+cero cambios de código, cero hallazgos nuevos): un único `ABIERTO` (`#24`, baja, de proceso) y ya
+enrutado correctamente a la pregunta #11 de este §6 —no es un hallazgo de producto/arquitectura que
+convertir en R-XX, es una pregunta de gobernanza que solo el dueño puede responder—, así que no hay
+nada que incorporar de la auditoría en este ciclo. Releído `roadmap/FEEDBACK.md`: sigue sin ninguna
+entrada `nuevo` que volcar al roadmap (única fila, la de plantilla). Revisión propia e
+independiente del código en busca de huecos que las cinco reconfirmaciones anteriores del PM
+pudieran haber pasado por alto: barrido de `scripts/*.py`, `references/*.md`, `SKILL.md` y
+`DEVELOPERS.md` con patrones de `TODO`/`FIXME`/`pendiente`/`futuro`/`no implementado` — cero
+resultados accionables, solo prosa descriptiva («todo el guion», «trabajo futuro» ya resuelto por
+R-05, comentarios explicativos). Revisada de nuevo la arquitectura del encaje con el rodaje real
+(`scripts/salidas.py`, `scripts/calibracion.py`, `scripts/tomas.py`) buscando una grieta del mismo
+tipo que motivó R-12 a R-18: sin encontrar ninguna — `salidas.py` ya reparte las cinco salidas de
+forma independiente con las tomas reales integradas (R-18), `calibracion.py` sigue fuera del
+selector automático por diseño explícito de su propia ficha (propuesta de ppm que exige aceptación
+expresa del dueño, no un artefacto de montaje), y `tomas.py` ya rechaza con error el único dato
+corrupto conocido (más de una toma `buena` por escena, R-11). **No se abre ninguna R-XX en este
+ciclo**, mismo criterio ya razonado por los ciclos de PM del 2026-09-11, el 2026-09-15, el
+2026-09-17 y el 2026-09-18: abrir una R-XX especulativa solo para no dejar la cola vacía iría
+contra el principio de producto de no diseñar sobre hipótesis sin evidencia real de rodaje. El
+bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse y sigue siendo la única fuente
+capaz de motivar la siguiente mejora genuina. `ROADMAP_PRODUCTO.md` actualizado con la misma
+reconfirmación. Sin cambios en §1 (nada que archivar: la oleada v7/R-18 ya se movió a
 `ROADMAP_HISTORICO.md` el 2026-09-17), §3 (bloqueos) ni §7 (desviaciones); pregunta #11 de §6 sigue
 *(pendiente)* de respuesta del dueño.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-18, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva.
 - 2026-09-18, ciclo de Programador: décima reconfirmación tras el archivado de R-18 (PM) y la
   auditoría en profundidad, sin novedad de código. Cuatro redes en verde (583 tests). Único
   `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso).
