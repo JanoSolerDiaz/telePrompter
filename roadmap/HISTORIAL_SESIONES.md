@@ -32,6 +32,41 @@
 
 ---
 
+### Sesión 2026-09-20 — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva
+**Tarea(s):** ninguna. Cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM del 2026-09-17
+(archivado de la Oleada v7/R-18); séptimo ciclo de PM consecutivo sin apertura.
+**Estado resultante:** sin cambio (reconfirmación, documental)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/
+ROADMAP_PRODUCTO.md` (cabecera "Última actualización"), `roadmap/HISTORIAL_SESIONES.md` (esta
+entrada)
+**Verificaciones pre-push:** N/A — sesión sin cambios de código (solo documentación de roadmap)
+**Health check post-deploy:** N/A — sesión de nube, sin cambios de código que instalar
+**Decisiones tomadas:** ninguna nueva (no se añade fila a `DECISIONES_TECNICAS.md`: se reaplica sin
+matices el criterio ya registrado ahí por los ciclos de PM del 2026-09-11, el 2026-09-15 y el
+2026-09-17 de no abrir una R-XX especulativa solo para no dejar la cola vacía). Como verificación
+propia de este ciclo, se hizo un inventario de los 28 módulos de `scripts/` contra la tabla de
+`SKILL.md` (todos documentados) y un reexamen de la regla de aislamiento "por proyecto de guion"
+(§0.2) frente al objetivo de grabar un curso con varios guiones: es una decisión arquitectónica
+explícita, no un hueco — ningún guion real ni entrada de `FEEDBACK.md` señala fricción por invocar
+la skill una vez por vídeo, así que un asistente de proceso por lotes seguiría siendo hipótesis sin
+evidencia.
+**Hallazgos del auditor atendidos:** releído el registro completo de `auditoriacontinua.md`,
+incluida la reconfirmación de hoy de `#24` (sigue `ABIERTO`, baja, de proceso). Ya enrutado a la
+pregunta #11 de `SEGUIMIENTO.md` §6 — pregunta de gobernanza, no un hallazgo de
+producto/arquitectura que corresponda convertir en R-XX aquí. Ninguna acción de este ciclo sobre
+`auditoriacontinua.md` (documento de escritura exclusiva del Auditor).
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** el mismo de los seis ciclos anteriores — el bloqueo #7 de `SEGUIMIENTO.md` §3
+(grabar un curso completo con la skill instalada) sigue siendo la única fuente capaz de motivar la
+siguiente R-XX genuina; hasta que el dueño grabe o llegue una entrada real a `FEEDBACK.md`, el
+siguiente ciclo de PM debe reconfirmar en vez de inventar. La pregunta #11 de §6 sigue
+*(pendiente)* de respuesta del dueño.
+
+---
+
 ### Sesión 2026-09-19 — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva
 **Tarea(s):** ninguna. Cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM del 2026-09-17
 (archivado de la Oleada v7/R-18); sin commits de código desde entonces, solo diez reconfirmaciones
