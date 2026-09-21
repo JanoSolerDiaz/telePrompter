@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-21 — **Ciclo de Programador: tercera reconfirmación del día, tras
-la segunda de esta mañana (`bb6779d`), sin novedad de código.** Verificadas las cuatro redes en verde
+**Última actualización:** 2026-09-21 — **Ciclo de Programador: cuarta reconfirmación del día, tras
+la tercera de esta mañana (`410d657`), sin novedad de código.** Verificadas las cuatro redes en verde
 desde cero en este contenedor: `mypy` limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y
 `python scripts/verificar_salidas.py --fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales
 LATENTES como siempre en este contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx`
@@ -27,6 +27,8 @@ de código que hacer ni push de `scripts/`/`tests/` que preparar. Sin cambios en
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-21, ciclo de Programador: tercera reconfirmación del día, tras la segunda de esta mañana
+  (`bb6779d`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: segunda reconfirmación del día, tras la de esta mañana
   (`abd4129`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: primera reconfirmación tras el fin de semana, sin novedad de
