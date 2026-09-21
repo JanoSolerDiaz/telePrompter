@@ -32,6 +32,39 @@
 
 ---
 
+### Sesión 2026-09-21 — Ciclo de Programador: reconfirmación tras el fin de semana, sin novedad de código
+**Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
+`COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía desde
+el archivado de R-18 el 2026-09-17. Sin cron de Programador en sábado/domingo, el 2026-09-19 y el
+2026-09-20 solo corrieron ciclos de PM (reconfirmación de cola vacía, sin R-XX nueva); esta es la
+primera reconfirmación de Programador desde la décima del 2026-09-18.
+**Estado resultante:** sin cambio (reconfirmación, sin cambios de código)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/
+HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos limpios) · lint ✅ (`ruff check`) · tests
+✅ (583 tests, `pytest`) · build ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas
+en `OK`; `.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube sin Chrome/Edge ni
+la skill `480-branded-pptx` instalados)
+**Health check post-deploy:** N/A — sesión de nube, sin cambios de código que instalar
+**Decisiones tomadas:** ninguna nueva (no se añade fila a `DECISIONES_TECNICAS.md`: no hay decisión
+técnica que tomar en un ciclo sin cambio de código)
+**Hallazgos del auditor atendidos:** releído el registro completo de `auditoriacontinua.md`,
+incluida la octava pasada del auditor de hoy mismo (`#24`, sigue `ABIERTO`, baja, de proceso, sin
+que el patrón que lo motivó se haya repetido). Ya enrutado a la pregunta #11 de `SEGUIMIENTO.md`
+§6 — pregunta de gobernanza que solo el dueño puede responder, sigue `(pendiente)`. Ninguna acción
+de este ciclo sobre `auditoriacontinua.md` (documento de escritura exclusiva del Auditor) ni sobre
+`ROADMAP_PRODUCTO.md` (documento de escritura exclusiva del PM).
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** ninguno de código pendiente. La siguiente sesión de Programador solo tiene tarea
+si el PM abre una R-XX nueva o el auditor escala un hallazgo a severidad alta; mientras tanto, sigue
+en pie el bloqueo #7 de §3 (grabar un curso completo) como única fuente capaz de motivar la próxima
+mejora genuina, y la pregunta #11 de §6 esperando respuesta del dueño.
+
+---
+
 ### Sesión 2026-09-20 — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva
 **Tarea(s):** ninguna. Cola de `ROADMAP_PRODUCTO.md` vacía desde el ciclo de PM del 2026-09-17
 (archivado de la Oleada v7/R-18); séptimo ciclo de PM consecutivo sin apertura.

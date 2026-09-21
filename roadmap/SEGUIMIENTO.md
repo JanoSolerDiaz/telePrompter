@@ -10,31 +10,26 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-20 — **Ciclo de Product Manager: reconfirmación de cola vacía,
-sin R-XX nueva (séptimo ciclo de PM consecutivo sin apertura).** Releído el registro de hallazgos de
-`auditoriacontinua.md` completo, incluida la reconfirmación de hoy sobre `#24`: un único `ABIERTO`
-(baja, de proceso), sigue enrutado a la pregunta #11 de este §6 —pregunta de gobernanza que solo el
-dueño puede responder, sigue `(pendiente)`—, así que no hay nada que incorporar de la auditoría en
-este ciclo. Releído `roadmap/FEEDBACK.md`: sigue sin ninguna entrada `nuevo` que volcar al roadmap
-(única fila, la de plantilla). Revisión propia e independiente del código en busca de huecos que
-las seis reconfirmaciones anteriores del PM pudieran haber pasado por alto: inventario de
-`scripts/` (28 módulos) contra `SKILL.md`, confirmando que cada uno tiene su sección documentada;
-revisada de nuevo la unidad de aislamiento del producto («por proyecto de guion», §0.2) frente al
-objetivo de "grabar un curso" (varios guiones/vídeos): procesar cada guion como proyecto
-independiente es una regla arquitectónica explícita, no un hueco — un asistente de proceso por
-lotes sobre varios `.md` a la vez sería una comodidad de CLI, no una mejora de producto, y ningún
-guion real ni entrada de feedback ha señalado fricción por tener que invocar la skill una vez por
-vídeo. **No se abre ninguna R-XX en este ciclo**, mismo criterio ya razonado por los ciclos de PM
-del 2026-09-11, el 2026-09-15, el 2026-09-17, el 2026-09-18 y el 2026-09-19: abrir una R-XX
-especulativa solo para no dejar la cola vacía iría contra el principio de producto de no diseñar
-sobre hipótesis sin evidencia real de rodaje. El bloqueo #7 de §3 (grabar un curso completo) sigue
-sin resolverse y sigue siendo la única fuente capaz de motivar la siguiente mejora genuina.
-`ROADMAP_PRODUCTO.md` actualizado con la misma reconfirmación. Sin cambios en §1 (nada que
-archivar: la oleada v7/R-18 ya se movió a `ROADMAP_HISTORICO.md` el 2026-09-17), §3 (bloqueos) ni
-§7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño.
+**Última actualización:** 2026-09-21 — **Ciclo de Programador: reconfirmación tras el fin de
+semana (solo ciclos de PM el 2026-09-19 y el 2026-09-20, sin cron de Programador en sábado/domingo),
+sin novedad de código.** Verificadas las cuatro redes en verde desde cero en este contenedor: `mypy`
+limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y `python scripts/verificar_salidas.py
+--fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como siempre en este
+contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx` instalados). §1 sigue sin ninguna
+T-XX/R-XX `PENDIENTE`: la única fila no `COMPLETADA` es T-24b, `BLOQUEADA` por hardware del dueño
+(bloqueo §3.5), que este ciclo no toca. Releído el registro de hallazgos de `auditoriacontinua.md`
+completo, incluida la octava pasada del auditor de hoy mismo (`#24`, baja, de proceso): sigue
+`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de este §6, sin que
+el patrón que lo motivó se haya repetido. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
+Sin trabajo de código pendiente y sin ninguna R-XX en la cola de `ROADMAP_PRODUCTO.md` (vacía desde
+el archivado de R-18 el 2026-09-17), este ciclo no tiene cambio de código que hacer ni push de
+`scripts/`/`tests/` que preparar. Sin cambios en §3 (bloqueos) ni §7 (desviaciones); pregunta #11 de
+§6 sigue *(pendiente)* de respuesta del dueño.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-20, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (séptimo ciclo
+  de PM consecutivo sin apertura).
 - 2026-09-19, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva.
 - 2026-09-18, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva.
 - 2026-09-18, ciclo de Programador: décima reconfirmación tras el archivado de R-18 (PM) y la
