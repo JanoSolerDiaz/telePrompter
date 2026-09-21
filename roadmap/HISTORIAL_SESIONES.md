@@ -32,6 +32,46 @@
 
 ---
 
+### Sesión 2026-09-21 (9) — Ciclo de Programador: novena reconfirmación del día, sin novedad de código
+**Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
+`COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía desde
+el archivado de R-18 el 2026-09-17 (releída directamente en este ciclo, no solo la prosa de
+`SEGUIMIENTO.md`). Esta es la novena reconfirmación de Programador del día, tras la octava de esta
+misma mañana (`1665900`); ningún commit de código se ha añadido entre medias. Arranque con el mismo
+síntoma benigno ya diagnosticado por `auditoriacontinua.md` #21 (clon local rezagado/superficial,
+`git rev-parse --is-shallow-repository` → `true`, sin ancestro común entre el `develop` local y
+`origin/develop` por la frontera de cada `git clone --depth` de contenedor efímero — comprobado con
+`git merge-base` sin salida y `.git/shallow` con ambos extremos como injertos): resuelto con
+`git reset --hard origin/develop` tras confirmar que el árbol de trabajo estaba limpio (`git status`)
+y que el tip local (`1e9855f`) era exactamente el `origin/develop` anterior a que otras sesiones
+avanzaran la rama, sin pérdida de historia real.
+**Estado resultante:** sin cambio (reconfirmación, sin cambios de código)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera), `roadmap/
+HISTORIAL_SESIONES.md` (esta entrada)
+**Verificaciones pre-push:** tipos ✅ (`python -m mypy scripts/ tests/`, 68 archivos limpios) · lint
+✅ (`python -m ruff check .`) · tests ✅ (583 tests recolectados y en verde, `python -m pytest -q`) ·
+build ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas en `OK`; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube sin Chrome/Edge ni la skill
+`480-branded-pptx` instalados)
+**Health check post-deploy:** N/A — sesión de nube, sin cambios de código que instalar
+**Decisiones tomadas:** ninguna nueva (no se añade fila a `DECISIONES_TECNICAS.md`: no hay decisión
+técnica que tomar en un ciclo sin cambio de código; el reset del clon local repite exactamente el
+procedimiento ya documentado para el síntoma de `#21`, sin variación que justifique una fila nueva)
+**Hallazgos del auditor atendidos:** releído el registro completo de `auditoriacontinua.md`: único
+`ABIERTO` (`#24`, baja, de proceso), ya enrutado a la pregunta #11 de `SEGUIMIENTO.md` §6 — pregunta
+de gobernanza que solo el dueño puede responder, sigue `(pendiente)`. Ninguna acción de este ciclo
+sobre `auditoriacontinua.md` (documento de escritura exclusiva del Auditor) ni sobre
+`ROADMAP_PRODUCTO.md` (documento de escritura exclusiva del PM).
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin cambio respecto a la sesión anterior — la siguiente sesión de Programador
+reconfirma de nuevo salvo que el PM abra una R-XX nueva, el auditor escale un hallazgo, o el dueño
+responda la pregunta #11 de §6.
+
+---
+
 ### Sesión 2026-09-21 (8) — Ciclo de Programador: octava reconfirmación del día, sin novedad de código
 **Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
 `COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía desde
