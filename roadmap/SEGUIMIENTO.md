@@ -10,12 +10,13 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-21 — **Ciclo de Programador: novena reconfirmación del día, tras
-la octava de esta mañana (`1665900`), sin novedad de código.** Verificadas las cuatro redes en verde
-desde cero en este contenedor (que arrancó de nuevo con el clon local superficial/rezagado, mismo
-síntoma benigno ya diagnosticado por `#21`: resuelto con `git reset --hard origin/develop` tras
-confirmar árbol de trabajo limpio, sin pérdida de historia real — los 50 commits locales huérfanos
-ya existían en `origin`, solo por delante de la frontera del clon superficial de este contenedor):
+**Última actualización:** 2026-09-21 — **Ciclo de Programador: décima reconfirmación del día, tras
+la novena de esta mañana (`f247522`), sin novedad de código.** Verificadas las cuatro redes en verde
+desde cero en este contenedor (que arrancó de nuevo con el clon local en *detached HEAD* sobre una
+rama rezagada, mismo síntoma benigno ya diagnosticado por `#21`: resuelto con
+`git reset --hard origin/develop` tras confirmar árbol de trabajo limpio y que no había ancestro
+común entre el tip local y `origin/develop` — 50 commits locales huérfanos ya sustituidos en
+`origin` por 50 commits nuevos, sin pérdida de historia real, mismo procedimiento de siempre):
 `mypy` limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y `python scripts/
 verificar_salidas.py --fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como
 siempre en este contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx` instalados). §1
@@ -31,6 +32,8 @@ de respuesta del dueño.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-21, ciclo de Programador: novena reconfirmación del día, tras la octava de esta mañana
+  (`1665900`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: octava reconfirmación del día, tras la séptima de esta mañana
   (`aa74cd2`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: séptima reconfirmación del día, tras la sexta de esta mañana
