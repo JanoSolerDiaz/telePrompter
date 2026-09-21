@@ -10,23 +10,27 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-21 — **Ciclo de Programador: sexta reconfirmación del día, tras
-la quinta de esta mañana (`3284211`), sin novedad de código.** Verificadas las cuatro redes en verde
-desde cero en este contenedor: `mypy` limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y
-`python scripts/verificar_salidas.py --fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales
-LATENTES como siempre en este contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx`
-instalados). §1 sigue sin ninguna T-XX/R-XX `PENDIENTE`: la única fila no `COMPLETADA` es T-24b,
-`BLOQUEADA` por hardware del dueño (bloqueo §3.5), que este ciclo no toca. Releído el registro de
-hallazgos de `auditoriacontinua.md` completo, incluida la octava pasada del auditor de hoy mismo
-(`#24`, baja, de proceso): sigue `ABIERTO` exclusivamente a la espera de la respuesta del dueño a la
-pregunta #11 de este §6, sin que el patrón que lo motivó se haya repetido. `roadmap/FEEDBACK.md`
-sigue sin ninguna entrada `nuevo`. Sin trabajo de código pendiente y sin ninguna R-XX en la cola de
-`ROADMAP_PRODUCTO.md` (vacía desde el archivado de R-18 el 2026-09-17), este ciclo no tiene cambio
-de código que hacer ni push de `scripts/`/`tests/` que preparar. Sin cambios en §3 (bloqueos) ni §7
-(desviaciones); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño.
+**Última actualización:** 2026-09-21 — **Ciclo de Programador: séptima reconfirmación del día, tras
+la sexta de esta mañana (`3d3ec38`), sin novedad de código.** Verificadas las cuatro redes en verde
+desde cero en este contenedor (que arrancó con el clon local otra vez superficial/rezagado, mismo
+síntoma benigno ya diagnosticado por `#21`: resuelto con `git reset --hard origin/develop`, sin
+pérdida de historia real — los 50 commits locales huérfanos no existían en `origin`): `mypy` limpio
+(68 archivos), `ruff` limpio, `pytest` en 583 tests y `python scripts/verificar_salidas.py
+--fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como siempre en este
+contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx` instalados). §1 sigue sin ninguna
+T-XX/R-XX `PENDIENTE`: la única fila no `COMPLETADA` es T-24b, `BLOQUEADA` por hardware del dueño
+(bloqueo §3.5), que este ciclo no toca. Releído el registro de hallazgos de `auditoriacontinua.md`
+completo: sigue con un único `ABIERTO` (`#24`, baja, de proceso), a la espera de la respuesta del
+dueño a la pregunta #11 de este §6, sin que el patrón que lo motivó se haya repetido. `roadmap/
+FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Sin trabajo de código pendiente y sin ninguna R-XX
+en la cola de `ROADMAP_PRODUCTO.md` (vacía desde el archivado de R-18 el 2026-09-17), este ciclo no
+tiene cambio de código que hacer ni push de `scripts/`/`tests/` que preparar. Sin cambios en §3
+(bloqueos) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-21, ciclo de Programador: sexta reconfirmación del día, tras la quinta de esta mañana
+  (`3284211`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: quinta reconfirmación del día, tras la cuarta de esta mañana
   (`570fd81`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: cuarta reconfirmación del día, tras la tercera de esta mañana
