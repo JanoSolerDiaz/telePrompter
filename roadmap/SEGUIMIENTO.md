@@ -10,28 +10,26 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-21 — **Ciclo de Programador: décima reconfirmación del día, tras
-la novena de esta mañana (`f247522`), sin novedad de código.** Verificadas las cuatro redes en verde
-desde cero en este contenedor (que arrancó de nuevo con el clon local en *detached HEAD* sobre una
-rama rezagada, mismo síntoma benigno ya diagnosticado por `#21`: resuelto con
-`git reset --hard origin/develop` tras confirmar árbol de trabajo limpio y que no había ancestro
-común entre el tip local y `origin/develop` — 50 commits locales huérfanos ya sustituidos en
-`origin` por 50 commits nuevos, sin pérdida de historia real, mismo procedimiento de siempre):
-`mypy` limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y `python scripts/
-verificar_salidas.py --fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como
-siempre en este contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx` instalados). §1
-sigue sin ninguna T-XX/R-XX `PENDIENTE`: la única fila no `COMPLETADA` es T-24b, `BLOQUEADA` por
-hardware del dueño (bloqueo §3.5), que este ciclo no toca. Releído el registro de hallazgos de
-`auditoriacontinua.md` completo: sigue con un único `ABIERTO` (`#24`, baja, de proceso), a la espera
-de la respuesta del dueño a la pregunta #11 de este §6, sin que el patrón que lo motivó se haya
-repetido. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Sin trabajo de código pendiente y
-sin ninguna R-XX en la cola de `ROADMAP_PRODUCTO.md` (vacía desde el archivado de R-18 el
-2026-09-17), este ciclo no tiene cambio de código que hacer ni push de `scripts/`/`tests/` que
-preparar. Sin cambios en §3 (bloqueos) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*
-de respuesta del dueño.
+**Última actualización:** 2026-09-21 — **Ciclo de Product Manager: reconfirmación de cola vacía, sin
+R-XX nueva (octavo ciclo de PM consecutivo sin apertura).** Releído el registro de hallazgos íntegro
+de `auditoriacontinua.md`: único `ABIERTO` `#24` (baja, de proceso), sigue enrutado a la pregunta #11
+de este §6, sin que el patrón que lo motivó se haya repetido — no aporta ningún hallazgo de producto
+o arquitectura que convertir en R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
+Revisión propia de arquitectura del encaje con el montaje (`references/contrato-montaje.md`,
+`references/contrato-tomas.md`, `scripts/tomas.py`): identificada una posible mejora futura —
+asociar cada toma buena con su archivo de vídeo real para poder generar la lista de concatenación de
+ffmpeg — pero **no se abre como R-XX** por no cumplir el criterio que sí cumplieron R-12 a R-18 (ahí
+la lógica ya existía y solo faltaba conectarla; aquí no existe ningún mecanismo, sería diseño de
+producto nuevo sin evidencia real de rodaje). Queda registrada en `ROADMAP_PRODUCTO.md` y
+`DECISIONES_TECNICAS.md` como candidata para cuando el bloqueo #7 (grabar un curso completo) se
+resuelva. Sin cambios en §1 (ninguna T-XX/R-XX cambia de estado), §3 (bloqueos), §5 (P-XX) ni §7
+(desviaciones); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño. Sin cambio de código:
+este ciclo no toca `scripts/`, `tests/` ni `assets/`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-21, ciclo de Programador: décima reconfirmación del día, tras la novena de esta mañana
+  (`f247522`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: novena reconfirmación del día, tras la octava de esta mañana
   (`1665900`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: octava reconfirmación del día, tras la séptima de esta mañana

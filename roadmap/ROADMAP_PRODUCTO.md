@@ -8,8 +8,8 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-20 (ciclo de PM). **Reconfirmación de cola vacía, sin R-XX
-nueva (séptimo ciclo de PM consecutivo sin apertura).** Desde el ciclo del 2026-09-17 (que archivó
+**Última actualización:** 2026-09-21 (ciclo de PM). **Reconfirmación de cola vacía, sin R-XX
+nueva (octavo ciclo de PM consecutivo sin apertura).** Desde el ciclo del 2026-09-17 (que archivó
 R-18/oleada v7 a `ROADMAP_HISTORICO.md`) no hay ningún commit de código nuevo — solo reconfirmaciones
 sucesivas del Programador, auditorías en profundidad y ciclos de PM sin novedad (ver
 `SEGUIMIENTO.md`). Releído el registro de hallazgos íntegro de `auditoriacontinua.md`: un único
@@ -17,18 +17,28 @@ sucesivas del Programador, auditorías en profundidad y ciclos de PM sin novedad
 sigue `(pendiente)` de respuesta del dueño, no un hallazgo de producto o arquitectura que este
 roadmap deba convertir en R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
 
-Revisión propia de este ciclo, más allá de releer el razonamiento de los seis anteriores: inventario
-de los 28 módulos de `scripts/` contra la tabla de `SKILL.md` (cada uno documentado, sin cabo
-suelto) y reexamen de la unidad de aislamiento "por proyecto de guion" (§0.2) frente al objetivo de
-grabar un curso completo con varios guiones/vídeos — es una regla arquitectónica explícita, no un
-hueco de producto: nada en `FEEDBACK.md` ni en un guion real señala fricción por invocar la skill
-una vez por vídeo, así que un asistente de proceso por lotes seguiría siendo una hipótesis sin
-evidencia. `salidas.py`, `calibracion.py` y `tomas.py` (el encaje con el rodaje real y el montaje)
-se revisaron de nuevo en ciclos anteriores sin encontrar grieta pendiente. **No se abre ninguna
-R-XX nueva en este ciclo** — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso completo) sigue
-sin resolverse y sigue siendo la única fuente de fricción real de rodaje capaz de motivar la
-siguiente mejora genuina, mismo criterio ya razonado por los ciclos de PM del 2026-09-11, el
-2026-09-15, el 2026-09-17, el 2026-09-18 y el 2026-09-19 en `DECISIONES_TECNICAS.md`.
+Revisión propia de este ciclo: releído con detalle el encaje real con el montaje —
+`references/contrato-montaje.md`, `references/contrato-tomas.md` y `scripts/tomas.py` — con la
+pregunta explícita de si queda alguna grieta de arquitectura del mismo tipo que motivó R-12 a R-18
+(datos ya calculados que no llegan al flujo real del dueño). Se identifica una posible: el parte de
+rodaje (R-02) registra qué toma es la buena y cuánto duró, pero **nunca qué archivo de vídeo es** —
+sin ese dato, nadie (ni la skill ni una fase de montaje futura) puede generar automáticamente la
+lista de concatenación de ffmpeg que uniría las tomas buenas en el vídeo continuo que
+`guion.srt`/`tarjetas.json` ya asumen. A diferencia de R-12 a R-18, esto **no es wiring de una
+funcionalidad ya construida**: no existe hoy ningún campo, módulo ni mecanismo para asociar una
+toma con un archivo real, así que abrirlo sería diseñar superficie de producto nueva (qué campo,
+dónde se rellena, en qué formato) sin ninguna de las tres fuentes legítimas que ya rigen la apertura
+de una R-XX — ni hallazgo de auditoría, ni entrada de `FEEDBACK.md`, ni grieta verificada sobre
+código ya existente. Es exactamente el tipo de idea que los ciclos del 2026-09-15 y el 2026-09-17 ya
+descartaron por el mismo motivo (ritmo en vivo, informe de rodaje consolidado, recorte para shorts):
+plausible, pero especulativa mientras el bloqueo #7 (grabar un curso completo) siga sin resolverse.
+**Se deja registrada aquí, no se abre como R-XX**, como candidata de mayor prioridad para el
+primer ciclo de PM que siga a esa grabación real — es la pieza que más directamente conecta esta
+skill con "la fase siguiente es el montaje con ffmpeg" de la visión de producto. Razonamiento
+completo en `DECISIONES_TECNICAS.md` (2026-09-21). **No se abre ninguna R-XX nueva en este ciclo**
+— el bloqueo #7 de `SEGUIMIENTO.md` §3 sigue siendo la única fuente capaz de motivar la siguiente
+mejora genuina, mismo criterio ya razonado por los ciclos de PM del 2026-09-11, el 2026-09-15, el
+2026-09-17, el 2026-09-18, el 2026-09-19 y el 2026-09-20 en `DECISIONES_TECNICAS.md`.
 
 ---
 
@@ -134,12 +144,18 @@ aporta ningún hallazgo nuevo que enrutar (único `ABIERTO`, `#24`, ya enrutado 
 gobernanza en §6 #11 de `SEGUIMIENTO.md`, ajena al contenido de este roadmap) y `roadmap/
 FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Revisada de nuevo la arquitectura del encaje con el
 rodaje real y el montaje (`scripts/salidas.py`, `scripts/calibracion.py`, `scripts/tomas.py`,
-`references/contrato-montaje.md`) en busca de una grieta del mismo tipo que motivó R-12 a R-18: no
-se encuentra ninguna. Sin un hallazgo de auditoría, una entrada de feedback real o una grieta de
-arquitectura verificada —los tres motivos legítimos de apertura de una R-XX ya establecidos por
-ciclos anteriores (`DECISIONES_TECNICAS.md`, 2026-09-11 y 2026-09-15)—, abrir una R-XX especulativa
-solo para no dejar la cola vacía iría contra el principio de producto de no diseñar sobre hipótesis
-sin evidencia real de rodaje. El bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso completo) sigue
+`references/contrato-montaje.md`, `references/contrato-tomas.md`) en busca de una grieta del mismo
+tipo que motivó R-12 a R-18: no se encuentra ninguna **sobre código ya existente** — la única idea
+que surge (asociar cada toma buena con su archivo de vídeo real, para poder generar la lista de
+concatenación de ffmpeg) exigiría diseñar un mecanismo nuevo desde cero, no conectar uno ya
+construido, así que no cumple el criterio que sí cumplieron R-12 a R-18; queda registrada como
+candidata para cuando exista evidencia real de rodaje (ver cabecera de este documento y
+`DECISIONES_TECNICAS.md`, 2026-09-21), no abierta como R-XX. Sin un hallazgo de auditoría, una
+entrada de feedback real o una grieta de arquitectura verificada sobre código existente —los tres
+motivos legítimos de apertura de una R-XX ya establecidos por ciclos anteriores
+(`DECISIONES_TECNICAS.md`, 2026-09-11 y 2026-09-15)—, abrir una R-XX especulativa solo para no
+dejar la cola vacía iría contra el principio de producto de no diseñar sobre hipótesis sin
+evidencia real de rodaje. El bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso completo) sigue
 sin resolverse y sigue siendo la única fuente capaz de motivar la siguiente mejora genuina.
 
 ---
