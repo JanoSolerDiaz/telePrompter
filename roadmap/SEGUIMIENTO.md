@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-21 — **Ciclo de Programador: séptima reconfirmación del día, tras
-la sexta de esta mañana (`3d3ec38`), sin novedad de código.** Verificadas las cuatro redes en verde
+**Última actualización:** 2026-09-21 — **Ciclo de Programador: octava reconfirmación del día, tras
+la séptima de esta mañana (`aa74cd2`), sin novedad de código.** Verificadas las cuatro redes en verde
 desde cero en este contenedor (que arrancó con el clon local otra vez superficial/rezagado, mismo
 síntoma benigno ya diagnosticado por `#21`: resuelto con `git reset --hard origin/develop`, sin
 pérdida de historia real — los 50 commits locales huérfanos no existían en `origin`): `mypy` limpio
@@ -29,6 +29,8 @@ tiene cambio de código que hacer ni push de `scripts/`/`tests/` que preparar. S
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-21, ciclo de Programador: séptima reconfirmación del día, tras la sexta de esta mañana
+  (`3d3ec38`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: sexta reconfirmación del día, tras la quinta de esta mañana
   (`3284211`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Programador: quinta reconfirmación del día, tras la cuarta de esta mañana
