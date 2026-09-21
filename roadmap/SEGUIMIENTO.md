@@ -10,24 +10,26 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-21 — **Ciclo de Programador: reconfirmación tras el fin de
-semana (solo ciclos de PM el 2026-09-19 y el 2026-09-20, sin cron de Programador en sábado/domingo),
-sin novedad de código.** Verificadas las cuatro redes en verde desde cero en este contenedor: `mypy`
-limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y `python scripts/verificar_salidas.py
---fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como siempre en este
-contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx` instalados). §1 sigue sin ninguna
-T-XX/R-XX `PENDIENTE`: la única fila no `COMPLETADA` es T-24b, `BLOQUEADA` por hardware del dueño
-(bloqueo §3.5), que este ciclo no toca. Releído el registro de hallazgos de `auditoriacontinua.md`
-completo, incluida la octava pasada del auditor de hoy mismo (`#24`, baja, de proceso): sigue
-`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de este §6, sin que
-el patrón que lo motivó se haya repetido. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`.
-Sin trabajo de código pendiente y sin ninguna R-XX en la cola de `ROADMAP_PRODUCTO.md` (vacía desde
-el archivado de R-18 el 2026-09-17), este ciclo no tiene cambio de código que hacer ni push de
-`scripts/`/`tests/` que preparar. Sin cambios en §3 (bloqueos) ni §7 (desviaciones); pregunta #11 de
-§6 sigue *(pendiente)* de respuesta del dueño.
+**Última actualización:** 2026-09-21 — **Ciclo de Programador: segunda reconfirmación del día, tras
+la de esta mañana (`abd4129`), sin novedad de código.** Verificadas las cuatro redes en verde desde
+cero en este contenedor: `mypy` limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y `python
+scripts/verificar_salidas.py --fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales
+LATENTES como siempre en este contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx`
+instalados). §1 sigue sin ninguna T-XX/R-XX `PENDIENTE`: la única fila no `COMPLETADA` es T-24b,
+`BLOQUEADA` por hardware del dueño (bloqueo §3.5), que este ciclo no toca. Releído el registro de
+hallazgos de `auditoriacontinua.md` completo, incluida la octava pasada del auditor de hoy mismo
+(`#24`, baja, de proceso): sigue `ABIERTO` exclusivamente a la espera de la respuesta del dueño a la
+pregunta #11 de este §6, sin que el patrón que lo motivó se haya repetido. `roadmap/FEEDBACK.md`
+sigue sin ninguna entrada `nuevo`. Sin trabajo de código pendiente y sin ninguna R-XX en la cola de
+`ROADMAP_PRODUCTO.md` (vacía desde el archivado de R-18 el 2026-09-17), este ciclo no tiene cambio
+de código que hacer ni push de `scripts/`/`tests/` que preparar. Sin cambios en §3 (bloqueos) ni §7
+(desviaciones); pregunta #11 de §6 sigue *(pendiente)* de respuesta del dueño.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-21, ciclo de Programador: primera reconfirmación tras el fin de semana, sin novedad de
+  código (solo ciclos de PM el 2026-09-19 y el 2026-09-20, sin cron de Programador en
+  sábado/domingo). Cuatro redes en verde (583 tests).
 - 2026-09-20, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (séptimo ciclo
   de PM consecutivo sin apertura).
 - 2026-09-19, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva.
