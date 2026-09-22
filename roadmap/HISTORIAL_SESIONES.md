@@ -32,6 +32,35 @@
 
 ---
 
+### Sesión 2026-09-22 (9) — Ciclo de Programador: novena reconfirmación del día, sin novedad de código
+**Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
+`COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía,
+releída directamente en este ciclo. Novena reconfirmación de Programador del día, tras la octava
+de esta misma mañana (`a4936ea`); ningún commit de código se ha añadido entre medias.
+**Estado resultante:** sin cambios (todo sigue `COMPLETADA` salvo T-24b `BLOQUEADA`).
+**Commits a develop:** pendiente de este cierre de sesión (solo actualización de `roadmap/`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md`, `roadmap/HISTORIAL_SESIONES.md`
+(ambos solo registro; cero cambio en `scripts/`, `tests/` ni `assets/`).
+**Verificaciones pre-push:** tipos ✅ (68 archivos) · lint ✅ · tests ✅ (583) · build ✅
+(`verificar_salidas.py --fixture`, catorce etapas `OK`; `.pptx`/`.pdf` reales LATENTES como
+siempre en este contenedor de nube).
+**Health check post-deploy:** N/A — sesión de nube, sin acceso a `~/.claude/skills/` del dueño
+(nota de entorno, protocolo v1.3).
+**Decisiones tomadas:** ninguna nueva en `DECISIONES_TECNICAS.md`.
+**Hallazgos del auditor atendidos:** ninguno nuevo; `#24` (baja, de proceso) sigue `ABIERTO`,
+enrutado a la pregunta #11 de `SEGUIMIENTO.md` §6, todavía *(pendiente)* de respuesta del dueño.
+**Hallazgos:** ninguno de código. Nota de arranque: el clon llegó limpio esta vez, ya en `develop`
+y sincronizado sin desvío con `origin/develop` (sin el síntoma de *detached HEAD*/clon superficial
+de ciclos anteriores).
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin tarea de código pendiente. La siguiente sesión (de cualquier rol) debe releer
+`auditoriacontinua.md` (único `ABIERTO`: `#24`, baja) y `ROADMAP_PRODUCTO.md` (cola vacía) antes de
+repetir esta misma reconfirmación; la pregunta #11 de `SEGUIMIENTO.md` §6 sigue esperando respuesta
+del dueño.
+
+---
+
 ### Sesión 2026-09-22 (8) — Ciclo de Programador: octava reconfirmación del día, sin novedad de código
 **Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
 `COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía,

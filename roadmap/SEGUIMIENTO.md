@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-22 — **Ciclo de Programador: octava reconfirmación del día, tras
-la séptima de esta mañana (`aa9aa23`), sin novedad de código.** Verificadas las cuatro redes en
+**Última actualización:** 2026-09-22 — **Ciclo de Programador: novena reconfirmación del día, tras
+la octava de esta mañana (`a4936ea`), sin novedad de código.** Verificadas las cuatro redes en
 verde desde cero en este contenedor con `python scripts/ci.py`: `mypy` limpio (68 archivos), `ruff`
 limpio, `pytest` en 583 tests y `python scripts/verificar_salidas.py --fixture` con las catorce
 etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube, sin
@@ -20,19 +20,15 @@ fila no `COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROAD
 vacía, releída directamente en este ciclo. Registro de `auditoriacontinua.md` releído íntegro:
 único `ABIERTO` `#24` (baja, de proceso), sigue enrutado a la pregunta #11 de §6, todavía
 *(pendiente)* de respuesta del dueño — sin severidad alta que atender como P-XX urgente. **Nota de
-arranque:** el clon local llegó de nuevo con la rama `develop` local en *detached HEAD*, 50 commits
-por detrás de `origin/develop`, y de nuevo sin ancestro común directo entre ambas puntas (mismo
-síntoma benigno de los ciclos anteriores, mismo diagnóstico de `auditoriacontinua.md` #21,
-2026-09-10, RESUELTO — clon superficial por contenedor efímero, no una reescritura real de
-`develop`). Antes de resolverlo se comprobó que ambos árboles de archivos coincidían exactamente
-(108 archivos, mismo listado) y que la punta de `origin/develop` era la más reciente (commit de
-hoy 12:16 UTC frente al 15 de septiembre de la punta local vieja), sin contenido exclusivo que
-perder; resuelto con `git checkout -B develop origin/develop`. Sin cambios en §1, §3 (bloqueos),
-§5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Sin cambio de código: este
-ciclo no toca `scripts/`, `tests/` ni `assets/`.
+arranque:** el clon local llegó esta vez limpio, ya en `develop`, sincronizado sin desvío con
+`origin/develop` (sin el síntoma de *detached HEAD*/clon superficial de ciclos anteriores). Sin
+cambios en §1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
+*(pendiente)*. Sin cambio de código: este ciclo no toca `scripts/`, `tests/` ni `assets/`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-22, ciclo de Programador: octava reconfirmación del día, tras la séptima de esta mañana
+  (`aa9aa23`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-22, ciclo de Programador: séptima reconfirmación del día, tras la sexta de esta mañana
   (`5f94051`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-22, ciclo de Programador: sexta reconfirmación del día, tras la quinta de esta mañana
