@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-22 — **Ciclo de Programador: cuarta reconfirmación del día, tras
-la tercera de esta mañana (`9c8bfb0`), sin novedad de código.** Verificadas las cuatro redes en
+**Última actualización:** 2026-09-22 — **Ciclo de Programador: quinta reconfirmación del día, tras
+la cuarta de esta mañana (`e5c77f5`), sin novedad de código.** Verificadas las cuatro redes en
 verde desde cero en este contenedor con `python scripts/ci.py`: `mypy` limpio (68 archivos), `ruff`
 limpio, `pytest` en 583 tests y `python scripts/verificar_salidas.py --fixture` con las catorce
 etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube, sin
@@ -25,14 +25,17 @@ por detrás de `origin/develop`, y de nuevo sin ancestro común directo entre am
 síntoma benigno de los ciclos anteriores). Verificado con `git rev-parse
 --is-shallow-repository` → `true`: clon superficial por contenedor efímero, ya diagnosticado en
 `auditoriacontinua.md` #21 (2026-09-10, RESUELTO), no una reescritura real de `develop`. Resuelto
-sin descartar nada con `git reset --hard origin/develop` (working tree limpio, cero commits locales
-propios que perder; equivalente al `git checkout develop && git pull origin develop` del protocolo
-cuando el `pull` en modo `merge`/`ff-only` tropieza con la falta de ancestro común del clon
-superficial). Sin cambios en §1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6
-sigue *(pendiente)*. Sin cambio de código: este ciclo no toca `scripts/`, `tests/` ni `assets/`.
+sin descartar nada con `git checkout -B develop origin/develop` (working tree limpio, cero commits
+locales propios que perder; equivalente al `git checkout develop && git pull origin develop` del
+protocolo cuando el `pull` en modo `merge`/`ff-only` tropieza con la falta de ancestro común del
+clon superficial). Sin cambios en §1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11
+de §6 sigue *(pendiente)*. Sin cambio de código: este ciclo no toca `scripts/`, `tests/` ni
+`assets/`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-22, ciclo de Programador: cuarta reconfirmación del día, tras la tercera de esta mañana
+  (`9c8bfb0`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-22, ciclo de Programador: tercera reconfirmación del día, tras la segunda de esta mañana
   (`7b34ee8`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-22, ciclo de Programador: segunda reconfirmación del día, tras la primera de esta mañana
