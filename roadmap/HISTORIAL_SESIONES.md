@@ -32,6 +32,44 @@
 
 ---
 
+### Sesión 2026-09-22 (1) — Ciclo de Programador: primera reconfirmación del día, sin novedad de código
+**Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
+`COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía,
+releída directamente en este ciclo (no solo la prosa de `SEGUIMIENTO.md`). Esta es la primera
+reconfirmación de Programador del día, tras la novena auditoría en profundidad de esta madrugada
+(`f1d1728`) y el noveno ciclo de PM consecutivo sin apertura (`2e214d1`); ningún commit de código se
+ha añadido entre medias. Arranque con el mismo síntoma benigno ya diagnosticado por
+`auditoriacontinua.md` #21 (clon local superficial de este contenedor efímero, con la rama
+`develop` local rezagada 50 commits detrás de `origin/develop`): a diferencia de sesiones
+anteriores, esta vez `git fetch --unshallow` seguido de `git merge-base --is-ancestor develop
+origin/develop` confirmó un fast-forward limpio (`IS ancestor`), así que se resolvió con
+`git merge --ff-only origin/develop` en vez de `git reset --hard` — mismo diagnóstico de fondo,
+resolución más simple por no hacer falta descartar ningún commit local (no había ninguno que
+descartar: el árbol de trabajo ya estaba limpio antes del `checkout develop`).
+**Estado resultante:** sin cambio (reconfirmación, sin cambios de código)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera de «Última actualización») y
+esta entrada de `roadmap/HISTORIAL_SESIONES.md`. Cero cambio en `scripts/`, `tests/` ni `assets/`.
+**Verificaciones pre-push:** tipos ✅ (`mypy` limpio, 68 archivos) · lint ✅ (`ruff` limpio) · tests
+✅ (583 tests) · build ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas en `OK`;
+`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube, sin Chrome/Edge ni la skill
+`480-branded-pptx` instalados).
+**Health check post-deploy:** N/A — sesión de nube, no se puede instalar en
+`~/.claude/skills/teleprompter/` desde este contenedor (nota de entorno del protocolo v1.3).
+**Decisiones tomadas:** ninguna nueva; ninguna fila añadida a `DECISIONES_TECNICAS.md`.
+**Hallazgos del auditor atendidos:** ninguno nuevo que atender — único `ABIERTO` de
+`auditoriacontinua.md` (`#24`, baja, de proceso) reconfirmado sin cambios por la auditoría de esta
+madrugada (`f1d1728`), sigue enrutado a la pregunta #11 de `SEGUIMIENTO.md` §6, pendiente de
+respuesta del dueño. Sin ningún hallazgo de severidad alta que atender como P-XX urgente.
+**Hallazgos:** ninguno de código.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin cambio respecto al ciclo de PM anterior — el bloqueo #7 de `SEGUIMIENTO.md` §3
+(grabar un curso completo con la skill) sigue siendo la única fuente capaz de motivar la siguiente
+R-XX genuina, y la pregunta #11 de §6 sigue esperando respuesta del dueño.
+
+---
+
 ### Sesión 2026-09-21 (11) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (octavo ciclo de PM consecutivo)
 **Tarea(s):** ninguna R-XX/T-XX/P-XX. Ciclo de gestión de roadmap (rutina `product-manager-teleprompter`).
 **Estado resultante:** N/A — ningún cambio de estado en §1 de `SEGUIMIENTO.md`.
