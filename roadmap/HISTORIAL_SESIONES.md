@@ -32,6 +32,43 @@
 
 ---
 
+### Sesión 2026-09-22 (2) — Ciclo de Programador: segunda reconfirmación del día, sin novedad de código
+**Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
+`COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía,
+releída directamente en este ciclo. Esta es la segunda reconfirmación de Programador del día, tras
+la primera de esta misma mañana (`8aa846b`); ningún commit de código se ha añadido entre medias.
+Arranque con el mismo síntoma benigno ya diagnosticado por `auditoriacontinua.md` #21 (clon local
+con `develop` en *detached HEAD*, 50 commits por detrás de `origin/develop`), pero esta vez
+`git merge-base develop origin/develop` no encontró ningún ancestro común entre la rama local y
+`origin/develop` (ambas con 50 commits, historias sin relación) — indicio de que el historial real
+de `origin/develop` fue reescrito entre el ciclo anterior y este, coherente con el propio
+diagnóstico de #21. Sin ancestro común no hay fast-forward posible, así que se resolvió con
+`git reset --hard origin/develop`: el árbol de trabajo ya estaba limpio antes del `checkout`, sin
+ningún commit local que descartar.
+**Estado resultante:** sin cambio (reconfirmación, sin cambios de código)
+**Commits a develop:** (ver el commit de esta sesión tras esta entrada)
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (cabecera de «Última actualización») y
+esta entrada de `roadmap/HISTORIAL_SESIONES.md`. Cero cambio en `scripts/`, `tests/` ni `assets/`.
+**Verificaciones pre-push:** tipos ✅ (`mypy` limpio, 68 archivos) · lint ✅ (`ruff` limpio) · tests
+✅ (583 tests) · build ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas en `OK`;
+`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube, sin Chrome/Edge ni la skill
+`480-branded-pptx` instalados).
+**Health check post-deploy:** N/A — sesión de nube, no se puede instalar en
+`~/.claude/skills/teleprompter/` desde este contenedor (nota de entorno del protocolo v1.3).
+**Decisiones tomadas:** ninguna nueva; ninguna fila añadida a `DECISIONES_TECNICAS.md`.
+**Hallazgos del auditor atendidos:** ninguno nuevo que atender — único `ABIERTO` de
+`auditoriacontinua.md` (`#24`, baja, de proceso) reconfirmado sin cambios por la auditoría de esta
+madrugada (`f1d1728`), sigue enrutado a la pregunta #11 de `SEGUIMIENTO.md` §6, pendiente de
+respuesta del dueño. Sin ningún hallazgo de severidad alta que atender como P-XX urgente.
+**Hallazgos:** ninguno de código.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin cambio respecto al ciclo anterior — el bloqueo #7 de `SEGUIMIENTO.md` §3
+(grabar un curso completo con la skill) sigue siendo la única fuente capaz de motivar la siguiente
+R-XX genuina, y la pregunta #11 de §6 sigue esperando respuesta del dueño.
+
+---
+
 ### Sesión 2026-09-22 (1) — Ciclo de Programador: primera reconfirmación del día, sin novedad de código
 **Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
 `COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía,

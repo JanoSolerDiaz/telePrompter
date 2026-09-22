@@ -10,28 +10,31 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-22 — **Ciclo de Programador: primera reconfirmación del día, tras
-la novena auditoría en profundidad (`f1d1728`) y el noveno ciclo de PM consecutivo sin apertura
-(`2e214d1`), sin novedad de código.** Verificadas las cuatro redes en verde desde cero en este
-contenedor: `mypy` limpio (68 archivos), `ruff` limpio, `pytest` en 583 tests y `python scripts/
-verificar_salidas.py --fixture` con las catorce etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como
-siempre en este contenedor de nube, sin Chrome/Edge ni la skill `480-branded-pptx` instalados). §1
-sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por hardware del
-dueño); cola de `ROADMAP_PRODUCTO.md` vacía, releída directamente en este ciclo. Registro de
-`auditoriacontinua.md` releído íntegro: único `ABIERTO` `#24` (baja, de proceso), sigue enrutado a
-la pregunta #11 de §6, todavía *(pendiente)* de respuesta del dueño — sin severidad alta que atender
-como P-XX urgente. **Nota de arranque:** el clon local llegó superficial (`git clone --depth`, mismo
-síntoma benigno ya diagnosticado por `auditoriacontinua.md` #21) con la rama `develop` local
-rezagada 50 commits detrás de `origin/develop`; a diferencia de sesiones anteriores, esta vez
-`git fetch --unshallow` + `git merge-base --is-ancestor develop origin/develop` confirmó
-fast-forward limpio (**"IS ancestor"**), así que se resolvió con `git merge --ff-only` en vez de
-`git reset --hard` — mismo diagnóstico de fondo, resolución más simple por no hacer falta descartar
-ningún commit local. Sin cambios en §1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11
-de §6 sigue *(pendiente)*. Sin cambio de código: este ciclo no toca `scripts/`, `tests/` ni
-`assets/`.
+**Última actualización:** 2026-09-22 — **Ciclo de Programador: segunda reconfirmación del día, tras
+la primera de esta mañana (`8aa846b`), sin novedad de código.** Verificadas las cuatro redes en
+verde desde cero en este contenedor: `mypy` limpio (68 archivos), `ruff` limpio, `pytest` en 583
+tests y `python scripts/verificar_salidas.py --fixture` con las catorce etapas en `OK` (`.pptx`/
+`.pdf` reales LATENTES como siempre en este contenedor de nube, sin Chrome/Edge ni la skill
+`480-branded-pptx` instalados). §1 sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`:
+T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía, releída
+directamente en este ciclo. Registro de `auditoriacontinua.md` releído íntegro: único `ABIERTO`
+`#24` (baja, de proceso), sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de
+respuesta del dueño — sin severidad alta que atender como P-XX urgente. **Nota de arranque:** el
+clon local llegó de nuevo con la rama `develop` local en *detached HEAD*, 50 commits por detrás de
+`origin/develop` (mismo síntoma benigno de `auditoriacontinua.md` #21); a diferencia del ciclo
+anterior, esta vez `git merge-base develop origin/develop` no encontró ancestro común (historias
+sin relación, mismo recuento de 50 commits en ambas — indicio de que el `origin/develop` real fue
+reescrito entre sesiones, coherente con el propio diagnóstico de #21), así que se resolvió con
+`git reset --hard origin/develop` (árbol de trabajo ya limpio antes del `checkout`, sin ningún
+commit local que descartar). Sin cambios en §1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones);
+pregunta #11 de §6 sigue *(pendiente)*. Sin cambio de código: este ciclo no toca `scripts/`,
+`tests/` ni `assets/`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-22, ciclo de Programador: primera reconfirmación del día, tras la novena auditoría en
+  profundidad (`f1d1728`) y el noveno ciclo de PM consecutivo sin apertura (`2e214d1`), sin novedad
+  de código. Cuatro redes en verde (583 tests).
 - 2026-09-21, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (octavo ciclo
   de PM consecutivo sin apertura). Candidata futura (toma↔archivo de vídeo + concatenación ffmpeg)
   registrada en `ROADMAP_PRODUCTO.md`/`DECISIONES_TECNICAS.md`, no abierta como R-XX.
