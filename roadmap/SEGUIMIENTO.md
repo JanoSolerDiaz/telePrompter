@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-22 — **Ciclo de Programador: novena reconfirmación del día, tras
-la octava de esta mañana (`a4936ea`), sin novedad de código.** Verificadas las cuatro redes en
+**Última actualización:** 2026-09-22 — **Ciclo de Programador: décima reconfirmación del día, tras
+la novena de esta mañana (`5e52707`), sin novedad de código.** Verificadas las cuatro redes en
 verde desde cero en este contenedor con `python scripts/ci.py`: `mypy` limpio (68 archivos), `ruff`
 limpio, `pytest` en 583 tests y `python scripts/verificar_salidas.py --fixture` con las catorce
 etapas en `OK` (`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube, sin
@@ -21,12 +21,16 @@ vacía, releída directamente en este ciclo. Registro de `auditoriacontinua.md` 
 único `ABIERTO` `#24` (baja, de proceso), sigue enrutado a la pregunta #11 de §6, todavía
 *(pendiente)* de respuesta del dueño — sin severidad alta que atender como P-XX urgente. **Nota de
 arranque:** el clon local llegó esta vez limpio, ya en `develop`, sincronizado sin desvío con
-`origin/develop` (sin el síntoma de *detached HEAD*/clon superficial de ciclos anteriores). Sin
-cambios en §1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
-*(pendiente)*. Sin cambio de código: este ciclo no toca `scripts/`, `tests/` ni `assets/`.
+`origin/develop` (sin el síntoma de *detached HEAD*/clon superficial de ciclos anteriores; sí
+apareció un commit `HEAD` desconectado y rezagado al listar ramas antes del `checkout`, resuelto
+sin más con el propio `git checkout develop && git pull`, sin pérdida de historia). Sin cambios en
+§1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Sin
+cambio de código: este ciclo no toca `scripts/`, `tests/` ni `assets/`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-22, ciclo de Programador: novena reconfirmación del día, tras la octava de esta mañana
+  (`a4936ea`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-22, ciclo de Programador: octava reconfirmación del día, tras la séptima de esta mañana
   (`aa9aa23`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-22, ciclo de Programador: séptima reconfirmación del día, tras la sexta de esta mañana
