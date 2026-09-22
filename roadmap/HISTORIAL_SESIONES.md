@@ -32,6 +32,39 @@
 
 ---
 
+### Sesión 2026-09-22 (11) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (noveno ciclo de PM consecutivo)
+**Tarea(s):** ninguna R-XX/T-XX/P-XX. Ciclo de gestión de roadmap (rutina
+`product-manager-teleprompter`).
+**Estado resultante:** N/A — ningún cambio de estado en §1 de `SEGUIMIENTO.md`.
+**Commits a develop:** `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/DECISIONES_TECNICAS.md`,
+`roadmap/SEGUIMIENTO.md` y esta entrada de `roadmap/HISTORIAL_SESIONES.md`. Cero cambio en
+`scripts/`, `tests/` ni `assets/`.
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** los cuatro documentos vivos de `roadmap/` listados arriba.
+**Verificaciones pre-push:** tipos N/A · lint N/A · tests N/A · build N/A (ciclo puramente
+documental, sin cambio de código; no aplica el pipeline de verificación de §0.1).
+**Health check post-deploy:** N/A (no hay instalación que verificar en este ciclo).
+**Decisiones tomadas:** fila `2026-09-22 | PM` añadida a `DECISIONES_TECNICAS.md` (verificación
+directa por `grep` del hilo `tomas_por_escena`/`EstadoProyecto.tomas` en los seis módulos que
+conecta R-18, sin grieta nueva encontrada; candidata toma↔archivo de vídeo para ffmpeg
+reconfirmada sin cambios, no abierta como R-XX).
+**Hallazgos del auditor atendidos:** ninguno nuevo que atender — único `ABIERTO` de
+`auditoriacontinua.md` (`#24`, baja, de proceso) reconfirmado sin cambios en la pasada del propio
+2026-09-22 ("novena pasada consecutiva sin cambios de código; cero hallazgos nuevos"), sigue
+enrutado a la pregunta #11 de `SEGUIMIENTO.md` §6, pendiente de respuesta del dueño.
+**Hallazgos:** ninguno de código. Verificación propia de este ciclo (`grep` cruzado de
+`tomas_por_escena` en `calibracion.py`/`capitulos_youtube.py`/`pptx.py`/`salidas.py`/
+`srt_alineado.py`/`tomas.py`) confirma que R-18 sigue conectada íntegramente, sin dato calculado
+huérfano del selector real de T-30.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin cambio respecto a los ocho ciclos de PM anteriores — el bloqueo #7 de
+`SEGUIMIENTO.md` §3 (grabar un curso completo con la skill) sigue siendo la única fuente capaz de
+motivar la siguiente R-XX genuina; cuando se resuelva, revisar primero la candidata dejada en
+`ROADMAP_PRODUCTO.md`/`DECISIONES_TECNICAS.md` (asociación toma↔archivo de vídeo + lista de
+concatenación ffmpeg) a la luz del feedback real de esa grabación.
+
+---
+
 ### Sesión 2026-09-22 (10) — Ciclo de Programador: décima reconfirmación del día, sin novedad de código
 **Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
 `COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía,
