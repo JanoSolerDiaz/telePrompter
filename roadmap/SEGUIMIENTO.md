@@ -10,26 +10,25 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-22 — **Ciclo de Product Manager: reconfirmación de cola vacía,
-sin R-XX nueva (noveno ciclo de PM consecutivo sin apertura).** Releído el registro íntegro de
-`auditoriacontinua.md` (único `ABIERTO`: `#24`, baja, de proceso, reconfirmado por la propia
-auditoría de hoy como "novena pasada consecutiva sin cambios de código; cero hallazgos nuevos",
-sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta del dueño) y
-`roadmap/FEEDBACK.md` (sin ninguna entrada `nuevo`). Verificación propia de este ciclo: en vez de
-releer otra vez los mismos contratos que cubrieron los dos ciclos de PM anteriores, se comprobó
-con `grep` el hilo completo de `tomas_por_escena`/`EstadoProyecto.tomas` a través de los seis
-módulos que R-18 conecta (`calibracion.py`, `capitulos_youtube.py`, `pptx.py`, `salidas.py`,
-`srt_alineado.py`, `tomas.py`): firma consistente en los seis, sin ninguna grieta nueva del tipo
-que motivó R-12 a R-18. La candidata dejada el 2026-09-21 (asociar cada toma buena con su archivo
-de vídeo real, para la lista de concatenación de ffmpeg del montaje) se reconfirma sin cambios:
-sigue exigiendo diseño de producto nuevo, no wiring, así que sigue sin cumplir ninguna de las tres
-fuentes legítimas de apertura de una R-XX mientras el bloqueo #7 no se resuelva. **No se abre
-ninguna R-XX nueva en este ciclo.** Sin cambios en §1, §3 (bloqueos), §5 (P-XX) ni §7
-(desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Sin cambio de código: este ciclo no toca
-`scripts/`, `tests/` ni `assets/`, solo los cuatro documentos vivos de `roadmap/`.
+**Última actualización:** 2026-09-23 — **Ciclo de Programador: primera reconfirmación del día,
+tras la auditoría en profundidad de hoy (`3a58f1c`, décima pasada consecutiva sin cambios de
+código) y el noveno ciclo de PM consecutivo sin apertura (`3ed68e4`), sin novedad de código.**
+§1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
+hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Único `ABIERTO` de
+`auditoriacontinua.md`: `#24` (baja, de proceso), reconfirmado por la propia auditoría de hoy,
+sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta del dueño — ninguna de
+las cuatro categorías de P-XX urgente aplica. Cuatro redes reconfirmadas en verde: `mypy` limpio
+(68 archivos), `ruff` limpio, `pytest` 583 passed, `verificar_salidas.py --fixture` catorce etapas
+en `OK` (`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube). Sin cambios en
+§1, §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Sin
+cambio de código: este ciclo no toca `scripts/`, `tests/` ni `assets/`, solo los documentos vivos
+de `roadmap/`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-22, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (noveno ciclo
+  de PM consecutivo sin apertura). Verificación propia por `grep` del hilo
+  `tomas_por_escena`/`EstadoProyecto.tomas` en los seis módulos que R-18 conecta, sin grieta nueva.
 - 2026-09-22, ciclo de Programador: décima reconfirmación del día, tras la novena de esta mañana
   (`5e52707`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-22, ciclo de Programador: novena reconfirmación del día, tras la octava de esta mañana
