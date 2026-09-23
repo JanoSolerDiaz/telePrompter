@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-23 — **Ciclo de Programador: octava reconfirmación del día,
-tras la séptima de hoy (`c2cf6bb`), sin novedad de código.**
+**Última actualización:** 2026-09-23 — **Ciclo de Programador: novena reconfirmación del día,
+tras la octava de hoy (`979e821`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía, releída de nuevo en este ciclo. Único
 `ABIERTO` de `auditoriacontinua.md`: `#24` (baja, de proceso), sigue enrutado a la pregunta #11 de
@@ -24,6 +24,8 @@ como siempre en este contenedor de nube). Sin cambios en §1, §3 (bloqueos), §
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-23, ciclo de Programador: octava reconfirmación del día, tras la séptima de hoy
+  (`c2cf6bb`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-23, ciclo de Programador: séptima reconfirmación del día, tras la sexta de hoy
   (`df16dd8`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-23, ciclo de Programador: sexta reconfirmación del día, tras la quinta de hoy
