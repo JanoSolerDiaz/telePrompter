@@ -32,6 +32,46 @@
 
 ---
 
+### Sesión 2026-09-23 (11) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (décimo ciclo de PM consecutivo sin apertura)
+**Tarea(s):** ninguna R-XX nueva. Releído el registro completo de hallazgos de
+`auditoriacontinua.md` (único `ABIERTO`: `#24`, baja, de proceso, ya enrutado a la pregunta #11 de
+`SEGUIMIENTO.md` §6, todavía *(pendiente)* de respuesta del dueño — nada que convertir en R-XX ni
+en backlog) y `roadmap/FEEDBACK.md` completo (sigue sin ninguna entrada `nuevo` — nada que volcar).
+Verificación propia de este ciclo, con método distinto al de los dos ciclos de PM anteriores
+(que ya habían agotado la relectura de contratos y el `grep` del hilo `tomas_por_escena`): búsqueda
+de marcadores de trabajo pendiente (`TODO`/`FIXME`/`XXX`/"pendiente de conectar"/"sin conectar")
+en todo `scripts/`, `assets/` y `references/` (cero marcador real, solo la palabra "TODO" en
+mayúsculas dentro de prosa española normal), inventario de los 29 módulos de `scripts/` contra
+`DEVELOPERS.md` (todos documentados, ninguno huérfano) y relectura completa del reproductor
+(`guion.js`/`estilo.css`) sin funcionalidad a medio construir. Ninguna de las tres fuentes legítimas
+de apertura de una R-XX (hallazgo de auditoría, entrada de feedback real, grieta de arquitectura
+verificada sobre código existente) aparece este ciclo. Se reconfirma sin cambios la candidata
+toma↔archivo de vídeo real para la lista de concatenación de ffmpeg (2026-09-21/22), aparcada hasta
+que el bloqueo #7 (grabar un curso completo) aporte evidencia real de rodaje. `ROADMAP_PRODUCTO.md`
+(cabecera y "Cola de producto") actualizado con la fecha y el resultado de este ciclo.
+**Estado resultante:** sin cambios (cola de `ROADMAP_PRODUCTO.md` sigue vacía; §1 de
+`SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA`: T-24b `BLOQUEADA`).
+**Commits a develop:** pendiente de este cierre de sesión (solo actualización de `roadmap/`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/DECISIONES_TECNICAS.md`,
+`roadmap/SEGUIMIENTO.md`, `roadmap/HISTORIAL_SESIONES.md` (todos registro; cero cambio en
+`scripts/`, `tests/` ni `assets/`).
+**Verificaciones pre-push:** tipos ✅ (68 archivos) · lint ✅ · tests ✅ (583) · build ✅
+(`verificar_salidas.py --fixture` vía `python scripts/ci.py`, catorce etapas `OK`; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube).
+**Health check post-deploy:** N/A — sesión de nube, sin acceso a `~/.claude/skills/` del dueño
+(nota de entorno, protocolo v1.3).
+**Decisiones tomadas:** fila 2026-09-23 (PM) añadida a `DECISIONES_TECNICAS.md`.
+**Hallazgos del auditor atendidos:** ninguno nuevo; `#24` (baja, de proceso) sigue `ABIERTO`,
+enrutado a la pregunta #11 de `SEGUIMIENTO.md` §6, todavía *(pendiente)* de respuesta del dueño.
+**Hallazgos:** ninguno de código.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin tarea de código pendiente. La siguiente sesión (de cualquier rol) debe releer
+`auditoriacontinua.md` (único `ABIERTO`: `#24`, baja) y `ROADMAP_PRODUCTO.md` (cola vacía) antes de
+repetir esta misma reconfirmación; la pregunta #11 de `SEGUIMIENTO.md` §6 sigue esperando respuesta
+del dueño; el bloqueo #7 (grabar un curso completo) sigue siendo la única fuente capaz de motivar
+la siguiente R-XX genuina.
+
 ### Sesión 2026-09-23 (10) — Ciclo de Programador: décima reconfirmación del día, sin novedad de código
 **Tarea(s):** ninguna. §1 de `SEGUIMIENTO.md` sin ninguna T-XX/R-XX `PENDIENTE` (única fila no
 `COMPLETADA`: T-24b, `BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía,
