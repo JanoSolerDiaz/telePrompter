@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-25 — **Ciclo de Programador: cuarta reconfirmación del día,
-tras la tercera de hoy (`dc94f78`), sin novedad de código.**
+**Última actualización:** 2026-09-25 — **Ciclo de Programador: quinta reconfirmación del día,
+tras la cuarta de hoy (`6a4dc53`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Único `ABIERTO` de `auditoriacontinua.md`:
 `#24` (baja, de proceso), sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta
@@ -22,13 +22,15 @@ redes en verde con las versiones pineadas (`mypy` limpio 68 archivos, `ruff chec
 repetida la búsqueda de marcadores de trabajo pendiente (`TODO`/`FIXME`/`XXX`/`pendiente de
 conectar`/`sin conectar`) en `scripts/`/`tests/`/`assets/`/`references/` sin ningún hallazgo real
 (todas las coincidencias son la palabra "todo" en prosa de docstring, no marcadores). Confirmado
-también que `master` sigue intacto (`git merge-base --is-ancestor origin/master develop`). **Sin
-trabajo de código pendiente.** Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta
-#11 de §6 sigue *(pendiente)*. Sin cambio de código: este ciclo solo toca `roadmap/SEGUIMIENTO.md` y
-`roadmap/HISTORIAL_SESIONES.md`.
+también que `master` sigue intacto (`git merge-base --is-ancestor origin/master develop`, tras
+`git fetch --unshallow origin` tras un clon superficial). **Sin trabajo de código pendiente.** Sin
+cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Sin
+cambio de código: este ciclo solo toca `roadmap/SEGUIMIENTO.md` y `roadmap/HISTORIAL_SESIONES.md`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-25, ciclo de Programador: cuarta reconfirmación del día, tras la tercera de hoy
+  (`dc94f78`), sin novedad de código.
 - 2026-09-25, ciclo de Programador: tercera reconfirmación del día, tras la segunda de hoy
   (`ef06378`), sin novedad de código.
 - 2026-09-25, ciclo de Programador: segunda reconfirmación del día, tras la primera de hoy
