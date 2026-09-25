@@ -32,6 +32,45 @@
 
 ---
 
+### Sesión 2026-09-25 (12) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (duodécimo ciclo consecutivo)
+**Tarea(s):** ninguna nueva. Gestión de roadmap: releído `auditoriacontinua.md` completo (único
+`ABIERTO`: `#24`, baja, de proceso, ya enrutado a la pregunta #11 de §6, sin severidad alta que
+atender como P-XX urgente) y `roadmap/FEEDBACK.md` completo (sin ninguna entrada `nuevo`).
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `82564f7`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/SEGUIMIENTO.md`,
+`roadmap/HISTORIAL_SESIONES.md` (solo prosa de reconfirmación; cero cambio en `scripts/`, `tests/`,
+`assets/`, `references/`, `fixtures/`, `SKILL.md`, `DEVELOPERS.md`, `PROYECTO.md` — verificado con
+`git diff --stat 0af6e69..HEAD` antes de este commit, limitado a `auditoriacontinua.md` y
+documentos de `roadmap/`).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos) · lint ✅ (`ruff check .`) ·
+tests ✅ (583 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin la skill de marca ni Chrome/Edge).
+**Health check post-deploy:** no aplica (sesión de nube; T-32 e instalación en
+`~/.claude/skills/teleprompter/` siguen BLOQUEADAS, no simulables desde aquí).
+**Decisiones tomadas:** ninguna nueva (reconfirmación, no decisión de producto).
+**Hallazgos del auditor atendidos:** ninguno nuevo que enrutar. `#24` (baja, de proceso) sigue
+`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de §6 — no es un
+hallazgo de producto o arquitectura convertible en R-XX.
+**Hallazgos:** ninguno nuevo. Verificación independiente propia: `git diff --stat 0af6e69..HEAD`
+(commit del ciclo de PM anterior) confirma que los once commits intermedios no tocan `scripts/`,
+`tests/`, `assets/` ni `references/`; búsqueda de `TODO`/`FIXME`/`XXX`/`pendiente de conectar`/`sin
+conectar` en esas carpetas sin ningún marcador real (las mismas dos coincidencias de siempre son
+prosa de docstring). Ángulo de verificación nuevo este ciclo: contraste de la capa de
+contratos/documentación frente al código real — `SKILL.md` frente a los ~90 campos de
+`Configuracion` (`tests/test_skill_md.py`, sin discrepancia) y los cuatro `references/contrato-*.md`
+sin `version_contrato`/versión pendiente de subir. La candidata de arquitectura pendiente (asociar
+cada toma buena con su archivo de vídeo real para la lista de concatenación de ffmpeg del montaje)
+se reconfirma aparcada sin cambios, a la espera del bloqueo #7 (grabar un curso completo).
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** ninguno de código. La siguiente sesión de Programador reconfirma cuatro redes en
+verde sin novedad; la siguiente sesión de PM repite este mismo ciclo salvo que aparezca un hallazgo
+de auditoría nuevo, una entrada `nuevo` en `FEEDBACK.md` o evidencia real de rodaje (bloqueo #7).
+
+---
+
 ### Sesión 2026-09-25 (10) — Ciclo de Programador: décima reconfirmación del día, sin novedad de código
 **Tarea(s):** ninguna nueva. Releído `roadmap/SEGUIMIENTO.md` §1 (fuente autoritativa) y
 `auditoriacontinua.md` (registro de hallazgos y la auditoría más reciente, 2026-09-25): único
