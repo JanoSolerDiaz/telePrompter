@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-25 — **Ciclo de Programador: segunda reconfirmación del día,
-tras la primera de hoy (`6e5c795`), sin novedad de código.**
+**Última actualización:** 2026-09-25 — **Ciclo de Programador: tercera reconfirmación del día,
+tras la segunda de hoy (`ef06378`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Único `ABIERTO` de `auditoriacontinua.md`:
 `#24` (baja, de proceso), sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta
@@ -27,6 +27,8 @@ cambio de código: este ciclo solo toca `roadmap/SEGUIMIENTO.md` y `roadmap/HIST
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-25, ciclo de Programador: segunda reconfirmación del día, tras la primera de hoy
+  (`6e5c795`), sin novedad de código.
 - 2026-09-25, ciclo de Programador: primera reconfirmación del día, tras la duodécima auditoría en
   profundidad (`312fe75`) y el undécimo ciclo de PM consecutivo sin apertura (`0af6e69`), sin
   novedad de código.
