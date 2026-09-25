@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-25 — **Ciclo de Programador: novena reconfirmación del día,
-tras la octava de hoy (`630482d`), sin novedad de código.**
+**Última actualización:** 2026-09-25 — **Ciclo de Programador: décima reconfirmación del día,
+tras la novena de hoy (`4a1e7ab`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Único `ABIERTO` de `auditoriacontinua.md`:
 `#24` (baja, de proceso), sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta
@@ -21,18 +21,16 @@ redes en verde con las versiones pineadas (`mypy` limpio 68 archivos, `ruff chec
 `python scripts/ci.py`; `.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube);
 repetida la búsqueda de marcadores de trabajo pendiente (`TODO`/`FIXME`/`XXX`/`pendiente de
 conectar`/`sin conectar`) en `scripts/`/`tests/`/`assets/`/`references/` sin ningún hallazgo real
-(todas las coincidencias son la palabra "todo" en prosa de docstring, no marcadores). El chequeo
-`git merge-base --is-ancestor origin/master develop` dio negativo en este contenedor (clon
-superficial, `.git/shallow` presente, sin historia común visible con `origin/master`) — es el mismo
-falso positivo de `git clone --depth` ya diagnosticado y cerrado en el bloqueo #8 de §3
-(2026-09-10): no hay ninguna escritura ni intento de tocar `master` en esta sesión, solo commits en
-`develop`. Diff vacío entre esta sesión y la anterior (`630482d`) fuera de `roadmap/`. **Sin trabajo
-de código pendiente.** Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de
-§6 sigue *(pendiente)*. Sin cambio de código: este ciclo solo toca `roadmap/SEGUIMIENTO.md` y
+(todas las coincidencias son la palabra "todo" en prosa de docstring, no marcadores). Diff vacío
+entre esta sesión y la anterior (`4a1e7ab`) fuera de `roadmap/`. **Sin trabajo de código
+pendiente.** Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
+*(pendiente)*. Sin cambio de código: este ciclo solo toca `roadmap/SEGUIMIENTO.md` y
 `roadmap/HISTORIAL_SESIONES.md`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-25, ciclo de Programador: novena reconfirmación del día, tras la octava de hoy
+  (`630482d`), sin novedad de código.
 - 2026-09-25, ciclo de Programador: octava reconfirmación del día, tras la séptima de hoy
   (`78075a2`), sin novedad de código.
 - 2026-09-25, ciclo de Programador: séptima reconfirmación del día, tras la sexta de hoy
