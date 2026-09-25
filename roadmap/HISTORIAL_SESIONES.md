@@ -32,6 +32,36 @@
 
 ---
 
+### Sesión 2026-09-25 (1) — Ciclo de Programador: primera reconfirmación del día, sin novedad de código
+**Tarea(s):** ninguna nueva. Releído `roadmap/HOJA_DE_RUTA.md` §1 (vía `SEGUIMIENTO.md`, fuente
+autoritativa) y `auditoriacontinua.md` completo: único `ABIERTO` es `#24` (baja, de proceso), ya
+enrutado a la pregunta #11 de §6, sin ningún hallazgo de severidad alta que atender como P-XX
+urgente. Sin ninguna T-XX/R-XX `PENDIENTE` que ejecutar (única fila no `COMPLETADA`: T-24b,
+`BLOQUEADA` por hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada).
+**Commits a develop:** pendiente de este cierre (tras `312fe75`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md`, `roadmap/HISTORIAL_SESIONES.md` (solo
+prosa de reconfirmación; cero cambio en `scripts/`, `tests/`, `assets/`, `references/`,
+`fixtures/`, `SKILL.md`, `DEVELOPERS.md`, `PROYECTO.md`).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos) · lint ✅ (`ruff check .`) ·
+tests ✅ (583 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin la skill de marca ni Chrome/Edge).
+**Health check post-deploy:** no aplica (sesión de nube; T-32 e instalación en
+`~/.claude/skills/teleprompter/` siguen BLOQUEADAS, no simulables desde aquí).
+**Decisiones tomadas:** ninguna nueva.
+**Hallazgos del auditor atendidos:** ninguno nuevo que enrutar. `#24` (baja, de proceso) sigue
+`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de §6.
+**Hallazgos:** ninguno. Búsqueda de marcadores de trabajo pendiente
+(`TODO`/`FIXME`/`XXX`/`pendiente de conectar`/`sin conectar`) en `scripts/`/`tests/`/`assets/`/
+`references/` repetida sin ningún hallazgo real (las mismas dos coincidencias de siempre son prosa
+de docstring).
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** ninguno de código. Esperar respuesta del dueño a la pregunta #11 de §6, o
+evidencia real de rodaje (bloqueo #7 de §3) que active nueva superficie de producto.
+
+---
+
 ### Sesión 2026-09-24 (11) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (undécimo ciclo consecutivo)
 **Tarea(s):** ninguna nueva. Gestión de roadmap: releído `auditoriacontinua.md` completo (único
 `ABIERTO`: `#24`, baja, de proceso, ya enrutado a la pregunta #11 de §6, sin severidad alta que

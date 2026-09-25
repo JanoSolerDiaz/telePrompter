@@ -10,28 +10,30 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-24 — **Ciclo de Product Manager: reconfirmación de cola vacía,
-sin R-XX nueva (undécimo ciclo de PM consecutivo sin apertura).**
+**Última actualización:** 2026-09-25 — **Ciclo de Programador: primera reconfirmación del día,
+tras la duodécima auditoría en profundidad (`312fe75`) y el undécimo ciclo de PM consecutivo sin
+apertura (`0af6e69`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Único `ABIERTO` de `auditoriacontinua.md`:
 `#24` (baja, de proceso), sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta
-del dueño — no es un hallazgo de producto o arquitectura que este roadmap deba convertir en R-XX;
-`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Verificación propia de este ciclo:
-`git diff --stat 5f7b071..HEAD` (commit del ciclo de PM anterior) confirma que los once commits
-intermedios (diez reconfirmaciones del Programador y una auditoría) no tocan `scripts/`, `tests/`,
-`assets/` ni `references/`; búsqueda independiente de marcadores de trabajo pendiente
-(`TODO`/`FIXME`/`XXX`/`pendiente de conectar`/`sin conectar`) en `scripts/`/`tests/`/`assets/`/
-`references/` sin ningún hallazgo real (las mismas dos únicas coincidencias de siempre son prosa de
-docstring, no marcadores). La candidata de arquitectura pendiente sobre la mesa (asociar cada toma
-buena con su archivo de vídeo real para la lista de concatenación de ffmpeg del montaje) se
-reconfirma aparcada sin cambios: sigue exigiendo diseñar superficie de producto nueva, no conectar
-una ya construida, así que sigue esperando evidencia real de rodaje (bloqueo #7 de §3). **No se abre
-ninguna R-XX nueva en este ciclo.** Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones);
-pregunta #11 de §6 sigue *(pendiente)*. Sin cambio de código: este ciclo solo toca
-`roadmap/ROADMAP_PRODUCTO.md`, `roadmap/SEGUIMIENTO.md` y `roadmap/HISTORIAL_SESIONES.md`.
+del dueño. Verificación propia de este ciclo: `pip install -r requirements-dev.txt` limpio, cuatro
+redes en verde con las versiones pineadas (`mypy` limpio 68 archivos, `ruff check .` sin avisos,
+`pytest` 583 passed, `python scripts/ci.py` en VERDE y `verificar_salidas.py --fixture` con las
+catorce etapas en OK; `.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube);
+repetida la búsqueda de marcadores de trabajo pendiente (`TODO`/`FIXME`/`XXX`/`pendiente de
+conectar`/`sin conectar`) en `scripts/`/`tests/`/`assets/`/`references/` sin ningún hallazgo real
+(las mismas dos únicas coincidencias de siempre son prosa de docstring, no marcadores). **Sin
+trabajo de código pendiente.** Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta
+#11 de §6 sigue *(pendiente)*. Sin cambio de código: este ciclo solo toca `roadmap/SEGUIMIENTO.md` y
+`roadmap/HISTORIAL_SESIONES.md`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-25, ciclo de Auditoría: duodécima pasada consecutiva sin cambios de código, cero hallazgos
+  nuevos. `#24` (baja, de proceso) reconfirmado `ABIERTO`, pendiente exclusivamente de la respuesta
+  del dueño a la pregunta #11 de §6.
+- 2026-09-24, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (undécimo ciclo
+  de PM consecutivo sin apertura).
 - 2026-09-24, ciclo de Programador: décima reconfirmación del día, tras la novena de hoy
   (`5d7168e`), sin novedad de código. Cuatro redes en verde (583 tests).
 - 2026-09-24, ciclo de Programador: novena reconfirmación del día, tras la octava de hoy
