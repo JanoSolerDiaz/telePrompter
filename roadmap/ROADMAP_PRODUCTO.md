@@ -8,31 +8,26 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-25 (ciclo de PM). **Reconfirmación de cola vacía, sin R-XX
-nueva (duodécimo ciclo de PM consecutivo sin apertura).** Desde el ciclo del 2026-09-17 (que archivó
-R-18/oleada v7 a `ROADMAP_HISTORICO.md`) sigue sin haber ningún commit de código nuevo — solo
-reconfirmaciones sucesivas del Programador, auditorías en profundidad (la del propio 2026-09-25
-confirma "duodécima pasada consecutiva sin cambios de código; cero hallazgos nuevos", verificado con
-`git diff --stat` desde el ciclo de auditoría anterior) y ciclos de PM sin novedad (ver
-`SEGUIMIENTO.md`). Releído el registro de hallazgos íntegro de `auditoriacontinua.md`: un único
-`ABIERTO` (`#24`, baja, de proceso), sigue enrutado a la pregunta #11 de §6 de `SEGUIMIENTO.md` —
-sigue `(pendiente)` de respuesta del dueño, no un hallazgo de producto o arquitectura que este
-roadmap deba convertir en R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila,
-plantilla vacía).
+**Última actualización:** 2026-09-26 (ciclo de PM). **Reconfirmación de cola vacía, sin R-XX
+nueva (decimotercer ciclo de PM consecutivo sin apertura).** Desde el ciclo del 2026-09-17 (que
+archivó R-18/oleada v7 a `ROADMAP_HISTORICO.md`) sigue sin haber ningún commit de código nuevo —
+solo reconfirmaciones sucesivas del Programador, auditorías en profundidad (la del propio
+2026-09-26 confirma "decimotercera pasada consecutiva sin cambios de código; cero hallazgos
+nuevos", verificado con `git diff --stat` desde el ciclo de auditoría anterior) y ciclos de PM sin
+novedad (ver `SEGUIMIENTO.md`). Releído el registro de hallazgos íntegro de `auditoriacontinua.md`:
+un único `ABIERTO` (`#24`, baja, de proceso), sigue enrutado a la pregunta #11 de §6 de
+`SEGUIMIENTO.md` — sigue `(pendiente)` de respuesta del dueño, no un hallazgo de producto o
+arquitectura que este roadmap deba convertir en R-XX. `roadmap/FEEDBACK.md` sigue sin ninguna
+entrada `nuevo` (única fila, plantilla vacía).
 
-Revisión propia de este ciclo: verificación independiente con `git diff --stat 0af6e69..HEAD`
-(commit del ciclo de PM anterior) confirma que los once commits intermedios (diez reconfirmaciones
-del Programador y una auditoría) no tocan `scripts/`, `tests/`, `assets/` ni `references/` — solo
-`auditoriacontinua.md` y documentos de `roadmap/`. Repetida también, de forma independiente, la
-búsqueda de ganchos sueltos (`grep -rn "TODO\|FIXME\|XXX\|pendiente de conectar\|sin conectar"`
-sobre `scripts/`, `tests/`, `assets/` y `references/`): las mismas dos únicas coincidencias de
-siempre son prosa normal en español (`documento_revision.py`, `calibracion.py`), no marcadores de
-trabajo pendiente. Ángulo de verificación nuevo este ciclo (ninguna pasada anterior lo había
-cubierto): contraste de la capa de contratos/documentación frente al código real — `tests/
-test_skill_md.py` compara `SKILL.md` contra los ~90 campos de `Configuracion` (`scripts/config.py`)
-en ambas direcciones, y los cuatro `references/contrato-*.md` (montaje, tarjetas, tomas, tropiezos)
-siguen citando su `version_contrato`/versión sin incompatibilidad pendiente; sin discrepancia. Nada
-de esto encaja en ninguna de las tres fuentes legítimas de apertura de una R-XX (hallazgo de
+Revisión propia de este ciclo: verificación independiente con `git diff --stat 1622bde..HEAD`
+(commit del ciclo de PM anterior) confirma que el único commit intermedio (la decimotercera
+auditoría en profundidad) no toca `scripts/`, `tests/`, `assets/` ni `references/` — solo
+`auditoriacontinua.md`. Repetida también, de forma independiente, la búsqueda de ganchos sueltos
+(`grep -rn "TODO\|FIXME\|XXX\|pendiente de conectar\|sin conectar"` sobre `scripts/`, `tests/`,
+`assets/` y `references/`): las mismas dos únicas coincidencias de siempre son prosa normal en
+español (`documento_revision.py`, `calibracion.py`), no marcadores de trabajo pendiente. Nada de
+esto encaja en ninguna de las tres fuentes legítimas de apertura de una R-XX (hallazgo de
 auditoría, entrada de feedback real, grieta de arquitectura verificada sobre código existente). La
 candidata dejada por el ciclo del 2026-09-21 (asociar cada toma buena con su archivo de vídeo real,
 para la lista de concatenación de ffmpeg del montaje) se reconfirma sin cambios: sigue exigiendo
@@ -40,7 +35,7 @@ diseñar superficie de producto nueva, no conectar una ya construida, así que s
 que el bloqueo #7 (grabar un curso completo) aporte evidencia real de rodaje. **No se abre ninguna
 R-XX nueva en este ciclo** — el bloqueo #7 de `SEGUIMIENTO.md` §3 sigue siendo la única fuente capaz
 de motivar la siguiente mejora genuina, mismo criterio ya razonado por los ciclos de PM del
-2026-09-11, el 2026-09-15 y el 2026-09-17 al 2026-09-24 en `DECISIONES_TECNICAS.md`.
+2026-09-11, el 2026-09-15 y el 2026-09-17 al 2026-09-25 en `DECISIONES_TECNICAS.md`.
 
 ---
 
@@ -141,7 +136,7 @@ viven ahí.
 
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` no tiene, en este ciclo (2026-09-25), ninguna R-XX `PENDIENTE`.
+`ROADMAP_PRODUCTO.md` no tiene, en este ciclo (2026-09-26), ninguna R-XX `PENDIENTE`.
 `auditoriacontinua.md` no aporta ningún hallazgo nuevo que enrutar (único `ABIERTO`, `#24`, ya
 enrutado como pregunta de gobernanza en §6 #11 de `SEGUIMIENTO.md`, ajena al contenido de este
 roadmap) y `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Revisión de este ciclo descrita
