@@ -32,6 +32,54 @@
 
 ---
 
+### Sesión 2026-09-27 (14) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (decimocuarto ciclo consecutivo)
+**Tarea(s):** ninguna nueva. Gestión de roadmap: releído `auditoriacontinua.md` completo (único
+`ABIERTO`: `#24`, baja, de proceso, ya enrutado a la pregunta #11 de §6, sin severidad alta que
+atender como P-XX urgente — la decimocuarta pasada de auditoría de hoy, `6dfb6a4`, lo reconfirma sin
+que el patrón se repita) y `roadmap/FEEDBACK.md` completo (sin ninguna entrada `nuevo`). A diferencia
+de ciclos anteriores, esta sesión ejecutó las cuatro redes de verificación por su cuenta (no solo
+leídas del informe del auditor) antes de reconfirmar: `mypy`, `ruff`, `pytest` y
+`verificar_salidas.py --fixture`, las cuatro en verde. Revisado también `references/contrato-montaje.md`
+y `scripts/tomas.py` para verificar de primera mano, no solo por la narrativa de ciclos anteriores,
+que la candidata aparcada (asociar cada toma buena con su archivo de vídeo real, para la lista de
+concatenación de ffmpeg) sigue exigiendo diseñar una superficie de producto nueva —el registro de
+tomas de R-02 guarda duración/nota/marca de "buena" pero ningún nombre ni ruta de archivo de vídeo,
+y un teleprompter que corre como `.html` local no tiene acceso de escritura al sistema de archivos
+del dueño para descubrirlo por sí solo— y no una conexión de wiring sobre código ya construido, así
+que se mantiene el mismo criterio de los catorce ciclos anteriores: aparcada hasta que el bloqueo #7
+(grabar un curso completo) aporte evidencia real de rodaje sobre qué convención de nombres de
+archivo usa el dueño y cómo prefiere confirmarla.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `6dfb6a4`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/SEGUIMIENTO.md`,
+`roadmap/HISTORIAL_SESIONES.md` (solo prosa de reconfirmación; cero cambio en `scripts/`, `tests/`,
+`assets/`, `references/`, `fixtures/`, `SKILL.md`, `DEVELOPERS.md`, `PROYECTO.md` — verificado con
+`git diff --stat 99c68c6..HEAD` antes de este commit, limitado a `auditoriacontinua.md`).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos) · lint ✅ (`ruff check .`) ·
+tests ✅ (583 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin la skill de marca ni Chrome/Edge).
+**Health check post-deploy:** no aplica (sesión de nube; T-32 e instalación en
+`~/.claude/skills/teleprompter/` siguen BLOQUEADAS, no simulables desde aquí).
+**Decisiones tomadas:** ninguna nueva (reconfirmación, no decisión de producto).
+**Hallazgos del auditor atendidos:** ninguno nuevo que enrutar. `#24` (baja, de proceso) sigue
+`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de §6 (once pasadas
+de auditoría consecutivas esperándola) — no es un hallazgo de producto/arquitectura que este ciclo
+deba convertir en R-XX.
+**Hallazgos:** ninguno nuevo. Repetida (con resultado idéntico) la búsqueda de marcadores de trabajo
+pendiente (`TODO`/`FIXME`/`XXX`/`pendiente de conectar`/`sin conectar`) sobre `scripts/`, `tests/`,
+`assets/` y `references/`: las mismas dos coincidencias de siempre son prosa normal en español, no
+marcadores reales.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin trabajo de código pendiente. La siguiente mejora genuina de producto solo
+puede salir de (a) el dueño respondiendo la pregunta #11 de §6, (b) una entrada real en
+`roadmap/FEEDBACK.md`, o (c) el bloqueo #7 (grabar un curso completo) aportando evidencia real de
+rodaje — en particular, para desaparcar la candidata toma↔archivo de vídeo, saber qué software de
+grabación usa el dueño y qué convención de nombres de archivo produce.
+
+---
+
 ### Sesión 2026-09-26 (13) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (decimotercer ciclo consecutivo)
 **Tarea(s):** ninguna nueva. Gestión de roadmap: releído `auditoriacontinua.md` completo (único
 `ABIERTO`: `#24`, baja, de proceso, ya enrutado a la pregunta #11 de §6, sin severidad alta que

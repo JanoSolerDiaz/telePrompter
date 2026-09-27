@@ -10,28 +10,37 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-26 — **Ciclo de Product Manager: reconfirmación de cola vacía,
-sin R-XX nueva (decimotercer ciclo de PM consecutivo sin apertura).**
+**Última actualización:** 2026-09-27 — **Ciclo de Product Manager: reconfirmación de cola vacía,
+sin R-XX nueva (decimocuarto ciclo de PM consecutivo sin apertura).**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Único `ABIERTO` de `auditoriacontinua.md`:
-`#24` (baja, de proceso), releído completo y reconfirmado correctamente enrutado a la pregunta #11
-de §6, todavía *(pendiente)* de respuesta del dueño — no es un hallazgo de producto/arquitectura que
-este ciclo deba convertir en R-XX. `roadmap/FEEDBACK.md` releído: sigue sin ninguna entrada `nuevo`
-(única fila, plantilla vacía). Verificación propia de este ciclo: `git diff --stat 1622bde..HEAD`
-(commit del ciclo de PM anterior) confirma que el único commit intermedio (la decimotercera auditoría
-en profundidad, `a1b2969`) no toca `scripts/`, `tests/`, `assets/` ni `references/` — solo
-`auditoriacontinua.md`; repetida la búsqueda de marcadores de trabajo pendiente
-(`TODO`/`FIXME`/`XXX`/`pendiente de conectar`/`sin conectar`) sin ningún hallazgo real (las mismas
-dos coincidencias de siempre, prosa en español de `documento_revision.py`/`calibracion.py`). La
-candidata toma↔archivo de vídeo real (para la lista de concatenación de ffmpeg, registrada el
-2026-09-21) se reconfirma sin cambios: sigue exigiendo diseño de producto nuevo, no wiring sobre
-código ya construido, así que sigue aparcada hasta que el bloqueo #7 (grabar un curso completo)
-aporte evidencia real de rodaje. **No se abre ninguna R-XX nueva en este ciclo.** Sin cambios en §3
-(bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Este ciclo solo
-toca `roadmap/SEGUIMIENTO.md`, `roadmap/ROADMAP_PRODUCTO.md` y `roadmap/HISTORIAL_SESIONES.md`.
+`#24` (baja, de proceso), releído completo (incluida la decimocuarta pasada de auditoría de hoy,
+`6dfb6a4`) y reconfirmado correctamente enrutado a la pregunta #11 de §6, todavía *(pendiente)* de
+respuesta del dueño tras once pasadas de auditoría consecutivas esperándola — no es un hallazgo de
+producto/arquitectura que este ciclo deba convertir en R-XX. `roadmap/FEEDBACK.md` releído: sigue
+sin ninguna entrada `nuevo` (única fila, plantilla vacía). Verificación propia de este ciclo:
+`git diff --stat 99c68c6..HEAD` (commit del ciclo de PM anterior) confirma que el único commit
+intermedio (la decimocuarta auditoría en profundidad, `6dfb6a4`) no toca `scripts/`, `tests/`,
+`assets/` ni `references/` — solo `auditoriacontinua.md`; repetida de forma independiente (no solo
+leída del informe del auditor) la ejecución de las cuatro redes (`mypy` 68 archivos limpio, `ruff`
+limpio, 583 tests en verde, `verificar_salidas.py --fixture` catorce etapas en OK) y la búsqueda de
+marcadores de trabajo pendiente (`TODO`/`FIXME`/`XXX`/`pendiente de conectar`/`sin conectar`) sin
+ningún hallazgo real (las mismas dos coincidencias de siempre, prosa en español de
+`documento_revision.py`/`calibracion.py`). La candidata toma↔archivo de vídeo real (para la lista de
+concatenación de ffmpeg, registrada el 2026-09-21) se reconfirma sin cambios: sigue exigiendo diseño
+de producto nuevo, no wiring sobre código ya construido, así que sigue aparcada hasta que el bloqueo
+#7 (grabar un curso completo) aporte evidencia real de rodaje. **No se abre ninguna R-XX nueva en
+este ciclo.** Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
+*(pendiente)*. Este ciclo solo toca `roadmap/SEGUIMIENTO.md`, `roadmap/ROADMAP_PRODUCTO.md` y
+`roadmap/HISTORIAL_SESIONES.md`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-27, ciclo de Auditoría: decimocuarta pasada consecutiva sin cambios de código, cero
+  hallazgos nuevos. `#24` (baja, de proceso) reconfirmado `ABIERTO`, pendiente exclusivamente de la
+  respuesta del dueño a la pregunta #11 de §6 (once pasadas consecutivas esperándola).
+- 2026-09-26, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (decimotercer
+  ciclo de PM consecutivo sin apertura).
 - 2026-09-25, ciclo de Auditoría: decimotercera pasada consecutiva sin cambios de código, cero
   hallazgos nuevos. `#24` (baja, de proceso) reconfirmado `ABIERTO`, pendiente exclusivamente de la
   respuesta del dueño a la pregunta #11 de §6.
