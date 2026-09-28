@@ -32,6 +32,42 @@
 
 ---
 
+### Sesión 2026-09-28 (22) — Ciclo de Programador: decimoctava reconfirmación del día, tras la decimoséptima reconfirmación de hoy
+**Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
+git pull origin develop` (fast-forward limpio hasta `f774577`, HEAD de `origin/develop`),
+`pip install -r requirements-dev.txt`, releídos `roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md`
+§1 (fuente autoritativa: sin ninguna T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA` es T-24b
+`BLOQUEADA` por hardware del dueño) y `auditoriacontinua.md` completo (único `ABIERTO`: `#24`, baja,
+de proceso, ya enrutado a la pregunta #11 de §6, sin severidad alta que atender como P-XX urgente).
+También confirmada la cola de `ROADMAP_PRODUCTO.md` vacía y `roadmap/FEEDBACK.md` sin ninguna
+entrada `nuevo`. `git status`/`git log` confirmaron que el clon quedó exactamente en `f774577` tras
+el `pull`, sin ningún commit de código nuevo desde la decimoséptima reconfirmación de hoy: nada que
+verificar de más allá de repetir las cuatro redes por cuenta propia.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `f774577`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md`, `roadmap/HISTORIAL_SESIONES.md` (solo
+prosa de reconfirmación; cero cambio en `scripts/`, `tests/`, `assets/`, `references/`, `fixtures/`,
+`SKILL.md`, `DEVELOPERS.md`, `PROYECTO.md`, `ROADMAP_PRODUCTO.md` ni `DECISIONES_TECNICAS.md`).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos) · lint ✅ (`ruff check .`) ·
+tests ✅ (583 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin la skill de marca ni Chrome/Edge).
+**Health check post-deploy:** no aplica (sesión de nube; T-32 e instalación en
+`~/.claude/skills/teleprompter/` siguen BLOQUEADAS, no simulables desde aquí).
+**Decisiones tomadas:** ninguna nueva (reconfirmación, no decisión de producto; nada que apuntar en
+`DECISIONES_TECNICAS.md`).
+**Hallazgos del auditor atendidos:** ninguno nuevo que enrutar. `#24` (baja, de proceso) sigue
+`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de §6 (quince
+pasadas de auditoría consecutivas esperándola).
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** el siguiente ciclo repite el mismo protocolo de arranque; si sigue sin respuesta
+del dueño a la pregunta #11 de §6 y sin ninguna R-XX/T-XX nueva, reconfirma de nuevo sin abrir nada
+por su cuenta.
+
+---
+
 ### Sesión 2026-09-28 (21) — Ciclo de Programador: decimoséptima reconfirmación del día, tras la decimosexta reconfirmación de hoy
 **Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
 git pull origin develop` (fast-forward limpio hasta `7ac67d4`, HEAD de `origin/develop`),
