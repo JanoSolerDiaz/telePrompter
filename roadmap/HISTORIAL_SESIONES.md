@@ -32,6 +32,44 @@
 
 ---
 
+### Sesión 2026-09-28 (18) — Ciclo de Programador: reconfirmación sin novedad de código, tras la decimotercera reconfirmación de hoy
+**Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
+git pull origin develop` (el clon estaba en *detached HEAD* dejado por el contenedor efímero,
+resuelto sin pérdida — fast-forward limpio hasta `aa7a6f2`), `pip install -r requirements-dev.txt`,
+releídos `roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md` §1 (fuente autoritativa: sin ninguna
+T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA` es T-24b `BLOQUEADA` por hardware del dueño) y
+`auditoriacontinua.md` completo (único `ABIERTO`: `#24`, baja, de proceso, ya enrutado a la
+pregunta #11 de §6, sin severidad alta que atender como P-XX urgente). También confirmada la cola
+de `ROADMAP_PRODUCTO.md` vacía y `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`. `git status`/
+`git log` confirmaron que el clon quedó exactamente en `aa7a6f2` tras el `pull`, sin ningún commit
+de código nuevo desde la decimotercera reconfirmación de hoy: nada que verificar de más allá de
+repetir las cuatro redes por cuenta propia.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `aa7a6f2`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md`, `roadmap/HISTORIAL_SESIONES.md` (solo
+prosa de reconfirmación; cero cambio en `scripts/`, `tests/`, `assets/`, `references/`, `fixtures/`,
+`SKILL.md`, `DEVELOPERS.md`, `PROYECTO.md`, `ROADMAP_PRODUCTO.md` ni `DECISIONES_TECNICAS.md`).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos) · lint ✅ (`ruff check .`) ·
+tests ✅ (583 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin la skill de marca ni Chrome/Edge).
+**Health check post-deploy:** no aplica (sesión de nube; T-32 e instalación en
+`~/.claude/skills/teleprompter/` siguen BLOQUEADAS, no simulables desde aquí).
+**Decisiones tomadas:** ninguna nueva (reconfirmación, no decisión de producto; nada que apuntar en
+`DECISIONES_TECNICAS.md`).
+**Hallazgos del auditor atendidos:** ninguno nuevo que enrutar. `#24` (baja, de proceso) sigue
+`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de §6 (quince
+pasadas de auditoría consecutivas esperándola).
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin trabajo de código pendiente. La siguiente mejora genuina de producto solo
+puede salir de (a) el dueño respondiendo la pregunta #11 de §6, (b) una entrada real en
+`roadmap/FEEDBACK.md`, o (c) el bloqueo #7 (grabar un curso completo) aportando evidencia real de
+rodaje para la candidata toma↔archivo de vídeo aparcada.
+
+---
+
 ### Sesión 2026-09-28 (17) — Ciclo de Programador: reconfirmación sin novedad de código, tras la duodécima reconfirmación de hoy
 **Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
 git pull origin develop` (el clon estaba en *detached HEAD* dejado por el contenedor efímero,

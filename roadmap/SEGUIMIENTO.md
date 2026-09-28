@@ -10,19 +10,20 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-28 — **Ciclo de Programador: decimotercera reconfirmación del día
-(hoy), tras la duodécima de hoy (`c08cbcb`), sin novedad de código.**
+**Última actualización:** 2026-09-28 — **Ciclo de Programador: decimocuarta reconfirmación del día
+(hoy), tras la decimotercera de hoy (`aa7a6f2`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. `roadmap/FEEDBACK.md` releído: sigue sin
 ninguna entrada `nuevo` (única fila, plantilla vacía). Único `ABIERTO` de `auditoriacontinua.md`:
 `#24` (baja, de proceso), reconfirmado correctamente enrutado a la pregunta #11 de §6, todavía
-*(pendiente)* de respuesta del dueño tras doce pasadas de auditoría consecutivas esperándola — no
+*(pendiente)* de respuesta del dueño tras quince pasadas de auditoría consecutivas esperándola — no
 es un hallazgo de producto/arquitectura que este ciclo deba convertir en R-XX ni P-XX urgente (no
-tiene severidad alta). Verificación propia de este ciclo: `git status`/`git log` confirman que el
-clon está exactamente en `c08cbcb` (HEAD de `origin/develop` tras el `pull` de arranque) y no hay
-ningún commit de código nuevo desde la duodécima reconfirmación de hoy. Repetida de forma
-independiente (no solo leída del informe del auditor) la ejecución de las cuatro redes: `mypy`
-limpio en 68 archivos, `ruff check .` limpio, 583 tests en verde y
+tiene severidad alta). Verificación propia de este ciclo: el clon estaba en *detached HEAD* al
+arrancar (contenedor efímero nuevo); `git checkout develop && git pull origin develop` resolvió con
+fast-forward limpio hasta `aa7a6f2` (HEAD de `origin/develop`), sin ningún commit de código nuevo
+desde la decimotercera reconfirmación de hoy. Repetida de forma independiente (no solo leída del
+informe del auditor) la ejecución de las cuatro redes vía `python scripts/ci.py`: `mypy` limpio en
+68 archivos, `ruff check .` limpio, 583 tests en verde y
 `python scripts/verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/`.pdf` reales
 LATENTES como siempre en este contenedor de nube, por la ausencia de la skill 480-branded-pptx y de
 Chrome/Edge). Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
@@ -30,6 +31,8 @@ Chrome/Edge). Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); p
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-28, ciclo de Programador: decimotercera reconfirmación del día, tras la duodécima de hoy
+  (`c08cbcb`), sin novedad de código.
 - 2026-09-28, ciclo de Programador: duodécima reconfirmación del día, tras la undécima de hoy
   (`8530ac2`), sin novedad de código.
 - 2026-09-28, ciclo de Programador: undécima reconfirmación del día, tras la decimoquinta auditoría
