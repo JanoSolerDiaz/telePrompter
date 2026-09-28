@@ -32,6 +32,53 @@
 
 ---
 
+### Sesión 2026-09-28 (25) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (decimoquinto ciclo consecutivo)
+**Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
+git pull origin develop` (fast-forward limpio hasta `f0e861c`, HEAD de `origin/develop`, la vigésima
+reconfirmación de hoy del Programador), `pip install -r requirements-dev.txt`. Gestión de roadmap:
+releídos `roadmap/HOJA_DE_RUTA.md` (solo lectura), `roadmap/SEGUIMIENTO.md` §1 (fuente autoritativa:
+sin ninguna T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA` es T-24b `BLOQUEADA` por hardware del
+dueño), `auditoriacontinua.md` completo (único `ABIERTO`: `#24`, baja, de proceso, ya enrutado a la
+pregunta #11 de §6, sin severidad alta que atender como P-XX urgente — la decimoquinta pasada de
+auditoría de hoy lo reconfirma) y `roadmap/FEEDBACK.md` completo (sin ninguna entrada `nuevo`).
+Ejecutadas de forma independiente las cuatro redes de verificación (`mypy`, `ruff`, `pytest` y
+`verificar_salidas.py --fixture`), las cuatro en verde (583 tests, catorce etapas OK). **Ángulo de
+verificación nuevo este ciclo**, no cubierto por los catorce anteriores: consulta directa de
+`mcp__github__list_issues` y `list_pull_requests` sobre `janosolerdiaz/teleprompter` — cero issues y
+cero pull requests abiertos, descartando que exista feedback del dueño archivado en GitHub y sin
+volcar todavía a `roadmap/FEEDBACK.md`. Reconfirmada sin cambios la candidata aparcada (asociar cada
+toma buena con su archivo de vídeo real, para la lista de concatenación de ffmpeg del montaje):
+sigue exigiendo diseñar superficie de producto nueva, no wiring sobre código ya construido, así que
+sigue sin cumplir ninguna de las tres fuentes legítimas de apertura de una R-XX mientras el bloqueo
+#7 (grabar un curso completo) no se resuelva.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `f0e861c`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/SEGUIMIENTO.md`,
+`roadmap/HISTORIAL_SESIONES.md` (solo prosa de reconfirmación; cero cambio en `scripts/`, `tests/`,
+`assets/`, `references/`, `fixtures/`, `SKILL.md`, `DEVELOPERS.md`, `PROYECTO.md`).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos) · lint ✅ (`ruff check .`) ·
+tests ✅ (583 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin la skill de marca ni Chrome/Edge).
+**Health check post-deploy:** no aplica (sesión de nube; T-32 e instalación en
+`~/.claude/skills/teleprompter/` siguen fuera del alcance de esta sesión, no simulables desde aquí).
+**Decisiones tomadas:** ninguna nueva (reconfirmación, no decisión de producto).
+**Hallazgos del auditor atendidos:** ninguno nuevo que enrutar. `#24` (baja, de proceso) sigue
+`ABIERTO` exclusivamente a la espera de la respuesta del dueño a la pregunta #11 de §6 (quince
+pasadas de auditoría consecutivas esperándola) — no es un hallazgo de producto/arquitectura que
+este ciclo deba convertir en R-XX.
+**Hallazgos:** ninguno nuevo. GitHub (issues + PR de `janosolerdiaz/teleprompter`) confirmado sin
+ninguna entrada abierta.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** sin trabajo de código pendiente. La siguiente mejora genuina de producto solo
+puede salir de (a) el dueño respondiendo la pregunta #11 de §6, (b) una entrada real en
+`roadmap/FEEDBACK.md`, o (c) el bloqueo #7 (grabar un curso completo) aportando evidencia real de
+rodaje — en particular, para desaparcar la candidata toma↔archivo de vídeo, saber qué software de
+grabación usa el dueño y qué convención de nombres de archivo produce.
+
+---
+
 ### Sesión 2026-09-28 (24) — Ciclo de Programador: vigésima reconfirmación del día, tras la decimonovena reconfirmación de hoy
 **Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
 git pull origin develop` (fast-forward limpio hasta `92c7f46`, HEAD de `origin/develop`),

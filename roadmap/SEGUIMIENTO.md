@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-28 — **Ciclo de Programador: vigésima reconfirmación del día
-(hoy), tras la decimonovena de hoy (`92c7f46`), sin novedad de código.**
+**Última actualización:** 2026-09-28 — **Ciclo de Product Manager: reconfirmación de cola vacía,
+sin R-XX nueva (decimoquinto ciclo de PM consecutivo sin apertura).**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. `roadmap/FEEDBACK.md` releído: sigue sin
 ninguna entrada `nuevo` (única fila, plantilla vacía). Único `ABIERTO` de `auditoriacontinua.md`:
@@ -19,17 +19,26 @@ ninguna entrada `nuevo` (única fila, plantilla vacía). Único `ABIERTO` de `au
 *(pendiente)* de respuesta del dueño tras quince pasadas de auditoría consecutivas esperándola — no
 es un hallazgo de producto/arquitectura que este ciclo deba convertir en R-XX ni P-XX urgente (no
 tiene severidad alta). Verificación propia de este ciclo: `git checkout develop && git pull origin
-develop` resolvió con fast-forward limpio hasta `92c7f46` (HEAD de `origin/develop`), sin ningún
-commit de código nuevo desde la decimonovena reconfirmación de hoy. Repetida de forma independiente
-(no solo leída del informe del auditor) la ejecución de las cuatro redes vía `python scripts/ci.py`:
+develop` resolvió con fast-forward limpio hasta `f0e861c` (HEAD de `origin/develop`), sin ningún
+commit de código nuevo desde la vigésima reconfirmación de hoy del Programador. Ejecutadas de forma
+independiente las cuatro redes vía `pip install -r requirements-dev.txt` + `python scripts/ci.py`:
 `mypy` limpio en 68 archivos, `ruff check .` limpio, 583 tests en verde y
 `python scripts/verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/`.pdf` reales
 LATENTES como siempre en este contenedor de nube, por la ausencia de la skill 480-branded-pptx y de
-Chrome/Edge). Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
-*(pendiente)*. Este ciclo solo toca `roadmap/SEGUIMIENTO.md` y `roadmap/HISTORIAL_SESIONES.md`.
+Chrome/Edge). **Ángulo de verificación nuevo este ciclo:** consulta directa de
+`mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter` — cero issues y
+cero PR abiertos, descartando feedback del dueño archivado en GitHub sin volcar aún a
+`roadmap/FEEDBACK.md`. Ninguna de las tres fuentes legítimas de apertura de una R-XX (hallazgo de
+auditoría, entrada de feedback real, grieta de arquitectura verificada) aparece este ciclo; la
+candidata toma↔archivo de vídeo real (2026-09-21) se reconfirma aparcada a la espera del bloqueo
+#7. Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
+*(pendiente)*. Este ciclo toca `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/SEGUIMIENTO.md` y
+`roadmap/HISTORIAL_SESIONES.md`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-28, ciclo de Programador: vigésima reconfirmación del día, tras la decimonovena de hoy
+  (`92c7f46`), sin novedad de código.
 - 2026-09-28, ciclo de Programador: decimonovena reconfirmación del día, tras la decimoctava de
   hoy (`3b1f3fe`), sin novedad de código.
 - 2026-09-28, ciclo de Programador: decimoctava reconfirmación del día, tras la decimoséptima de
