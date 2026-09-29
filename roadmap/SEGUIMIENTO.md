@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-29 — **Ciclo de Programador: séptima reconfirmación del día, tras
-la sexta de hoy (`f20002c`), sin novedad de código.**
+**Última actualización:** 2026-09-29 — **Ciclo de Programador: octava reconfirmación del día, tras
+la séptima de hoy (`3e272f6`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Releído `auditoriacontinua.md` filtrando
 por `ABIERTO`: sigue con los mismos dos (`#24`, `#25`), ambos de severidad baja y de proceso, ninguno
@@ -19,15 +19,14 @@ exige P-XX urgente (§0.3 solo lo pide para pérdida de texto del guión, corrup
 del reproductor/auto-contención o seguridad). `#24` sigue enrutado a la pregunta #11 de §6, todavía
 *(pendiente)* de respuesta del dueño (trece pasadas de auditoría consecutivas esperándola,
 2026-09-17 a 2026-09-29, sin auditoría nueva desde entonces que sume una más). `#25` (el salto de
-`doce` a `quince` en la prosa de recuento) ya se corrigió en este mismo documento en un ciclo
-anterior; la misma corrección en `ROADMAP_PRODUCTO.md` sigue pendiente de que la haga un ciclo de
-PM (releído en este ciclo: la cabecera y "Cola de producto" de `ROADMAP_PRODUCTO.md` siguen con
-`quince`, línea 18) — no hay ningún ciclo de PM nuevo desde entonces que la haya podido aplicar; no
-es prosa que este ciclo de Programador pueda corregir por su cuenta (pregunta #11 de §6 sigue sin
-respuesta). Verificación propia de este ciclo: `git checkout develop && git pull origin develop`
-resolvió con fast-forward limpio hasta `f20002c` (HEAD de `origin/develop`), sin ningún commit de
-código nuevo desde la sexta reconfirmación de hoy. Ejecutadas de forma independiente las cuatro
-redes vía `pip install -r requirements-dev.txt` + `python scripts/ci.py`: `mypy` limpio en 68
+`doce` a `quince` en la prosa de recuento) sigue con la misma corrección pendiente en
+`ROADMAP_PRODUCTO.md` (releído en este ciclo: la cabecera y "Cola de producto" siguen con `quince`,
+línea 18) — no hay ningún ciclo de PM nuevo desde la séptima reconfirmación que la haya podido
+aplicar; no es prosa que este ciclo de Programador pueda corregir por su cuenta (pregunta #11 de §6
+sigue sin respuesta). Verificación propia de este ciclo: `git checkout develop && git pull origin
+develop` resolvió con fast-forward limpio hasta `3e272f6` (HEAD de `origin/develop`), sin ningún
+commit de código nuevo desde la séptima reconfirmación de hoy. Ejecutadas de forma independiente las
+cuatro redes vía `pip install -r requirements-dev.txt` + `python scripts/ci.py`: `mypy` limpio en 68
 archivos, `ruff check .` limpio, 583 tests en verde y `python scripts/verificar_salidas.py
 --fixture` con las catorce etapas en OK (`.pptx`/`.pdf` reales LATENTES como siempre en este
 contenedor de nube, por la ausencia de la skill 480-branded-pptx y de Chrome/Edge). Confirmado
@@ -39,6 +38,8 @@ plantilla vacía sin ningún estado `nuevo`). Sin cambios en §3 (bloqueos), §5
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-29, ciclo de Programador: séptima reconfirmación del día, tras la sexta de hoy
+  (`f20002c`), sin novedad de código.
 - 2026-09-29, ciclo de Programador: sexta reconfirmación del día, tras la quinta de hoy
   (`91cfc1d`), sin novedad de código.
 - 2026-09-29, ciclo de Programador: quinta reconfirmación del día, tras la cuarta de hoy

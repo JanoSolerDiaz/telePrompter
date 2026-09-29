@@ -12,6 +12,39 @@
 
 ---
 
+### Sesión 2026-09-29 (33) — Ciclo de Programador: octava reconfirmación del día, tras la séptima de hoy (`3e272f6`)
+**Tarea(s):** ninguna nueva. Protocolo de arranque completo: `git checkout develop && git pull
+origin develop` (fast-forward limpio hasta `3e272f6`, HEAD de `origin/develop`),
+`pip install -r requirements-dev.txt`, releídos `roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md`
+§1 (fuente autoritativa: sin ninguna T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA` es T-24b
+`BLOQUEADA` por hardware del dueño) y `auditoriacontinua.md` (registro de hallazgos, filtrado por
+`ABIERTO`). Mismos dos `ABIERTO` que la pasada anterior, ambos de severidad baja: `#24` (enrutado a
+la pregunta #11 de §6, todavía *(pendiente)* de respuesta del dueño, trece pasadas de auditoría
+consecutivas esperándola, 2026-09-17 a 2026-09-29, sin auditoría nueva desde entonces que sume una
+más) y `#25` (el salto de `doce` a `quince` en la prosa de recuento, ya corregido en
+`SEGUIMIENTO.md`; releído `ROADMAP_PRODUCTO.md` línea 18 en este ciclo, sigue con `quince` — la
+corrección sigue pendiente de un ciclo de PM, que es quien escribe ese documento, no de este ciclo
+de Programador). Ninguno de los dos exige P-XX urgente (§0.3: solo pérdida de texto del guión,
+corrupción de estado, rotura del reproductor/auto-contención o seguridad). También confirmada la
+cola de `ROADMAP_PRODUCTO.md` vacía, `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo` (fila
+plantilla vacía) y, con `mcp__github__list_issues`/`list_pull_requests` sobre
+`janosolerdiaz/teleprompter`, cero issues y cero PR abiertos. `git status`/`git log` confirmaron que
+el clon quedó exactamente en `3e272f6` tras el `pull`, sin ningún commit de código nuevo desde la
+séptima reconfirmación de hoy.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `3e272f6`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (prosa de reconfirmación),
+`roadmap/HISTORIAL_SESIONES.md` (esta entrada).
+**Verificaciones pre-push:** tipos ✅ (mypy, 68 archivos) · lint ✅ (`ruff check .`) · tests ✅ (583
+passed) · build ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES en este contenedor de nube por ausencia de la skill 480-branded-pptx y de
+Chrome/Edge, como siempre).
+**Decisiones nuevas en `DECISIONES_TECNICAS.md`:** ninguna.
+
+---
+
 ### Sesión 2026-09-29 (32) — Ciclo de Programador: séptima reconfirmación del día, tras la sexta de hoy (`f20002c`)
 **Tarea(s):** ninguna nueva. Protocolo de arranque completo: `git checkout develop && git pull
 origin develop` (fast-forward limpio hasta `f20002c`, HEAD de `origin/develop`),
