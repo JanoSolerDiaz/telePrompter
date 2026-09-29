@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-29 — **Ciclo de Programador: novena reconfirmación del día, tras
-la octava de hoy (`09fd0e9`), sin novedad de código.**
+**Última actualización:** 2026-09-29 — **Ciclo de Programador: décima reconfirmación del día, tras
+la novena de hoy (`0d3fadd`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Releído `auditoriacontinua.md` filtrando
 por `ABIERTO`: sigue con los mismos dos (`#24`, `#25`), ambos de severidad baja y de proceso, ninguno
@@ -21,15 +21,17 @@ del reproductor/auto-contención o seguridad). `#24` sigue enrutado a la pregunt
 2026-09-17 a 2026-09-29, sin auditoría nueva desde entonces que sume una más). `#25` (el salto de
 `doce` a `quince` en la prosa de recuento) sigue con la misma corrección pendiente en
 `ROADMAP_PRODUCTO.md` (releído en este ciclo: la cabecera y "Cola de producto" siguen con `quince`,
-línea 18) — no hay ningún ciclo de PM nuevo desde la octava reconfirmación que la haya podido
+línea 18) — no hay ningún ciclo de PM nuevo desde la novena reconfirmación que la haya podido
 aplicar; no es prosa que este ciclo de Programador pueda corregir por su cuenta (pregunta #11 de §6
-sigue sin respuesta). Verificación propia de este ciclo: el clon partió en *detached HEAD* con la
-rama local `develop` rezagada 50 commits respecto de `origin/develop` (reescrito/forzado por otra
-sesión); resuelto con `git checkout develop` + `git reset --hard origin/develop` (árbol de trabajo
-limpio antes del reset, sin pérdida de trabajo local), quedando en `09fd0e9` (HEAD de
-`origin/develop`), sin ningún commit de código nuevo desde la octava reconfirmación de hoy.
-Ejecutadas de forma independiente las cuatro redes vía `pip install -r requirements-dev.txt` +
-`python scripts/ci.py`: `mypy` limpio en 68 archivos, `ruff check .` limpio, 583 tests en verde y
+sigue sin respuesta). Verificación propia de este ciclo: el clon partió en *detached HEAD*, clon
+*shallow*, con la rama local `develop` reportando 50 commits divergentes en cada sentido respecto de
+`origin/develop`; `git fetch --unshallow` confirmó que era un artefacto puro del clon superficial (sin
+divergencia real: `git merge-base --is-ancestor develop origin/develop` dio cierto tras deshacer el
+`shallow`), resuelto con `git merge --ff-only origin/develop` (árbol de trabajo limpio verificado
+antes de tocar nada, sin pérdida de trabajo local), quedando en `0d3fadd` (HEAD de `origin/develop`),
+sin ningún commit de código nuevo desde la novena reconfirmación de hoy. Ejecutadas de forma
+independiente las cuatro redes vía `pip install -r requirements-dev.txt` + `python scripts/ci.py`:
+`mypy` limpio en 68 archivos, `ruff check .` limpio, 583 tests en verde y
 `python scripts/verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/`.pdf` reales
 LATENTES como siempre en este contenedor de nube, por la ausencia de la skill 480-branded-pptx y de
 Chrome/Edge). Confirmado también con `mcp__github__list_issues`/`list_pull_requests` sobre
@@ -40,6 +42,8 @@ Chrome/Edge). Confirmado también con `mcp__github__list_issues`/`list_pull_requ
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-29, ciclo de Programador: novena reconfirmación del día, tras la octava de hoy
+  (`09fd0e9`), sin novedad de código.
 - 2026-09-29, ciclo de Programador: octava reconfirmación del día, tras la séptima de hoy
   (`3e272f6`), sin novedad de código.
 - 2026-09-29, ciclo de Programador: séptima reconfirmación del día, tras la sexta de hoy

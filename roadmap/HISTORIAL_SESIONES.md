@@ -12,6 +12,42 @@
 
 ---
 
+### Sesión 2026-09-29 (35) — Ciclo de Programador: décima reconfirmación del día, tras la novena de hoy (`0d3fadd`)
+**Tarea(s):** ninguna nueva. Protocolo de arranque completo: el clon arrancó en *detached HEAD*,
+clon *shallow*, con la rama local `develop` reportando 50 commits divergentes en cada sentido
+respecto de `origin/develop` (`git status` limpio antes de tocar nada). En vez de asumir una reescritura
+real de historia, se corrió `git fetch --unshallow origin`, que reveló que la divergencia era un
+artefacto puro del clon superficial: con la historia completa, `git merge-base develop
+origin/develop` devolvió el propio HEAD de `develop` y `git merge-base --is-ancestor develop
+origin/develop` confirmó que la rama local era ancestro estricto de `origin/develop` (ninguna
+pérdida de trabajo posible). Resuelto con `git merge --ff-only origin/develop`, quedando en
+`0d3fadd` (HEAD de `origin/develop`). `pip install -r requirements-dev.txt`, releídos
+`roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md` §1 (fuente autoritativa: sin ninguna T-XX/R-XX
+`PENDIENTE`, única fila no `COMPLETADA` es T-24b `BLOQUEADA` por hardware del dueño) y
+`auditoriacontinua.md` (registro de hallazgos, filtrado por `ABIERTO`). Mismos dos `ABIERTO` que la
+pasada anterior, ambos de severidad baja: `#24` (enrutado a la pregunta #11 de §6, todavía
+*(pendiente)* de respuesta del dueño, trece pasadas de auditoría consecutivas esperándola,
+2026-09-17 a 2026-09-29, sin auditoría nueva desde entonces que sume una más) y `#25` (el salto de
+`doce` a `quince` en la prosa de recuento, ya corregido en `SEGUIMIENTO.md`; releído
+`ROADMAP_PRODUCTO.md` línea 18 en este ciclo, sigue con `quince` — la corrección sigue pendiente de
+un ciclo de PM, que es quien escribe ese documento, no de este ciclo de Programador). Ninguno de los
+dos exige P-XX urgente (§0.3: solo pérdida de texto del guión, corrupción de estado, rotura del
+reproductor/auto-contención o seguridad). También confirmada la cola de `ROADMAP_PRODUCTO.md` vacía,
+`roadmap/FEEDBACK.md` sin ninguna entrada `nuevo` (fila plantilla vacía) y, con
+`mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`, cero issues y
+cero PR abiertos.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `0d3fadd`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (prosa de reconfirmación),
+`roadmap/HISTORIAL_SESIONES.md` (esta entrada).
+**Verificaciones pre-push:** tipos ✅ (mypy, 68 archivos) · lint ✅ (`ruff check .`) · tests ✅ (583
+en verde) · extremo a extremo ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas OK;
+`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube).
+
+---
+
 ### Sesión 2026-09-29 (34) — Ciclo de Programador: novena reconfirmación del día, tras la octava de hoy (`09fd0e9`)
 **Tarea(s):** ninguna nueva. Protocolo de arranque completo: el clon arrancó en *detached HEAD* con
 la rama local `develop` rezagada 50 commits respecto de `origin/develop` (reescrita/forzada por otra
