@@ -32,6 +32,55 @@
 
 ---
 
+### Sesión 2026-09-29 (26) — Ciclo de Programador: primera reconfirmación del día, tras la decimosexta auditoría (`d14776a`, hallazgo nuevo `#25` de proceso) y el decimoquinto ciclo de PM consecutivo sin apertura (`de45611`)
+**Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
+git pull origin develop` (fast-forward limpio hasta `d14776a`, HEAD de `origin/develop`),
+`pip install -r requirements-dev.txt`, releídos `roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md`
+§1 (fuente autoritativa: sin ninguna T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA` es T-24b
+`BLOQUEADA` por hardware del dueño) y `auditoriacontinua.md` completo. Dos `ABIERTO`, ambos baja y
+de proceso: `#24` (enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta del dueño,
+trece pasadas de auditoría consecutivas esperándola, 2026-09-17 a 2026-09-29) y `#25` (nuevo de
+esta auditoría: la prosa de `SEGUIMIENTO.md`/`ROADMAP_PRODUCTO.md` saltó de `doce` a `quince` en
+ese mismo recuento, sin que hayan transcurrido tres pasadas reales — error de aritmética en la
+prosa, sin efecto sobre ninguna decisión ni estado de tarea). Ninguno de los dos exige P-XX
+urgente (§0.3: solo pérdida de texto del guión, corrupción de estado, rotura del reproductor/
+auto-contención o seguridad). También confirmada la cola de `ROADMAP_PRODUCTO.md` vacía. `git
+status`/`git log` confirmaron que el clon quedó exactamente en `d14776a` tras el `pull`, sin ningún
+commit de código nuevo desde la auditoría anterior (`f694a29`): diez reconfirmaciones del
+Programador y un ciclo de PM el día 28, todos limitados a `roadmap/`, más la auditoría de hoy.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `d14776a`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (prosa de reconfirmación y corrección de
+la cifra de `#25`, de `quince` a `trece`), `roadmap/HISTORIAL_SESIONES.md`; cero cambio en
+`scripts/`, `tests/`, `assets/`, `references/`, `fixtures/`, `SKILL.md`, `DEVELOPERS.md`,
+`PROYECTO.md`, `ROADMAP_PRODUCTO.md` ni `DECISIONES_TECNICAS.md` (la prosa de `ROADMAP_PRODUCTO.md`
+que también arrastra el mismo error de `#25` queda para el ciclo de PM, que es quien escribe ese
+documento — corregir aquí la cifra de `SEGUIMIENTO.md` es una constatación aritmética directa
+verificada contra la propia auditoría de hoy, no una decisión de producto ni el tipo de cambio de
+"quién escribe qué documento" que sigue pendiente en la pregunta #11).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos) · lint ✅ (`ruff check .`) ·
+tests ✅ (583 passed) · build ✅ (`verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube, sin la skill de marca ni Chrome/Edge).
+**Health check post-deploy:** no aplica (sesión de nube; T-32 e instalación en
+`~/.claude/skills/teleprompter/` siguen BLOQUEADAS, no simulables desde aquí).
+**Decisiones tomadas:** ninguna nueva (reconfirmación y corrección aritmética de prosa, no decisión
+de producto; nada que apuntar en `DECISIONES_TECNICAS.md`).
+**Hallazgos del auditor atendidos:** `#25` (baja, de proceso) — cifra corregida en
+`SEGUIMIENTO.md` en esta misma sesión; sigue `ABIERTO` en `auditoriacontinua.md` hasta que el
+auditor lo reevalúe y confirme el cierre (este agente no modifica ese documento, solo el auditor
+lo hace). `#24` (baja, de proceso) sigue `ABIERTO` exclusivamente a la espera de la respuesta del
+dueño a la pregunta #11 de §6.
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** repetir el mismo protocolo de arranque en el siguiente ciclo; sin trabajo de
+código pendiente salvo que el PM abra una R-XX nueva, el auditor escale un hallazgo a severidad
+alta, o el dueño responda la pregunta #11 de §6 (cierre de `#24`). El ciclo de PM debe corregir el
+mismo error de cifra (`quince` → `trece`) en `ROADMAP_PRODUCTO.md`.
+
+---
+
 ### Sesión 2026-09-28 (25) — Ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (decimoquinto ciclo consecutivo)
 **Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
 git pull origin develop` (fast-forward limpio hasta `f0e861c`, HEAD de `origin/develop`, la vigésima
