@@ -12,6 +12,45 @@
 
 ---
 
+### Sesión 2026-09-29 (28) — Ciclo de Programador: tercera reconfirmación del día, tras la segunda de hoy (`bf9c45e`)
+**Tarea(s):** ninguna nueva. Protocolo de arranque completo: `git checkout develop && git pull
+origin develop` (fast-forward limpio hasta `bf9c45e`, HEAD de `origin/develop`),
+`pip install -r requirements-dev.txt`, releídos `roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md`
+§1 (fuente autoritativa: sin ninguna T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA` es T-24b
+`BLOQUEADA` por hardware del dueño) y `auditoriacontinua.md` completo. Mismos dos `ABIERTO` que la
+pasada anterior: `#24` (enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta del
+dueño, trece pasadas de auditoría consecutivas esperándola, 2026-09-17 a 2026-09-29, sin auditoría
+nueva desde entonces) y `#25` (el salto de `doce` a `quince` en la prosa de recuento, ya corregido en
+`SEGUIMIENTO.md`; la misma corrección en `ROADMAP_PRODUCTO.md` sigue pendiente de un ciclo de PM, que
+es quien escribe ese documento — no ha corrido ningún ciclo de PM nuevo desde entonces). Ninguno de
+los dos exige P-XX urgente (§0.3: solo pérdida de texto del guión, corrupción de estado, rotura del
+reproductor/auto-contención o seguridad). También confirmada la cola de `ROADMAP_PRODUCTO.md`
+vacía. `git status`/`git log` confirmaron que el clon quedó exactamente en `bf9c45e` tras el `pull`,
+sin ningún commit de código nuevo desde la segunda reconfirmación de hoy.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `bf9c45e`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (prosa de reconfirmación),
+`roadmap/HISTORIAL_SESIONES.md` (esta entrada).
+**Verificaciones pre-push:** tipos ✅ (mypy, 68 archivos) · lint ✅ (`ruff check .`) · tests ✅ (583
+passed) · build ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas OK; `.pptx`/`.pdf`
+reales LATENTES como siempre en este contenedor de nube).
+**Health check post-deploy:** N/A (sesión de nube; T-32 no se puede ejecutar aquí, ver nota de
+entorno del protocolo).
+**Decisiones tomadas:** ninguna nueva en `DECISIONES_TECNICAS.md`.
+**Hallazgos del auditor atendidos:** ninguno resuelto en este ciclo (no es un ciclo de Auditoría);
+`#24` y `#25` reconfirmados `ABIERTO` por lectura propia, ambos de severidad baja, ninguno exige
+P-XX urgente.
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** ninguno de código. La siguiente sesión debe releer §1 de `SEGUIMIENTO.md` y
+`auditoriacontinua.md` completo antes de decidir; si sigue sin T-XX/R-XX `PENDIENTE` y sin hallazgo
+`ABIERTO` de severidad alta, repetir esta misma reconfirmación. La pregunta #11 de §6 sigue esperando
+respuesta del dueño; ningún agente puede resolverla por su cuenta.
+
+---
+
 ## Plantilla por sesión (copiar y rellenar, la más reciente arriba)
 
 ```

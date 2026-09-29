@@ -10,30 +10,31 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-29 — **Ciclo de Programador: segunda reconfirmación del día, tras
-la primera de hoy (`c59df89`), sin novedad de código.**
+**Última actualización:** 2026-09-29 — **Ciclo de Programador: tercera reconfirmación del día, tras
+la segunda de hoy (`bf9c45e`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Releído `auditoriacontinua.md` completo:
 sigue con los mismos dos `ABIERTO` (`#24`, `#25`), ambos de severidad baja y de proceso, ninguno
 exige P-XX urgente (§0.3 solo lo pide para pérdida de texto del guión, corrupción de estado, rotura
 del reproductor/auto-contención o seguridad). `#24` sigue enrutado a la pregunta #11 de §6, todavía
 *(pendiente)* de respuesta del dueño (trece pasadas de auditoría consecutivas esperándola,
-2026-09-17 a 2026-09-29). `#25` (el salto de `doce` a `quince` en la prosa de recuento) ya se
-corrigió en este mismo documento en el ciclo anterior (a `trece`); la misma corrección en
-`ROADMAP_PRODUCTO.md` sigue pendiente de que la haga un ciclo de PM, que es quien escribe ese
-documento — no hay ningún ciclo de PM nuevo desde entonces que la haya podido aplicar. Verificación
-propia de este ciclo: `git checkout develop && git pull origin develop` resolvió con fast-forward
-limpio hasta `c59df89` (HEAD de `origin/develop`), sin ningún commit de código nuevo desde la
-primera reconfirmación de hoy. Ejecutadas de forma independiente las cuatro redes vía
-`pip install -r requirements-dev.txt` + `python scripts/ci.py`: `mypy` limpio en 68 archivos,
-`ruff check .` limpio, 583 tests en verde y `python scripts/verificar_salidas.py --fixture` con las
-catorce etapas en OK (`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube, por
-la ausencia de la skill 480-branded-pptx y de Chrome/Edge). Sin cambios en §3 (bloqueos), §5 (P-XX)
-ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Este ciclo toca
-`roadmap/SEGUIMIENTO.md` y `roadmap/HISTORIAL_SESIONES.md`.
+2026-09-17 a 2026-09-29, sin auditoría nueva desde entonces que sume una más). `#25` (el salto de `doce` a `quince` en la prosa de recuento) ya se
+corrigió en este mismo documento en un ciclo anterior; la misma corrección en `ROADMAP_PRODUCTO.md`
+sigue pendiente de que la haga un ciclo de PM, que es quien escribe ese documento — no hay ningún
+ciclo de PM nuevo desde entonces que la haya podido aplicar. Verificación propia de este ciclo:
+`git checkout develop && git pull origin develop` resolvió con fast-forward limpio hasta `bf9c45e`
+(HEAD de `origin/develop`), sin ningún commit de código nuevo desde la segunda reconfirmación de
+hoy. Ejecutadas de forma independiente las cuatro redes vía `pip install -r requirements-dev.txt` +
+`python scripts/ci.py`: `mypy` limpio en 68 archivos, `ruff check .` limpio, 583 tests en verde y
+`python scripts/verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/`.pdf` reales
+LATENTES como siempre en este contenedor de nube, por la ausencia de la skill 480-branded-pptx y de
+Chrome/Edge). Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue
+*(pendiente)*. Este ciclo toca `roadmap/SEGUIMIENTO.md` y `roadmap/HISTORIAL_SESIONES.md`.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-29, ciclo de Programador: segunda reconfirmación del día, tras la primera de hoy
+  (`c59df89`), sin novedad de código.
 - 2026-09-29, ciclo de Programador: primera reconfirmación del día, tras la decimosexta auditoría en
   profundidad (`d14776a`, un hallazgo nuevo de proceso, `#25`) y el decimoquinto ciclo de PM
   consecutivo sin apertura (`de45611`), sin novedad de código.
