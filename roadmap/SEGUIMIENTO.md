@@ -10,38 +10,37 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-29 — **Ciclo de Programador: décima reconfirmación del día, tras
-la novena de hoy (`0d3fadd`), sin novedad de código.**
-§1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
-hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Releído `auditoriacontinua.md` filtrando
-por `ABIERTO`: sigue con los mismos dos (`#24`, `#25`), ambos de severidad baja y de proceso, ninguno
-exige P-XX urgente (§0.3 solo lo pide para pérdida de texto del guión, corrupción de estado, rotura
-del reproductor/auto-contención o seguridad). `#24` sigue enrutado a la pregunta #11 de §6, todavía
-*(pendiente)* de respuesta del dueño (trece pasadas de auditoría consecutivas esperándola,
-2026-09-17 a 2026-09-29, sin auditoría nueva desde entonces que sume una más). `#25` (el salto de
-`doce` a `quince` en la prosa de recuento) sigue con la misma corrección pendiente en
-`ROADMAP_PRODUCTO.md` (releído en este ciclo: la cabecera y "Cola de producto" siguen con `quince`,
-línea 18) — no hay ningún ciclo de PM nuevo desde la novena reconfirmación que la haya podido
-aplicar; no es prosa que este ciclo de Programador pueda corregir por su cuenta (pregunta #11 de §6
-sigue sin respuesta). Verificación propia de este ciclo: el clon partió en *detached HEAD*, clon
-*shallow*, con la rama local `develop` reportando 50 commits divergentes en cada sentido respecto de
-`origin/develop`; `git fetch --unshallow` confirmó que era un artefacto puro del clon superficial (sin
-divergencia real: `git merge-base --is-ancestor develop origin/develop` dio cierto tras deshacer el
-`shallow`), resuelto con `git merge --ff-only origin/develop` (árbol de trabajo limpio verificado
-antes de tocar nada, sin pérdida de trabajo local), quedando en `0d3fadd` (HEAD de `origin/develop`),
-sin ningún commit de código nuevo desde la novena reconfirmación de hoy. Ejecutadas de forma
-independiente las cuatro redes vía `pip install -r requirements-dev.txt` + `python scripts/ci.py`:
-`mypy` limpio en 68 archivos, `ruff check .` limpio, 583 tests en verde y
-`python scripts/verificar_salidas.py --fixture` con las catorce etapas en OK (`.pptx`/`.pdf` reales
-LATENTES como siempre en este contenedor de nube, por la ausencia de la skill 480-branded-pptx y de
-Chrome/Edge). Confirmado también con `mcp__github__list_issues`/`list_pull_requests` sobre
-`janosolerdiaz/teleprompter`: cero issues y cero PR abiertos, sin feedback nuevo del dueño
-(`roadmap/FEEDBACK.md` releído, fila plantilla vacía sin ningún estado `nuevo`). Sin cambios en §3
-(bloqueos), §5 (P-XX) ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Este ciclo toca
-`roadmap/SEGUIMIENTO.md` y `roadmap/HISTORIAL_SESIONES.md`.
+**Última actualización:** 2026-09-29 — **Ciclo de Product Manager: se abre R-19** (Oleada v8,
+`PENDIENTE` en §1), la primera R-XX nueva desde R-18 (2026-09-17). Spec completa en
+`ROADMAP_PRODUCTO.md` §Oleada v8: enlazar la toma buena de cada escena con su archivo de vídeo real
+(campo opcional tecleado en el reproductor, R-02) y generar `concat-ffmpeg.txt`, la lista de
+concatenación lista para `ffmpeg -f concat`. **Origen:** instrucción directa del dueño en el encargo
+de este propio ciclo de PM — evolucionar el roadmap hacia "la fase siguiente: el montaje con
+ffmpeg" —, aplicada sobre la candidata que el PM ya había identificado por observación de
+arquitectura el 2026-09-21 y que quince ciclos de PM consecutivos habían dejado aparcada por falta
+de una de las tres fuentes ya establecidas (hallazgo de auditoría, entrada de `FEEDBACK.md`, grieta
+de arquitectura verificada). Razonamiento completo de por qué se abre ahora, sin código todavía
+implementado, en `ROADMAP_PRODUCTO.md` (cabecera) y en `DECISIONES_TECNICAS.md`.
+
+Corregido también el hallazgo `#25` de `auditoriacontinua.md` (baja, prosa): la cifra de "pasadas de
+auditoría consecutivas esperando la pregunta #11" pasa de `quince` (error aritmético del ciclo de PM
+del 2026-09-28) a **trece** (`2026-09-17 a 2026-09-29`, mismo recuento que la propia auditoría de
+hoy ya dejó por escrito en `auditoriacontinua.md` #25) en la cabecera y en "Cola de producto" de
+`ROADMAP_PRODUCTO.md`. `#24` sigue `ABIERTO` sin cambios, todavía
+enrutado a la pregunta #11 de §6, *(pendiente)* de respuesta del dueño. Sin cambios en §3 (bloqueos)
+ni §5 (P-XX); §1 gana la fila `R-19 · PENDIENTE`. Este ciclo toca `roadmap/SEGUIMIENTO.md`,
+`roadmap/ROADMAP_PRODUCTO.md`, `roadmap/DECISIONES_TECNICAS.md` y `roadmap/HISTORIAL_SESIONES.md`.
+No se ejecutan las cuatro redes de verificación en un ciclo de PM (no toca `scripts/`, `tests/` ni
+`assets/`): quedan para el siguiente ciclo de Programador, que debe implementar R-19 siguiendo la
+spec.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-29, ciclo de Programador: décima reconfirmación del día, tras la novena de hoy
+  (`0d3fadd`), sin novedad de código. Verificación propia: clon *shallow* en *detached HEAD*
+  resuelto (`git fetch --unshallow` + `git merge --ff-only origin/develop`, sin pérdida de trabajo
+  local); cuatro redes en verde (583 tests, catorce etapas OK); `mcp__github__list_issues`/
+  `list_pull_requests` sin issues ni PR abiertos.
 - 2026-09-29, ciclo de Programador: novena reconfirmación del día, tras la octava de hoy
   (`09fd0e9`), sin novedad de código.
 - 2026-09-29, ciclo de Programador: octava reconfirmación del día, tras la séptima de hoy
@@ -492,6 +491,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-16 | Límites absolutos de escena (`inicio_segundos`/`fin_segundos`) en `tarjetas.json` | **COMPLETADA** | 2026-09-14 | `Tarjeta` (`scripts/pptx.py`) gana los dos campos, calculados una sola vez (`_con_limites_absolutos`) con la misma regla real/estimada de R-13, acumulando en el orden de las escenas; `contrato-tarjetas.md` documenta las dos claves y `contrato-montaje.md` deja de pedirle a la cadena de montaje que sume las duraciones a mano — ahora las lee directamente. Cambio aditivo, `version_contrato` no sube, sin migración de `estado.json` ni campo nuevo de `Configuracion`. 5 tests nuevos (569→574): 2 unitarios (`test_pptx.py`) y 3 de integración (`test_integracion_montaje.py`, incluida la coherencia con `guion.srt`/`guion-alineado.srt`). Cuatro redes en verde. `origen: observación de arquitectura del PM (2026-09-13)` |
 | R-17 | Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`) | **COMPLETADA** | 2026-09-15 | Spec completa en `ROADMAP_PRODUCTO.md` §Fase F-I. `origen: auditoría #19` (abierto 2026-09-04, reconfirmado sin cambios en diez pasadas sucesivas del auditor). Investigada y cerrada por la vía del requisito 3 (con matiz): bajo operación normal la identidad es inyectiva por construcción (`pospuestas_previas` siempre coincide con lo que la pasada anterior persistió); el único escenario que rompe la comparación por cardinalidad exige corromper `estado.validacion["particiones_pospuestas"]` a mano (misma precondición ya conocida de P-04), y se verificó con test nuevo que incluso ahí el invariante (a) — nada se pierde ni se duplica — sigue intacto, con un único efecto cosmético (número de bloque erróneo en la incidencia de conflicto, escena correcta). 1 test nuevo (574→575) en `tests/test_revalidacion.py`. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-18 | Integrar en el selector de salidas (T-30, `scripts/salidas.py`) las salidas que dependen de tomas reales: `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07, hoy ni siquiera seleccionable) y los campos reales de `tarjetas.json` (R-13/R-16) | **COMPLETADA** | 2026-09-17 | `scripts/salidas.py`: `generar_salidas_seleccionadas` gana `tomas_por_escena` opcional (`EstadoProyecto.tomas` tal cual); con al menos una toma `buena`, `SRT` genera también `guion-alineado.srt` (R-05) bajo el mismo `TipoSalida.SRT`, y `PPTX` pasa las tomas a `exportar_pptx` para duración real/límites absolutos (R-13/R-16). `TipoSalida` gana `CAPITULOS_YOUTUBE` (quinta opción), generado con `capitulos_youtube.generar_capitulos_youtube`; sin sección `Capítulos`, queda `SalidaOmitida` con el motivo exacto, nunca fallo ni latente. `verificar_salidas.py::verificar_generacion` distingue ahora un fallo real (prefijo `"fallo al generar:"`) de esa omisión esperada. Sin tomas, comportamiento idéntico al de antes de R-18 (test de regresión byte a byte sobre los tres guiones reales). 8 tests nuevos (575→583). Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` |
+| R-19 | Enlazar la toma buena de cada escena con su archivo de vídeo real (campo opcional tecleado en el reproductor) y generar `concat-ffmpeg.txt`, la lista de concatenación lista para `ffmpeg -f concat` | **PENDIENTE** | 2026-09-29 | Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v8. `origen: instrucción directa del dueño` en el encargo de este ciclo de PM (evolucionar el roadmap hacia "la fase siguiente: el montaje con ffmpeg"), sobre la candidata identificada por observación de arquitectura del PM el 2026-09-21. Sin código todavía: siguiente ciclo de Programador debe implementarla siguiendo la spec (campo `archivo_video` en el parte de rodaje, `scripts/concat_ffmpeg.py` nuevo, `TipoSalida.CONCAT_FFMPEG` en el selector T-30) |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

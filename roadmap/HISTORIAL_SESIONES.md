@@ -12,6 +12,52 @@
 
 ---
 
+### Sesión 2026-09-29 (36) — Ciclo de Product Manager: se abre R-19 (Oleada v8), primera R-XX nueva desde R-18
+**Tarea(s):** ninguna T-XX/R-XX implementada (ciclo de PM, no de Programador). Arranque: clon en
+*detached HEAD* con la rama local `develop` reportando 50 commits divergentes en cada sentido
+respecto de `origin/develop` (mismo síntoma de clon *shallow* que sesiones anteriores); resuelto con
+`git reset --hard origin/develop` tras confirmar `git status` limpio (sin trabajo local que perder).
+Releídos `roadmap/HOJA_DE_RUTA.md` (protocolo, íntegro), `roadmap/SEGUIMIENTO.md` §1/§3/§5/§6/§7,
+`roadmap/ROADMAP_PRODUCTO.md`, `roadmap/FEEDBACK.md` (sin entradas `nuevo`) y el registro de
+hallazgos completo de `auditoriacontinua.md` (dos `ABIERTO`: `#24` y `#25`, ambos baja, ambos de
+proceso). `#24` sigue enrutado a la pregunta #11 de §6, sin respuesta del dueño — no exige acción de
+este ciclo más allá de reconfirmarlo. `#25` (salto de `doce` a `quince` en la prosa de recuento de
+`ROADMAP_PRODUCTO.md`/`SEGUIMIENTO.md`) corregido a la cifra correcta (**trece**, mismo recuento que
+la propia auditoría de hoy ya dejó por escrito) en ambos documentos.
+
+**Decisión central de este ciclo:** el encargo de esta rutina programada del dueño instruye
+explícitamente evolucionar el roadmap hacia el objetivo de producto, con prioridad expresa en la
+utilidad real para el rodaje y mención directa de que "la fase siguiente es el montaje con ffmpeg".
+Releídos `references/contrato-tomas.md`, `references/contrato-montaje.md` y `scripts/tomas.py` para
+verificar, antes de escribir la spec, que el hueco identificado el 2026-09-21 (ninguna toma buena
+lleva asociado su archivo de vídeo real) sigue existiendo tal cual sin ningún wiring nuevo desde
+entonces. Se abre **R-19** (Oleada v8, spec completa en `ROADMAP_PRODUCTO.md`): campo opcional
+`archivo_video` por toma (tecleado a mano en el reproductor, mismo patrón que la nota de R-03),
+`scripts/concat_ffmpeg.py` nuevo y `TipoSalida.CONCAT_FFMPEG` (sexta opción del selector de T-30,
+mismo patrón que R-18 usó para `CAPITULOS_YOUTUBE`) para generar `concat-ffmpeg.txt`. Diseño
+acotado a propósito para no necesitar evidencia real de rodaje: texto libre sin ninguna suposición
+sobre cámara o software de captura, con degradado explícito (comentario `# ESCENA N: motivo`) en
+vez de fallo o silencio cuando falte anotar una escena. Razonamiento completo de por qué se abre
+ahora, y no en los quince ciclos anteriores que reconfirmaron cola vacía con la misma candidata
+sobre la mesa, en `DECISIONES_TECNICAS.md` (fila 2026-09-29, PM).
+
+**Decisiones registradas:** una fila en `DECISIONES_TECNICAS.md` (2026-09-29, PM) explicando la
+apertura de R-19 como cuarta fuente legítima (instrucción directa del dueño en el encargo de este
+ciclo), sin contradecir el criterio de las tres fuentes que los ciclos anteriores aplicaron
+correctamente a un encargo distinto.
+
+**Cambios de estado en `SEGUIMIENTO.md` §1:** `R-19` añadida como `PENDIENTE` (única fila no
+`COMPLETADA`/`BLOQUEADA` del documento junto con `T-24b`). Sin cambios en §3 (bloqueos) ni §5
+(P-XX); §6 sin respuesta nueva a la pregunta #11; §7 sin desviación nueva. `roadmap/DEVELOPERS.md`
+no se toca en este ciclo (no hay código nuevo que documentar todavía; le corresponde al ciclo de
+Programador que implemente R-19).
+
+**Pendiente para el siguiente ciclo de Programador:** implementar R-19 siguiendo la spec completa de
+`ROADMAP_PRODUCTO.md` §Oleada v8, con las cuatro redes de verificación en verde antes de marcarla
+`COMPLETADA`.
+
+---
+
 ### Sesión 2026-09-29 (35) — Ciclo de Programador: décima reconfirmación del día, tras la novena de hoy (`0d3fadd`)
 **Tarea(s):** ninguna nueva. Protocolo de arranque completo: el clon arrancó en *detached HEAD*,
 clon *shallow*, con la rama local `develop` reportando 50 commits divergentes en cada sentido
