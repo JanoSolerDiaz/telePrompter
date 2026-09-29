@@ -10,28 +10,21 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-29 — **Ciclo de Programador: primera reconfirmación del día, tras
-la decimosexta auditoría en profundidad (`d14776a`, un hallazgo nuevo de proceso, `#25`) y el
-decimoquinto ciclo de PM consecutivo sin apertura (`de45611`), sin novedad de código.**
+**Última actualización:** 2026-09-29 — **Ciclo de Programador: segunda reconfirmación del día, tras
+la primera de hoy (`c59df89`), sin novedad de código.**
 §1 sigue sin ninguna T-XX/R-XX `PENDIENTE` (única fila no `COMPLETADA`: T-24b, `BLOQUEADA` por
 hardware del dueño); cola de `ROADMAP_PRODUCTO.md` vacía. Releído `auditoriacontinua.md` completo:
-dos `ABIERTO`, ambos de severidad baja y de proceso, ninguno exige P-XX urgente (§0.3 solo lo pide
-para pérdida de texto del guión, corrupción de estado, rotura del reproductor/auto-contención o
-seguridad). `#24` sigue enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta del
-dueño (trece pasadas de auditoría consecutivas esperándola, 2026-09-17 a 2026-09-29 — cifra
-correcta según la propia auditoría de hoy, no la `quince` que el ciclo de PM de ayer escribió por
-error aquí y en `ROADMAP_PRODUCTO.md`). `#25` (nuevo, detectado por el auditor de hoy) es
-precisamente ese salto de `doce` a `quince` en la prosa de recuento de pasadas: un error de
-aritmética en el propio texto de este documento y de `ROADMAP_PRODUCTO.md`, sin ningún efecto sobre
-ninguna decisión ni sobre el estado de ninguna tarea — este ciclo corrige la cifra aquí mismo (a
-`trece`, la correcta a día de hoy) al ser una constatación aritmética directa, no una decisión de
-producto ni un cambio de qué documento refleja qué (eso sigue siendo lo que pregunta la #11,
-todavía sin responder); la prosa de `ROADMAP_PRODUCTO.md` queda para que la corrija el ciclo de PM,
-que es quien escribe ese documento. Verificación propia de este ciclo: `git checkout develop &&
-git pull origin develop` resolvió con fast-forward limpio hasta `d14776a` (HEAD de
-`origin/develop`), sin ningún commit de código nuevo desde la auditoría anterior (`f694a29`):
-diez reconfirmaciones del Programador y un ciclo de PM, todos limitados a `roadmap/`, más la
-auditoría de hoy. Ejecutadas de forma independiente las cuatro redes vía
+sigue con los mismos dos `ABIERTO` (`#24`, `#25`), ambos de severidad baja y de proceso, ninguno
+exige P-XX urgente (§0.3 solo lo pide para pérdida de texto del guión, corrupción de estado, rotura
+del reproductor/auto-contención o seguridad). `#24` sigue enrutado a la pregunta #11 de §6, todavía
+*(pendiente)* de respuesta del dueño (trece pasadas de auditoría consecutivas esperándola,
+2026-09-17 a 2026-09-29). `#25` (el salto de `doce` a `quince` en la prosa de recuento) ya se
+corrigió en este mismo documento en el ciclo anterior (a `trece`); la misma corrección en
+`ROADMAP_PRODUCTO.md` sigue pendiente de que la haga un ciclo de PM, que es quien escribe ese
+documento — no hay ningún ciclo de PM nuevo desde entonces que la haya podido aplicar. Verificación
+propia de este ciclo: `git checkout develop && git pull origin develop` resolvió con fast-forward
+limpio hasta `c59df89` (HEAD de `origin/develop`), sin ningún commit de código nuevo desde la
+primera reconfirmación de hoy. Ejecutadas de forma independiente las cuatro redes vía
 `pip install -r requirements-dev.txt` + `python scripts/ci.py`: `mypy` limpio en 68 archivos,
 `ruff check .` limpio, 583 tests en verde y `python scripts/verificar_salidas.py --fixture` con las
 catorce etapas en OK (`.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube, por
@@ -41,6 +34,9 @@ ni §7 (desviaciones); pregunta #11 de §6 sigue *(pendiente)*. Este ciclo toca
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-29, ciclo de Programador: primera reconfirmación del día, tras la decimosexta auditoría en
+  profundidad (`d14776a`, un hallazgo nuevo de proceso, `#25`) y el decimoquinto ciclo de PM
+  consecutivo sin apertura (`de45611`), sin novedad de código.
 - 2026-09-28, ciclo de Product Manager: reconfirmación de cola vacía, sin R-XX nueva (decimoquinto
   ciclo de PM consecutivo sin apertura).
 - 2026-09-28, ciclo de Programador: vigésima reconfirmación del día, tras la decimonovena de hoy

@@ -32,6 +32,49 @@
 
 ---
 
+### Sesión 2026-09-29 (27) — Ciclo de Programador: segunda reconfirmación del día, tras la primera de hoy (`c59df89`)
+**Tarea(s):** ninguna nueva. Protocolo de arranque completo: `git checkout develop && git pull
+origin develop` (fast-forward limpio hasta `c59df89`, HEAD de `origin/develop`),
+`pip install -r requirements-dev.txt`, releídos `roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md`
+§1 (fuente autoritativa: sin ninguna T-XX/R-XX `PENDIENTE`, única fila no `COMPLETADA` es T-24b
+`BLOQUEADA` por hardware del dueño) y `auditoriacontinua.md` completo. Mismos dos `ABIERTO` que la
+pasada anterior: `#24` (enrutado a la pregunta #11 de §6, todavía *(pendiente)* de respuesta del
+dueño, trece pasadas de auditoría consecutivas esperándola, 2026-09-17 a 2026-09-29) y `#25` (el
+salto de `doce` a `quince` en la prosa de recuento, ya corregido en `SEGUIMIENTO.md` en el ciclo
+anterior; la misma corrección en `ROADMAP_PRODUCTO.md` sigue pendiente de un ciclo de PM, que es
+quien escribe ese documento — no ha corrido ningún ciclo de PM nuevo desde entonces). Ninguno de
+los dos exige P-XX urgente (§0.3: solo pérdida de texto del guión, corrupción de estado, rotura del
+reproductor/auto-contención o seguridad). También confirmada la cola de `ROADMAP_PRODUCTO.md`
+vacía. `git status`/`git log` confirmaron que el clon quedó exactamente en `c59df89` tras el `pull`,
+sin ningún commit de código nuevo desde la primera reconfirmación de hoy.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue sin
+ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre (tras `c59df89`).
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (prosa de reconfirmación),
+`roadmap/HISTORIAL_SESIONES.md`; cero cambio en `scripts/`, `tests/`, `assets/`, `references/`,
+`fixtures/`, `SKILL.md`, `DEVELOPERS.md`, `PROYECTO.md`, `ROADMAP_PRODUCTO.md` ni
+`DECISIONES_TECNICAS.md` (la corrección de `#25` en `ROADMAP_PRODUCTO.md` sigue reservada al ciclo
+de PM, que es quien escribe ese documento).
+**Verificaciones pre-push:** tipos ✅ (`mypy`, 68 archivos limpios) · lint ✅ (`ruff check .`) ·
+tests ✅ (583, verde) · build ✅ (`python scripts/verificar_salidas.py --fixture`, catorce etapas
+OK; `.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube).
+**Health check post-deploy:** N/A — sesión de nube, no alcanza `~/.claude/skills/` del dueño (nota
+de entorno, protocolo v1.3).
+**Decisiones tomadas:** ninguna nueva en `DECISIONES_TECNICAS.md`.
+**Hallazgos del auditor atendidos:** ninguno resuelto (`#24`, `#25` reconfirmados `ABIERTO`, sin
+cambio de estado).
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna.
+**Próximo paso:** el mismo desde hace varias pasadas — la siguiente sesión reconfirma cuatro redes
+en verde y §1 sin `PENDIENTE`; si el auditor abre un hallazgo de severidad alta, se atiende antes
+que cualquier otra cosa (P-XX urgente, §0.3); si el dueño responde la pregunta #11 de §6, el
+siguiente ciclo de PM aplica lo que decida y cierra `#24`; si un ciclo de PM corre antes que el
+siguiente auditor, de paso corrige la cifra de `#25` en `ROADMAP_PRODUCTO.md` (ya corregida en
+`SEGUIMIENTO.md`).
+
+---
+
 ### Sesión 2026-09-29 (26) — Ciclo de Programador: primera reconfirmación del día, tras la decimosexta auditoría (`d14776a`, hallazgo nuevo `#25` de proceso) y el decimoquinto ciclo de PM consecutivo sin apertura (`de45611`)
 **Tarea(s):** ninguna nueva. Seguido el protocolo de arranque completo: `git checkout develop &&
 git pull origin develop` (fast-forward limpio hasta `d14776a`, HEAD de `origin/develop`),
