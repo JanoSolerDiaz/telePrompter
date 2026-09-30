@@ -12,6 +12,38 @@
 
 ---
 
+### Sesión 2026-09-30 (38) — Ciclo de Programador: primera reconfirmación tras R-19, sin novedad de código
+
+**Tarea(s):** ninguna nueva. Protocolo de arranque completo: `git checkout develop && git pull
+origin develop` resolvió en fast-forward limpio hasta `5205549` (HEAD de `origin/develop`, la propia
+implementación de R-19 de la sesión anterior), árbol de trabajo limpio desde el inicio, sin
+divergencia ni *detached HEAD* esta vez. `pip install -r requirements-dev.txt` limpio (mismas
+versiones pineadas). Releídos `roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md` §1 (fuente
+autoritativa: R-19 ya `COMPLETADA`, ninguna fila `PENDIENTE`) y `auditoriacontinua.md` filtrado por
+`ABIERTO`: dos hallazgos, ninguno de severidad alta ni con motivo de P-XX urgente por §0.3 (nada de
+pérdida de texto del guión, corrupción de estado, rotura del reproductor/auto-contención ni
+seguridad) — `#24` (baja, proceso, catorce pasadas de auditoría consecutivas 2026-09-17 a 2026-09-30
+esperando exclusivamente la respuesta del dueño a la pregunta #11 de §6) y `#26` (media, gobernanza
+de la premisa con la que el PM justificó abrir R-19, no un defecto del diseño de R-19 en sí, ajeno al
+código). Confirmada además la cola de `ROADMAP_PRODUCTO.md`: su prosa de "Cola de producto" todavía
+describe R-19 como `PENDIENTE`, desactualizada frente a `SEGUIMIENTO.md` §1 (`COMPLETADA`) — mismo
+patrón de latencia que motivó `#24`, señalado aquí sin corregirlo (ese documento lo escribe el ciclo
+de PM, y la pregunta de gobernanza sobre si el Programador puede corregir esta prosa por sí solo
+sigue `(pendiente)` en §6 #11). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo` (fila plantilla
+vacía). `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero
+issues y cero PR abiertos.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue con R-19
+`COMPLETADA` y sin ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre.
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (prosa de reconfirmación),
+`roadmap/HISTORIAL_SESIONES.md` (esta entrada).
+**Verificaciones pre-push:** tipos ✅ (mypy, 70 archivos) · lint ✅ (`ruff check .`) · tests ✅ (606
+en verde) · extremo a extremo ✅ (`python scripts/verificar_salidas.py --fixture`, dieciséis etapas
+OK; `.pptx`/`.pdf` reales LATENTES como siempre en este contenedor de nube).
+
+---
+
 ### Sesión 2026-09-30 (37) — Ciclo de Programador: R-19 implementada y COMPLETADA (Oleada v8)
 
 **Tarea(s):** R-19 (única `PENDIENTE` en §1 de `SEGUIMIENTO.md`, abierta el 2026-09-29). Sin

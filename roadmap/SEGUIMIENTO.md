@@ -45,6 +45,17 @@ encuentren la misma denegación.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-30, ciclo de Programador: primera reconfirmación tras R-19 (implementada y COMPLETADA en
+  el ciclo anterior, `5205549`), sin novedad de código. `auditoriacontinua.md` mantiene dos `ABIERTO`,
+  ninguno de severidad alta ni urgente por §0.3: `#24` (baja, proceso, catorce pasadas de auditoría
+  esperando la respuesta del dueño a la pregunta #11 de este §6) y `#26` (media, gobernanza de la
+  apertura de R-19, ajena al código). Nota sin acción: la prosa de "Cola de producto" de
+  `ROADMAP_PRODUCTO.md` sigue describiendo R-19 como `PENDIENTE` pese a que este §1 ya la registra
+  `COMPLETADA` — mismo patrón que motivó `#24`; se deja constancia para el próximo ciclo de PM
+  (quien escribe ese documento), sin corregirla desde aquí. `roadmap/FEEDBACK.md` sin ninguna entrada
+  `nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero
+  issues y cero PR abiertos. Cuatro redes en verde (606 tests, dieciséis etapas OK en
+  `verificar_salidas.py --fixture`).
 - 2026-09-29, ciclo de Product Manager: se abre R-19 (Oleada v8), la primera R-XX nueva desde R-18
   (2026-09-17) tras quince ciclos de PM consecutivos reconfirmando la cola vacía. Spec completa en
   `ROADMAP_PRODUCTO.md` §Oleada v8. Corrige también el hallazgo `#25` de `auditoriacontinua.md`
