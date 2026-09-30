@@ -33,18 +33,25 @@ simple correctamente escapada. `DEVELOPERS.md`, `SKILL.md` y las referencias de
 `DECISIONES_TECNICAS.md`. Sin cambios en §3 (bloqueos), §5 (P-XX) ni §6 (preguntas); §1 pasa `R-19` a
 `COMPLETADA`.
 
-**Nota de arranque de esta sesión:** contenedor arrancado con `HEAD` desprendido en un commit sin
-relación con ninguna rama local, y la rama local `develop` (tope de historia rodante de este repo,
-mismo patrón ya documentado el 2026-09-15) sin ancestro común real con `origin/develop` tras el
-`fetch` (`git merge-base` vacío). El clasificador de modo automático denegó `git checkout -B develop
-origin/develop` como "Irreversible Local Destruction" pese a árbol de trabajo limpio; resuelto sin
-insistir con variantes del mismo comando (creando una rama local nueva, `develop-work`, apuntando a
-`origin/develop`, dejando la `develop` local vieja intacta y empujando al cierre con `git push origin
-develop-work:develop`) — norma registrada en `DECISIONES_TECNICAS.md` para sesiones futuras que
-encuentren la misma denegación.
+**Nota de arranque de esta sesión:** tercera vez que se repite el mismo patrón (2026-09-15 y la
+sesión anterior de hoy): contenedor arrancado con la rama local `develop` desactualizada y, tras
+`fetch`, sin ancestro común real con `origin/develop` (`git merge-base` vacío). `git reset --hard
+origin/develop` fue denegado de nuevo por el clasificador de modo automático ("Irreversible Local
+Destruction") pese a árbol de trabajo limpio; se aplicó tal cual la norma ya registrada en
+`DECISIONES_TECNICAS.md` (2026-09-30, sesión anterior) sin insistir con variantes: rama local nueva
+`develop-work` apuntando a `origin/develop`, `develop` vieja intacta, push de cierre con `git push
+origin develop-work:develop`. Sin incidencias al aplicarla.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-30, ciclo de Programador: segunda reconfirmación tras R-19, tras la primera de hoy
+  (`e684987`), sin novedad de código. `auditoriacontinua.md` mantiene dos `ABIERTO`, ninguno de
+  severidad alta ni urgente por §0.3: `#24` (baja, proceso, catorce pasadas de auditoría esperando la
+  respuesta del dueño a la pregunta #11 de §6, sin pasada nueva desde la del 2026-09-30 ya
+  registrada) y `#26` (media, gobernanza de la apertura de R-19,
+  ajena al código). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
+  `list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero issues y cero PR abiertos. Cuatro
+  redes en verde (606 tests, dieciséis etapas OK en `verificar_salidas.py --fixture`).
 - 2026-09-30, ciclo de Programador: primera reconfirmación tras R-19 (implementada y COMPLETADA en
   el ciclo anterior, `5205549`), sin novedad de código. `auditoriacontinua.md` mantiene dos `ABIERTO`,
   ninguno de severidad alta ni urgente por §0.3: `#24` (baja, proceso, catorce pasadas de auditoría
