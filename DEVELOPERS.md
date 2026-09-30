@@ -2939,6 +2939,94 @@ llegaba al único flujo real.
   etapa "Generación de salidas" pasa de 5 a 6 archivos generados sobre `guion-ejemplo.md` (se suma
   `capitulos-youtube.txt`).
 
+## Enlazar la toma buena con su archivo de vídeo real y la lista de concatenación de ffmpeg (R-19)
+
+`origen: instrucción directa del dueño` en el encargo del ciclo de PM del 2026-09-29, sobre la
+candidata (toma↔archivo de vídeo real, aparcada desde 2026-09-21) ya identificada por observación de
+arquitectura del PM. Depende de R-02, R-05, T-33. Objetivo: `estado.json["tomas"]` sabía qué escena
+tenía una toma buena y cuánto duró, pero no qué archivo de la tarjeta de cámara le correspondía — el
+dueño tenía que reconstruir el orden y la duración a mano antes de poder concatenar nada con ffmpeg.
+
+- **Requisito 1 (`archivo_video` en el reproductor).** `assets/reproductor/guion.js` gana
+  `archivoVideoTomaEnCurso` (mismo patrón que `notaTomaEnCurso` de R-02): tecla configurable `V`/`v`
+  (`Configuracion.mapa_teclas_reproductor`, acción `archivo_video_toma`) abre un `window.prompt`
+  durante la grabación, sin salir del modo de grabación; se persiste al cerrar la toma
+  (`finalizarTomaActual`) y se resetea en cada toma nueva (`iniciarMotor`/`reiniciarEscenaActual`,
+  igual que `notaTomaEnCurso`/`tomaBuenaEnCurso`). Además, **editable después desde el índice, sin
+  volver a grabar** (parte explícita del requisito que `nota_toma` no cubre): `renderizarIndice` añade
+  un botón `.btn-archivo-video` por escena, pero como **hermano** de `fila` dentro del mismo `<li>`,
+  nunca anidado dentro del `<button>` de la fila — anidar un control interactivo dentro de otro rompe
+  la semántica, mismo motivo por el que el resumen de tomas ya vivía en un `<span>`, no en un control
+  (comentario ya existente en el código desde R-02). Solo aparece cuando la escena ya tiene una toma
+  marcada `buena` (la única cuyo `archivo_video` importa para R-19); el clic abre el mismo diálogo,
+  actualiza la toma en memoria, persiste con `guardarTomasEscena` y vuelve a renderizar el índice.
+- **Requisito 2 (`archivo_video` en el contrato, versión 2).** `references/contrato-tomas.md` sube a
+  versión 2 (cambio aditivo): cada toma gana la clave opcional `archivo_video` (string, `""` por
+  defecto), documentada junto a `nota` con el mismo tratamiento. `scripts/tomas.py`: `Toma` gana el
+  campo `archivo_video: str = ""`; `_toma_desde_dict`/`_toma_a_dict` lo validan y serializan igual que
+  `nota`. Un parte de rodaje o un `estado.json` de antes de R-19 sin esta clave se lee igual, con
+  `""` por defecto — sin migración (mismo patrón tolerante que R-02/R-03).
+- **Refactor de `tomas.py`: `toma_buena` extraída de `duracion_toma_buena`.** La regla de exclusividad
+  de R-11/#16 (como mucho una toma `buena` por escena, `RegistroTomasError` si hay más de una) vivía
+  solo dentro de `duracion_toma_buena`, que devuelve `float | None`. R-19 necesita además
+  `archivo_video` de esa misma toma, así que la regla se extrae a una función pública nueva,
+  `toma_buena(tomas_escena, numero_escena=None) -> dict[str, Any] | None`, que devuelve el dict
+  completo de la toma; `duracion_toma_buena` pasa a ser un atajo que la llama y solo lee
+  `duracion_segundos`. Comportamiento y firma de `duracion_toma_buena` intactos (mismos tests en
+  verde sin tocarlos); `concat_ffmpeg.py` llama a `toma_buena` directamente, reutilizando la regla de
+  exclusividad tal cual, sin reimplementarla — exactamente lo que pedía el requisito 3.
+- **Requisito 3 (`scripts/concat_ffmpeg.py`, módulo nuevo).** `calcular_lista_concat_ffmpeg` recorre
+  `resultado_tiempos.escenas` en su orden real (el mismo que `tarjetas.json`/`guion.srt`,
+  `references/contrato-montaje.md`) y, por cada una, llama a `tomas.toma_buena`: con `archivo_video`
+  no vacío, añade la línea `file '<archivo_video>'` (`_escapar_ruta_ffmpeg` envuelve en comillas
+  simples y sustituye cada comilla simple interna por la secuencia estándar `'\''` — cierra la
+  comilla abierta, comilla literal, la reabre); sin toma buena o con ella pero sin anotar, añade
+  `# ESCENA <numero>: sin_toma_buena` / `# ESCENA <numero>: sin_archivo_anotado` (el demuxer `concat`
+  de ffmpeg ignora las líneas que empiezan por `#`) y registra la escena en `escenas_pendientes`.
+  Nunca lanza una excepción por datos incompletos: cualquier mezcla de pendientes/anotadas genera
+  igual. Sin ningún parte de rodaje (`tomas_por_escena` vacío), `motivo_sin_generar` queda explícito y
+  `formatear_lista_concat_ffmpeg` devuelve `None` (mismo patrón que
+  `capitulos_youtube.calcular_capitulos` sin sección `Capítulos`) — no hay nada real que concatenar
+  todavía. `validar_lista_concat_ffmpeg` reproduce las reglas del propio demuxer: cada línea no vacía
+  es un comentario o `file '<ruta>'`, con cualquier comilla simple interna correctamente escapada
+  (verificado quitando cada aparición válida de `'\''` y comprobando que no queda ninguna comilla
+  suelta detrás).
+- **Requisito 4 (`CONCAT_FFMPEG`, sexta opción de `TipoSalida`).** Añadida a
+  `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA` tras `CAPITULOS_YOUTUBE` (sigue siendo una única pregunta
+  de opción múltiple, ahora con seis filas). `_generar_concat_ffmpeg` (`scripts/salidas.py`) llama a
+  `concat_ffmpeg.generar_lista_concat_ffmpeg` con `tomas_por_escena`; sin ningún parte de rodaje, la
+  salida queda como `SalidaOmitida` con el motivo exacto — nunca como fallo ni como `SalidaLatente`
+  (no depende de ninguna dependencia externa ausente), mismo criterio que `CAPITULOS_YOUTUBE` sin
+  sección `Capítulos`. Con al menos una toma, el archivo se genera siempre, mezclando líneas `file` y
+  comentarios de escenas pendientes según haga falta — nunca falla por datos incompletos.
+- **Requisito 5 (`concat-ffmpeg.txt`).** `config.NOMBRE_ARCHIVO_CONCAT_FFMPEG = "concat-ffmpeg.txt"`
+  (constante de módulo, mismo patrón que `NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE`, no un campo de
+  `Configuracion`). `references/contrato-montaje.md` documenta el archivo (opcional; solo existe si
+  se seleccionó con al menos una toma) y dice explícitamente que la cadena de montaje debe tratar
+  cualquier línea que empiece por `#` como escena todavía sin archivo real, nunca como error de
+  formato.
+- **Requisito 6 (invariantes (a)/(d) intactas).** `concat_ffmpeg.py` es de solo lectura sobre
+  `EstadoProyecto.tomas`: nunca modifica una toma ni descarta ningún campo existente. El botón nuevo
+  del índice edita `archivo_video` en memoria y persiste con el mismo `guardarTomasEscena` que ya usa
+  `finalizarTomaActual` — nunca reemplaza la toma entera, solo el campo nuevo.
+- **Verificación.** `tests/test_concat_ffmpeg.py` (14 tests nuevos): línea `file` real, comentarios
+  con motivo exacto por cada caso (`sin_toma_buena`/`sin_archivo_anotado`), orden real de escenas,
+  mezcla de pendientes sin excepción, `None` sin ningún parte de rodaje, escapado de comillas simples,
+  criterio de aceptación literal (`ffmpeg -f concat -safe 0 -i concat-ffmpeg.txt`, verificado con
+  `validar_lista_concat_ffmpeg`), y guardado en disco. `tests/test_salidas.py` gana 3 tests
+  (`CONCAT_FFMPEG` sexta opción; su contenido coincide con la llamada directa; omitida sin parte de
+  rodaje) y actualiza los que enumeraban las cinco salidas/omitidas a seis. `tests/test_tomas.py`
+  actualiza la única aserción que fijaba la forma exacta del dict serializado. `tests/test_reproductor.py`
+  gana 5 tests (tecla por defecto `v`/`V`; `pedirArchivoVideoToma` y el `case` del switch; carga del
+  campo guardado; el botón `.btn-archivo-video` del índice; `version: 2` del parte de rodaje
+  exportado). `python scripts/verificar_salidas.py --fixture` gana dos etapas nuevas ("Generación de
+  la lista de concatenación de ffmpeg"/"Validez de la lista de concatenación de ffmpeg", dieciséis en
+  total): a diferencia del `.srt` alineado y los capítulos de YouTube (que se generan igual con
+  `tomas_por_escena={}`), la lista de concatenación no genera nada real sin ninguna toma, así que
+  estas dos etapas ejercitan una toma buena **sintética**, con `archivo_video` anotado, sobre la
+  primera escena del guion de verificación — suficiente para validar de verdad el formato `file
+  '...'` con `validar_lista_concat_ffmpeg`. 583→606 tests. Cuatro redes en verde.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

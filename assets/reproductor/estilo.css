@@ -164,6 +164,27 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+/* Editar el archivo de video real de la toma buena (R-19, requisito 1):
+   fuera del <button> de la fila -- anidar controles interactivos dentro de
+   otro rompe la semantica (mismo motivo por el que el resumen de tomas de
+   arriba es un <span>, no un control). */
+.btn-archivo-video {
+  display: inline-block;
+  margin: -0.35em 0 0.6em 2.75em;
+  padding: 0.3em 0.7em;
+  border: 1px solid var(--color-texto-secundario);
+  border-radius: 0.4em;
+  background: none;
+  color: var(--color-texto-secundario);
+  font: inherit;
+  font-size: 0.6em;
+  cursor: pointer;
+}
+
+.btn-archivo-video:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
 /* Indicador de tropiezo del bloque en pantalla (R-03): mismo tratamiento que
    `.estado-pausa` (color de acento, discreto) -- solo visible mientras el
    bloque activo este marcado. */

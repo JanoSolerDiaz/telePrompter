@@ -44,6 +44,18 @@ escena tiene toma buena) mientras que los capitulos si, porque
 `fixtures/guion-ejemplo.md` ya trae su propia seccion `Capítulos` sin depender
 de tomas reales. "Guion de ejemplo" (T-32) ya es OK: `fixtures/guion-ejemplo.md`
 existe y tiene contenido. Responde al hallazgo #4 del auditor.
+
+R-19 anade "Generación de la lista de concatenación de ffmpeg" y "Validez de
+la lista de concatenación de ffmpeg" (`scripts/concat_ffmpeg.py`): a
+diferencia del `.srt` alineado y los capitulos de YouTube, que se generan sin
+ningun parte de rodaje (con `tomas_por_escena={}`), la lista de concatenacion
+NO genera nada real sin al menos una toma registrada (requisito 4 de R-19:
+"sin ningun parte de rodaje... no aparece como opcion"), asi que estas dos
+etapas ejercitan una toma buena SINTETICA, con `archivo_video` anotado, para
+la primera escena del guion de verificacion -- suficiente para validar de
+verdad el formato `file '...'` del demuxer `concat` con el mismo validador
+estricto que usa el criterio de aceptacion (`validar_lista_concat_ffmpeg`),
+sin que eso sea el rodaje real del guion de ejemplo (que nunca se grabo).
 """
 
 from __future__ import annotations
@@ -62,8 +74,14 @@ from capitulos_youtube import (
     guardar_capitulos_youtube,
     validar_capitulos_youtube,
 )
+from concat_ffmpeg import (
+    generar_lista_concat_ffmpeg,
+    guardar_lista_concat_ffmpeg,
+    validar_lista_concat_ffmpeg,
+)
 from config import (
     NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE,
+    NOMBRE_ARCHIVO_CONCAT_FFMPEG,
     NOMBRE_ARCHIVO_HTML_IMPRESION,
     NOMBRE_ARCHIVO_SRT,
     NOMBRE_ARCHIVO_SRT_ALINEADO,
@@ -90,6 +108,7 @@ RUTA_SRT_ALINEADO_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_SRT_ALINEADO
 RUTA_HTML_IMPRESION_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_HTML_IMPRESION
 RUTA_TARJETAS_JSON_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_TARJETAS_JSON
 RUTA_CAPITULOS_YOUTUBE_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE
+RUTA_CONCAT_FFMPEG_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_CONCAT_FFMPEG
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
 # Lista completa documentada en `references/validador-autocontencion.md` (R-09):
@@ -385,6 +404,82 @@ def verificar_capitulos_youtube(ruta_txt: Path) -> Resultado:
     )
 
 
+def generar_concat_ffmpeg_fixture() -> Resultado:
+    """Genera la lista de concatenacion de ffmpeg (R-19) sobre el mismo guion
+    de verificacion que usa el .srt. En esta maquina no hay ningun parte de
+    rodaje real (nunca se grabo el guion de ejemplo): se ejercita con una
+    toma buena SINTETICA para la primera escena, con `archivo_video`
+    anotado, para que esta etapa valide de verdad el formato `file '...'`
+    del demuxer `concat` -- no solo el caso degradado "sin ningun parte de
+    rodaje" (ese lo cubren los tests unitarios de `concat_ffmpeg.py`)."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
+        return Resultado(
+            "Generación de la lista de concatenación de ffmpeg",
+            "NO APLICABLE",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
+        )
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        primera_escena = tiempos.escenas[0].numero
+        tomas_sinteticas = {
+            str(primera_escena): {
+                "titulo": "Escena de verificacion",
+                "tomas": [
+                    {
+                        "numero": 1,
+                        "duracion_segundos": 4.0,
+                        "nota": "",
+                        "buena": True,
+                        "archivo_video": "verificacion.mp4",
+                    }
+                ],
+            }
+        }
+        contenido, calculo = generar_lista_concat_ffmpeg(tiempos, tomas_sinteticas)
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación de la lista de concatenación de ffmpeg",
+            "FALLO",
+            f"no se pudo generar la lista sobre {ruta_guion.name}: {excepcion}",
+        )
+    if contenido is None:
+        return Resultado(
+            "Generación de la lista de concatenación de ffmpeg",
+            "NO APLICABLE",
+            f"no se pudo generar sobre {ruta_guion.name}: {calculo.motivo_sin_generar}",
+        )
+    guardar_lista_concat_ffmpeg(contenido, CARPETA_SALIDA_FIXTURE)
+    detalle = (
+        f"generado sobre {ruta_guion.name} (toma sintetica en la escena {primera_escena}). "
+        f"{len(calculo.escenas_pendientes)} escena(s) pendiente(s) de anotar archivo real."
+    )
+    return Resultado("Generación de la lista de concatenación de ffmpeg", "OK", detalle)
+
+
+def verificar_concat_ffmpeg(ruta_txt: Path) -> Resultado:
+    """Valida `concat-ffmpeg.txt` con las mismas reglas que exige el demuxer
+    `concat` de ffmpeg (R-19, criterio de aceptación)."""
+    if not ruta_txt.exists():
+        return Resultado(
+            "Validez de la lista de concatenación de ffmpeg",
+            "NO APLICABLE",
+            f"no se ha generado ningun archivo de concatenacion en {ruta_txt}.",
+        )
+    problemas = validar_lista_concat_ffmpeg(ruta_txt.read_text(encoding="utf-8"))
+    if problemas:
+        return Resultado(
+            "Validez de la lista de concatenación de ffmpeg", "FALLO", "; ".join(problemas)
+        )
+    return Resultado(
+        "Validez de la lista de concatenación de ffmpeg",
+        "OK",
+        f"{ruta_txt.name} cumple el formato del demuxer concat de ffmpeg.",
+    )
+
+
 def generar_pdf_fixture() -> Resultado:
     """Genera el HTML de impresion y, si hay Chrome/Edge, el `.pdf` (T-28) sobre
     el mismo guion de verificacion que usan el reproductor y el .srt. La
@@ -530,6 +625,8 @@ def main() -> int:
         verificar_srt_alineado(RUTA_SRT_ALINEADO_FIXTURE),
         generar_capitulos_youtube_fixture(),
         verificar_capitulos_youtube(RUTA_CAPITULOS_YOUTUBE_FIXTURE),
+        generar_concat_ffmpeg_fixture(),
+        verificar_concat_ffmpeg(RUTA_CONCAT_FFMPEG_FIXTURE),
         generar_pdf_fixture(),
         verificar_autocontencion(
             RUTA_HTML_IMPRESION_FIXTURE, etapa="Auto-contención del HTML de impresión"

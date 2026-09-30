@@ -838,7 +838,7 @@ def test_guion_js_reiniciar_escena_cierra_la_toma_en_curso_como_repeticion() -> 
     # fallida y arranca el cronometro de cero para la siguiente (una toma no
     # puede heredar tiempo de la que se acaba de descartar).
     coincidencia = pagina.index("function reiniciarEscenaActual")
-    fragmento = pagina[coincidencia : coincidencia + 500]
+    fragmento = pagina[coincidencia : coincidencia + 600]
     assert "finalizarTomaActual();" in fragmento
     assert "cronometroMsAcumulados = 0;" in fragmento
 
@@ -1079,3 +1079,50 @@ def test_prefijos_de_indicacion_son_configurables() -> None:
     datos = _extraer_datos(pagina)
     indicaciones = datos["escenas"][0]["bloques"][-1]["indicaciones"]
     assert indicaciones == ["PANTALLA > Título del vídeo en pantalla."]
+
+
+# --- Archivo de video real de la toma buena (R-19) --------------------------------
+
+
+def test_mapa_de_teclas_incluye_archivo_video_toma_por_defecto() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    assert datos["mapa_teclas"]["archivo_video_toma"] == ["v", "V"]
+
+
+def test_guion_js_anade_archivo_video_a_la_toma_en_curso() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: mismo patron de dialogo que `nota_toma` (R-02), sin salir
+    # del modo de grabacion; se guarda de verdad al cerrar la toma.
+    assert "function pedirArchivoVideoToma" in pagina
+    assert 'case "archivo_video_toma":' in pagina
+    assert "archivo_video: archivoVideoTomaEnCurso" in pagina
+
+
+def test_guion_js_carga_el_archivo_video_guardado_de_cada_toma() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert 'archivo_video: typeof toma.archivo_video === "string" ? toma.archivo_video : ""' in (
+        pagina
+    )
+
+
+def test_guion_js_permite_editar_el_archivo_video_desde_el_indice_sin_regrabar() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: "editable desde el indice en cualquier momento, sin tener
+    # que volver a grabar la toma" -- un boton PROPIO, fuera del <button> de
+    # la fila (anidar controles interactivos rompe la semantica).
+    assert "btn-archivo-video" in pagina
+    assert "toma.archivo_video = valor;" in pagina
+    assert "guardarTomasEscena(indiceEscena);" in pagina
+
+
+def test_parte_de_rodaje_exportado_sube_a_version_2() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    coincidencia = pagina.index("function construirParteDeRodaje")
+    fragmento = pagina[coincidencia : coincidencia + 200]
+    assert "version: 2," in fragmento

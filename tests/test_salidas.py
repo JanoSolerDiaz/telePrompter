@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from capitulos_youtube import generar_capitulos_youtube
+from concat_ffmpeg import generar_lista_concat_ffmpeg
 from config import (
     NOMBRE_ARCHIVO_SRT_ALINEADO,
     NOMBRE_ARCHIVO_TARJETAS_JSON,
@@ -72,6 +73,24 @@ _TOMAS_ESCENA_0_BUENA = {
     "0": {
         "titulo": "Arranque",
         "tomas": [{"numero": 1, "duracion_segundos": 4.0, "nota": "", "buena": True}],
+    },
+}
+
+# Misma toma buena de arriba, pero con `archivo_video` anotado (R-19) -- lo
+# unico que necesita `CONCAT_FFMPEG` para generar una linea `file` real en
+# vez de un comentario de escena pendiente.
+_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO = {
+    "0": {
+        "titulo": "Arranque",
+        "tomas": [
+            {
+                "numero": 1,
+                "duracion_segundos": 4.0,
+                "nota": "",
+                "buena": True,
+                "archivo_video": "CLIP0001.MP4",
+            }
+        ],
     },
 }
 
@@ -144,6 +163,7 @@ def test_no_seleccionadas_quedan_omitidas_sin_generar_archivo(tmp_path: Path) ->
         TipoSalida.PDF,
         TipoSalida.PPTX,
         TipoSalida.CAPITULOS_YOUTUBE,
+        TipoSalida.CONCAT_FFMPEG,
     }
     for omitida in resumen.omitidas:
         assert "no seleccionada" in omitida.motivo
@@ -185,10 +205,14 @@ def test_pptx_latente_no_impide_las_demas(tmp_path: Path) -> None:
     tipos_generados = {a.tipo for a in resumen.generadas}
     assert tipos_generados == {TipoSalida.HTML, TipoSalida.SRT, TipoSalida.PDF, TipoSalida.PPTX}
     assert any(latente.tipo is TipoSalida.PPTX for latente in resumen.latentes)
-    assert len(resumen.omitidas) == 1
-    omitida_capitulos = resumen.omitidas[0]
-    assert omitida_capitulos.tipo is TipoSalida.CAPITULOS_YOUTUBE
-    assert not omitida_capitulos.motivo.startswith("fallo al generar")
+    # CAPITULOS_YOUTUBE (sin seccion `Capítulos`, R-18) y CONCAT_FFMPEG (sin
+    # ningun parte de rodaje registrado, R-19) quedan omitidas por el mismo
+    # motivo estructural: nada real que generar todavia, nunca un fallo.
+    assert len(resumen.omitidas) == 2
+    tipos_omitidos = {o.tipo for o in resumen.omitidas}
+    assert tipos_omitidos == {TipoSalida.CAPITULOS_YOUTUBE, TipoSalida.CONCAT_FFMPEG}
+    for omitida in resumen.omitidas:
+        assert not omitida.motivo.startswith("fallo al generar")
     archivos_pptx = [a for a in resumen.generadas if a.tipo is TipoSalida.PPTX]
     assert len(archivos_pptx) == 2  # tarjetas.json + brief-pptx.md, ambos ya en disco
     for archivo in resumen.generadas:
@@ -290,8 +314,15 @@ def test_capitulos_youtube_es_la_quinta_opcion_de_la_pregunta() -> None:
     """Requisito 4 de R-18: `TipoSalida` gana una quinta opcion,
     `CAPITULOS_YOUTUBE`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
     junto a las cuatro ya existentes."""
-    assert TODAS_LAS_SALIDAS[-1] is TipoSalida.CAPITULOS_YOUTUBE
-    assert len(TODAS_LAS_SALIDAS) == 5
+    assert TODAS_LAS_SALIDAS[-2] is TipoSalida.CAPITULOS_YOUTUBE
+
+
+def test_concat_ffmpeg_es_la_sexta_opcion_de_la_pregunta() -> None:
+    """Requisito 4 de R-19: `TipoSalida` gana una sexta opcion,
+    `CONCAT_FFMPEG`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
+    junto a las cinco ya existentes."""
+    assert TODAS_LAS_SALIDAS[-1] is TipoSalida.CONCAT_FFMPEG
+    assert len(TODAS_LAS_SALIDAS) == 6
 
 
 def test_capitulos_youtube_generado_coincide_con_la_llamada_directa(tmp_path: Path) -> None:
@@ -334,6 +365,75 @@ def test_capitulos_youtube_sin_seccion_queda_omitida_nunca_latente_ni_fallo(
     omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.CAPITULOS_YOUTUBE)
     assert not omitida.motivo.startswith("fallo al generar")
     assert "no seleccionada" not in omitida.motivo
+
+
+# --- R-19: CONCAT_FFMPEG, sexta opcion del selector ---------------------------------
+
+
+def test_concat_ffmpeg_generado_coincide_con_la_llamada_directa(tmp_path: Path) -> None:
+    """Requisito 4 de R-19: seleccionar `CONCAT_FFMPEG` produce exactamente
+    el mismo contenido que la llamada directa a
+    `concat_ffmpeg.generar_lista_concat_ffmpeg` en las mismas condiciones."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CONCAT_FFMPEG,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+    )
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.CONCAT_FFMPEG)
+    contenido_directo, _ = generar_lista_concat_ffmpeg(tiempos, _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO)
+    assert contenido_directo is not None
+    assert archivo.ruta.read_text(encoding="utf-8") == contenido_directo
+    assert "file 'CLIP0001.MP4'" in contenido_directo
+    assert "# ESCENA 1: sin_toma_buena" in contenido_directo
+
+
+def test_concat_ffmpeg_sin_parte_de_rodaje_queda_omitida_nunca_latente_ni_fallo(
+    tmp_path: Path,
+) -> None:
+    """Requisito 4 de R-19: sin ningun parte de rodaje registrado, la salida
+    queda como `SalidaOmitida` con el motivo exacto de
+    `concat_ffmpeg.calcular_lista_concat_ffmpeg` -- nunca como fallo ni como
+    `SalidaLatente` (no depende de nada externo ausente), mismo criterio que
+    `CAPITULOS_YOUTUBE` sin seccion `Capítulos` (R-18)."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CONCAT_FFMPEG,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+    )
+    assert resumen.generadas == ()
+    assert not resumen.latentes
+    omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.CONCAT_FFMPEG)
+    assert not omitida.motivo.startswith("fallo al generar")
+    assert "no seleccionada" not in omitida.motivo
+
+
+def test_concat_ffmpeg_con_tomas_sin_archivo_anotado_genera_solo_comentarios(
+    tmp_path: Path,
+) -> None:
+    """Requisito 3 de R-19: con un parte de rodaje registrado pero sin
+    ningun `archivo_video` anotado, el archivo se genera igual (nunca queda
+    omitido) -- cada escena aparece como comentario `sin_archivo_anotado`."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CONCAT_FFMPEG,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA,
+    )
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.CONCAT_FFMPEG)
+    contenido = archivo.ruta.read_text(encoding="utf-8")
+    assert "# ESCENA 0: sin_archivo_anotado" in contenido
+    assert "# ESCENA 1: sin_toma_buena" in contenido
+    assert "file '" not in contenido
 
 
 def test_regresion_guiones_reales_sin_tomas_identica_a_antes_de_r18(

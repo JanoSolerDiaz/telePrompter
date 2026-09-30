@@ -106,7 +106,8 @@
             numero: toma.numero,
             duracion_segundos: toma.duracion_segundos,
             nota: typeof toma.nota === "string" ? toma.nota : "",
-            buena: !!toma.buena
+            buena: !!toma.buena,
+            archivo_video: typeof toma.archivo_video === "string" ? toma.archivo_video : ""
           };
         });
     } catch (error) {
@@ -421,12 +422,12 @@
       // dentro rompe la semantica; marcar la toma buena se hace por teclado
       // durante la grabacion (`marcar_toma_buena`), no desde aqui.
       var tomasDeEscena = tomasEscena[indice];
+      var tomaBuena = tomasDeEscena.filter(function (toma) {
+        return toma.buena;
+      })[0];
       if (tomasDeEscena.length > 0) {
         var resumenTomas = document.createElement("span");
         resumenTomas.className = "escena-tomas";
-        var tomaBuena = tomasDeEscena.filter(function (toma) {
-          return toma.buena;
-        })[0];
         resumenTomas.textContent =
           tomasDeEscena.length + (tomasDeEscena.length === 1 ? " toma" : " tomas") +
           (tomaBuena ? " · buena: " + tomaBuena.numero : "");
@@ -453,6 +454,37 @@
 
       botonesEscena[indice] = fila;
       item.appendChild(fila);
+
+      // Editar el archivo de video real de la toma buena (R-19, requisito 1:
+      // "editable desde el indice en cualquier momento, sin tener que volver
+      // a grabar la toma"). Boton PROPIO, fuera de `fila` -- anidar un
+      // control dentro de otro `<button>` rompe la semantica (mismo motivo
+      // por el que el resumen de arriba es un `<span>`). Solo aparece cuando
+      // la escena ya tiene una toma marcada buena: es la unica cuyo
+      // `archivo_video` importa para `concat-ffmpeg.txt` (R-19).
+      if (tomaBuena) {
+        var botonArchivoVideo = document.createElement("button");
+        botonArchivoVideo.type = "button";
+        botonArchivoVideo.className = "btn-archivo-video";
+        botonArchivoVideo.textContent = tomaBuena.archivo_video
+          ? "Archivo de vídeo: " + tomaBuena.archivo_video
+          : "Anotar archivo de vídeo de la toma buena";
+        botonArchivoVideo.addEventListener("click", (function (toma, indiceEscena) {
+          return function () {
+            var valor = window.prompt(
+              "Archivo de vídeo real de la toma buena (escena " + (indiceEscena + 1) + "):",
+              toma.archivo_video || ""
+            );
+            if (valor !== null) {
+              toma.archivo_video = valor;
+              guardarTomasEscena(indiceEscena);
+              renderizarIndice();
+            }
+          };
+        })(tomaBuena, indice));
+        item.appendChild(botonArchivoVideo);
+      }
+
       lista.appendChild(item);
     });
 
@@ -734,6 +766,11 @@
   // una toma solo existe de verdad cuando se cierra.
   var notaTomaEnCurso = "";
   var tomaBuenaEnCurso = false;
+  // Archivo de video real de la toma EN CURSO (R-19, requisito 1): mismo
+  // patron que `notaTomaEnCurso`, solo se guarda de verdad al cerrar la toma
+  // (`finalizarTomaActual`). Tambien editable a posteriori, desde el indice,
+  // para la toma ya cerrada y marcada buena (`renderizarIndice`, mas abajo).
+  var archivoVideoTomaEnCurso = "";
 
   // --- Atajos de teclado y clicker Bluetooth (T-24) --------------------------
   var elementoAyuda = null;
@@ -783,7 +820,8 @@
     espejo: "Activar / desactivar modo espejo",
     marcar_toma_buena: "Marcar esta toma como la buena",
     nota_toma: "Anadir una nota a esta toma",
-    marcar_tropiezo: "Marcar el bloque en pantalla como tropiezo"
+    marcar_tropiezo: "Marcar el bloque en pantalla como tropiezo",
+    archivo_video_toma: "Anadir el archivo de video real a esta toma"
   };
 
   // Nombre legible de una tecla tal como la reporta `KeyboardEvent.key`
@@ -949,6 +987,9 @@
     if (notaTomaEnCurso) {
       extras.push("con nota");
     }
+    if (archivoVideoTomaEnCurso) {
+      extras.push("con archivo de vídeo");
+    }
     indicadorToma.textContent =
       "Toma " + numeroToma + (extras.length ? " · " + extras.join(", ") : "");
   }
@@ -976,6 +1017,22 @@
     var notaIngresada = window.prompt("Nota para esta toma:", notaTomaEnCurso);
     if (notaIngresada !== null) {
       notaTomaEnCurso = notaIngresada;
+      actualizarIndicadorToma();
+    }
+  }
+
+  // Archivo de video real para la toma EN CURSO (R-19, requisito 1): mismo
+  // patron de dialogo que `pedirNotaToma`, sin salir del modo de grabacion.
+  function pedirArchivoVideoToma() {
+    if (escenaActual === -1) {
+      return;
+    }
+    var archivoIngresado = window.prompt(
+      "Archivo de vídeo real para esta toma:",
+      archivoVideoTomaEnCurso
+    );
+    if (archivoIngresado !== null) {
+      archivoVideoTomaEnCurso = archivoIngresado;
       actualizarIndicadorToma();
     }
   }
@@ -1047,7 +1104,8 @@
       numero: tomasEscena[indice].length + 1,
       duracion_segundos: Math.round((transcurridoMs / 1000) * 10) / 10,
       nota: notaTomaEnCurso,
-      buena: tomaBuenaEnCurso
+      buena: tomaBuenaEnCurso,
+      archivo_video: archivoVideoTomaEnCurso
     });
     guardarTomasEscena(indice);
     estadosEscena[indice] = calcularEstadoEscena(indice);
@@ -1322,10 +1380,12 @@
   // Parte de rodaje (R-02, requisito 3): todas las tomas de todas las escenas,
   // tal como estan en memoria en el momento de exportar -- no solo las de la
   // escena que se este viendo ahora. Solo se incluyen escenas con al menos
-  // una toma para no llenar el archivo de escenas vacias.
+  // una toma para no llenar el archivo de escenas vacias. Version 2 desde
+  // R-19: cada toma gana el campo opcional `archivo_video` (cambio aditivo,
+  // `references/contrato-tomas.md`).
   function construirParteDeRodaje() {
     return {
-      version: 1,
+      version: 2,
       guion: datos.guion,
       generado: new Date().toISOString(),
       escenas: datos.escenas
@@ -1712,6 +1772,7 @@
     finalizarTomaActual();
     notaTomaEnCurso = "";
     tomaBuenaEnCurso = false;
+    archivoVideoTomaEnCurso = "";
     cronometroMsAcumulados = 0;
     cronometroInicioMarca = Date.now();
     actualizarIndicadorToma();
@@ -1778,6 +1839,7 @@
     // toma anterior ya quedaron cerradas en `finalizarTomaActual`.
     notaTomaEnCurso = "";
     tomaBuenaEnCurso = false;
+    archivoVideoTomaEnCurso = "";
     actualizarIndicadorVelocidad();
     actualizarIndicadorTamano();
     actualizarIndicadorPausa();
@@ -1872,6 +1934,9 @@
         break;
       case "nota_toma":
         pedirNotaToma();
+        break;
+      case "archivo_video_toma":
+        pedirArchivoVideoToma();
         break;
       case "marcar_tropiezo":
         alternarTropiezoBloqueActual();

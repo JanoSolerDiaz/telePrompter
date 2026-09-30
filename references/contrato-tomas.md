@@ -10,7 +10,9 @@
 >
 > `version` sube solo si el JSON cambia de forma incompatible con este documento;
 > nunca decrece (mismo criterio que `version_contrato` de `tarjetas.json`, T-29, y
-> `VERSION_ESQUEMA_ESTADO` de `estado.json`, T-07). Versión actual: **1**.
+> `VERSION_ESQUEMA_ESTADO` de `estado.json`, T-07). Versión actual: **2** (R-19
+> añadió `archivo_video` a cada toma, cambio aditivo — un archivo de versión 1
+> se lee igual, con `""` por defecto).
 
 ## Por qué existe un archivo suelto además de `estado.json`
 
@@ -26,7 +28,7 @@ pipeline, que sí corre en la máquina del dueño con acceso a disco.
 
 ```jsonc
 {
-  "version": 1,
+  "version": 2,
   "guion": "guion-08-busqueda-investigacion",
   "generado": "2026-09-03T10:00:00.000Z",
   "escenas": [
@@ -34,8 +36,20 @@ pipeline, que sí corre en la máquina del dueño con acceso a disco.
       "numero": 0,
       "titulo": "Arranque",
       "tomas": [
-        { "numero": 1, "duracion_segundos": 24.1, "nota": "muy rápido, repetir", "buena": false },
-        { "numero": 2, "duracion_segundos": 26.3, "nota": "", "buena": true }
+        {
+          "numero": 1,
+          "duracion_segundos": 24.1,
+          "nota": "muy rápido, repetir",
+          "buena": false,
+          "archivo_video": ""
+        },
+        {
+          "numero": 2,
+          "duracion_segundos": 26.3,
+          "nota": "",
+          "buena": true,
+          "archivo_video": "CLIP0002.MP4"
+        }
       ]
     }
   ]
@@ -69,6 +83,7 @@ todavía no aparece en el archivo, en vez de aparecer con `"tomas": []`).
 | `duracion_segundos` | `number` (≥ 0) | Tiempo de reloj real transcurrido durante la toma (mismo cronómetro que T-23, congelado en pausa), redondeado a una décima. |
 | `nota` | `string` | Nota rápida escrita durante la grabación (tecla `N`/`n` por defecto, `Configuracion.mapa_teclas_reproductor`). Cadena vacía si no se escribió ninguna. |
 | `buena` | `bool` | `true` si esa toma fue marcada como la buena (tecla `G`/`g` por defecto). Como mucho una toma por escena lo tiene a `true`: marcar una nueva desmarca cualquier otra de la misma escena. |
+| `archivo_video` | `string` (R-19, opcional) | Nombre del archivo de vídeo real de la cámara que corresponde a esta toma, tecleado por el dueño (tecla `V`/`v` por defecto durante la grabación, o editable después desde el índice para la toma ya marcada buena, sin volver a grabar). Cadena vacía si no se ha anotado — nunca obligatorio para cerrar una toma ni para marcarla `buena`. `scripts/concat_ffmpeg.py` (R-19) lo usa para generar `concat-ffmpeg.txt`. |
 
 ## Cómo se cierra una toma
 
@@ -90,8 +105,20 @@ con esta forma — claves de escena en texto, mismos campos de toma que arriba:
   "0": {
     "titulo": "Arranque",
     "tomas": [
-      { "numero": 1, "duracion_segundos": 24.1, "nota": "muy rápido, repetir", "buena": false },
-      { "numero": 2, "duracion_segundos": 26.3, "nota": "", "buena": true }
+      {
+        "numero": 1,
+        "duracion_segundos": 24.1,
+        "nota": "muy rápido, repetir",
+        "buena": false,
+        "archivo_video": ""
+      },
+      {
+        "numero": 2,
+        "duracion_segundos": 26.3,
+        "nota": "",
+        "buena": true,
+        "archivo_video": "CLIP0002.MP4"
+      }
     ]
   }
 }
@@ -110,7 +137,7 @@ anterior).
 3. Cada escena tiene `numero` numérico; `tomas`, si aparece, es una lista.
 4. Cada toma tiene `numero` entero positivo y `duracion_segundos` numérico no
    negativo; `nota` (si aparece) es texto; `buena` (si aparece) se interpreta
-   como booleano.
+   como booleano; `archivo_video` (si aparece, R-19) es texto.
 
 Sin `jsonschema` ni ninguna biblioteca externa (§0.2): comprobación a mano,
 mismo patrón que `pptx.validar_tarjetas` (T-29) y `srt.validar_srt` (T-27).

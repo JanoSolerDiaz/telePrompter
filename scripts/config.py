@@ -141,6 +141,11 @@ CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS: float = 10.0
 # Nombre del archivo de capitulos dentro de la carpeta de salida del guion.
 NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE: str = "capitulos-youtube.txt"
 
+# --- Lista de concatenacion de ffmpeg (R-19) ---------------------------------------
+# Nombre del archivo, listo para `ffmpeg -f concat -safe 0 -i <este archivo>`,
+# dentro de la carpeta de salida del guion.
+NOMBRE_ARCHIVO_CONCAT_FFMPEG: str = "concat-ffmpeg.txt"
+
 # --- Adaptador .pptx via 480-branded-pptx (T-29) -----------------------------------
 # Version del contrato de intercambio `tarjetas.json` (requisito 1, documentado en
 # `references/contrato-tarjetas.md`): sube si el JSON cambia de forma incompatible,
@@ -402,6 +407,11 @@ MAPA_TECLAS_REPRODUCTOR: tuple[tuple[str, tuple[str, ...]], ...] = (
     # -- es un interruptor inmediato, mismo patron que `marcar_toma_buena`. `T`
     # de "tropiezo".
     ("marcar_tropiezo", ("t", "T")),
+    # Archivo de video real de la toma en curso (R-19, requisito 1): mismo
+    # patron de edicion (dialogo `window.prompt`) que `nota_toma`, sin salir
+    # del modo de grabacion. `V` de "video". Tambien editable desde el indice
+    # para la toma ya marcada buena, sin volver a grabar (ver `guion.js`).
+    ("archivo_video_toma", ("v", "V")),
 )
 
 # --- Modo espejo (T-25) -------------------------------------------------------------

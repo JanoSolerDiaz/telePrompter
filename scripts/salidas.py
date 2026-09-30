@@ -37,6 +37,13 @@ de siempre, y seleccionar `PPTX` pasa las tomas a `exportar_pptx` para que
 tomas, el comportamiento de ambas es identico al de antes de R-18. `TipoSalida`
 gana ademas una quinta opcion, `CAPITULOS_YOUTUBE` (R-07), inalcanzable hasta
 ahora desde este selector.
+
+R-19 anade una sexta opcion, `CONCAT_FFMPEG`: con `tomas_por_escena` no vacio
+(al menos un parte de rodaje registrado, aunque ninguna toma tenga todavia
+`archivo_video` anotado), genera `concat-ffmpeg.txt` (`concat_ffmpeg.py`),
+mismo patron de `SalidaOmitida` que `CAPITULOS_YOUTUBE` cuando no hay nada
+real que concatenar todavia (sin parte de rodaje en absoluto) -- nunca un
+fallo ni una salida latente.
 """
 
 from __future__ import annotations
@@ -47,6 +54,7 @@ from pathlib import Path
 from typing import Any
 
 from capitulos_youtube import generar_capitulos_youtube, guardar_capitulos_youtube
+from concat_ffmpeg import generar_lista_concat_ffmpeg, guardar_lista_concat_ffmpeg
 from config import Configuracion
 from estado import EstadoProyecto, marca_de_tiempo
 from parser import ResultadoParseo
@@ -60,8 +68,8 @@ from tiempos import ResultadoTiempos
 
 
 class TipoSalida(str, Enum):
-    """Las cinco salidas de la skill (requisito 1 de T-30, quinta opcion
-    de R-18), en el orden en que se ofrecen siempre en la pregunta y en el
+    """Las seis salidas de la skill (requisito 1 de T-30, sexta opcion
+    de R-19), en el orden en que se ofrecen siempre en la pregunta y en el
     resumen."""
 
     HTML = "html"
@@ -69,6 +77,7 @@ class TipoSalida(str, Enum):
     PDF = "pdf"
     SRT = "srt"
     CAPITULOS_YOUTUBE = "capitulos_youtube"
+    CONCAT_FFMPEG = "concat_ffmpeg"
 
 
 DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
@@ -77,6 +86,7 @@ DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
     TipoSalida.PDF: "Documento .pdf con marca 480",
     TipoSalida.SRT: "Subtítulos .srt borrador",
     TipoSalida.CAPITULOS_YOUTUBE: "Capítulos de YouTube con marcas de tiempo (.txt)",
+    TipoSalida.CONCAT_FFMPEG: "Lista de concatenación de ffmpeg (.txt)",
 }
 
 TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
@@ -85,6 +95,7 @@ TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
     TipoSalida.PDF,
     TipoSalida.SRT,
     TipoSalida.CAPITULOS_YOUTUBE,
+    TipoSalida.CONCAT_FFMPEG,
 )
 
 
@@ -318,6 +329,23 @@ def _generar_capitulos_youtube(
     return [ArchivoGenerado(TipoSalida.CAPITULOS_YOUTUBE, ruta, ruta.stat().st_size)], []
 
 
+def _generar_concat_ffmpeg(
+    resultado: ResultadoParseo,
+    resultado_tiempos: ResultadoTiempos,
+    carpeta_salida: Path,
+    nombre_guion: str,
+    configuracion: Configuracion,
+    tomas_por_escena: dict[str, Any],
+) -> tuple[list[ArchivoGenerado], list[SalidaOmitida]]:
+    del resultado, nombre_guion, configuracion  # R-19 solo necesita tiempos + tomas
+    contenido, calculo = generar_lista_concat_ffmpeg(resultado_tiempos, tomas_por_escena)
+    if contenido is None:
+        motivo = calculo.motivo_sin_generar or "no hay ninguna toma buena registrada todavía."
+        return [], [SalidaOmitida(TipoSalida.CONCAT_FFMPEG, motivo)]
+    ruta = guardar_lista_concat_ffmpeg(contenido, carpeta_salida)
+    return [ArchivoGenerado(TipoSalida.CONCAT_FFMPEG, ruta, ruta.stat().st_size)], []
+
+
 def generar_salidas_seleccionadas(
     seleccion: SeleccionSalidas,
     resultado: ResultadoParseo,
@@ -384,6 +412,17 @@ def generar_salidas_seleccionadas(
                 latentes.extend(nuevas_latentes)
             elif tipo is TipoSalida.CAPITULOS_YOUTUBE:
                 nuevas, nuevas_omitidas = _generar_capitulos_youtube(
+                    resultado,
+                    resultado_tiempos,
+                    carpeta_salida,
+                    nombre_guion,
+                    configuracion,
+                    tomas_por_escena,
+                )
+                generadas.extend(nuevas)
+                omitidas.extend(nuevas_omitidas)
+            elif tipo is TipoSalida.CONCAT_FFMPEG:
+                nuevas, nuevas_omitidas = _generar_concat_ffmpeg(
                     resultado,
                     resultado_tiempos,
                     carpeta_salida,

@@ -17,22 +17,30 @@ vez de tener que reparsear el archivo suelto. La skill no invoca esto sola: es
 Claude quien llama a `cargar_parte_de_rodaje`/`registrar_tomas` cuando el dueno
 entrega el archivo exportado tras una sesion de rodaje.
 
-`duracion_toma_buena` (publica, no `_`) es el criterio ya establecido por R-04
-para leer "la" duracion real de una escena a partir de `estado.tomas`: la de la
-toma marcada `buena`, `None` si ninguna lo esta todavia (una escena con tomas
-sin marcar no aporta evidencia real, nunca se estima ni se promedia entre
-tomas sin validar). R-04 (`calibracion.py`) y R-05 (`srt_alineado.py`)
-comparten esta misma funcion en vez de cada uno reimplementar el mismo
-criterio por su cuenta.
+`toma_buena` (publica, no `_`) es el criterio ya establecido por R-04 para
+leer "la" toma real de una escena a partir de `estado.tomas`: la marcada
+`buena`, `None` si ninguna lo esta todavia (una escena con tomas sin marcar
+no aporta evidencia real, nunca se estima ni se promedia entre tomas sin
+validar). `duracion_toma_buena` es un atajo sobre ella para quien solo
+necesita la duracion (R-04/`calibracion.py`, R-05/`srt_alineado.py`,
+R-07/`capitulos_youtube.py`); R-19 (`concat_ffmpeg.py`) llama a `toma_buena`
+directamente porque necesita ademas `archivo_video`, sin reimplementar la
+regla de exclusividad de abajo.
 
 R-11 (hallazgo #16): la exclusividad de "como mucho una toma buena por
 escena" solo la garantizaba antes el lado JS (`finalizarTomaActual` desmarca
 las demas antes de anadir la nueva) -- un `estado.tomas` con dos tomas
 `buena` para la misma escena (edicion manual, fusion de dos exportaciones, un
-futuro bug de `guion.js`) hacia que `duracion_toma_buena` eligiera la primera
-en silencio. Ahora rechaza ese dato con `RegistroTomasError` en vez de
-elegir: es un dato corrupto, no una ambiguedad legitima que se pueda resolver
-sola, y de ella dependen a la vez R-04/R-05/R-07.
+futuro bug de `guion.js`) hacia que se eligiera la primera en silencio.
+`toma_buena` rechaza ese dato con `RegistroTomasError` en vez de elegir: es
+un dato corrupto, no una ambiguedad legitima que se pueda resolver sola, y de
+ella dependen a la vez R-04/R-05/R-07/R-19.
+
+R-19: cada toma gana el campo opcional `archivo_video` (string, `""` si no
+se ha anotado) -- el nombre del archivo de video real de la camara que
+`scripts/concat_ffmpeg.py` usa para generar `concat-ffmpeg.txt`. Campo
+aditivo (`references/contrato-tomas.md` version 2): un parte de rodaje o un
+`estado.json` de antes de R-19 se lee igual, con `""` por defecto.
 
 Contrato del archivo exportado y de `estado.json["tomas"]`: `references/contrato-tomas.md`.
 """
@@ -63,6 +71,7 @@ class Toma:
     duracion_segundos: float
     nota: str
     buena: bool
+    archivo_video: str = ""
 
 
 @dataclass(frozen=True)
@@ -107,11 +116,15 @@ def _toma_desde_dict(bruto: Any, contexto: str) -> Toma:
     nota = bruto.get("nota", "")
     if not isinstance(nota, str):
         raise RegistroTomasError(f"{contexto}: la nota debe ser texto.")
+    archivo_video = bruto.get("archivo_video", "")
+    if not isinstance(archivo_video, str):
+        raise RegistroTomasError(f"{contexto}: 'archivo_video' debe ser texto.")
     return Toma(
         numero=numero,
         duracion_segundos=duracion,
         nota=nota,
         buena=bool(bruto.get("buena", False)),
+        archivo_video=archivo_video,
     )
 
 
@@ -180,23 +193,27 @@ def _toma_a_dict(toma: Toma) -> dict[str, Any]:
         "duracion_segundos": toma.duracion_segundos,
         "nota": toma.nota,
         "buena": toma.buena,
+        "archivo_video": toma.archivo_video,
     }
 
 
-def duracion_toma_buena(
+def toma_buena(
     tomas_escena: dict[str, Any] | None, numero_escena: int | None = None
-) -> float | None:
-    """Duracion real (segundos) de la toma marcada `buena` de una escena, tal
-    como viene fusionada en `EstadoProyecto.tomas` (claves de escena en texto,
-    ver `references/contrato-tomas.md`). `None` si la escena no tiene tomas
+) -> dict[str, Any] | None:
+    """La toma marcada `buena` de una escena, tal cual viene fusionada en
+    `EstadoProyecto.tomas` (claves de escena en texto, ver
+    `references/contrato-tomas.md`). `None` si la escena no tiene tomas
     todavia o ninguna esta marcada `buena` -- nunca se elige una toma sin
     marcar ni se promedia entre varias.
 
     `numero_escena` es opcional, solo para que el mensaje de error senale la
-    escena exacta cuando quien llama ya lo sabe (R-04/R-05/R-07 lo conocen
-    todos). Si hay MAS de una toma marcada `buena` (dato corrupto, hallazgo
-    #16 de R-11), se rechaza con `RegistroTomasError` en vez de elegir la
-    primera en silencio."""
+    escena exacta cuando quien llama ya lo sabe (R-04/R-05/R-07/R-19 lo
+    conocen todos). Si hay MAS de una toma marcada `buena` (dato corrupto,
+    hallazgo #16 de R-11), se rechaza con `RegistroTomasError` en vez de
+    elegir la primera en silencio -- unica fuente de esta regla de
+    exclusividad; `duracion_toma_buena` (R-04/R-05/R-07) y `concat_ffmpeg.py`
+    (R-19, para leer `archivo_video`) la reutilizan tal cual, en vez de
+    reimplementarla cada uno por su lado."""
     if tomas_escena is None:
         return None
     buenas = [toma for toma in tomas_escena.get("tomas", []) if toma.get("buena")]
@@ -209,9 +226,19 @@ def duracion_toma_buena(
             "buena por escena -- corrige el dato (a mano en el .json exportado o "
             "en estado.json) antes de continuar."
         )
-    if not buenas:
+    return buenas[0] if buenas else None
+
+
+def duracion_toma_buena(
+    tomas_escena: dict[str, Any] | None, numero_escena: int | None = None
+) -> float | None:
+    """Duracion real (segundos) de la toma marcada `buena` de una escena
+    (`toma_buena`, que resuelve la exclusividad); `None` si no hay ninguna
+    toma buena todavia."""
+    toma = toma_buena(tomas_escena, numero_escena)
+    if toma is None:
         return None
-    duracion = buenas[0].get("duracion_segundos")
+    duracion = toma.get("duracion_segundos")
     return float(duracion) if duracion is not None else None
 
 

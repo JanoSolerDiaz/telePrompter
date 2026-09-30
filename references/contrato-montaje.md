@@ -22,6 +22,8 @@ aislamiento, §0.2 de `HOJA_DE_RUTA.md`):
 ├── guion.pdf                # si hubo Chrome/Edge disponible (T-28)
 ├── tarjetas.json            # contrato de tarjetas (T-29) — CONTRATO DE MONTAJE
 ├── brief-pptx.md            # brief de invocación a 480-branded-pptx (T-29)
+├── capitulos-youtube.txt    # capítulos con marcas de tiempo reales (R-07), si el guion trae la sección
+├── concat-ffmpeg.txt        # lista de concatenación de ffmpeg (R-19), si existe parte de rodaje
 ├── diccionario-locucion.json  # opcional, del dueño (T-13)
 └── teleprompter.log         # diagnóstico técnico (T-02); no lo consume el montaje
 ```
@@ -136,6 +138,26 @@ R-05, R-13), reproducido bit a bit por un tercero. R-16 cierra esa grieta:
 verificado por `tests/test_integracion_montaje.py::
 test_inicio_y_fin_segundos_de_tarjetas_json_no_dejan_huecos_ni_solapes` y
 `test_fin_segundos_de_la_ultima_escena_coincide_con_el_fin_del_srt_correspondiente`.
+
+## `concat-ffmpeg.txt` — lista de concatenación lista para ffmpeg (R-19)
+
+Cuando existe al menos un parte de rodaje registrado (R-02), `concat-ffmpeg.txt`
+trae una línea por escena, en el mismo orden real del guion (misma garantía de
+la sección anterior):
+
+- `file '<archivo_video>'` (comillas simples, cualquier comilla simple interna
+  escapada con la secuencia estándar `'\''`) para la escena cuya toma buena
+  tiene `archivo_video` anotado (`references/contrato-tomas.md`).
+- `# ESCENA <numero>: sin_toma_buena` o `# ESCENA <numero>: sin_archivo_anotado`
+  para la que no — el demuxer `concat` de ffmpeg ignora las líneas que
+  empiezan por `#`, así que la cadena de montaje puede pasar este archivo
+  directamente a `ffmpeg -f concat -safe 0 -i concat-ffmpeg.txt` en cuanto
+  todas las escenas tengan su línea `file`, o usarlo como lista de pendientes
+  mientras tanto.
+
+Sin ningún parte de rodaje en absoluto, este archivo no se genera (no hay
+nada real que concatenar todavía) — la cadena de montaje no debe asumir que
+existe hasta que el dueño haya grabado al menos una toma.
 
 ## Qué quedaba fuera de esta tarea (T-33), ya completado por sesiones posteriores
 

@@ -34,6 +34,7 @@ hardware.
 | `marcar_toma_buena` | `G` | Marca la toma en curso como la buena (R-02); como mucho una por escena |
 | `nota_toma` | `N` | Nota rápida para la toma en curso (R-02), sin salir del modo de grabación |
 | `marcar_tropiezo` | `T` | Marca/desmarca el bloque EN PANTALLA como tropiezo (R-03), sin interrumpir la toma ni abrir ningún diálogo |
+| `archivo_video_toma` | `V` | Anota el archivo de vídeo real de la toma en curso (R-19), sin salir del modo de grabación. También editable desde el índice, para la toma ya marcada buena, sin volver a grabar |
 
 Ninguna acción depende de un modificador (`Ctrl`/`Alt`/`Mayús`): un clicker no puede
 enviarlos, así que ningún atajo los exige.

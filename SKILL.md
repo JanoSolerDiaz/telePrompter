@@ -196,6 +196,8 @@ El botón **"Exportar parte de rodaje"** del índice vuelca el registro completo
 | Exportar parte de rodaje | botón en el índice | Descarga `teleprompter-tomas-<guion>.json`; mismo plan B de copiar a mano si la descarga falla |
 | Fusión en `estado.json` | `scripts/tomas.registrar_tomas` | Reemplaza por escena con lo más reciente exportado; nunca borra tomas de una escena que la exportación no menciona |
 
+Desde R-19, cada toma gana además el campo opcional `archivo_video`: el nombre del archivo de vídeo real de la cámara que corresponde a esa toma. Se anota igual que la nota rápida, con `V`/`v`, sin salir del modo de grabación — y también **editable después, desde el índice**, con un botón propio junto a cada escena que ya tiene una toma marcada buena (sin tener que volver a grabarla). Nunca obligatorio para cerrar una toma ni para marcarla buena. Es la pieza que usa `scripts/concat_ffmpeg.py` (ver más abajo) para generar la lista de concatenación de ffmpeg.
+
 ## Marcar tropiezos durante la toma (R-03)
 
 Una tecla marca el bloque EN PANTALLA como problemático sin interrumpir la toma: `T` alterna la marca del bloque activo, sin abrir ningún diálogo ni pausar el automático — a diferencia de `nota_toma` (R-02), es un interruptor inmediato. El indicador de la cabecera ("⚠ Tropiezo") y el resumen junto a cada escena del índice muestran de un vistazo qué hay marcado, sin tener que abrir ningún archivo.
@@ -257,6 +259,20 @@ Formato exacto de YouTube (requisito de la propia plataforma): la primera marca 
 | Título de la sección de capítulos | `Capítulos` | Prefijo con el que se reconoce la sección auxiliar (T-08) que trae la tabla |
 | Marca mínima entre capítulos | 10 s | Mínimo de la propia plataforma YouTube; una marca más cercana a la anterior se omite |
 
+## Lista de concatenación de ffmpeg (R-19)
+
+`scripts/concat_ffmpeg.py` cierra el hueco entre el parte de rodaje (R-02) y el montaje con ffmpeg: hoy `estado.json["tomas"]` sabe qué escena tiene una toma buena y cuánto duró, pero no qué archivo de la tarjeta de la cámara le corresponde — el dueño tenía que reconstruirlo a mano, por orden y duración. El campo `archivo_video` de cada toma (R-19, ver "Registro de tomas por escena" arriba) añade esa pieza, tecleada por el propio dueño; este módulo produce directamente `concat-ffmpeg.txt`, la lista lista para `ffmpeg -f concat -safe 0 -i concat-ffmpeg.txt`.
+
+Recorre las escenas en su orden real (el mismo de `tarjetas.json`/`guion.srt`) y, por cada una, busca su toma buena reutilizando el mismo criterio de exclusividad que R-04/R-05/R-07 (`tomas.toma_buena`, como mucho una por escena). Si tiene `archivo_video` anotado, escribe `file '<archivo_video>'` en el formato exacto del demuxer `concat` de ffmpeg (comillas simples, cualquier comilla simple interna escapada con la secuencia estándar `'\''`). Si no — sin toma buena todavía, o con ella pero sin anotar —, **nunca** inventa una ruta ni silencia la escena: escribe un comentario `# ESCENA N: <motivo>` (`sin_toma_buena` / `sin_archivo_anotado`; el demuxer de ffmpeg ignora las líneas que empiezan por `#`) y la cuenta como pendiente en el resumen final.
+
+Sin ningún parte de rodaje registrado todavía, esta salida no se genera (no hay nada real que concatenar) y queda omitida con el motivo exacto, nunca como fallo — mismo criterio que los capítulos de YouTube sin sección `Capítulos`. Con al menos una toma, el archivo se genera siempre, mezclando líneas `file` y comentarios según haga falta.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Anotar archivo de vídeo de la toma en curso | tecla `V`/`v` | Parte del mapa configurable, `mapa_teclas_reproductor` |
+| Editar el archivo de vídeo de la toma buena | botón en el índice, junto a la escena | Sin volver a grabar; persiste de inmediato en `localStorage` |
+| Nombre de la lista de concatenación | `concat-ffmpeg.txt` | En la carpeta de salida del guion, solo si se seleccionó con al menos una toma registrada |
+
 ## Exportador `.pdf` con identidad 480 (T-28)
 
 Documento de repaso antes de grabar y, llegado el caso, entregable presentable a terceros: el guion completo con la identidad visual de la casa (`references/marca-480.md`), una **escena por página** — título, duración objetivo y estimada, y el texto de locución **legible como prosa** (los límites de bloque se marcan de forma discreta, nunca como lista de tarjetas), con las indicaciones no recitables al pie. Portada con el título, la duración total y objetivo, el número de escenas y de palabras.
@@ -294,17 +310,19 @@ Si `480-branded-pptx` o su dependencia, la skill `pptx`, no están instaladas en
 | Rutas de las skills de marca | `~/.claude/skills/480-branded-pptx` y `~/.claude/skills/pptx` | Solo se comprueba que la carpeta existe; ausentes → salida `.pptx` latente, nunca falla |
 | Notas internas en `tarjetas.json` | incluidas | `--para-terceros` las vacía del propio JSON, no solo del deck |
 
-## Selector de salidas por validación (T-30, R-18)
+## Selector de salidas por validación (T-30, R-18, R-19)
 
-Cada vez que se valida, la skill pregunta cuáles de las cinco salidas generar (reproductor `.html`, `.pptx`, `.pdf`, `.srt`, capítulos de YouTube `.txt`) en una única pregunta de opción múltiple — nunca decide en silencio. La última selección se recuerda en `estado.json` como **sugerencia** marcada en la propia pregunta, no como una decisión que se aplica sola; sin ninguna selección previa, sugiere las cinco.
+Cada vez que se valida, la skill pregunta cuáles de las seis salidas generar (reproductor `.html`, `.pptx`, `.pdf`, `.srt`, capítulos de YouTube `.txt`, lista de concatenación de ffmpeg `.txt`) en una única pregunta de opción múltiple — nunca decide en silencio. La última selección se recuerda en `estado.json` como **sugerencia** marcada en la propia pregunta, no como una decisión que se aplica sola; sin ninguna selección previa, sugiere las seis.
 
 Las salidas seleccionadas se generan de forma independiente: el fallo o la latencia de una (Chrome/Edge ausente para el `.pdf` real, la skill de marca ausente para el `.pptx` real) nunca impide las demás. El resumen final lista la ruta y el tamaño de cada archivo generado, y el motivo de cada salida omitida (no seleccionada, fallida, o sin datos de los que partir) o latente (seleccionada, con lo generable ya en disco, pendiente de una dependencia externa).
 
-Desde R-18, el propio selector lee el parte de rodaje (`estado.tomas`, R-02) que quien lo invoca ya tiene cargado: en cuanto una escena tiene una toma marcada `buena`, seleccionar `.srt` genera también `guion-alineado.srt` (R-05) junto al `.srt` estimado de siempre, y seleccionar `.pptx` hace que `tarjetas.json` lleve duración real y límites absolutos reales (R-13/R-16) — sin ninguna acción manual del dueño. Los capítulos de YouTube (quinta opción) usan tiempo real donde hay toma buena y estimado donde no, con aviso explícito si se mezclan (R-07); si el guion no trae sección `Capítulos` o no llega a una sola marca por encima del umbral configurado, esa salida queda omitida con el motivo exacto, nunca como fallo. Sin ningún parte de rodaje, las cinco salidas se comportan exactamente igual que antes de R-18.
+Desde R-18, el propio selector lee el parte de rodaje (`estado.tomas`, R-02) que quien lo invoca ya tiene cargado: en cuanto una escena tiene una toma marcada `buena`, seleccionar `.srt` genera también `guion-alineado.srt` (R-05) junto al `.srt` estimado de siempre, y seleccionar `.pptx` hace que `tarjetas.json` lleve duración real y límites absolutos reales (R-13/R-16) — sin ninguna acción manual del dueño. Los capítulos de YouTube (quinta opción) usan tiempo real donde hay toma buena y estimado donde no, con aviso explícito si se mezclan (R-07); si el guion no trae sección `Capítulos` o no llega a una sola marca por encima del umbral configurado, esa salida queda omitida con el motivo exacto, nunca como fallo. Sin ningún parte de rodaje, las seis salidas se comportan exactamente igual que antes de R-18.
+
+Desde R-19, la sexta opción (lista de concatenación de ffmpeg, `concat-ffmpeg.txt`) recorre las escenas en su orden real y escribe, por cada una, `file '<archivo_video>'` (formato exacto del demuxer `concat` de ffmpeg, comillas simples escapadas) si su toma buena trae el archivo anotado (tecla `V`/`v` durante la grabación, o editable después desde el índice), o un comentario `# ESCENA N: <motivo>` (`sin_toma_buena` / `sin_archivo_anotado`) si no — nunca inventa una ruta ni silencia la escena. Sin ningún parte de rodaje registrado, esta salida queda omitida con el motivo exacto, mismo criterio que los capítulos de YouTube sin sección `Capítulos`.
 
 | Opción | Por defecto | Nota |
 |--------|-------------|------|
-| Salidas seleccionadas | pregunta cada vez | Sin selección previa, sugiere las cinco; con histórico, sugiere la última selección registrada en `estado.json` |
+| Salidas seleccionadas | pregunta cada vez | Sin selección previa, sugiere las seis; con histórico, sugiere la última selección registrada en `estado.json` |
 
 ## Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12)
 

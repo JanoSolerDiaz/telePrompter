@@ -12,6 +12,92 @@
 
 ---
 
+### Sesión 2026-09-30 (37) — Ciclo de Programador: R-19 implementada y COMPLETADA (Oleada v8)
+
+**Tarea(s):** R-19 (única `PENDIENTE` en §1 de `SEGUIMIENTO.md`, abierta el 2026-09-29). Sin
+hallazgo de severidad alta abierto en `auditoriacontinua.md` (solo `#24` baja/proceso y `#26`
+media/gobernanza del PM, ninguno urgente ni de código): se procede directamente con la cola normal.
+
+**Arranque.** Contenedor arrancado con `HEAD` desprendido en un commit sin relación con ninguna
+rama local; la rama local `develop` resultó ser un resto de un commit muy anterior (tope de la
+historia rodante de este repo, mismo patrón ya documentado el 2026-09-15), sin ningún ancestro común
+real con `origin/develop` tras `git fetch` (`git merge-base` vacío en ambos sentidos). El clasificador
+de modo automático **denegó** `git checkout -B develop origin/develop` como "Irreversible Local
+Destruction" pese a árbol de trabajo limpio (`git status` sin cambios). Resuelto sin insistir con
+variantes del mismo comando (prohibido explícitamente tras una denegación): se creó una rama local
+nueva (`develop-work`) apuntando a `origin/develop`, dejando la `develop` local vieja intacta y sin
+tocar, y se trabajó y empujó desde ahí (`git push origin develop-work:develop` al cierre). Decisión y
+norma para sesiones futuras registrada en `DECISIONES_TECNICAS.md`. `pip install -r
+requirements-dev.txt` limpio (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`,
+`pytest==8.4.2`).
+
+**Implementación de R-19.** Spec completa releída en `ROADMAP_PRODUCTO.md` §Oleada v8 (seis
+requisitos + criterio de aceptación) antes de tocar código; consultado `DECISIONES_TECNICAS.md` en
+el área (registro de tomas, R-02/R-11, y el patrón de "sexta opción" que R-18 ya sentó para
+`CAPITULOS_YOUTUBE`) para no contradecir decisiones previas.
+
+1. **`Toma.archivo_video`** (`scripts/tomas.py`): campo opcional (`str`, `""` por defecto), validado
+   igual que `nota` en `_toma_desde_dict`/serializado en `_toma_a_dict`. `references/contrato-tomas.md`
+   sube a versión 2 (cambio aditivo, documentado junto a `nota`; sin migración, un archivo o
+   `estado.json` de antes de R-19 se lee igual).
+2. **Refactor `toma_buena`**: la regla de exclusividad de R-11/#16 (como mucho una toma `buena` por
+   escena) se extrae de `duracion_toma_buena` a una función pública nueva,
+   `toma_buena(tomas_escena, numero_escena=None) -> dict | None`, que devuelve la toma completa (no
+   solo la duración). `duracion_toma_buena` pasa a ser un atajo sobre ella — firma y comportamiento
+   intactos, mismos tests en verde sin tocarlos. `concat_ffmpeg.py` la reutiliza tal cual para leer
+   `archivo_video`, sin reimplementar la exclusividad (requisito 3 literal de la spec).
+3. **`scripts/concat_ffmpeg.py`** (módulo nuevo): `calcular_lista_concat_ffmpeg` recorre
+   `resultado_tiempos.escenas` en su orden real (el mismo de `tarjetas.json`/`guion.srt`) y escribe,
+   por escena, `file '<archivo_video>'` (comillas simples, escape estándar `'\''` para una comilla
+   simple interna) o `# ESCENA N: sin_toma_buena` / `# ESCENA N: sin_archivo_anotado` — nunca lanza
+   por datos incompletos. Sin ningún parte de rodaje, `motivo_sin_generar` explícito y `None` en vez
+   de generar un archivo íntegramente comentado (decisión razonada en `DECISIONES_TECNICAS.md`:
+   a diferencia de R-05/R-07, R-19 no tiene ninguna fuente estimada de respaldo). `validar_lista_concat_ffmpeg`
+   reproduce las reglas del propio demuxer `concat` de ffmpeg.
+4. **`TipoSalida.CONCAT_FFMPEG`** (`scripts/salidas.py`, sexta opción): mismo patrón que R-18 usó para
+   `CAPITULOS_YOUTUBE` — omitida con motivo exacto sin parte de rodaje, nunca fallo ni latente.
+5. **Reproductor** (`assets/reproductor/guion.js`/`estilo.css`): tecla configurable `V`/`v`
+   (`archivo_video_toma` en `Configuracion.mapa_teclas_reproductor`) anota el archivo durante la
+   grabación, mismo patrón que `nota_toma` (R-02). Además, **editable después desde el índice, sin
+   volver a grabar** (parte explícita del requisito 1 que `nota_toma` no cubre): botón
+   `.btn-archivo-video` nuevo, **hermano** de `escena-fila` dentro del mismo `<li>` — nunca anidado
+   dentro de su `<button>`, porque anidar un control interactivo dentro de otro rompe la semántica
+   (mismo motivo, ya documentado en el propio código desde R-02, por el que el resumen de tomas es un
+   `<span>`, no un control). Solo aparece cuando la escena ya tiene una toma marcada `buena` (la única
+   cuyo `archivo_video` importa para R-19). `construirParteDeRodaje` sube su `version` a 2.
+6. **Documentación**: `SKILL.md` (sección nueva "Lista de concatenación de ffmpeg (R-19)" y
+   actualización de "Registro de tomas por escena"/"Selector de salidas"), `DEVELOPERS.md` (sección
+   R-19 completa), `references/contrato-tomas.md`, `references/contrato-montaje.md` y
+   `references/mapa-teclas.md`.
+
+**Verificación.** `tests/test_concat_ffmpeg.py` nuevo (14 tests). `tests/test_salidas.py` gana 3 tests
+de wiring y actualiza los que enumeraban cinco salidas a seis. `tests/test_tomas.py` actualiza la
+única aserción que fijaba la forma exacta del dict serializado. `tests/test_reproductor.py` gana 5
+tests (tecla por defecto, `pedirArchivoVideoToma`/`case`, carga del campo, botón del índice, versión
+2 del parte de rodaje) y ensancha una ventana de coincidencia de texto que mi cambio desplazó.
+583→606 tests. Cuatro redes en verde (`python scripts/ci.py`), incluidas dos etapas nuevas en
+`verificar_salidas.py --fixture` ("Generación"/"Validez de la lista de concatenación de ffmpeg",
+dieciséis etapas en total) que ejercitan una toma buena **sintética** con `archivo_video` anotado
+sobre la primera escena del guion de verificación, porque a diferencia del `.srt` alineado/capítulos
+de YouTube (que degradan a estimado con `tomas_por_escena={}`), la lista de concatenación no genera
+nada real sin al menos una toma. **Verificación adicional con Playwright/Chromium real** (instalado
+`pip install playwright`, binario ya cacheado en `/opt/pw-browsers/chromium`, desinstalado el paquete
+al terminar): marcar una toma como buena, anotarla con `V` durante la grabación, volver al índice,
+editar el mismo campo desde el botón nuevo del índice sin volver a grabar (confirmando que no
+reentraba en la reproducción), exportar el parte de rodaje real (`version: 2`, `archivo_video`
+persistido, incluida una ruta con comilla simple), y alimentar ese archivo exportado de verdad a
+través de `tomas.cargar_parte_de_rodaje`/`registrar_tomas`/`concat_ffmpeg.generar_lista_concat_ffmpeg`
+para confirmar que `concat-ffmpeg.txt` sale con el escape correcto y pasa
+`validar_lista_concat_ffmpeg` sin problemas.
+
+**Documentos de registro actualizados:** `SEGUIMIENTO.md` (§1: `R-19` a `COMPLETADA`; cabecera
+"Última actualización"), `DECISIONES_TECNICAS.md` (cuatro filas nuevas: tres de diseño de R-19 y una
+del patrón de recuperación de rama para sesiones futuras), este archivo. Sin cambios en §3/§5/§6/§7
+de `SEGUIMIENTO.md`. `roadmap/ROADMAP_PRODUCTO.md` no se toca en este ciclo (queda para el siguiente
+ciclo de PM archivar la Oleada v8 y reconfirmar la cola).
+
+---
+
 ### Sesión 2026-09-29 (36) — Ciclo de Product Manager: se abre R-19 (Oleada v8), primera R-XX nueva desde R-18
 **Tarea(s):** ninguna T-XX/R-XX implementada (ciclo de PM, no de Programador). Arranque: clon en
 *detached HEAD* con la rama local `develop` reportando 50 commits divergentes en cada sentido

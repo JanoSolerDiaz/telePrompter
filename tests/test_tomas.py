@@ -180,7 +180,15 @@ def test_registrar_tomas_anade_las_escenas_con_tomas(guion: Path) -> None:
     assert estado.tomas == {
         "1": {
             "titulo": "Apertura",
-            "tomas": [{"numero": 1, "duracion_segundos": 10.0, "nota": "", "buena": True}],
+            "tomas": [
+                {
+                    "numero": 1,
+                    "duracion_segundos": 10.0,
+                    "nota": "",
+                    "buena": True,
+                    "archivo_video": "",
+                }
+            ],
         }
     }
 
