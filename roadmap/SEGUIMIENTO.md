@@ -33,20 +33,37 @@ simple correctamente escapada. `DEVELOPERS.md`, `SKILL.md` y las referencias de
 `DECISIONES_TECNICAS.md`. Sin cambios en §3 (bloqueos), §5 (P-XX) ni §6 (preguntas); §1 pasa `R-19` a
 `COMPLETADA`.
 
-**Nota de arranque de esta sesión:** octava vez que aparece una variante del mismo patrón de
-arranque (2026-09-15 y las seis sesiones anteriores de hoy). El contenedor arrancó con `HEAD`
-*detached* en `7f160cb` (`origin/develop`, la sexta reconfirmación de hoy); al hacer `git checkout
-develop`, la rama local resultó ser el mismo puntero obsoleto de casi una semana (`3d60fbb`, décima
-reconfirmación del 2026-09-23) que ya documentó la nota anterior — confirma que el estado local
-persiste entre disparos de esta misma rutina y solo se actualiza cuando una sesión hace el reset
-explícito —, sin ancestro común con el remoto tras `fetch` (clon *shallow* de 50 commits, `git
-merge-base` vacío — árbol de trabajo limpio, sin ningún cambio local que perder). `git checkout -B
-develop origin/develop` resolvió el desajuste sin denegación del clasificador de modo automático ni
-necesitar la rama auxiliar `develop-work` de la norma registrada en `DECISIONES_TECNICAS.md`
-(2026-09-30, sesión 38). Cero riesgo de pérdida, cero incidencia.
+**Nota de arranque de esta sesión:** novena vez que aparece una variante del mismo patrón de
+arranque (2026-09-15 y las siete sesiones anteriores de hoy). El contenedor arrancó con `HEAD`
+*detached*; al hacer `git checkout develop`, la rama local resultó ser un puntero obsoleto de casi
+una semana (`3d60fbb`, décima reconfirmación del 2026-09-23, el mismo que ya documentó la nota
+anterior) — confirma otra vez que el estado local persiste entre disparos de esta misma rutina y
+solo se actualiza cuando una sesión hace el reset explícito. Tras `fetch`, local y `origin/develop`
+habían divergido con **50 commits distintos a cada lado y sin ancestro común** (`git merge-base`
+vacío): la variante más marcada de este patrón hasta ahora, no un simple retraso de unos commits.
+Árbol de trabajo limpio verificado antes de tocar nada (`git status`). `git reset --hard
+origin/develop` resolvió el desajuste sin denegación del clasificador de modo automático esta vez
+(a diferencia de la sesión 38, no hizo falta la rama auxiliar `develop-work` de esa norma). Cero
+riesgo de pérdida: los 50 commits locales descartados eran solo reconfirmaciones vacías ya
+superadas hace una semana por el propio `origin/develop`, nunca trabajo sin publicar. Cero
+incidencia.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-30, ciclo de Programador: octava reconfirmación tras R-19, tras la séptima de hoy
+  (`aec35da`), sin novedad de código. Verificación propia completa: `mypy`/`ruff` en verde (70
+  archivos, sin hallazgos), 606 tests (`pytest`) en verde, dieciséis etapas OK en
+  `verificar_salidas.py --fixture`. `auditoriacontinua.md` mantiene los mismos dos `ABIERTO`,
+  ninguno de severidad alta ni urgente por §0.3: `#24` (baja, proceso, esperando la respuesta del
+  dueño a la pregunta #11 de §6) y `#26` (media, gobernanza de la apertura de R-19, ajena al
+  código). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
+  `list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero issues y cero PR abiertos. Nota sin
+  acción, mismo patrón que motivó `#24`: la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`
+  sigue describiendo R-19 como `PENDIENTE` pese a que este §1 ya la registra `COMPLETADA` — no se
+  corrige desde aquí (la pregunta #11 de §6, que decidiría si el Programador puede corregirla por
+  su cuenta, sigue `(pendiente)` de respuesta del dueño). Divergencia de arranque más marcada de lo
+  habitual (50 commits sin ancestro común a cada lado), resuelta con `git reset --hard
+  origin/develop`; detalle en la nota de arranque de esta sesión, más arriba.
 - 2026-09-30, ciclo de Programador: séptima reconfirmación tras R-19, tras la sexta de hoy
   (`7f160cb`), sin novedad de código. Verificación propia completa: `mypy`/`ruff` en verde, 606 tests
   (`pytest`) en verde, dieciséis etapas OK en `verificar_salidas.py --fixture`. `auditoriacontinua.md`
