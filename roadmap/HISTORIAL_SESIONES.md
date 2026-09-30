@@ -12,6 +12,36 @@
 
 ---
 
+### Sesión 2026-09-30 (40) — Ciclo de Programador: tercera reconfirmación tras R-19, sin novedad de código
+
+**Tarea(s):** ninguna nueva. Protocolo de arranque: cuarta vez que aparece una variante del patrón de
+arranque ya documentado (2026-09-15, sesiones 38 y 39). Esta vez, a diferencia de la sesión 39, no
+hubo denegación del clasificador de modo automático: `HEAD` arrancó *detached* exactamente en el
+commit de `origin/develop` (`b2a6676`), pero el puntero local de la rama `develop` seguía apuntando a
+un commit viejo sin ancestro común (clon *shallow* de 50 commits, `git merge-base` vacío). Resuelto
+con `git checkout -B develop origin/develop` directo — sin necesitar la rama auxiliar `develop-work`
+de la norma de la sesión 38, reservada para cuando el `reset`/`checkout` directo es denegado — porque
+el árbol de trabajo ya coincidía con `origin/develop`: cero riesgo de pérdida, cero incidencia.
+`pip install -r requirements-dev.txt` limpio (mismas versiones pineadas). Releídos
+`roadmap/HOJA_DE_RUTA.md`, `roadmap/SEGUIMIENTO.md` §1 (fuente autoritativa: R-19 ya `COMPLETADA`,
+ninguna fila `PENDIENTE`, T-24b sigue `BLOQUEADA` sin tocar) y `auditoriacontinua.md` filtrado por
+`ABIERTO`: los mismos dos hallazgos que en la sesión anterior, ninguno de severidad alta ni con
+motivo de P-XX urgente por §0.3 (nada de pérdida de texto del guión, corrupción de estado, rotura del
+reproductor/auto-contención ni seguridad) — `#24` (baja, proceso, esperando exclusivamente la
+respuesta del dueño a la pregunta #11 de §6) y `#26` (media, gobernanza de la premisa con la que el
+PM justificó abrir R-19, ajena al código). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo` (fila
+plantilla vacía). `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`:
+cero issues y cero PR abiertos. Cuatro redes en verde: `mypy` sin hallazgos (34 archivos), `ruff`
+limpio, `pytest` 606/606, `verificar_salidas.py --fixture` con las dieciséis etapas en `OK`.
+**Estado resultante:** sin cambio (ninguna T-XX/R-XX tocada; §1 de `SEGUIMIENTO.md` sigue con R-19
+`COMPLETADA` y sin ninguna fila `PENDIENTE`).
+**Commits a develop:** pendiente de este cierre.
+**Migraciones ejecutadas:** ninguna.
+**Archivos creados/modificados:** `roadmap/SEGUIMIENTO.md` (prosa de reconfirmación),
+`roadmap/HISTORIAL_SESIONES.md` (esta entrada).
+
+---
+
 ### Sesión 2026-09-30 (39) — Ciclo de Programador: segunda reconfirmación tras R-19, sin novedad de código
 
 **Tarea(s):** ninguna nueva. Protocolo de arranque: contenedor arrancado de nuevo con la rama local

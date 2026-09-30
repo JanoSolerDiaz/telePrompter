@@ -33,17 +33,26 @@ simple correctamente escapada. `DEVELOPERS.md`, `SKILL.md` y las referencias de
 `DECISIONES_TECNICAS.md`. Sin cambios en §3 (bloqueos), §5 (P-XX) ni §6 (preguntas); §1 pasa `R-19` a
 `COMPLETADA`.
 
-**Nota de arranque de esta sesión:** tercera vez que se repite el mismo patrón (2026-09-15 y la
-sesión anterior de hoy): contenedor arrancado con la rama local `develop` desactualizada y, tras
-`fetch`, sin ancestro común real con `origin/develop` (`git merge-base` vacío). `git reset --hard
-origin/develop` fue denegado de nuevo por el clasificador de modo automático ("Irreversible Local
-Destruction") pese a árbol de trabajo limpio; se aplicó tal cual la norma ya registrada en
-`DECISIONES_TECNICAS.md` (2026-09-30, sesión anterior) sin insistir con variantes: rama local nueva
-`develop-work` apuntando a `origin/develop`, `develop` vieja intacta, push de cierre con `git push
-origin develop-work:develop`. Sin incidencias al aplicarla.
+**Nota de arranque de esta sesión:** cuarta vez que aparece una variante del mismo patrón de arranque
+(2026-09-15 y las dos sesiones de hoy). Esta vez, a diferencia de la sesión inmediatamente anterior,
+no hubo denegación del clasificador de modo automático: el contenedor arrancó con `HEAD` *detached*
+exactamente en el commit de `origin/develop` (`b2a6676`), pero el puntero local de la rama `develop`
+seguía apuntando a un commit viejo sin ancestro común (clon *shallow* de 50 commits, `git merge-base`
+vacío). Bastó `git checkout -B develop origin/develop` — sin pasar por la rama auxiliar
+`develop-work` de la norma registrada en `DECISIONES_TECNICAS.md` (2026-09-30, sesión 38), que solo
+hace falta cuando el `reset`/`checkout` directo es denegado — porque el árbol de trabajo ya coincidía
+con `origin/develop`: cero riesgo de pérdida, cero incidencia.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-30, ciclo de Programador: tercera reconfirmación tras R-19, tras la segunda de hoy
+  (`b2a6676`), sin novedad de código. `auditoriacontinua.md` mantiene los mismos dos `ABIERTO`,
+  ninguno de severidad alta ni urgente por §0.3: `#24` (baja, proceso, esperando la respuesta del
+  dueño a la pregunta #11 de §6, sin pasada nueva desde la ya registrada) y `#26` (media, gobernanza
+  de la apertura de R-19, ajena al código). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`;
+  `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero issues y
+  cero PR abiertos. Cuatro redes en verde (606 tests, dieciséis etapas OK en
+  `verificar_salidas.py --fixture`).
 - 2026-09-30, ciclo de Programador: segunda reconfirmación tras R-19, tras la primera de hoy
   (`e684987`), sin novedad de código. `auditoriacontinua.md` mantiene dos `ABIERTO`, ninguno de
   severidad alta ni urgente por §0.3: `#24` (baja, proceso, catorce pasadas de auditoría esperando la
