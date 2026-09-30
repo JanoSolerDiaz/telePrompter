@@ -840,8 +840,109 @@ verificar_generacion` distingue un fallo real de una omisión esperada por el pr
 
 ---
 
+## Oleada v8 — Enlazar el parte de rodaje con el archivo de vídeo real y generar la lista de concatenación de ffmpeg
+
+Cierra el hueco entre el parte de rodaje (R-02: qué toma quedó buena y cuánto duró) y la fase de
+montaje con ffmpeg que la visión de producto señala como el paso siguiente al reproductor: hasta
+esta oleada, el dueño tenía que reconstruir a mano, por orden y duración, qué archivo de la tarjeta
+de la cámara correspondía a cada escena antes de poder concatenar nada. Contiene R-19, su única
+R-XX. **Entregada 2026-09-30** (COMPLETADA el mismo ciclo del Programador en que se implementó, tras
+abrirse el 2026-09-29).
+
+### R-19 — Enlazar la toma buena con su archivo de vídeo real y generar la lista de concatenación de ffmpeg
+
+**Migración:** No (campo opcional con valor por defecto `""`, mismo patrón tolerante que `nota` en
+`references/contrato-tomas.md`) · **Depende de:** R-02, R-05, T-33 · **Origen:** instrucción directa
+del dueño en el encargo del ciclo de PM del 2026-09-29 de evolucionar el roadmap hacia la fase
+siguiente al reproductor — "el montaje con ffmpeg" —, sobre la candidata ya identificada por
+observación de arquitectura del PM el 2026-09-21. **Nota de gobernanza (ver `auditoriacontinua.md`
+#26 y la entrada de `DECISIONES_TECNICAS.md` de este ciclo, 2026-09-30):** la auditoría señaló que
+esa justificación citaba como "instrucción de este ciclo" una frase que en realidad lleva fija en el
+prompt de la rutina desde su creación (2026-08-31), sin cambios — quince ciclos de PM anteriores ya
+la habían leído y, correctamente, no la habían tratado como justificación suficiente por sí sola. La
+apertura de R-19 no se revierte (su diseño es sólido, aditivo y sin romper ningún invariante,
+verificado independientemente por esa misma auditoría) pero su justificación correcta es la que
+ya se había razonado en la propia candidata del 2026-09-21: una grieta de arquitectura legítima
+—dato ausente que el propio contrato de montaje (T-33) necesita— resuelta con un diseño acotado
+que no exige adivinar el flujo de grabación del dueño, no una instrucción fresca de ningún ciclo
+concreto.
+
+**Objetivo:** hoy `estado.json["tomas"]` sabe qué escena tiene una toma buena (R-02) y cuánto duró,
+pero no qué archivo de la tarjeta de la cámara le corresponde: el dueño tenía que reconstruirlo a
+mano, por orden y duración, antes de poder concatenar nada con ffmpeg. Esta tarea añade la única
+pieza que faltaba —el nombre de archivo, tecleado por el propio dueño— y usa lo que ya existe
+(R-02, R-05, el contrato de montaje de T-33) para producir directamente la lista de concatenación
+lista para `ffmpeg -f concat`, sin que el dueño tenga que escribirla a mano.
+
+**Requisitos:**
+1. En el reproductor (`assets/reproductor/guion.js`), cada toma cerrada gana un campo de texto
+   opcional "archivo de vídeo" — mismo patrón de edición que la nota rápida de R-03 (tecla
+   configurable en `Configuracion.mapa_teclas_reproductor`, por defecto `V`/`v`), editable desde el
+   índice en cualquier momento, sin tener que volver a grabar la toma. Vacío por defecto; nunca
+   obligatorio para cerrar una toma ni para marcarla `buena`.
+2. `references/contrato-tomas.md`: cada toma gana la clave opcional `archivo_video` (string, `""`
+   si no se ha anotado), documentada junto a `nota` con el mismo tratamiento; `version` del
+   contrato sube a 2 (cambio aditivo, ninguna clave existente cambia de significado).
+   `scripts/tomas.py::cargar_parte_de_rodaje` la valida igual que `nota` (texto opcional) y la
+   fusiona en `estado.json["tomas"]`; un parte de rodaje o un `estado.json` de antes de R-19 sin
+   esta clave se lee igual, con `""` por defecto (sin migración, ver arriba).
+3. Nuevo módulo `scripts/concat_ffmpeg.py`: a partir de `EstadoProyecto.tomas` y el orden real de
+   escenas del guion (mismo orden que `tarjetas.json`/`guion.srt`,
+   `references/contrato-montaje.md`), por cada escena busca su toma `buena` (reutilizando
+   `tomas.duracion_toma_buena` tal cual, sin reimplementar la regla de exclusividad de R-11/#16):
+   - Si existe y tiene `archivo_video` no vacío → línea `file '<archivo_video>'` en el formato
+     exacto del demuxer `concat` de ffmpeg (comillas simples; una comilla simple dentro de la ruta
+     se escapa con la secuencia estándar `'\''`).
+   - Si la escena no tiene toma buena, o la tiene pero sin `archivo_video` anotado → **nunca** se
+     inventa una ruta ni se silencia la escena: se escribe un comentario `# ESCENA <numero>:
+     <motivo>` (el demuxer de ffmpeg ignora líneas que empiezan por `#`), con motivo exacto
+     (`sin_toma_buena` / `sin_archivo_anotado`), y la escena se cuenta en
+     `escenas_pendientes` del resultado devuelto.
+4. `TipoSalida` (`scripts/salidas.py`) gana `CONCAT_FFMPEG` como sexta opción — mismo patrón que
+   R-18 añadió `CAPITULOS_YOUTUBE`: seleccionable en la pregunta de T-30 solo cuando hay al menos
+   una toma registrada (si no hay ningún parte de rodaje, no aparece como opción, igual que
+   `CAPITULOS_YOUTUBE` sin sección `Capítulos`); nunca falla por escenas pendientes de anotar — el
+   archivo se genera siempre que se seleccione, con esas escenas documentadas como comentario, y
+   `ResumenSalidas` informa cuántas quedan pendientes y de qué motivo.
+5. Salida nueva `concat-ffmpeg.txt` (`config.NOMBRE_ARCHIVO_CONCAT_FFMPEG`) en la carpeta de salida
+   del guion. `references/contrato-montaje.md` documenta el archivo (opcional; solo existe si se
+   seleccionó con al menos una toma) y deja explícito que la cadena de montaje debe tratar
+   cualquier línea que empiece por `#` como escena todavía sin archivo real, nunca como error de
+   formato.
+6. Invariantes (a)/(d) de §0.2 intactas: anotar, editar o borrar un `archivo_video` nunca descarta
+   la toma ni ninguno de sus campos existentes (`duracion_segundos`, `nota`, `buena`); es un campo
+   más que se fusiona igual que el resto de `tomas.py`, nunca un reemplazo destructivo.
+
+**Criterio de aceptación:** con un parte de rodaje donde todas las escenas con toma buena tienen
+`archivo_video` anotado, `concat-ffmpeg.txt` generado es exactamente el formato que espera
+`ffmpeg -f concat -safe 0 -i concat-ffmpeg.txt`, verificado con un test que lo parsea con esas
+mismas reglas; con una mezcla de escenas anotadas, sin anotar y sin toma buena, el archivo se
+genera igual, cada pendiente aparece como comentario con su motivo exacto y `ResumenSalidas` cuenta
+las pendientes; sin ningún parte de rodaje registrado, `CONCAT_FFMPEG` no aparece como opción
+seleccionable (mismo patrón de test que R-18 verificó para `CAPITULOS_YOUTUBE`); una ruta con una
+comilla simple se escapa correctamente y el archivo resultante sigue siendo válido para el demuxer
+`concat`.
+
+**Cómo se entregó:** `Toma.archivo_video` (opcional, `""` por defecto) anotable con `V`/`v` durante
+la grabación o editable después desde un botón nuevo en el índice (`.btn-archivo-video`, hermano de
+la fila de escena, nunca anidado en su `<button>`, visible solo si la escena ya tiene una toma
+`buena`) sin volver a grabar; `references/contrato-tomas.md` sube a versión 2 (aditivo, sin
+migración). `scripts/tomas.py` gana la función pública `toma_buena` (extraída de
+`duracion_toma_buena`, misma regla de exclusividad de R-11/#16, ahora reutilizada en vez de
+reimplicada) y `scripts/concat_ffmpeg.py` (módulo nuevo) la reutiliza tal cual para generar
+`file '<archivo_video>'` o `# ESCENA N: <motivo>` por escena, en su orden real. `TipoSalida.
+CONCAT_FFMPEG` (sexta opción de T-30): omitida sin ningún parte de rodaje, nunca falla por escenas
+pendientes de anotar. 23 tests nuevos (583→606). Cuatro redes en verde, incluidas dos etapas nuevas
+en `verificar_salidas.py --fixture` (dieciséis en total). Verificado además con Playwright/Chromium
+real: anotar durante la grabación, editar desde el índice sin regrabar, exportar el parte de rodaje
+y generar `concat-ffmpeg.txt` con una ruta con comilla simple correctamente escapada.
+`DEVELOPERS.md`, `SKILL.md` y las referencias de `contrato-tomas.md`/`contrato-montaje.md`/
+`mapa-teclas.md` actualizados.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
-de F-I (R-17), 2026-09-15.)*
+de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30.)*

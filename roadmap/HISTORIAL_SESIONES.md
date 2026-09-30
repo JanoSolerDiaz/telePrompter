@@ -12,6 +12,74 @@
 
 ---
 
+### Sesión 2026-09-30 (47) — Ciclo de Product Manager: archiva R-19/Oleada v8, corrige la premisa de su apertura (`auditoriacontinua.md` #26) y abre R-20 (Oleada v9)
+
+**Tarea(s):** ninguna T-XX. R-19 pasa de Oleada v8 "EN CURSO" a archivada en `ROADMAP_HISTORICO.md`
+(ya `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde la sesión 41, el ciclo de Programador que la
+implementó el mismo día que se abrió). Se abre **R-20** (Oleada v9, `PENDIENTE` en §1).
+
+**Protocolo de arranque:** clon efímero con la rama local `develop` en `HEAD` *detached*, apuntando
+tras `checkout` a un puntero obsoleto de una semana (`3d60fbb`, cadena del 2026-09-23); tras
+`git fetch origin develop`, sin ningún ancestro común con `origin/develop` (`git merge-base` vacío,
+clon *shallow* de frontera variable, mismo patrón ya diagnosticado en sesiones anteriores). A
+diferencia de las sesiones 45/46 (que resolvieron con `git reset --hard origin/develop` sin
+denegación), esta vez el clasificador de modo automático **sí denegó** `git checkout -B develop
+origin/develop` como "Irreversible Local Destruction" pese a árbol de trabajo limpio verificado con
+`git status`. Se aplicó la norma de la sesión 38 (registrada en `DECISIONES_TECNICAS.md`, fila del
+2026-09-30/Programador): rama local nueva `pm-roadmap-work` apuntando a `origin/develop`, sin mover
+ni borrar la `develop` local existente, con push de cierre `git push origin
+pm-roadmap-work:develop`. Verificado antes de descartar nada: los 50 commits locales eran
+reconfirmaciones vacías muy anteriores a R-19 (2026-09-23), sin ningún trabajo sin publicar — cero
+riesgo real, la denegación del clasificador fue prudente pero el resultado es el mismo que un reset
+directo. Este ciclo no instala `requirements-dev.txt` ni ejecuta la verificación de las cuatro
+redes: es un ciclo de PM (solo `roadmap/`), no de Programador.
+
+**Lectura previa (protocolo §0 de `HOJA_DE_RUTA.md`):** `HOJA_DE_RUTA.md` completo (solo lectura),
+`SEGUIMIENTO.md` §1/§3/§4/§5/§6/§7, `ROADMAP_PRODUCTO.md` completo, `FEEDBACK.md` (sin entradas
+`nuevo`), registro de hallazgos de `auditoriacontinua.md` completo (`#24` baja/ABIERTO, `#26`
+media/ABIERTO, resto `RESUELTO`), cola de `DECISIONES_TECNICAS.md` (entradas de R-19 y de la sesión
+46). Verificación propia de código real antes de especificar R-20: `scripts/reproductor.py`
+(`_indicaciones_ancladas_por_indice`, `_construir_datos`) y `scripts/pptx.py`
+(`_indicaciones_de_escena`, `_tarjeta_de_escena`), no solo `references/contrato-tarjetas.md`.
+
+**Hallazgo `#26` (media, ABIERTO, gobernanza del propio PM):** el ciclo de PM del 2026-09-29 (sesión
+anterior a esta, no numerada individualmente en esta bitácora por ser de PM) justificó abrir R-19
+citando una frase del encargo de la propia rutina programada como "instrucción directa del dueño en
+el encargo de este ciclo"; el auditor verificó con `list_triggers` que esa frase es texto fijo del
+prompt de la rutina desde su creación (2026-08-31T13:56–14:37), sin cambios — no una instrucción
+fresca de ningún ciclo en particular, y los quince ciclos de PM anteriores ya la habían leído sin
+tratarla como justificación suficiente. Esta sesión no revierte R-19 (el propio auditor certifica
+que su diseño es sólido, aditivo y no rompe ningún invariante) pero corrige la premisa en
+`ROADMAP_PRODUCTO.md` (cabecera y la entrada archivada de Oleada v8) y dedica dos filas nuevas de
+`DECISIONES_TECNICAS.md` a dejar explícito, para el futuro, que las tres fuentes ya establecidas
+(hallazgo de auditoría de producto/arquitectura, entrada `nuevo` de `FEEDBACK.md`, grieta de
+arquitectura verificada) bastan por sí solas y que el encargo estable de la rutina no es, ni debe
+tratarse como, una fuente adicional de apertura. El hallazgo en sí solo puede cerrarlo el auditor en
+su propio registro (`auditoriacontinua.md`); esta sesión deja la corrección visible para que la
+próxima pasada lo reevalúe.
+
+**R-20 (nueva, Oleada v9):** `tarjetas.json` (T-29) gana `indicaciones_ancladas`, campo aditivo por
+escena con `{"texto", "es_nota_interna", "instante_estimado_segundos"}` para cada indicación `EN
+PANTALLA`/`NOTA`, reutilizando el anclaje que `reproductor.py::_indicaciones_ancladas_por_indice`
+(R-12) ya calcula para la cue en vivo del reproductor. Origen: grieta de arquitectura verificada
+sobre código ya construido (mismo patrón que abrió R-12 a R-18) — el dato existe, probado desde
+R-12, y no llega al contrato de montaje. Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v9.
+
+**Decisiones registradas en `DECISIONES_TECNICAS.md` (esta sesión):** tres filas nuevas — (1)
+corrección de la premisa de apertura de R-19 en respuesta a `#26`, (2) aclaración del criterio de
+apertura de R-XX (las tres fuentes bastan, el encargo de la rutina no es una cuarta), (3) apertura
+de R-20 con su justificación por grieta de arquitectura verificada.
+
+**Estado (`SEGUIMIENTO.md` §1):** `R-19` sigue `COMPLETADA` (sin cambio de estado, solo se archiva su
+detalle); `R-20` nueva, `PENDIENTE`. Sin cambios en §3 (bloqueos) ni §5 (P-XX). §6 pregunta #11
+sigue `(pendiente)` de respuesta del dueño, sin tocar desde esta sesión (no es una decisión que el
+PM pueda tomar por su cuenta). `ROADMAP_HISTORICO.md` gana la Oleada v8 (R-19) archivada.
+
+**Push de cierre:** `git push origin pm-roadmap-work:develop` (rama local `pm-roadmap-work` nueva de
+esta sesión, `develop` local antigua sin tocar, norma de la sesión 38).
+
+---
+
 ### Sesión 2026-09-30 (46) — Ciclo de Programador: novena reconfirmación tras R-19, sin novedad de código
 
 **Tarea(s):** ninguna nueva. Protocolo de arranque: décima vez que aparece una variante del mismo

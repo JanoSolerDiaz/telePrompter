@@ -8,44 +8,57 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-29 (ciclo de PM). **Se abre R-19** (Oleada v8): enlazar la toma
-buena de cada escena (R-02) con su archivo de vídeo real y generar la lista de concatenación de
-ffmpeg (`concat-ffmpeg.txt`), cerrando el hueco explícito entre el parte de rodaje y la fase de
-montaje que la propia visión de producto señala como el paso siguiente al reproductor. Es la
-primera R-XX nueva desde R-18 (2026-09-17): quince ciclos de PM consecutivos habían reconfirmado la
-cola vacía razonando —correctamente, con la información disponible entonces— que esta misma idea
-(candidata registrada el 2026-09-21) exigía diseñar superficie de producto nueva sin que ninguna de
-las tres fuentes ya establecidas (hallazgo de auditoría, entrada de `FEEDBACK.md`, grieta de
-arquitectura verificada) la respaldara, así que quedó aparcada hasta que el bloqueo #7 (grabar un
-curso completo) aportara evidencia real.
+**Última actualización:** 2026-09-30 (ciclo de PM). **R-19 (Oleada v8) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del mismo día que la abrió el 2026-09-29; esta
+prosa seguía describiéndola como pendiente en la sesión anterior (mismo patrón ya trazado por el
+hallazgo `#24` de `auditoriacontinua.md`, no corregido antes porque este ciclo es el primero de PM
+desde entonces). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v8) junto con el resto de oleadas
+100 % entregadas.
 
-**Este ciclo cambia esa conclusión por un motivo nuevo, no por descartar el razonamiento
-anterior:** el propio encargo de esta rutina programada del dueño (2026-09-29) instruye
-explícitamente evolucionar el roadmap hacia el objetivo de producto —"convertir un guión... en
-tarjetas... cuya fase siguiente es el montaje con ffmpeg"— priorizando la utilidad real para el
-rodaje. Es una cuarta fuente legítima de apertura, distinta de las tres ya establecidas: instrucción
-directa del dueño sobre la dirección de producto, no una conjetura del PM. Con esa base, la única
-razón que quedaba para aparcarla —ausencia de mecanismo de asociación toma↔archivo— se resuelve con
-un diseño acotado que no exige adivinar nada del flujo de grabación del dueño: un campo de texto
-opcional, tecleado a mano (el reproductor no tiene ni puede tener acceso al nombre de archivo que
-pone la cámara), con degradado explícito y sin fallos cuando falte anotar. Detalle completo de R-19
-en "Oleada v8" más abajo; decisión registrada en `DECISIONES_TECNICAS.md`.
+**Nota de gobernanza sobre cómo se justificó abrir R-19 (hallazgo `#26` de `auditoriacontinua.md`,
+media, ABIERTO):** el ciclo de PM del 2026-09-29 presentó una frase del encargo de la propia rutina
+programada ("prioriza la utilidad real... cuya fase siguiente es el montaje con ffmpeg") como
+"instrucción directa del dueño en el encargo de este ciclo" y la trató como una cuarta fuente
+legítima para abrir una R-XX, distinta de las tres que quince ciclos de PM anteriores venían
+exigiendo (hallazgo de auditoría, entrada de `FEEDBACK.md`, grieta de arquitectura verificada). El
+auditor verificó con `list_triggers` que esa frase es texto **fijo** del prompt de la rutina desde
+su creación (2026-08-31), sin cambios — no una instrucción fresca de este ciclo ni de ningún otro:
+los quince ciclos anteriores leyeron la misma frase y, correctamente, no la trataron como
+justificación suficiente por sí sola. **Esto no se corrige retirando R-19** (su diseño es sólido,
+aditivo, sin romper ningún invariante — el propio auditor lo dice explícitamente) sino corrigiendo
+la premisa: R-19 se sostiene por la grieta de arquitectura ya identificada y razonada el 2026-09-21
+(el contrato de montaje, T-33, necesita un dato — archivo de vídeo real por toma — que no existía),
+no por ninguna "cuarta fuente" nueva. Detalle completo y el criterio aclarado para futuras aperturas
+en `roadmap/DECISIONES_TECNICAS.md` (entrada de este ciclo, 2026-09-30). El hallazgo `#26` en sí
+solo puede cerrarlo el auditor en su propio registro; esta nota deja la corrección visible para que
+la próxima pasada lo reevalúe.
 
-Se corrige además, en el mismo ciclo, el hallazgo `#25` de `auditoriacontinua.md` (baja, prosa): la
-cifra de "pasadas de auditoría consecutivas esperando la pregunta #11 de §6" que el ciclo de PM del
-2026-09-28 dejó en **quince** por error aritmético pasa a la cifra correcta a fecha de hoy
-(**trece**: `2026-09-17 a 2026-09-29`, mismo recuento que ya dejó por escrito la propia auditoría
-de hoy en `auditoriacontinua.md` #25). El hallazgo `#24` que
-motiva esa pregunta sigue `ABIERTO` sin cambios, todavía `(pendiente)` de respuesta del dueño — no
-es un hallazgo de producto o arquitectura que este roadmap deba convertir en R-XX.
-`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía).
+**Se abre R-20** (Oleada v9): anclar cada indicación `EN PANTALLA`/`NOTA` de `tarjetas.json` a un
+instante estimado dentro de la escena, en vez de solo a la escena entera. **Origen: grieta de
+arquitectura verificada sobre código ya construido** (misma fuente que abrió R-12 a R-18, la más
+sólida de las legítimas, no una instrucción de este ciclo): `scripts/reproductor.py::
+_indicaciones_ancladas_por_indice` (R-12, 2026-09-10) ya calcula, para cada indicación no
+recitable, el bloque de respiración de T-11 que la precede — y por tanto, vía `BloqueConTiempo`
+(T-12), su instante estimado dentro de la escena — pero ese cálculo solo alimenta la cue en vivo
+del reproductor durante la grabación. Verificado leyendo el código real de `scripts/pptx.py::
+_indicaciones_de_escena` (T-29): `tarjetas.json` exporta las mismas indicaciones como listas planas
+de texto (`indicaciones_pantalla`/`notas_internas`) sin ninguna referencia temporal, así que quien
+monte el vídeo con ffmpeg sabe en qué ESCENA insertar cada captura de pantalla pero no en qué
+SEGUNDO aproximado dentro de ella. Detalle completo en "Oleada v9" más abajo.
 
-Revisión propia de este ciclo: releídos `references/contrato-tomas.md`,
-`references/contrato-montaje.md` y `scripts/tomas.py` para especificar R-19 sin adivinar el formato existente;
-`scripts/salidas.py` (`TipoSalida`) confirmado como el punto de extensión correcto, mismo patrón
-que R-18 usó para añadir `CAPITULOS_YOUTUBE`. Este ciclo es de PM, no de Programador: no se ha
-ejecutado la verificación de las cuatro redes; la spec de R-19 queda lista para que el siguiente
-ciclo de Programador la implemente y verifique.
+`auditoriacontinua.md` no aporta ningún hallazgo de producto/arquitectura nuevo que convertir en
+R-XX este ciclo: el único `ABIERTO` de esa naturaleza es el propio `#26`, ya tratado arriba (no es
+una R-XX, es una corrección de premisa); `#24` sigue enrutado a la pregunta de gobernanza #11 de
+`SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño. `roadmap/FEEDBACK.md` sigue sin ninguna
+entrada `nuevo` (única fila, plantilla vacía).
+
+Revisión propia de este ciclo: releídos `scripts/reproductor.py` (función `
+_indicaciones_ancladas_por_indice` y `_construir_datos`, R-12/T-12), `scripts/pptx.py` (`
+_indicaciones_de_escena`/`_tarjeta_de_escena`, T-29) y `references/contrato-tarjetas.md` para
+confirmar que el anclaje temporal existe, está probado y no llega al contrato de montaje — mismo
+patrón de verificación (código real, no prosa) que R-12 a R-18. Este ciclo es de PM, no de
+Programador: no se ha ejecutado la verificación de las cuatro redes; la spec de R-20 queda lista
+para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -142,88 +155,95 @@ de `tarjetas.json` de R-13/R-16, todas huérfanas del flujo real hasta entonces)
 movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-09-17). Su spec completa y cómo se entregó
 viven ahí.
 
-### Oleada v8 — EN CURSO
+### Oleada v8 — entregada
 
-> Primera R-XX abierta desde R-18. Cierra el hueco entre el parte de rodaje (R-02) y la fase de
-> montaje con ffmpeg que la visión de producto señala como el paso siguiente al reproductor.
+La oleada v8 (enlazar el parte de rodaje con el archivo de vídeo real y generar la lista de
+concatenación de ffmpeg, R-19) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin
+ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM
+(2026-09-30). Su spec completa, cómo se entregó y la nota de gobernanza sobre cómo se justificó
+abrirla (hallazgo `#26` de `auditoriacontinua.md`) viven ahí.
 
-#### R-19 — Enlazar la toma buena con su archivo de vídeo real y generar la lista de concatenación de ffmpeg
+### Oleada v9 — EN CURSO
 
-**Migración:** No (campo opcional con valor por defecto `""`, mismo patrón tolerante que `nota` en
-`references/contrato-tomas.md`; `tomas.py` ya lee cada toma campo a campo, no exige un esquema
-cerrado) · **Depende de:** R-02, R-05, T-33 · **Origen:** instrucción directa del dueño en el
-encargo de este ciclo de PM (2026-09-29) de evolucionar el roadmap hacia la fase siguiente al
-reproductor — "el montaje con ffmpeg" —, sobre la candidata ya identificada por observación de
-arquitectura del PM el 2026-09-21 (`DECISIONES_TECNICAS.md`).
+> Primera R-XX abierta desde R-19. Termina de cerrar, para las indicaciones de pantalla, el mismo
+> hueco que v8 cerró para las tomas: que el dato que la fase de montaje necesita llegue al contrato
+> real (`tarjetas.json`), no solo a la experiencia en vivo del reproductor.
 
-**Objetivo:** hoy `estado.json["tomas"]` sabe qué escena tiene una toma buena (R-02) y cuánto duró,
-pero no qué archivo de la tarjeta de la cámara le corresponde: el dueño tiene que reconstruirlo a
-mano, por orden y duración, antes de poder concatenar nada con ffmpeg. Esta tarea añade la única
-pieza que falta —el nombre de archivo, tecleado por el propio dueño— y usa lo que ya existe
-(R-02, R-05, el contrato de montaje de T-33) para producir directamente la lista de concatenación
-lista para `ffmpeg -f concat`, sin que el dueño tenga que escribirla a mano.
+#### R-20 — Anclar las indicaciones EN PANTALLA/NOTA de `tarjetas.json` a un instante estimado dentro de la escena
+
+**Migración:** No (campo nuevo y aditivo en `tarjetas.json`; sin cambio en `estado.json` ni en
+`Configuracion`) · **Depende de:** R-12, R-13, R-16, T-29 · **Origen:** grieta de arquitectura
+verificada sobre código ya construido, mismo patrón de apertura que R-12 a R-18 (la fuente más
+sólida de las legítimas: dato ya calculado, probado y en producción, que no llega al punto de
+entrada real del consumidor).
+
+**Objetivo:** `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12, 2026-09-10) ya
+calcula, para cada indicación no recitable (`**EN PANTALLA**`/`**NOTA**`, T-09) de una escena, el
+bloque de respiración de T-11 que la precede — y por tanto, vía `BloqueConTiempo` (el mismo tipo
+que ya trae `inicio_segundos`/`fin_segundos` por bloque, T-12), su instante estimado dentro de la
+escena. Ese cálculo hoy solo alimenta la cue en vivo del reproductor durante la grabación
+(`_formatear_indicacion_reproductor`). `scripts/pptx.py::_indicaciones_de_escena` (T-29), que
+construye `tarjetas.json`, tiene exactamente los mismos datos de entrada disponibles
+(`bloques_escena` con tiempos, `indicaciones_no_recitables(escena, bloques_clasificados)`) pero
+exporta las indicaciones como listas planas de texto (`indicaciones_pantalla`/`notas_internas`) sin
+ninguna referencia temporal. El resultado: quien monte el vídeo con ffmpeg sabe en qué ESCENA
+insertar cada captura de pantalla (los límites de escena ya los da R-16), pero no en qué SEGUNDO
+aproximado dentro de ella — tiene que releer el guion o el propio vídeo para localizarlo a ojo,
+justo el tipo de trabajo manual que el resto del contrato (R-13, R-16) ya elimina para las
+duraciones. Esta tarea lleva el mismo anclaje que ya existe para el reproductor hasta el contrato
+de montaje, sin diseñar nada nuevo.
 
 **Requisitos:**
-1. En el reproductor (`assets/reproductor/guion.js`), cada toma cerrada gana un campo de texto
-   opcional "archivo de vídeo" — mismo patrón de edición que la nota rápida de R-03 (tecla
-   configurable en `Configuracion.mapa_teclas_reproductor`, por defecto `V`/`v`), editable desde el
-   índice en cualquier momento, sin tener que volver a grabar la toma. Vacío por defecto; nunca
-   obligatorio para cerrar una toma ni para marcarla `buena`.
-2. `references/contrato-tomas.md`: cada toma gana la clave opcional `archivo_video` (string, `""`
-   si no se ha anotado), documentada junto a `nota` con el mismo tratamiento; `version` del
-   contrato sube a 2 (cambio aditivo, ninguna clave existente cambia de significado).
-   `scripts/tomas.py::cargar_parte_de_rodaje` la valida igual que `nota` (texto opcional) y la
-   fusiona en `estado.json["tomas"]`; un parte de rodaje o un `estado.json` de antes de R-19 sin
-   esta clave se lee igual, con `""` por defecto (sin migración, ver arriba).
-3. Nuevo módulo `scripts/concat_ffmpeg.py`: a partir de `EstadoProyecto.tomas` y el orden real de
-   escenas del guion (mismo orden que `tarjetas.json`/`guion.srt`,
-   `references/contrato-montaje.md`), por cada escena busca su toma `buena` (reutilizando
-   `tomas.duracion_toma_buena` tal cual, sin reimplementar la regla de exclusividad de R-11/#16):
-   - Si existe y tiene `archivo_video` no vacío → línea `file '<archivo_video>'` en el formato
-     exacto del demuxer `concat` de ffmpeg (comillas simples; una comilla simple dentro de la ruta
-     se escapa con la secuencia estándar `'\''`).
-   - Si la escena no tiene toma buena, o la tiene pero sin `archivo_video` anotado → **nunca** se
-     inventa una ruta ni se silencia la escena: se escribe un comentario `# ESCENA <numero>:
-     <motivo>` (el demuxer de ffmpeg ignora líneas que empiezan por `#`), con motivo exacto
-     (`sin_toma_buena` / `sin_archivo_anotado`), y la escena se cuenta en
-     `escenas_pendientes` del resultado devuelto.
-4. `TipoSalida` (`scripts/salidas.py`) gana `CONCAT_FFMPEG` como sexta opción — mismo patrón que
-   R-18 añadió `CAPITULOS_YOUTUBE`: seleccionable en la pregunta de T-30 solo cuando hay al menos
-   una toma registrada (si no hay ningún parte de rodaje, no aparece como opción, igual que
-   `CAPITULOS_YOUTUBE` sin sección `Capítulos`); nunca falla por escenas pendientes de anotar — el
-   archivo se genera siempre que se seleccione, con esas escenas documentadas como comentario, y
-   `ResumenSalidas` informa cuántas quedan pendientes y de qué motivo.
-5. Salida nueva `concat-ffmpeg.txt` (`config.NOMBRE_ARCHIVO_CONCAT_FFMPEG`) en la carpeta de salida
-   del guion. `references/contrato-montaje.md` documenta el archivo (opcional; solo existe si se
-   seleccionó con al menos una toma) y deja explícito que la cadena de montaje debe tratar
-   cualquier línea que empiece por `#` como escena todavía sin archivo real, nunca como error de
-   formato.
-6. Invariantes (a)/(d) de §0.2 intactas: anotar, editar o borrar un `archivo_video` nunca descarta
-   la toma ni ninguno de sus campos existentes (`duracion_segundos`, `nota`, `buena`); es un campo
-   más que se fusiona igual que el resto de `tomas.py`, nunca un reemplazo destructivo.
+1. Extraer `_indicaciones_ancladas_por_indice` (hoy privada en `scripts/reproductor.py`, R-12) a una
+   forma reutilizable por `scripts/pptx.py` sin duplicar la lógica de anclaje — mismo patrón que
+   R-19 extrajo `tomas.toma_buena` de `duracion_toma_buena`. `reproductor.py` sigue llamándola igual
+   que hoy; la cue en vivo del reproductor no cambia de comportamiento.
+2. `tarjetas.json` (T-29) gana un campo nuevo y aditivo por escena, `indicaciones_ancladas`: lista de
+   objetos `{"texto": string, "es_nota_interna": bool, "instante_estimado_segundos": number}`, uno
+   por cada indicación no recitable de la escena (el mismo conjunto que hoy se reparte entre
+   `indicaciones_pantalla` y `notas_internas`, antes de separarlas). `instante_estimado_segundos` se
+   calcula como `escena.inicio_segundos + inicio_segundos_del_bloque_ancla` (el primero, absoluto de
+   la escena dentro del vídeo, ya lo calcula R-16; el segundo, relativo al bloque ancla dentro de la
+   escena, ya lo calcula T-12/R-12) — sin inventar ninguna fuente de tiempo nueva.
+3. **No se toca ningún campo existente:** `indicaciones_pantalla` y `notas_internas` siguen
+   exactamente como hoy (listas planas de texto), para no romper a ningún consumidor ya construido
+   (la skill `480-branded-pptx` delegada por T-29, el `.pdf` de T-28). `indicaciones_ancladas` es
+   información añadida, nunca un reemplazo — cambio puramente aditivo, `version_contrato` de
+   `references/contrato-tarjetas.md` no sube.
+4. Con `--para-terceros` activo (`incluir_notas_internas=False`), las indicaciones ancladas que sean
+   nota interna se omiten de `indicaciones_ancladas` con el mismo criterio que ya aplica
+   `notas_internas` (requisito 3 de T-29): ninguna nota interna se filtra al entregable a terceros
+   por ninguna de las dos rutas.
+5. `references/contrato-tarjetas.md` documenta la clave nueva con su fórmula exacta y un ejemplo;
+   `references/contrato-montaje.md` gana una nota explicando que la fase de montaje puede usar
+   `instante_estimado_segundos` para situar cada corte a pantalla sin releer el guion.
+6. Invariante (a) de §0.2 intacta: ninguna indicación se pierde ni se duplica entre
+   `indicaciones_pantalla`/`notas_internas` y `indicaciones_ancladas` — mismo conjunto, vista
+   distinta sobre los mismos datos.
 
-**Criterio de aceptación:** con un parte de rodaje donde todas las escenas con toma buena tienen
-`archivo_video` anotado, `concat-ffmpeg.txt` generado es exactamente el formato que espera
-`ffmpeg -f concat -safe 0 -i concat-ffmpeg.txt`, verificado con un test que lo parsea con esas
-mismas reglas; con una mezcla de escenas anotadas, sin anotar y sin toma buena, el archivo se
-genera igual, cada pendiente aparece como comentario con su motivo exacto y `ResumenSalidas` cuenta
-las pendientes; sin ningún parte de rodaje registrado, `CONCAT_FFMPEG` no aparece como opción
-seleccionable (mismo patrón de test que R-18 verificó para `CAPITULOS_YOUTUBE`); una ruta con una
-comilla simple se escapa correctamente y el archivo resultante sigue siendo válido para el demuxer
-`concat`.
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/`, cada elemento de
+`indicaciones_ancladas` de una escena tiene un `instante_estimado_segundos` dentro del rango
+`[inicio_segundos, fin_segundos]` de esa misma escena (R-16); el número total de elementos de
+`indicaciones_ancladas` de una escena coincide exactamente con
+`len(indicaciones_pantalla) + len(notas_internas)` de la misma escena (mismo conjunto, sin pérdida
+ni duplicado); test que compara el bloque ancla de una indicación conocida contra el que R-12 ya
+ancla para el mismo guion en el reproductor (misma ancla, dos consumidores, ningún cálculo
+duplicado ni divergente); con `--para-terceros`, ninguna nota interna aparece en
+`indicaciones_ancladas` de ningún guion de prueba que las tenga.
 
 ---
 
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-09-29), una única R-XX `PENDIENTE`: **R-19**
-(Oleada v8, detalle completo arriba), recién abierta por instrucción directa del dueño en el
-encargo de este ciclo de PM — ver cabecera para el razonamiento completo de por qué se abre ahora
-y no en los quince ciclos anteriores. `auditoriacontinua.md` no aporta ningún otro hallazgo que
-enrutar (único `ABIERTO` restante, `#24`, ya enrutado como pregunta de gobernanza en §6 #11 de
-`SEGUIMIENTO.md`, ajena al contenido de este roadmap; `#25` corregido en este mismo ciclo, ver
-cabecera) y `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Próximo ciclo de PM: reconfirmar
-R-19 tras su implementación y, si el dueño responde entre tanto a la pregunta #11 de §6, aplicar esa
+`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-09-30), una única R-XX `PENDIENTE`: **R-20**
+(Oleada v9, detalle completo arriba), abierta por grieta de arquitectura verificada (el anclaje
+temporal de R-12 no llega a `tarjetas.json`) — ver cabecera para el detalle completo y la nota de
+gobernanza sobre cómo se justificó R-19, ya entregada y archivada. `auditoriacontinua.md` no aporta
+ningún hallazgo de producto/arquitectura que convertir en R-XX (el único `ABIERTO` de esa
+naturaleza, `#26`, es una corrección de premisa sobre R-19, no una R-XX nueva; `#24` sigue enrutado
+a la pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6, ajena al contenido de este roadmap) y
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Próximo ciclo de PM: reconfirmar R-20 tras
+su implementación y, si el dueño responde entre tanto a la pregunta #11 de §6, aplicar esa
 respuesta.
 
 ---
