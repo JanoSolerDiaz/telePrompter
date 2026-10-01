@@ -12,6 +12,38 @@
 
 ---
 
+### Sesión 2026-10-01 (49) — Ciclo de Programador: primera reconfirmación tras R-20, sin novedad de código
+
+**Arranque.** `git status` limpio; `git checkout develop` encontró la rama local ya al día salvo un
+fast-forward trivial de un commit (`51e38da..f4d5ef8`) tras `git pull origin develop`, sin conflicto
+ni divergencia — ningún `git reset --hard` ni rama auxiliar necesarios. `pip install -r
+requirements-dev.txt` limpio.
+
+**Elección de tarea.** Registro de hallazgos de `auditoriacontinua.md` revisado antes de elegir
+tarea (protocolo): ningún `ABIERTO` de severidad alta (`#24` baja/proceso, `#27`
+media/robustez de `concat_ffmpeg.py`), ninguno urgente por §0.3. `roadmap/FEEDBACK.md` sin ninguna
+entrada `nuevo`. `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`:
+cero issues y cero PR abiertos. §1 de `SEGUIMIENTO.md` (fuente autoritativa) no tiene ninguna
+R-XX/T-XX `PENDIENTE`: R-20 (Oleada v9), la última, ya está `COMPLETADA` desde el ciclo anterior
+(`f4d5ef8`) — cola vacía, sin tarea de código que ejecutar.
+
+**Verificación propia completa**, vía `python scripts/ci.py` (nunca el binario pelado, R-15):
+`mypy`/`ruff` en verde sin hallazgos, 613 tests (`pytest`) en verde, dieciséis etapas OK en
+`verificar_salidas.py --fixture` (incluida la validación de `tarjetas.json` con las
+`indicaciones_ancladas` de R-20). Las cuatro redes en verde, sin ningún cambio de código.
+
+**Nota sin acción**, mismo patrón que motivó el hallazgo `#24` de `auditoriacontinua.md`:
+`ROADMAP_PRODUCTO.md` sigue describiendo "Oleada v9 — EN CURSO" / R-20 `PENDIENTE` en su prosa de
+"Cola de producto", pese a que `SEGUIMIENTO.md` §1 ya la registra `COMPLETADA`. No se corrige desde
+aquí: la pregunta #11 de §6 (que autorizaría al ciclo de reconfirmación del Programador a corregir
+esa prosa por su cuenta) sigue `(pendiente)` de respuesta del dueño. Se deja constancia para el
+próximo ciclo de Product Manager, que es quien escribe ese documento.
+
+**Cambios de estado.** Ninguno en §1, §3 ni §5 de `SEGUIMIENTO.md`. Ninguna decisión nueva en
+`DECISIONES_TECNICAS.md` (reconfirmación pura, sin criterio nuevo que registrar).
+
+---
+
 ### Sesión 2026-10-01 (48) — Ciclo de Programador: R-20 implementada y COMPLETADA (Oleada v9)
 
 **Tarea(s):** R-20 (única `PENDIENTE` en §1 de `SEGUIMIENTO.md`, abierta el 2026-09-30 por el ciclo
