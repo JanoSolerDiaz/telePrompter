@@ -10,8 +10,9 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-01 — **Ciclo de Programador: primera reconfirmación tras R-20**,
-sin novedad de código (detalle en la nota de arranque de esta sesión, más abajo).
+**Última actualización:** 2026-10-01 — **Ciclo de Programador: segunda reconfirmación tras R-20**,
+tras la primera de hoy (`d796da3`), sin novedad de código (detalle en la nota de arranque de esta
+sesión, más abajo).
 
 **Última actualización anterior (R-20, implementada en el ciclo previo):** `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el
 algoritmo de anclaje (máximo bloque de respiración cuyo `linea_fin` precede a la indicación, o el
@@ -41,28 +42,29 @@ en §3 (bloqueos) ni §5 (P-XX); ningún hallazgo de `auditoriacontinua.md` es d
 (`#24` baja, `#27` media, ninguno urgente por §0.3); §1 pasa `R-20` a `COMPLETADA`.
 
 **Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada;
-`git checkout develop` encontró la rama local ya al día salvo un fast-forward trivial de un commit
-(`51e38da..f4d5ef8`), resuelto con `git pull origin develop` sin conflicto ni divergencia — ningún
-`git reset --hard` ni rama auxiliar necesarios. `pip install -r requirements-dev.txt` limpio.
+`git checkout develop` dejó el contenedor en `HEAD` *detached* 3 commits por delante de la rama
+local conocida (reconfirmaciones ya superadas, ninguna con trabajo propio sin empujar); `git pull
+origin develop` resolvió con fast-forward trivial (`51e38da..d796da3`) sin conflicto ni pérdida —
+ningún `git reset --hard` ni rama auxiliar necesarios. `pip install -r requirements-dev.txt` limpio.
 
-**Ciclo de Programador de esta sesión: primera reconfirmación tras R-20** (implementada y
-`COMPLETADA` en el ciclo anterior, `f4d5ef8`), sin novedad de código. Registro de hallazgos de
-`auditoriacontinua.md` revisado antes de proceder: ningún `ABIERTO` de severidad alta (`#24` baja,
-proceso — la pregunta #11 de §6 sigue `(pendiente)`; `#27` media — robustez de validación de
-`concat_ffmpeg.py`, ninguno urgente por §0.3). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`;
-`mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero issues y
-cero PR abiertos. §1 ya no tiene ninguna R-XX/T-XX `PENDIENTE` (R-20 es la última, `COMPLETADA`):
-cola vacía, sin tarea de código que ejecutar. Verificación propia completa con `python scripts/ci.py`
-(nunca el binario pelado, R-15): `mypy`/`ruff` en verde sin hallazgos, 613 tests (`pytest`) en verde,
-dieciséis etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Nota sin acción,
-mismo patrón que motivó `#24`: `ROADMAP_PRODUCTO.md`
-sigue describiendo "Oleada v9 — EN CURSO" / R-20 `PENDIENTE` en su prosa de "Cola de producto" pese a
-que este §1 ya la registra `COMPLETADA` — no se corrige desde aquí (la pregunta #11 de §6 sigue
-`(pendiente)` de respuesta del dueño); se deja constancia para el próximo ciclo de PM, que es quien
-escribe ese documento.
+**Ciclo de Programador de esta sesión: segunda reconfirmación tras R-20**, tras la primera de hoy
+(`d796da3`), sin novedad de código. Registro de hallazgos de `auditoriacontinua.md` revisado antes
+de proceder: ningún `ABIERTO` de severidad alta (`#24` baja, proceso — la pregunta #11 de §6 sigue
+`(pendiente)`; `#27` media — robustez de validación de `concat_ffmpeg.py`, ninguno urgente por
+§0.3). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
+`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero issues y cero PR abiertos. §1 ya no
+tiene ninguna R-XX/T-XX `PENDIENTE` (R-20 es la última, `COMPLETADA`): cola vacía, sin tarea de
+código que ejecutar. Verificación propia completa con `python scripts/ci.py` (nunca el binario
+pelado, R-15): `mypy`/`ruff` en verde sin hallazgos, 613 tests (`pytest`) en verde, dieciséis
+etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Nota sin acción, mismo
+patrón que motivó `#24`: `ROADMAP_PRODUCTO.md` sigue describiendo "Oleada v9 — EN CURSO" / R-20
+`PENDIENTE` en su prosa de "Cola de producto" pese a que este §1 ya la registra `COMPLETADA` — no
+se corrige desde aquí (la pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño); se deja
+constancia para el próximo ciclo de PM, que es quien escribe ese documento.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-10-01, ciclo de Programador: primera reconfirmación tras R-20, sin novedad de código.
 - 2026-10-01, ciclo de Programador: R-20 implementada y `COMPLETADA` (Oleada v9). Ver el párrafo de
   "Última actualización anterior (R-20...)" arriba para el detalle técnico completo.
 - 2026-09-30, ciclo de Product Manager: archiva R-19/Oleada v8 a `ROADMAP_HISTORICO.md` y corrige la
