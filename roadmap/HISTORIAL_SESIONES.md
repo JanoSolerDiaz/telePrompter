@@ -12,6 +12,39 @@
 
 ---
 
+### Sesión 2026-10-01 (56) — Ciclo de Programador: octava reconfirmación tras R-20, sin novedad de código
+
+**Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached* 9
+commits por delante de la rama local conocida (reconfirmaciones ya superadas, ninguna con trabajo
+propio sin empujar), resuelto con `git pull origin develop` vía fast-forward trivial
+(`51e38da..0dd8c22`), sin conflicto ni pérdida — ningún `git reset --hard` ni rama auxiliar
+necesarios. `pip install -r requirements-dev.txt` limpio.
+
+**Elección de tarea.** Registro de hallazgos de `auditoriacontinua.md` revisado antes de elegir
+tarea (protocolo): ningún `ABIERTO` de severidad alta (`#24` baja/proceso, `#27`
+media/robustez de `concat_ffmpeg.py`), ninguno urgente por §0.3. `roadmap/FEEDBACK.md` sin ninguna
+entrada `nuevo`. `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`:
+cero issues y cero PR abiertos. §1 de `SEGUIMIENTO.md` (fuente autoritativa) no tiene ninguna
+R-XX/T-XX `PENDIENTE`: R-20 (Oleada v9), la última, sigue `COMPLETADA` desde hace ocho ciclos
+(`f4d5ef8`, reconfirmada en `d796da3`, `ebeb991`, `184c61f`, `0be4c95`, `52fb8f6`, `5d8158c` y
+`0dd8c22`) — cola vacía, sin tarea de código que ejecutar.
+
+**Verificación propia completa**, vía `python scripts/ci.py` (nunca el binario pelado, R-15):
+`mypy`/`ruff` en verde sin hallazgos, 613 tests (`pytest`) en verde, dieciséis etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde, sin ningún cambio de código.
+
+**Nota sin acción**, mismo patrón que motivó el hallazgo `#24` de `auditoriacontinua.md`:
+`ROADMAP_PRODUCTO.md` sigue describiendo "Oleada v9 — EN CURSO" / R-20 `PENDIENTE` en su prosa de
+"Cola de producto", pese a que `SEGUIMIENTO.md` §1 ya la registra `COMPLETADA`. No se corrige desde
+aquí: la pregunta #11 de §6 (que autorizaría al ciclo de reconfirmación del Programador a corregir
+esa prosa por su cuenta) sigue `(pendiente)` de respuesta del dueño. Se deja constancia para el
+próximo ciclo de Product Manager, que es quien escribe ese documento.
+
+**Cambios de estado.** Ninguno en §1, §3 ni §5 de `SEGUIMIENTO.md`. Ninguna decisión nueva en
+`DECISIONES_TECNICAS.md` (reconfirmación pura, sin criterio nuevo que registrar).
+
+---
+
 ### Sesión 2026-10-01 (55) — Ciclo de Programador: séptima reconfirmación tras R-20, sin novedad de código
 
 **Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached* 8
