@@ -10,8 +10,8 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-01 — **Ciclo de Programador: tercera reconfirmación tras R-20**,
-tras la segunda de hoy (`ebeb991`), sin novedad de código (detalle en la nota de arranque de esta
+**Última actualización:** 2026-10-01 — **Ciclo de Programador: cuarta reconfirmación tras R-20**,
+tras la tercera de hoy (`184c61f`), sin novedad de código (detalle en la nota de arranque de esta
 sesión, más abajo).
 
 **Última actualización anterior (R-20, implementada en el ciclo previo):** `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el
@@ -42,13 +42,13 @@ en §3 (bloqueos) ni §5 (P-XX); ningún hallazgo de `auditoriacontinua.md` es d
 (`#24` baja, `#27` media, ninguno urgente por §0.3); §1 pasa `R-20` a `COMPLETADA`.
 
 **Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada;
-`git checkout develop` dejó el contenedor en `HEAD` *detached* 4 commits por delante de la rama
+`git checkout develop` dejó el contenedor en `HEAD` *detached* 5 commits por delante de la rama
 local conocida (reconfirmaciones ya superadas, ninguna con trabajo propio sin empujar); `git pull
-origin develop` resolvió con fast-forward trivial (`51e38da..ebeb991`) sin conflicto ni pérdida —
+origin develop` resolvió con fast-forward trivial (`51e38da..184c61f`) sin conflicto ni pérdida —
 ningún `git reset --hard` ni rama auxiliar necesarios. `pip install -r requirements-dev.txt` limpio.
 
-**Ciclo de Programador de esta sesión: tercera reconfirmación tras R-20**, tras la segunda de hoy
-(`ebeb991`), sin novedad de código. Registro de hallazgos de `auditoriacontinua.md` revisado antes
+**Ciclo de Programador de esta sesión: cuarta reconfirmación tras R-20**, tras la tercera de hoy
+(`184c61f`), sin novedad de código. Registro de hallazgos de `auditoriacontinua.md` revisado antes
 de proceder: ningún `ABIERTO` de severidad alta (`#24` baja, proceso — la pregunta #11 de §6 sigue
 `(pendiente)`; `#27` media — robustez de validación de `concat_ffmpeg.py`, ninguno urgente por
 §0.3). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
@@ -64,6 +64,7 @@ constancia para el próximo ciclo de PM, que es quien escribe ese documento.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-10-01, ciclo de Programador: tercera reconfirmación tras R-20, sin novedad de código.
 - 2026-10-01, ciclo de Programador: segunda reconfirmación tras R-20, sin novedad de código.
 - 2026-10-01, ciclo de Programador: primera reconfirmación tras R-20, sin novedad de código.
 - 2026-10-01, ciclo de Programador: R-20 implementada y `COMPLETADA` (Oleada v9). Ver el párrafo de
