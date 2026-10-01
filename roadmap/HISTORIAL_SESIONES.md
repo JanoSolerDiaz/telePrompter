@@ -12,6 +12,63 @@
 
 ---
 
+### Sesión 2026-10-01 (58) — Ciclo de Product Manager: archiva Oleada v9 (R-20) y abre R-21 (Fase transversal F-J) desde el hallazgo `#27`
+
+**Arranque.** `git checkout develop` dejó el contenedor en `HEAD` *detached* 11 commits por detrás
+de `origin/develop` (reconfirmaciones del Programador ya superadas), resuelto con `git pull origin
+develop` vía fast-forward trivial (`51e38da..8e155bf`), sin conflicto ni pérdida. `pip install -r
+requirements-dev.txt` limpio.
+
+**Lectura previa (protocolo §0.4).** `roadmap/SEGUIMIENTO.md` §1 (fuente autoritativa): R-20
+(Oleada v9) `COMPLETADA` desde el 2026-10-01, última de nueve reconfirmaciones del Programador sin
+cambio de código; §3/§5 sin filas nuevas; §6 con la pregunta de gobernanza #11 todavía `(pendiente)`
+de respuesta del dueño. `roadmap/FEEDBACK.md`: única fila, plantilla vacía, sin ninguna entrada
+`nuevo` que incorporar. `auditoriacontinua.md`, registro de hallazgos: dos `ABIERTO` — `#24` (baja,
+proceso, la misma pregunta #11, ajena al contenido del roadmap) y `#27` (media, 2026-10-01,
+reproducido con código por el auditor: `scripts/salidas.py::_generar_concat_ffmpeg` no invoca
+`concat_ffmpeg.validar_lista_concat_ffmpeg` antes de escribir a disco, y `archivo_video` no se sanea
+en sus dos puntos de entrada). Ninguno de severidad alta, ninguno urgente por §0.3.
+
+**Decisión 1 — archivar Oleada v9.** R-20 lleva `COMPLETADA` en §1 desde el ciclo de Programador del
+2026-09-30, pero `ROADMAP_PRODUCTO.md` seguía describiéndola como "EN CURSO"/`PENDIENTE` tras nueve
+reconfirmaciones (mismo patrón que el hallazgo `#24`). Movida a `ROADMAP_HISTORICO.md` con su spec
+completa y "Cómo se entregó" (copiado de la nota de §1), corregida la cabecera y la "Cola de
+producto" de `ROADMAP_PRODUCTO.md`. De paso se corrige una omisión del ciclo de PM del 2026-09-30:
+había archivado el cuerpo completo de la Oleada v8 (R-19) en `ROADMAP_HISTORICO.md` sin añadir su
+línea de índice "Movido a histórico el:" — añadida ahora junto con la de v9, sin tocar ningún
+contenido ya archivado (ver fila de `DECISIONES_TECNICAS.md`).
+
+**Decisión 2 — convertir el hallazgo `#27` en R-21.** Es el único hallazgo `ABIERTO` de naturaleza
+técnica de esta pasada (`#24` es puramente de proceso/gobernanza, ya enrutado a §6). Severidad
+`media`, ningún invariante de §0.2 roto, la generación nunca falla: no es urgente por §0.3, pero sí
+es la deuda de calidad que el mandato de este ciclo exige convertir en tarea con `origen: auditoría
+#27`. Se abre como R-21 (Fase transversal F-J, mismo tratamiento que F-D/F-G/F-H/F-I): validar
+`concat-ffmpeg.txt` en la ruta real de generación (`_generar_concat_ffmpeg`) antes de escribirlo, y
+sanear `archivo_video` (recorte de espacios, rechazo de saltos de línea) en sus dos puntos de
+entrada (`guion.js`, `tomas._toma_desde_dict`). Alcance acotado deliberadamente a `concat_ffmpeg.py`
+— extender el mismo patrón a `srt.py`/`capitulos_youtube.py` queda anotado como candidata futura, no
+dentro de esta tarea (razonamiento completo en `DECISIONES_TECNICAS.md`, fila "R-21 (alcance)").
+Spec completa (objetivo, 5 requisitos, criterio de aceptación) en `ROADMAP_PRODUCTO.md` §Fase
+transversal F-J.
+
+**Revisión propia.** Releídos `scripts/concat_ffmpeg.py` (`validar_lista_concat_ffmpeg`,
+`_escapar_ruta_ffmpeg`), `scripts/salidas.py::_generar_concat_ffmpeg` y `scripts/tomas.py::
+_toma_desde_dict` para confirmar de primera mano, no solo transcribir, que el hallazgo describe el
+código real: el validador existe y está probado, pero en efecto no se invoca desde la ruta de
+generación, y `archivo_video` solo se comprueba como `str` sin recorte ni rechazo de salto de línea.
+
+**Cambios de estado.** `roadmap/ROADMAP_PRODUCTO.md`: Oleada v9 movida a "entregada", abierta Fase
+transversal F-J con R-21 `PENDIENTE` (spec completa), "Cola de producto" actualizada.
+`roadmap/ROADMAP_HISTORICO.md`: añadida la sección `## Oleada v9` completa y dos entradas de índice
+("Movido a histórico", v8 y v9). Ninguna fila nueva en §1 de `SEGUIMIENTO.md` (el programador la
+añade al implementar R-21, mismo patrón que R-19/R-20) ni en §3/§5; §6 sin cambios (la pregunta #11
+sigue `(pendiente)`). Tres decisiones nuevas en `DECISIONES_TECNICAS.md` ("PM (archivo de Oleada
+v9)", "PM (apertura de R-21)", "R-21 (alcance)"). Este ciclo es de PM, no de Programador: no se ha
+ejecutado la verificación de las cuatro redes; la spec de R-21 queda lista para que el siguiente
+ciclo de Programador la implemente y verifique.
+
+---
+
 ### Sesión 2026-10-01 (57) — Ciclo de Programador: novena reconfirmación tras R-20, sin novedad de código
 
 **Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached*

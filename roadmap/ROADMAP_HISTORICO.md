@@ -45,6 +45,22 @@ corrige además la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`, que lle
 como pendiente pese a estar ya `COMPLETADA` en §1 de `SEGUIMIENTO.md` — el mismo patrón de latencia
 que `auditoriacontinua.md` registra como hallazgo `#24`.
 
+**Movido a histórico el:** 2026-09-30, ciclo de Product Manager. Se añade la Oleada v8 (R-19),
+COMPLETADA por el Programador el mismo día en que se abrió (2026-09-29→30) y sin ningún hito de
+negocio propio pendiente — mismo criterio que los ocho movimientos anteriores, junto con la nota de
+gobernanza sobre cómo se justificó su apertura (hallazgo `#26` de `auditoriacontinua.md`, corregida
+ese mismo ciclo). *(Nota de corrección de trascripción, añadida en el movimiento siguiente: esta
+entrada de índice no se había escrito en su momento, aunque la sección `## Oleada v8` sí se archivó
+completa — se añade aquí para que el índice quede consistente con el contenido real del documento.)*
+
+**Movido a histórico el:** 2026-10-01, ciclo de Product Manager. Se añade la Oleada v9 (R-20),
+COMPLETADA por el Programador el mismo día en que se abrió (2026-09-30→10-01) y sin ningún hito de
+negocio propio pendiente — mismo criterio que los nueve movimientos anteriores. Este movimiento
+corrige además la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`, que llevaba nueve
+reconfirmaciones del Programador listando R-20 como "EN CURSO"/`PENDIENTE` pese a estar ya
+`COMPLETADA` en §1 de `SEGUIMIENTO.md` — el mismo patrón de latencia que `auditoriacontinua.md`
+registra como hallazgo `#24`.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -941,8 +957,105 @@ y generar `concat-ffmpeg.txt` con una ruta con comilla simple correctamente esca
 
 ---
 
+## Oleada v9 — Anclar las indicaciones EN PANTALLA/NOTA de `tarjetas.json` a un instante estimado dentro de la escena
+
+Termina de cerrar, para las indicaciones de pantalla, el mismo hueco que v8 cerró para las tomas:
+que el dato que la fase de montaje necesita llegue al contrato real (`tarjetas.json`), no solo a la
+experiencia en vivo del reproductor. Contiene R-20, su única R-XX. **Entregada 2026-10-01**
+(COMPLETADA el mismo ciclo del Programador en que se implementó, tras abrirse el 2026-09-30).
+
+### R-20 — Anclar las indicaciones EN PANTALLA/NOTA de `tarjetas.json` a un instante estimado dentro de la escena
+
+**Migración:** No (campo nuevo y aditivo en `tarjetas.json`; sin cambio en `estado.json` ni en
+`Configuracion`) · **Depende de:** R-12, R-13, R-16, T-29 · **Origen:** grieta de arquitectura
+verificada sobre código ya construido, mismo patrón de apertura que R-12 a R-18 (la fuente más
+sólida de las legítimas: dato ya calculado, probado y en producción, que no llega al punto de
+entrada real del consumidor).
+
+**Objetivo:** `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12, 2026-09-10) ya
+calcula, para cada indicación no recitable (`**EN PANTALLA**`/`**NOTA**`, T-09) de una escena, el
+bloque de respiración de T-11 que la precede — y por tanto, vía `BloqueConTiempo` (el mismo tipo
+que ya trae `inicio_segundos`/`fin_segundos` por bloque, T-12), su instante estimado dentro de la
+escena. Ese cálculo hoy solo alimenta la cue en vivo del reproductor durante la grabación
+(`_formatear_indicacion_reproductor`). `scripts/pptx.py::_indicaciones_de_escena` (T-29), que
+construye `tarjetas.json`, tiene exactamente los mismos datos de entrada disponibles
+(`bloques_escena` con tiempos, `indicaciones_no_recitables(escena, bloques_clasificados)`) pero
+exporta las indicaciones como listas planas de texto (`indicaciones_pantalla`/`notas_internas`) sin
+ninguna referencia temporal. El resultado: quien monte el vídeo con ffmpeg sabe en qué ESCENA
+insertar cada captura de pantalla (los límites de escena ya los da R-16), pero no en qué SEGUNDO
+aproximado dentro de ella — tiene que releer el guion o el propio vídeo para localizarlo a ojo,
+justo el tipo de trabajo manual que el resto del contrato (R-13, R-16) ya elimina para las
+duraciones. Esta tarea lleva el mismo anclaje que ya existe para el reproductor hasta el contrato
+de montaje, sin diseñar nada nuevo.
+
+**Requisitos:**
+1. Extraer `_indicaciones_ancladas_por_indice` (hoy privada en `scripts/reproductor.py`, R-12) a una
+   forma reutilizable por `scripts/pptx.py` sin duplicar la lógica de anclaje — mismo patrón que
+   R-19 extrajo `tomas.toma_buena` de `duracion_toma_buena`. `reproductor.py` sigue llamándola igual
+   que hoy; la cue en vivo del reproductor no cambia de comportamiento.
+2. `tarjetas.json` (T-29) gana un campo nuevo y aditivo por escena, `indicaciones_ancladas`: lista de
+   objetos `{"texto": string, "es_nota_interna": bool, "instante_estimado_segundos": number}`, uno
+   por cada indicación no recitable de la escena (el mismo conjunto que hoy se reparte entre
+   `indicaciones_pantalla` y `notas_internas`, antes de separarlas). `instante_estimado_segundos` se
+   calcula como `escena.inicio_segundos + inicio_segundos_del_bloque_ancla` (el primero, absoluto de
+   la escena dentro del vídeo, ya lo calcula R-16; el segundo, relativo al bloque ancla dentro de la
+   escena, ya lo calcula T-12/R-12) — sin inventar ninguna fuente de tiempo nueva.
+3. **No se toca ningún campo existente:** `indicaciones_pantalla` y `notas_internas` siguen
+   exactamente como hoy (listas planas de texto), para no romper a ningún consumidor ya construido
+   (la skill `480-branded-pptx` delegada por T-29, el `.pdf` de T-28). `indicaciones_ancladas` es
+   información añadida, nunca un reemplazo — cambio puramente aditivo, `version_contrato` de
+   `references/contrato-tarjetas.md` no sube.
+4. Con `--para-terceros` activo (`incluir_notas_internas=False`), las indicaciones ancladas que sean
+   nota interna se omiten de `indicaciones_ancladas` con el mismo criterio que ya aplica
+   `notas_internas` (requisito 3 de T-29): ninguna nota interna se filtra al entregable a terceros
+   por ninguna de las dos rutas.
+5. `references/contrato-tarjetas.md` documenta la clave nueva con su fórmula exacta y un ejemplo;
+   `references/contrato-montaje.md` gana una nota explicando que la fase de montaje puede usar
+   `instante_estimado_segundos` para situar cada corte a pantalla sin releer el guion.
+6. Invariante (a) de §0.2 intacta: ninguna indicación se pierde ni se duplica entre
+   `indicaciones_pantalla`/`notas_internas` y `indicaciones_ancladas` — mismo conjunto, vista
+   distinta sobre los mismos datos.
+
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/`, cada elemento de
+`indicaciones_ancladas` de una escena tiene un `instante_estimado_segundos` dentro del rango
+`[inicio_segundos, fin_segundos]` de esa misma escena (R-16); el número total de elementos de
+`indicaciones_ancladas` de una escena coincide exactamente con
+`len(indicaciones_pantalla) + len(notas_internas)` de la misma escena (mismo conjunto, sin pérdida
+ni duplicado); test que compara el bloque ancla de una indicación conocida contra el que R-12 ya
+ancla para el mismo guion en el reproductor (misma ancla, dos consumidores, ningún cálculo
+duplicado ni divergente); con `--para-terceros`, ninguna nota interna aparece en
+`indicaciones_ancladas` de ningún guion de prueba que las tenga.
+
+**Cómo se entregó:** `reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el
+algoritmo de anclaje (máximo bloque de respiración cuyo `linea_fin` precede a la indicación, o el
+primero si no hay ninguno) se extrae a la función pública `anclar_indicaciones_a_bloques` (mismo
+patrón que R-19 extrajo `tomas.toma_buena` de `duracion_toma_buena`), devolviendo la indicación
+cruda por índice de bloque en vez del texto ya formateado; `_indicaciones_ancladas_por_indice` queda
+como envoltorio de una línea que aplica el formato `Pantalla:`/`Nota:` — comportamiento del
+reproductor intacto. `scripts/pptx.py` reutiliza esa función nueva: `Tarjeta` gana
+`indicaciones_ancladas` (dataclass `IndicacionAnclada`: `texto`, `es_nota_interna`,
+`instante_estimado_segundos`), mismo conjunto que `indicaciones_pantalla`/`notas_internas` sin
+perder ni duplicar ninguna (invariante (a) extendido). El instante se calcula relativo al inicio de
+la escena en `_indicaciones_ancladas_de_escena` y se convierte a absoluto del vídeo en
+`_con_limites_absolutos` (R-16), sumando el mismo acumulado real-o-estimado que ya usa para
+`inicio_segundos`/`fin_segundos` — sin ninguna fuente de tiempo nueva. Una escena sin ningún bloque
+de locución (sin ejemplo en los guiones reales, pero contemplada por `validar_tarjetas`) ancla cada
+indicación al inicio de la escena en vez de perderla. `--para-terceros` omite las notas internas
+también aquí, con el mismo criterio que `notas_internas`. Cambio puramente aditivo:
+`version_contrato` no sube, sin campo nuevo de `Configuracion` ni migración de `estado.json`. 7
+tests nuevos (606→613), incluido uno que compara el instante exacto de `tarjetas.json` contra el que
+calcula el reproductor para la misma indicación del mismo guion (sin toma real de por medio, los dos
+acumulados coinciden bit a bit — criterio de aceptación literal: "mismo bloque ancla, dos
+consumidores"). Cuatro redes en verde, incluida la validación de `tarjetas.json` de
+`verificar_salidas.py --fixture` (la clave nueva pasa por `validar_tarjetas` sin cambios propios en
+el validador, mismo rigor que el resto de listas de indicaciones). `DEVELOPERS.md`, `SKILL.md` y
+`references/contrato-tarjetas.md`/`contrato-montaje.md` actualizados.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
-de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30.)*
+de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
+(R-20), 2026-10-01.)*

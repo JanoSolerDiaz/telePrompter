@@ -8,57 +8,47 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-09-30 (ciclo de PM). **R-19 (Oleada v8) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del mismo día que la abrió el 2026-09-29; esta
-prosa seguía describiéndola como pendiente en la sesión anterior (mismo patrón ya trazado por el
-hallazgo `#24` de `auditoriacontinua.md`, no corregido antes porque este ciclo es el primero de PM
-desde entonces). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v8) junto con el resto de oleadas
-100 % entregadas.
+**Última actualización:** 2026-10-01 (ciclo de PM). **R-20 (Oleada v9) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del mismo día que la abrió (2026-09-30); esta prosa
+seguía describiéndola como "EN CURSO"/`PENDIENTE` durante las nueve reconfirmaciones posteriores del
+Programador (mismo patrón ya trazado por el hallazgo `#24` de `auditoriacontinua.md`, no corregido
+antes porque este ciclo es el primero de PM desde entonces). Movida a `roadmap/ROADMAP_HISTORICO.md`
+(Oleada v9) junto con el resto de oleadas y fases 100 % entregadas. La nota de gobernanza sobre cómo
+se justificó abrir R-19 (hallazgo `#26`) viaja con ella, ya cerrada por el ciclo de PM anterior y
+verificada `RESUELTO` por el auditor (2026-10-01) — no se repite aquí.
 
-**Nota de gobernanza sobre cómo se justificó abrir R-19 (hallazgo `#26` de `auditoriacontinua.md`,
-media, ABIERTO):** el ciclo de PM del 2026-09-29 presentó una frase del encargo de la propia rutina
-programada ("prioriza la utilidad real... cuya fase siguiente es el montaje con ffmpeg") como
-"instrucción directa del dueño en el encargo de este ciclo" y la trató como una cuarta fuente
-legítima para abrir una R-XX, distinta de las tres que quince ciclos de PM anteriores venían
-exigiendo (hallazgo de auditoría, entrada de `FEEDBACK.md`, grieta de arquitectura verificada). El
-auditor verificó con `list_triggers` que esa frase es texto **fijo** del prompt de la rutina desde
-su creación (2026-08-31), sin cambios — no una instrucción fresca de este ciclo ni de ningún otro:
-los quince ciclos anteriores leyeron la misma frase y, correctamente, no la trataron como
-justificación suficiente por sí sola. **Esto no se corrige retirando R-19** (su diseño es sólido,
-aditivo, sin romper ningún invariante — el propio auditor lo dice explícitamente) sino corrigiendo
-la premisa: R-19 se sostiene por la grieta de arquitectura ya identificada y razonada el 2026-09-21
-(el contrato de montaje, T-33, necesita un dato — archivo de vídeo real por toma — que no existía),
-no por ninguna "cuarta fuente" nueva. Detalle completo y el criterio aclarado para futuras aperturas
-en `roadmap/DECISIONES_TECNICAS.md` (entrada de este ciclo, 2026-09-30). El hallazgo `#26` en sí
-solo puede cerrarlo el auditor en su propio registro; esta nota deja la corrección visible para que
-la próxima pasada lo reevalúe.
+**Se abre R-21** (Fase transversal F-J): el hallazgo `#27` de `auditoriacontinua.md` (media,
+`ABIERTO`, detectado 2026-10-01 por la propia auditoría reproduciendo código, no solo leyéndolo) es
+el único hallazgo de esta pasada que convertir en tarea — es de robustez de una salida real
+(`concat-ffmpeg.txt`, R-19), no gobernanza ni prosa, así que entra como R-XX con `origen: auditoría
+#27` en vez de quedar solo anotado. Resumen del hallazgo: `scripts/concat_ffmpeg.py` trae su propio
+validador del formato del demuxer `concat` de ffmpeg, pero `scripts/salidas.py::
+_generar_concat_ffmpeg` nunca lo invoca antes de escribir a disco — solo lo ejercita
+`verificar_salidas.py --fixture`, un chequeo de salud aparte de la ruta real de generación.
+Reproducido por el auditor con código, no solo leído: un `archivo_video` de solo espacios (tecleable
+sin querer en el `window.prompt` de `V`/`v`) genera una línea `file '   '` que el validador acepta
+pero ffmpeg no puede abrir; un `archivo_video` con un salto de línea incrustado (alcanzable editando
+a mano el `.json` del parte de rodaje exportado, flujo que R-02 soporta explícitamente) parte una
+entrada en dos líneas mal formadas que el validador sí detecta, pero nunca llega a ejecutarse en la
+ruta real. Ningún invariante de §0.2 se rompe (salida derivada y regenerable, la generación nunca
+falla), por eso es severidad `media`, no `alta`, y no urgente por §0.3 — pero es exactamente el tipo
+de deuda de calidad sobre una entrega ya hecha que este roadmap existe para no dejar perdida.
+Detalle completo en "Fase transversal F-J" más abajo.
 
-**Se abre R-20** (Oleada v9): anclar cada indicación `EN PANTALLA`/`NOTA` de `tarjetas.json` a un
-instante estimado dentro de la escena, en vez de solo a la escena entera. **Origen: grieta de
-arquitectura verificada sobre código ya construido** (misma fuente que abrió R-12 a R-18, la más
-sólida de las legítimas, no una instrucción de este ciclo): `scripts/reproductor.py::
-_indicaciones_ancladas_por_indice` (R-12, 2026-09-10) ya calcula, para cada indicación no
-recitable, el bloque de respiración de T-11 que la precede — y por tanto, vía `BloqueConTiempo`
-(T-12), su instante estimado dentro de la escena — pero ese cálculo solo alimenta la cue en vivo
-del reproductor durante la grabación. Verificado leyendo el código real de `scripts/pptx.py::
-_indicaciones_de_escena` (T-29): `tarjetas.json` exporta las mismas indicaciones como listas planas
-de texto (`indicaciones_pantalla`/`notas_internas`) sin ninguna referencia temporal, así que quien
-monte el vídeo con ffmpeg sabe en qué ESCENA insertar cada captura de pantalla pero no en qué
-SEGUNDO aproximado dentro de ella. Detalle completo en "Oleada v9" más abajo.
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
+historia de rodaje real que incorporar este ciclo. El hallazgo `#24` (prosa de "Cola de producto"
+desactualizada entre ciclos de PM) sigue enrutado a la pregunta de gobernanza #11 de
+`SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX, es la misma corrección
+de prosa que este propio ciclo acaba de aplicar.
 
-`auditoriacontinua.md` no aporta ningún hallazgo de producto/arquitectura nuevo que convertir en
-R-XX este ciclo: el único `ABIERTO` de esa naturaleza es el propio `#26`, ya tratado arriba (no es
-una R-XX, es una corrección de premisa); `#24` sigue enrutado a la pregunta de gobernanza #11 de
-`SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño. `roadmap/FEEDBACK.md` sigue sin ninguna
-entrada `nuevo` (única fila, plantilla vacía).
-
-Revisión propia de este ciclo: releídos `scripts/reproductor.py` (función `
-_indicaciones_ancladas_por_indice` y `_construir_datos`, R-12/T-12), `scripts/pptx.py` (`
-_indicaciones_de_escena`/`_tarjeta_de_escena`, T-29) y `references/contrato-tarjetas.md` para
-confirmar que el anclaje temporal existe, está probado y no llega al contrato de montaje — mismo
-patrón de verificación (código real, no prosa) que R-12 a R-18. Este ciclo es de PM, no de
-Programador: no se ha ejecutado la verificación de las cuatro redes; la spec de R-20 queda lista
-para que el siguiente ciclo de Programador la implemente y verifique.
+Revisión propia de este ciclo: releído `scripts/concat_ffmpeg.py` (`validar_lista_concat_ffmpeg`,
+`_escapar_ruta_ffmpeg`, `calcular_lista_concat_ffmpeg`), `scripts/salidas.py::
+_generar_concat_ffmpeg` y `scripts/tomas.py` (`_toma_desde_dict`, validación de `archivo_video`)
+para confirmar de primera mano que el hallazgo describe el código real: el validador existe, está
+probado, y en efecto no se invoca desde la ruta de generación — mismo patrón de verificación (código
+real, no prosa) que las R-XX anteriores. Este ciclo es de PM, no de Programador: no se ha ejecutado
+la verificación de las cuatro redes; la spec de R-21 queda lista para que el siguiente ciclo de
+Programador la implemente y verifique.
 
 ---
 
@@ -163,88 +153,84 @@ ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en 
 (2026-09-30). Su spec completa, cómo se entregó y la nota de gobernanza sobre cómo se justificó
 abrirla (hallazgo `#26` de `auditoriacontinua.md`) viven ahí.
 
-### Oleada v9 — EN CURSO
+### Oleada v9 — entregada
 
-> Primera R-XX abierta desde R-19. Termina de cerrar, para las indicaciones de pantalla, el mismo
-> hueco que v8 cerró para las tomas: que el dato que la fase de montaje necesita llegue al contrato
-> real (`tarjetas.json`), no solo a la experiencia en vivo del reproductor.
+La oleada v9 (anclar cada indicación `EN PANTALLA`/`NOTA` de `tarjetas.json` a un instante estimado
+dentro de la escena, R-20) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin
+ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM
+(2026-10-01), junto con la nota de gobernanza sobre cómo se justificó abrir R-19 (hallazgo `#26` de
+`auditoriacontinua.md`, ya `RESUELTO`). Su spec completa y cómo se entregó viven ahí.
 
-#### R-20 — Anclar las indicaciones EN PANTALLA/NOTA de `tarjetas.json` a un instante estimado dentro de la escena
+### Fase transversal F-J — EN CURSO
 
-**Migración:** No (campo nuevo y aditivo en `tarjetas.json`; sin cambio en `estado.json` ni en
-`Configuracion`) · **Depende de:** R-12, R-13, R-16, T-29 · **Origen:** grieta de arquitectura
-verificada sobre código ya construido, mismo patrón de apertura que R-12 a R-18 (la fuente más
-sólida de las legítimas: dato ya calculado, probado y en producción, que no llega al punto de
-entrada real del consumidor).
+> No es una oleada de producto nueva: es deuda de calidad sobre una salida ya entregada (R-19,
+> `concat-ffmpeg.txt`), detectada por la auditoría reproduciendo código, no solo leyéndolo. Mismo
+> tratamiento que F-D/F-G/F-H/F-I: se cierra antes de reanudar la cola de producto principal.
 
-**Objetivo:** `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12, 2026-09-10) ya
-calcula, para cada indicación no recitable (`**EN PANTALLA**`/`**NOTA**`, T-09) de una escena, el
-bloque de respiración de T-11 que la precede — y por tanto, vía `BloqueConTiempo` (el mismo tipo
-que ya trae `inicio_segundos`/`fin_segundos` por bloque, T-12), su instante estimado dentro de la
-escena. Ese cálculo hoy solo alimenta la cue en vivo del reproductor durante la grabación
-(`_formatear_indicacion_reproductor`). `scripts/pptx.py::_indicaciones_de_escena` (T-29), que
-construye `tarjetas.json`, tiene exactamente los mismos datos de entrada disponibles
-(`bloques_escena` con tiempos, `indicaciones_no_recitables(escena, bloques_clasificados)`) pero
-exporta las indicaciones como listas planas de texto (`indicaciones_pantalla`/`notas_internas`) sin
-ninguna referencia temporal. El resultado: quien monte el vídeo con ffmpeg sabe en qué ESCENA
-insertar cada captura de pantalla (los límites de escena ya los da R-16), pero no en qué SEGUNDO
-aproximado dentro de ella — tiene que releer el guion o el propio vídeo para localizarlo a ojo,
-justo el tipo de trabajo manual que el resto del contrato (R-13, R-16) ya elimina para las
-duraciones. Esta tarea lleva el mismo anclaje que ya existe para el reproductor hasta el contrato
-de montaje, sin diseñar nada nuevo.
+#### R-21 — Validar `concat-ffmpeg.txt` en la ruta real de generación y sanear `archivo_video` en el origen
+
+**Migración:** No (saneamiento de entrada y una llamada de validación nuevos; ningún campo de
+`estado.json` ni de `Configuracion` cambia de forma) · **Depende de:** R-19 · **Origen:** auditoría
+`#27` (media, 2026-10-01), reproducido con código por el propio auditor, no solo observado.
+
+**Objetivo:** `scripts/concat_ffmpeg.py` trae su propio validador del formato del demuxer `concat`
+de ffmpeg (`validar_lista_concat_ffmpeg`, criterio de aceptación de R-19), pero
+`scripts/salidas.py::_generar_concat_ffmpeg` nunca lo invoca antes de escribir `concat-ffmpeg.txt` a
+disco — solo lo ejercita `verificar_salidas.py --fixture`, un chequeo de salud aparte de la
+generación real. Esto deja pasar sin aviso dos entradas que `archivo_video` admite hoy sin ningún
+saneamiento (`tomas.py` solo comprueba `isinstance(..., str)`): una cadena de solo espacios
+(tecleable por accidente en el `window.prompt` de `V`/`v`) y un salto de línea incrustado
+(alcanzable editando a mano el `.json` del parte de rodaje exportado, flujo que R-02 soporta
+explícitamente), que rompen el archivo final de formas que el validador ya sabe detectar pero que
+nunca llega a ejecutarse en la ruta real. R-19 es la primera salida de la cadena de montaje cuyo
+contenido es texto libre tecleado por el dueño (a diferencia de `srt.py`/`capitulos_youtube.py`,
+derivados internamente), lo que le da a este hueco arquitectónico preexistente consecuencias reales
+por primera vez.
 
 **Requisitos:**
-1. Extraer `_indicaciones_ancladas_por_indice` (hoy privada en `scripts/reproductor.py`, R-12) a una
-   forma reutilizable por `scripts/pptx.py` sin duplicar la lógica de anclaje — mismo patrón que
-   R-19 extrajo `tomas.toma_buena` de `duracion_toma_buena`. `reproductor.py` sigue llamándola igual
-   que hoy; la cue en vivo del reproductor no cambia de comportamiento.
-2. `tarjetas.json` (T-29) gana un campo nuevo y aditivo por escena, `indicaciones_ancladas`: lista de
-   objetos `{"texto": string, "es_nota_interna": bool, "instante_estimado_segundos": number}`, uno
-   por cada indicación no recitable de la escena (el mismo conjunto que hoy se reparte entre
-   `indicaciones_pantalla` y `notas_internas`, antes de separarlas). `instante_estimado_segundos` se
-   calcula como `escena.inicio_segundos + inicio_segundos_del_bloque_ancla` (el primero, absoluto de
-   la escena dentro del vídeo, ya lo calcula R-16; el segundo, relativo al bloque ancla dentro de la
-   escena, ya lo calcula T-12/R-12) — sin inventar ninguna fuente de tiempo nueva.
-3. **No se toca ningún campo existente:** `indicaciones_pantalla` y `notas_internas` siguen
-   exactamente como hoy (listas planas de texto), para no romper a ningún consumidor ya construido
-   (la skill `480-branded-pptx` delegada por T-29, el `.pdf` de T-28). `indicaciones_ancladas` es
-   información añadida, nunca un reemplazo — cambio puramente aditivo, `version_contrato` de
-   `references/contrato-tarjetas.md` no sube.
-4. Con `--para-terceros` activo (`incluir_notas_internas=False`), las indicaciones ancladas que sean
-   nota interna se omiten de `indicaciones_ancladas` con el mismo criterio que ya aplica
-   `notas_internas` (requisito 3 de T-29): ninguna nota interna se filtra al entregable a terceros
-   por ninguna de las dos rutas.
-5. `references/contrato-tarjetas.md` documenta la clave nueva con su fórmula exacta y un ejemplo;
-   `references/contrato-montaje.md` gana una nota explicando que la fase de montaje puede usar
-   `instante_estimado_segundos` para situar cada corte a pantalla sin releer el guion.
-6. Invariante (a) de §0.2 intacta: ninguna indicación se pierde ni se duplica entre
-   `indicaciones_pantalla`/`notas_internas` y `indicaciones_ancladas` — mismo conjunto, vista
-   distinta sobre los mismos datos.
+1. `scripts/salidas.py::_generar_concat_ffmpeg` invoca `concat_ffmpeg.validar_lista_concat_ffmpeg`
+   sobre el contenido generado antes de escribirlo; si la validación falla, la salida se degrada a
+   `SalidaOmitida` con el motivo exacto del fallo — mismo patrón `try`/`except` que ya aplica
+   `generar_salidas_seleccionadas` a otros fallos de generación, nunca una excepción sin capturar.
+2. `archivo_video` se sanea en el origen, en los dos puntos donde el dueño lo teclea o lo edita:
+   `assets/reproductor/guion.js` (captura de `V`/`v` y edición desde el índice) recorta espacios y
+   rechaza un valor vacío tras el recorte o con un salto de línea, tratándolo como "sin anotar";
+   `scripts/tomas.py::_toma_desde_dict` aplica el mismo recorte y rechazo al leer un parte de rodaje
+   editado a mano (R-02), nunca como error fatal — un valor inválido se normaliza a `""`, igual que
+   si nunca se hubiera anotado.
+3. `references/contrato-tomas.md` documenta la regla de saneamiento de `archivo_video` (recortado,
+   sin saltos de línea); `references/contrato-montaje.md` deja constancia de que
+   `concat-ffmpeg.txt` nunca llega a disco sin pasar por `validar_lista_concat_ffmpeg`.
+4. Fuera de alcance, explícitamente: extender el mismo patrón de validación-antes-de-escribir a
+   `srt.py`/`capitulos_youtube.py` (la misma deuda arquitectónica preexistente, pero sin las
+   consecuencias reales que le da a R-19 ser texto libre) — se deja anotado aquí como candidata
+   futura, no se amplía el alcance de esta tarea para cubrirlo.
+5. Invariantes (a)/(d) de §0.2 intactos: sanear o degradar `concat-ffmpeg.txt` nunca toca
+   `estado.json["tomas"]` ni ningún campo existente de una toma; es una salida derivada y
+   regenerable, igual que antes de R-21.
 
-**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/`, cada elemento de
-`indicaciones_ancladas` de una escena tiene un `instante_estimado_segundos` dentro del rango
-`[inicio_segundos, fin_segundos]` de esa misma escena (R-16); el número total de elementos de
-`indicaciones_ancladas` de una escena coincide exactamente con
-`len(indicaciones_pantalla) + len(notas_internas)` de la misma escena (mismo conjunto, sin pérdida
-ni duplicado); test que compara el bloque ancla de una indicación conocida contra el que R-12 ya
-ancla para el mismo guion en el reproductor (misma ancla, dos consumidores, ningún cálculo
-duplicado ni divergente); con `--para-terceros`, ninguna nota interna aparece en
-`indicaciones_ancladas` de ningún guion de prueba que las tenga.
+**Criterio de aceptación:** un `archivo_video` de solo espacios tecleado en el reproductor se
+guarda como `""` (sin archivo anotado), nunca como `'   '` en `concat-ffmpeg.txt`; un `archivo_video`
+con un salto de línea incrustado en un parte de rodaje editado a mano se normaliza al cargarlo, sin
+llegar nunca a producir una línea mal formada en el archivo final; test que fuerza a
+`validar_lista_concat_ffmpeg` a fallar (contenido inválido inyectado) y confirma que
+`_generar_concat_ffmpeg` degrada a `SalidaOmitida` en vez de escribir el archivo o lanzar una
+excepción sin capturar; sobre los tres guiones reales de `fixtures/reales/` con parte de rodaje
+sintético, `concat-ffmpeg.txt` generado sigue siendo exactamente el mismo que antes de R-21 cuando
+`archivo_video` ya viene limpio (sin regresión).
 
 ---
 
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-09-30), una única R-XX `PENDIENTE`: **R-20**
-(Oleada v9, detalle completo arriba), abierta por grieta de arquitectura verificada (el anclaje
-temporal de R-12 no llega a `tarjetas.json`) — ver cabecera para el detalle completo y la nota de
-gobernanza sobre cómo se justificó R-19, ya entregada y archivada. `auditoriacontinua.md` no aporta
-ningún hallazgo de producto/arquitectura que convertir en R-XX (el único `ABIERTO` de esa
-naturaleza, `#26`, es una corrección de premisa sobre R-19, no una R-XX nueva; `#24` sigue enrutado
-a la pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6, ajena al contenido de este roadmap) y
-`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Próximo ciclo de PM: reconfirmar R-20 tras
-su implementación y, si el dueño responde entre tanto a la pregunta #11 de §6, aplicar esa
-respuesta.
+`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-10-01), una única R-XX `PENDIENTE`: **R-21** (Fase
+transversal F-J, detalle completo arriba), abierta por el hallazgo `#27` de `auditoriacontinua.md`
+(media, deuda de calidad sobre la salida `concat-ffmpeg.txt` de R-19, ya entregada y archivada).
+`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`; el único otro hallazgo `ABIERTO`, `#24`
+(baja, prosa de "Cola de producto" desactualizada entre ciclos de PM), sigue enrutado a la pregunta
+de gobernanza #11 de `SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX.
+Próximo ciclo de PM: reconfirmar R-21 tras su implementación y, si el dueño responde entre tanto a
+la pregunta #11 de §6, aplicar esa respuesta.
 
 ---
 

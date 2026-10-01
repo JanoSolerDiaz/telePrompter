@@ -10,9 +10,9 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-01 — **Ciclo de Programador: novena reconfirmación tras R-20**,
-tras la octava de hoy (`ae3107a`), sin novedad de código (detalle en la nota de arranque de esta
-sesión, más abajo).
+**Última actualización:** 2026-10-01 — **Ciclo de Product Manager: archiva Oleada v9 (R-20) y abre
+R-21** (Fase transversal F-J) desde el hallazgo `#27` de `auditoriacontinua.md` (detalle en la nota
+de arranque de esta sesión, más abajo).
 
 **Última actualización anterior (R-20, implementada en el ciclo previo):** `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el
 algoritmo de anclaje (máximo bloque de respiración cuyo `linea_fin` precede a la indicación, o el
@@ -42,28 +42,39 @@ en §3 (bloqueos) ni §5 (P-XX); ningún hallazgo de `auditoriacontinua.md` es d
 (`#24` baja, `#27` media, ninguno urgente por §0.3); §1 pasa `R-20` a `COMPLETADA`.
 
 **Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada;
-`git checkout develop` dejó el contenedor en `HEAD` *detached* exactamente en la punta conocida de
-`develop`; `git pull origin develop` resolvió con fast-forward trivial (`51e38da..ae3107a`, 10
-commits) sin conflicto ni pérdida — ningún `git reset --hard` ni rama auxiliar necesarios.
-`pip install -r requirements-dev.txt` limpio.
+`git checkout develop` dejó el contenedor en `HEAD` *detached* 11 commits por detrás de
+`origin/develop` (reconfirmaciones del Programador ya superadas); `git pull origin develop` resolvió
+con fast-forward trivial (`51e38da..8e155bf`) sin conflicto ni pérdida — ningún `git reset --hard` ni
+rama auxiliar necesarios. `pip install -r requirements-dev.txt` limpio.
 
-**Ciclo de Programador de esta sesión: novena reconfirmación tras R-20**, tras la octava de hoy
-(`ae3107a`), sin novedad de código. Registro de hallazgos de `auditoriacontinua.md` revisado antes
-de proceder: ningún `ABIERTO` de severidad alta (`#24` baja, proceso — la pregunta #11 de §6 sigue
-`(pendiente)`; `#27` media — robustez de validación de `concat_ffmpeg.py`, ninguno urgente por
-§0.3). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
-`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero issues y cero PR abiertos. §1 ya no
-tiene ninguna R-XX/T-XX `PENDIENTE` (R-20 es la última, `COMPLETADA`): cola vacía, sin tarea de
-código que ejecutar. Verificación propia completa con `python scripts/ci.py` (nunca el binario
-pelado, R-15): `mypy`/`ruff` en verde sin hallazgos, 613 tests (`pytest`) en verde, dieciséis
-etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Nota sin acción, mismo
-patrón que motivó `#24`: `ROADMAP_PRODUCTO.md` sigue describiendo "Oleada v9 — EN CURSO" / R-20
-`PENDIENTE` en su prosa de "Cola de producto" pese a que este §1 ya la registra `COMPLETADA` — no
-se corrige desde aquí (la pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño); se deja
-constancia para el próximo ciclo de PM, que es quien escribe ese documento.
+**Ciclo de Product Manager de esta sesión: archiva Oleada v9 (R-20) y abre R-21 (Fase transversal
+F-J).** §1 (fuente autoritativa) ya registraba R-20 `COMPLETADA` desde el 2026-09-30, tras nueve
+reconfirmaciones del Programador sin cambio de código; `ROADMAP_PRODUCTO.md` seguía describiéndola
+como "EN CURSO"/`PENDIENTE` (mismo patrón que el hallazgo `#24`) — movida a `ROADMAP_HISTORICO.md`
+con su spec completa, cabecera y "Cola de producto" corregidas. Registro de hallazgos de
+`auditoriacontinua.md`: dos `ABIERTO`, ninguno de severidad alta — `#24` (baja, proceso, la pregunta
+de gobernanza #11 de §6 sigue `(pendiente)`, ajena al contenido de este roadmap) y `#27` (media,
+2026-10-01, reproducido con código por el auditor: `scripts/salidas.py::_generar_concat_ffmpeg` no
+invoca `concat_ffmpeg.validar_lista_concat_ffmpeg` antes de escribir a disco, y `archivo_video` no se
+sanea en sus dos puntos de entrada). `#27` es el único hallazgo técnico de esta pasada: se convierte
+en **R-21** (Fase transversal F-J, `origen: auditoría #27`), spec completa en `ROADMAP_PRODUCTO.md`
+§Fase transversal F-J. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`. Decisiones registradas
+en `DECISIONES_TECNICAS.md`; detalle completo de este ciclo en `HISTORIAL_SESIONES.md` (sesión 58).
+Sin cambios en §3 ni §5; §6 sin novedad (la pregunta #11 sigue `(pendiente)`). Este ciclo es de PM,
+no de Programador: no se añade fila nueva a §1 para R-21 (la añade el Programador al implementarla,
+mismo patrón que R-19/R-20) ni se ejecuta la verificación de las cuatro redes.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-10-01, ciclo de Programador: novena reconfirmación tras R-20, tras la octava de hoy
+  (`ae3107a`), sin novedad de código. Verificación propia completa: `mypy`/`ruff` en verde sin
+  hallazgos, 613 tests (`pytest`) en verde, dieciséis etapas OK en `verificar_salidas.py --fixture`.
+  `auditoriacontinua.md` con dos `ABIERTO`, ninguno de severidad alta (`#24` baja, proceso; `#27`
+  media, robustez de validación de `concat_ffmpeg.py`). `roadmap/FEEDBACK.md` sin ninguna entrada
+  `nuevo`; cero issues y cero PR abiertos en GitHub. Nota sin acción, mismo patrón que motivó `#24`:
+  la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md` seguía describiendo R-20 como
+  "EN CURSO"/`PENDIENTE` pese a que este §1 ya la registraba `COMPLETADA` — corregido por el ciclo de
+  PM siguiente (ver arriba).
 - 2026-10-01, ciclo de Programador: octava reconfirmación tras R-20, sin novedad de código.
 - 2026-10-01, ciclo de Programador: séptima reconfirmación tras R-20, sin novedad de código.
 - 2026-10-01, ciclo de Programador: sexta reconfirmación tras R-20, sin novedad de código.
