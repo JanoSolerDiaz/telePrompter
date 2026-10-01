@@ -139,6 +139,17 @@ verificado por `tests/test_integracion_montaje.py::
 test_inicio_y_fin_segundos_de_tarjetas_json_no_dejan_huecos_ni_solapes` y
 `test_fin_segundos_de_la_ultima_escena_coincide_con_el_fin_del_srt_correspondiente`.
 
+## `indicaciones_ancladas` — en qué segundo insertar cada captura de pantalla (R-20)
+
+Cada escena de `tarjetas.json` trae, desde R-20, `indicaciones_ancladas`: el
+mismo conjunto de `indicaciones_pantalla`/`notas_internas` de esa escena, pero
+con un `instante_estimado_segundos` absoluto del vídeo (mismo eje que
+`inicio_segundos`/`fin_segundos` de la sección anterior). La cadena de
+montaje puede leer esa clave directamente para situar cada corte a pantalla
+sin releer el guion ni el propio vídeo a ojo — es una estimación (el nombre
+lo deja explícito), basada en el ritmo deducido del guion (T-12), no en un
+instante medido sobre la toma real.
+
 ## `concat-ffmpeg.txt` — lista de concatenación lista para ffmpeg (R-19)
 
 Cuando existe al menos un parte de rodaje registrado (R-02), `concat-ffmpeg.txt`

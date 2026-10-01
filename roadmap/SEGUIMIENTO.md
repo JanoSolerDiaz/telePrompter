@@ -10,74 +10,68 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-09-30 — **Ciclo de Programador: R-19 implementada y COMPLETADA**
-(Oleada v8). `assets/reproductor/guion.js` gana `archivo_video` por toma (tecla `V`/`v` durante la
-grabación, mismo patrón que `nota_toma` de R-02, más un botón nuevo en el índice —
-`.btn-archivo-video`, hermano de la fila de escena, nunca anidado en su `<button>`— para editarlo
-después sin volver a grabar); `references/contrato-tomas.md` sube a versión 2 (cambio aditivo, sin
-migración). `scripts/tomas.py` gana `toma_buena` (extraída de `duracion_toma_buena`, misma regla de
-exclusividad de R-11/#16, ahora reutilizada en vez de reimplicada). `scripts/concat_ffmpeg.py`
-(módulo nuevo): recorre las escenas en su orden real y escribe, por cada una, `file
-'<archivo_video>'` (formato exacto del demuxer `concat` de ffmpeg, comillas simples escapadas) o un
-comentario `# ESCENA N: <motivo>` (`sin_toma_buena`/`sin_archivo_anotado`) — nunca falla por escenas
-pendientes de anotar. `TipoSalida.CONCAT_FFMPEG` (sexta opción del selector T-30, `scripts/salidas.py`):
-omitida con motivo exacto sin ningún parte de rodaje registrado, mismo criterio que
-`CAPITULOS_YOUTUBE` sin sección `Capítulos` (R-18). 23 tests nuevos (583→606; `tests/test_concat_ffmpeg.py`
-nuevo con 14). Cuatro redes en verde, incluidas dos etapas nuevas en `verificar_salidas.py --fixture`
-("Generación"/"Validez de la lista de concatenación de ffmpeg", dieciséis etapas en total, con una
-toma sintética para ejercitar de verdad el formato). Verificado también con Playwright/Chromium
-real: anotar durante la grabación, editar desde el índice sin regrabar, exportar el parte de rodaje
-(versión 2) y generar `concat-ffmpeg.txt` a partir de ese archivo real, con una ruta con comilla
-simple correctamente escapada. `DEVELOPERS.md`, `SKILL.md` y las referencias de
-`contrato-tomas.md`/`contrato-montaje.md`/`mapa-teclas.md` actualizados. Decisiones registradas en
-`DECISIONES_TECNICAS.md`. Sin cambios en §3 (bloqueos), §5 (P-XX) ni §6 (preguntas); §1 pasa `R-19` a
-`COMPLETADA`.
+**Última actualización:** 2026-10-01 — **Ciclo de Programador: R-20 implementada y COMPLETADA**
+(Oleada v9). `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el
+algoritmo de anclaje (máximo bloque de respiración cuyo `linea_fin` precede a la indicación, o el
+primero si no hay ninguno) se extrae a la función pública `anclar_indicaciones_a_bloques` (mismo
+patrón que R-19 extrajo `tomas.toma_buena` de `duracion_toma_buena`), devolviendo la indicación
+cruda por índice de bloque en vez del texto ya formateado; `_indicaciones_ancladas_por_indice` queda
+como envoltorio de una línea que aplica el formato `Pantalla:`/`Nota:` — comportamiento del
+reproductor intacto. `scripts/pptx.py` reutiliza esa función nueva: `Tarjeta` gana
+`indicaciones_ancladas` (dataclass `IndicacionAnclada`: `texto`, `es_nota_interna`,
+`instante_estimado_segundos`), mismo conjunto que `indicaciones_pantalla`/`notas_internas` sin
+perder ni duplicar ninguna (invariante (a) extendido). El instante se calcula relativo al inicio de
+la escena en `_indicaciones_ancladas_de_escena` y se convierte a absoluto del vídeo en
+`_con_limites_absolutos` (R-16), sumando el mismo acumulado real-o-estimado que ya usa para
+`inicio_segundos`/`fin_segundos` — sin ninguna fuente de tiempo nueva. Una escena sin ningún bloque
+de locución (sin ejemplo en los guiones reales, pero contemplada por `validar_tarjetas`) ancla cada
+indicación al inicio de la escena en vez de perderla. `--para-terceros` omite las notas internas
+también aquí, con el mismo criterio que `notas_internas`. Cambio puramente aditivo: `version_contrato`
+no sube, sin campo nuevo de `Configuracion` ni migración de `estado.json`. 7 tests nuevos (606→613),
+incluido uno que compara el instante exacto de `tarjetas.json` contra el que calcula el reproductor
+para la misma indicación del mismo guion (sin toma real de por medio, los dos acumulados coinciden
+bit a bit — criterio de aceptación literal: "mismo bloque ancla, dos consumidores"). Cuatro redes en
+verde, incluida la validación de `tarjetas.json` de `verificar_salidas.py --fixture` (la clave nueva
+pasa por `validar_tarjetas` sin cambios propios en el validador, mismo rigor que el resto de listas
+de indicaciones). `DEVELOPERS.md`, `SKILL.md` y `references/contrato-tarjetas.md`/
+`contrato-montaje.md` actualizados. Decisiones registradas en `DECISIONES_TECNICAS.md`. Sin cambios
+en §3 (bloqueos) ni §5 (P-XX); ningún hallazgo de `auditoriacontinua.md` es de severidad alta
+(`#24` baja, `#27` media, ninguno urgente por §0.3); §1 pasa `R-20` a `COMPLETADA`.
 
-**Ciclo de Product Manager posterior (2026-09-30, este ciclo):** archiva R-19/Oleada v8 a
-`ROADMAP_HISTORICO.md` y corrige la prosa de `ROADMAP_PRODUCTO.md`, que un ciclo de Programador
-señaló como desactualizada (seguía describiendo R-19 `PENDIENTE` pese a que este §1 ya la registraba
-`COMPLETADA` — mismo patrón de latencia que el hallazgo `#24`). Atiende primero el hallazgo `#26` de
-`auditoriacontinua.md` (media, ABIERTO, gobernanza del propio PM): el ciclo del 2026-09-29 justificó
-abrir R-19 citando una frase del encargo de esta misma rutina programada como "instrucción directa
-del dueño en este ciclo"; el auditor verificó con `list_triggers` que esa frase es texto fijo del
-prompt desde su creación (2026-08-31), sin cambios — no una instrucción fresca de ningún ciclo. R-19
-no se revierte (diseño sólido y aditivo, confirmado por el propio auditor) pero `ROADMAP_PRODUCTO.md`
-corrige la premisa: la apertura se sostiene por la grieta de arquitectura ya razonada el 2026-09-21
-(el contrato de montaje necesitaba el archivo de vídeo real por toma), no por ninguna "cuarta
-fuente". Detalle completo en `DECISIONES_TECNICAS.md`, que además deja explícito — para que no haga
-falta reinventarlo cada vez — que las tres fuentes ya establecidas (hallazgo de auditoría de
-producto/arquitectura, entrada `nuevo` de `FEEDBACK.md`, grieta de arquitectura verificada) bastan
-por sí solas para que el PM abra una R-XX, sin necesitar apoyarse en el encargo estable de la
-rutina como si fuera una instrucción nueva cada vez. **Se abre R-20** (Oleada v9): `tarjetas.json`
-(T-29) gana `indicaciones_ancladas`, campo aditivo por escena con el instante estimado de cada
-indicación `EN PANTALLA`/`NOTA` dentro de la escena, reutilizando el anclaje que
-`reproductor.py::_indicaciones_ancladas_por_indice` (R-12) ya calcula para la cue en vivo del
-reproductor — verificado leyendo el código real de `reproductor.py` y `pptx.py`: el dato ya existe,
-probado desde R-12, y no llega a `tarjetas.json`. Mismo patrón de apertura que R-12 a R-18 (grieta
-de arquitectura verificada), nunca una "instrucción de este ciclo". Spec completa en
-`ROADMAP_PRODUCTO.md` §Oleada v9. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`;
-`auditoriacontinua.md` no aporta ningún otro hallazgo de producto/arquitectura que convertir (`#24`
-sigue enrutado a la pregunta de gobernanza #11 de §6, sin cambios, `(pendiente)` de respuesta del
-dueño). Sin cambios en §3 (bloqueos) ni §5 (P-XX); §1 añade `R-20` en `PENDIENTE`. Este ciclo es de
-PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes.
-
-**Nota de arranque de esta sesión:** décima vez que aparece una variante del mismo patrón de
-arranque (2026-09-15 y las ocho sesiones anteriores de hoy), idéntica en forma a la de la sesión
-inmediatamente anterior. El contenedor arrancó con `HEAD` *detached*; al hacer `git checkout
-develop`, la rama local resultó ser el mismo puntero obsoleto de casi una semana (`3d60fbb`, décima
-reconfirmación del 2026-09-23) que ya documentó la nota anterior — confirma otra vez que el estado
-local persiste entre disparos de esta misma rutina y solo se actualiza cuando una sesión hace el
-reset explícito. Tras `fetch`, local y `origin/develop` habían divergido de nuevo con **50 commits
-distintos a cada lado y sin ancestro común** (`git merge-base` vacío), la misma magnitud que la
-sesión anterior ya documentó como récord — no un caso nuevo, sino la repetición exacta del patrón ya
-diagnosticado. Árbol de trabajo limpio verificado antes de tocar nada (`git status`). `git reset
---hard origin/develop` resolvió el desajuste sin denegación del clasificador de modo automático,
-sin necesitar la rama auxiliar `develop-work` de la norma de la sesión 38. Cero riesgo de pérdida:
-los 50 commits locales descartados eran solo reconfirmaciones vacías ya superadas hace una semana
-por el propio `origin/develop`, nunca trabajo sin publicar. Cero incidencia.
+**Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada;
+`git checkout develop` encontró la rama local ya al día salvo un fast-forward trivial de un commit
+(`51e38da..651bd1d`), resuelto con `git pull origin develop` sin conflicto ni divergencia — a
+diferencia de las últimas sesiones registradas más abajo, esta vez no hizo falta ningún `git reset
+--hard` ni rama auxiliar.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-09-30, ciclo de Product Manager: archiva R-19/Oleada v8 a `ROADMAP_HISTORICO.md` y corrige la
+  prosa de `ROADMAP_PRODUCTO.md` que seguía describiendo R-19 como `PENDIENTE` pese a que §1 ya la
+  registraba `COMPLETADA` (mismo patrón de latencia que el hallazgo `#24`). Atiende el hallazgo `#26`
+  de `auditoriacontinua.md` (media, gobernanza del propio PM): el ciclo del 2026-09-29 había
+  presentado una frase fija del encargo de esta misma rutina como "instrucción directa del dueño",
+  cuando `list_triggers` confirma que es texto sin cambios desde 2026-08-31 — R-19 no se revierte
+  (diseño sólido y aditivo) pero `ROADMAP_PRODUCTO.md` corrige la premisa a la grieta de arquitectura
+  ya razonada el 2026-09-21. Deja escrito en `DECISIONES_TECNICAS.md` el criterio para futuras
+  aperturas: las tres fuentes ya establecidas (auditoría, `FEEDBACK.md`, grieta de arquitectura
+  verificada) bastan por sí solas, sin apoyarse en el encargo estable de la rutina. **Abre R-20**
+  (Oleada v9): `tarjetas.json` ganará `indicaciones_ancladas`, reutilizando el anclaje que
+  `reproductor.py` (R-12) ya calcula para la cue en vivo — mismo patrón de apertura que R-12 a R-18
+  (grieta de arquitectura verificada). Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v9. Ciclo de PM:
+  no se ejecuta la verificación de las cuatro redes.
+- 2026-09-30, ciclo de Programador: R-19 implementada y COMPLETADA (Oleada v8). `archivo_video` por
+  toma anotable con `V`/`v` durante la grabación o editable después desde el índice sin volver a
+  grabar; `scripts/concat_ffmpeg.py` (módulo nuevo) genera `concat-ffmpeg.txt`, la lista de
+  concatenación del demuxer `concat` de ffmpeg, sexta opción del selector de salidas (T-30). 23 tests
+  nuevos (583→606). Cuatro redes en verde, incluidas dos etapas nuevas en `verificar_salidas.py
+  --fixture` (dieciséis en total). Verificado también con Playwright/Chromium real. Detalle completo
+  en `HISTORIAL_SESIONES.md`/`DECISIONES_TECNICAS.md`.
+- 2026-09-30, décima sesión del día con el mismo patrón de arranque: contenedor en `HEAD` *detached*
+  con la rama local divergida 50 commits sin ancestro común de `origin/develop`, resuelta con `git
+  reset --hard origin/develop` sin riesgo de pérdida (commits locales descartados eran solo
+  reconfirmaciones vacías ya superadas). Detalle completo en la entonces "nota de arranque de esta
+  sesión", ahora superada por la de arriba.
 - 2026-09-30, ciclo de Programador: novena reconfirmación tras R-19, tras la octava de hoy
   (`af4d09b`), sin novedad de código. Verificación propia completa: `mypy`/`ruff` en verde (70
   archivos, sin hallazgos), 606 tests (`pytest`) en verde, dieciséis etapas OK en
@@ -626,7 +620,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-17 | Endurecer o cerrar formalmente la asimetría teórica de `_incidencias_anclas_desajustadas` (`scripts/revalidacion.py`) | **COMPLETADA** | 2026-09-15 | Spec completa en `ROADMAP_PRODUCTO.md` §Fase F-I. `origen: auditoría #19` (abierto 2026-09-04, reconfirmado sin cambios en diez pasadas sucesivas del auditor). Investigada y cerrada por la vía del requisito 3 (con matiz): bajo operación normal la identidad es inyectiva por construcción (`pospuestas_previas` siempre coincide con lo que la pasada anterior persistió); el único escenario que rompe la comparación por cardinalidad exige corromper `estado.validacion["particiones_pospuestas"]` a mano (misma precondición ya conocida de P-04), y se verificó con test nuevo que incluso ahí el invariante (a) — nada se pierde ni se duplica — sigue intacto, con un único efecto cosmético (número de bloque erróneo en la incidencia de conflicto, escena correcta). 1 test nuevo (574→575) en `tests/test_revalidacion.py`. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-18 | Integrar en el selector de salidas (T-30, `scripts/salidas.py`) las salidas que dependen de tomas reales: `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07, hoy ni siquiera seleccionable) y los campos reales de `tarjetas.json` (R-13/R-16) | **COMPLETADA** | 2026-09-17 | `scripts/salidas.py`: `generar_salidas_seleccionadas` gana `tomas_por_escena` opcional (`EstadoProyecto.tomas` tal cual); con al menos una toma `buena`, `SRT` genera también `guion-alineado.srt` (R-05) bajo el mismo `TipoSalida.SRT`, y `PPTX` pasa las tomas a `exportar_pptx` para duración real/límites absolutos (R-13/R-16). `TipoSalida` gana `CAPITULOS_YOUTUBE` (quinta opción), generado con `capitulos_youtube.generar_capitulos_youtube`; sin sección `Capítulos`, queda `SalidaOmitida` con el motivo exacto, nunca fallo ni latente. `verificar_salidas.py::verificar_generacion` distingue ahora un fallo real (prefijo `"fallo al generar:"`) de esa omisión esperada. Sin tomas, comportamiento idéntico al de antes de R-18 (test de regresión byte a byte sobre los tres guiones reales). 8 tests nuevos (575→583). Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` |
 | R-19 | Enlazar la toma buena de cada escena con su archivo de vídeo real (campo opcional tecleado en el reproductor) y generar `concat-ffmpeg.txt`, la lista de concatenación lista para `ffmpeg -f concat` | **COMPLETADA** | 2026-09-30 | `Toma.archivo_video` (opcional, `""` por defecto) anotable con `V`/`v` durante la grabación o editable después desde el índice sin volver a grabar; `references/contrato-tomas.md` sube a versión 2 (aditivo, sin migración). `scripts/concat_ffmpeg.py` nuevo: reutiliza `tomas.toma_buena` (extraída de `duracion_toma_buena`, misma regla de exclusividad de R-11/#16) para generar `file '<archivo_video>'` o `# ESCENA N: <motivo>` por escena, en su orden real. `TipoSalida.CONCAT_FFMPEG` (sexta opción de T-30): omitida sin ningún parte de rodaje, nunca falla por escenas pendientes de anotar. 23 tests nuevos (583→606). Cuatro redes en verde, incluidas dos etapas nuevas en `verificar_salidas.py --fixture` (dieciséis en total). Verificado además con Playwright/Chromium real: anotar durante la grabación, editar desde el índice sin regrabar, exportar el parte de rodaje y generar `concat-ffmpeg.txt` con una ruta con comilla simple correctamente escapada. `DEVELOPERS.md`, `SKILL.md` y las referencias de `contrato-tomas.md`/`contrato-montaje.md`/`mapa-teclas.md` actualizados. Oleada v8, archivada en `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-30, junto con la nota de gobernanza sobre cómo se justificó su apertura (`auditoriacontinua.md` #26) |
-| R-20 | Anclar cada indicación `EN PANTALLA`/`NOTA` de `tarjetas.json` a un instante estimado dentro de la escena (`indicaciones_ancladas`, campo aditivo), reutilizando el anclaje que R-12 ya calcula para la cue en vivo del reproductor | **PENDIENTE** | 2026-09-30 | Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v9. `origen: grieta de arquitectura verificada` (mismo patrón que abrió R-12 a R-18): `reproductor.py::_indicaciones_ancladas_por_indice` (R-12) ya calcula el bloque ancla de cada indicación, pero `pptx.py::_indicaciones_de_escena` (T-29) exporta `tarjetas.json` sin esa referencia temporal |
+| R-20 | Anclar cada indicación `EN PANTALLA`/`NOTA` de `tarjetas.json` a un instante estimado dentro de la escena (`indicaciones_ancladas`, campo aditivo), reutilizando el anclaje que R-12 ya calcula para la cue en vivo del reproductor | **COMPLETADA** | 2026-10-01 | `reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el anclaje se extrae a la función pública `anclar_indicaciones_a_bloques` (mismo patrón que `tomas.toma_buena` en R-19), reutilizada tal cual por `pptx.py`. `Tarjeta` gana `indicaciones_ancladas` (dataclass `IndicacionAnclada`: `texto`/`es_nota_interna`/`instante_estimado_segundos`), mismo conjunto que `indicaciones_pantalla`+`notas_internas`, calculado relativo a la escena y convertido a absoluto en `_con_limites_absolutos` (R-16, mismo acumulado que `inicio_segundos`/`fin_segundos`). Escena sin bloques de locución (sin ejemplo real, contemplada por `validar_tarjetas`): ancla al inicio de la escena. `--para-terceros` omite notas internas también aquí. Cambio aditivo, `version_contrato` no sube, sin migración. 7 tests nuevos (606→613), incluido uno que compara el instante exacto contra la cue del reproductor para el mismo guion (sin toma real: acumulados idénticos bit a bit). Cuatro redes en verde. `references/contrato-tarjetas.md`/`contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

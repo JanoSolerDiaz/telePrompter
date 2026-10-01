@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from config import NOMBRE_ARCHIVO_BRIEF_PPTX, NOMBRE_ARCHIVO_TARJETAS_JSON, Configuracion
@@ -19,9 +20,14 @@ from pptx import (
     tarjetas_a_diccionario,
     validar_tarjetas,
 )
+from reproductor import generar_reproductor_html
 from tiempos import ResultadoTiempos, calcular_tiempos
 
 RAIZ = Path(__file__).resolve().parent.parent
+
+_PATRON_DATOS_JSON_REPRODUCTOR = re.compile(
+    r'<script type="application/json" id="datos-reproductor">(.*?)</script>', re.DOTALL
+)
 
 _GUION_DOS_ESCENAS = """# Guion de prueba
 
@@ -201,6 +207,113 @@ def test_generar_tarjetas_limites_absolutos_usan_duracion_real_cuando_existe() -
     assert escena_1.inicio_segundos == 12.5
 
 
+# --- indicaciones ancladas a un instante estimado (R-20) -------------------------------
+
+
+def test_generar_tarjetas_indicaciones_ancladas_mismo_conjunto_que_pantalla_y_notas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos)
+    for tarjeta in tarjetas.tarjetas:
+        assert len(tarjeta.indicaciones_ancladas) == len(tarjeta.indicaciones_pantalla) + len(
+            tarjeta.notas_internas
+        )
+    primera = tarjetas.tarjetas[0]
+    textos_ancladas = {i.texto for i in primera.indicaciones_ancladas}
+    assert textos_ancladas == set(primera.indicaciones_pantalla) | set(primera.notas_internas)
+    notas_ancladas = {i.texto for i in primera.indicaciones_ancladas if i.es_nota_interna}
+    assert notas_ancladas == set(primera.notas_internas)
+
+
+def test_generar_tarjetas_indicaciones_ancladas_para_terceros_omite_notas_internas() -> None:
+    configuracion = Configuracion(incluir_notas_internas=False)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    tarjetas = generar_tarjetas(resultado, tiempos, configuracion=configuracion)
+    primera = tarjetas.tarjetas[0]
+    assert all(not indicacion.es_nota_interna for indicacion in primera.indicaciones_ancladas)
+    assert len(primera.indicaciones_ancladas) == len(primera.indicaciones_pantalla)
+
+
+def test_generar_tarjetas_indicaciones_ancladas_escena_sin_bloques_se_ancla_al_inicio() -> None:
+    """Caso sin ejemplo en los guiones reales (siempre llevan LOCUCION
+    primero), pero valido en la convencion -- `validar_tarjetas` ya lo
+    contempla (una escena sin bloques pero con indicaciones no esta vacia).
+    Sin ningun bloque al que anclar, la indicacion se ancla al inicio de la
+    escena en vez de perderse (invariante (a) extendido)."""
+    guion = """# Guion
+
+## BLOQUE 0 — Solo pantalla (0:00 – 0:05)
+
+**EN PANTALLA**
+
+Logotipo de apertura sin ninguna locución en esta escena.
+
+## BLOQUE 1 — Cierre (0:05 – 0:10)
+
+**LOCUCIÓN**
+
+> Frase de cierre.
+"""
+    resultado, tiempos = _pipeline(guion)
+    tarjetas = generar_tarjetas(resultado, tiempos)
+    escena_0 = next(t for t in tarjetas.tarjetas if t.numero == 0)
+    assert escena_0.bloques == ()
+    assert len(escena_0.indicaciones_ancladas) == 1
+    assert escena_0.indicaciones_ancladas[0].instante_estimado_segundos == escena_0.inicio_segundos
+
+
+def test_generar_tarjetas_indicaciones_ancladas_coincide_con_la_cue_del_reproductor() -> None:
+    """Criterio de aceptacion de R-20: el bloque ancla de una indicacion
+    conocida es el mismo que ya calcula R-12 para la cue en vivo del
+    reproductor -- mismo guion, mismo anclaje, dos consumidores. Sin ninguna
+    toma real de por medio, el acumulado absoluto de `tarjetas.json` (R-16)
+    coincide con el acumulado de T-12 que ya usa el reproductor, asi que los
+    dos instantes deben ser identicos, no solo compatibles."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos, nombre_guion="guion")
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    coincidencia = _PATRON_DATOS_JSON_REPRODUCTOR.search(pagina)
+    assert coincidencia is not None
+    datos_reproductor = json.loads(coincidencia.group(1))
+
+    texto_indicacion = "Título del vídeo en pantalla."
+    bloque_ancla = next(
+        bloque
+        for bloque in datos_reproductor["escenas"][0]["bloques"]
+        if any(texto_indicacion in indicacion for indicacion in bloque["indicaciones"])
+    )
+    indicacion_anclada = next(
+        i for i in tarjetas.tarjetas[0].indicaciones_ancladas if i.texto == texto_indicacion
+    )
+    assert indicacion_anclada.instante_estimado_segundos == bloque_ancla["inicio_segundos"]
+
+
+def test_generar_tarjetas_indicaciones_ancladas_instante_dentro_del_rango_de_la_escena(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    for nombre, texto in texto_guiones_reales.items():
+        resultado, tiempos = _pipeline(texto)
+        tarjetas = generar_tarjetas(resultado, tiempos)
+        for tarjeta in tarjetas.tarjetas:
+            for indicacion in tarjeta.indicaciones_ancladas:
+                assert (
+                    tarjeta.inicio_segundos
+                    <= indicacion.instante_estimado_segundos
+                    <= tarjeta.fin_segundos
+                ), f"{nombre}, escena {tarjeta.numero}: {indicacion}"
+
+
+def test_generar_tarjetas_indicaciones_ancladas_no_se_pierden_en_los_guiones_reales(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    for nombre, texto in texto_guiones_reales.items():
+        resultado, tiempos = _pipeline(texto)
+        tarjetas = generar_tarjetas(resultado, tiempos)
+        for tarjeta in tarjetas.tarjetas:
+            assert len(tarjeta.indicaciones_ancladas) == len(
+                tarjeta.indicaciones_pantalla
+            ) + len(tarjeta.notas_internas), f"{nombre}, escena {tarjeta.numero}"
+
+
 # --- serializacion y validacion del contrato -----------------------------------------
 
 
@@ -233,6 +346,35 @@ def test_tarjetas_a_diccionario_incluye_duracion_real_y_aviso_de_mezcla() -> Non
     assert escena_0["inicio_segundos"] == 0.0
     assert escena_0["fin_segundos"] == 9.0
     assert escena_1["inicio_segundos"] == 9.0
+
+
+def test_tarjetas_a_diccionario_incluye_indicaciones_ancladas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos)
+    datos = tarjetas_a_diccionario(tarjetas)
+    assert validar_tarjetas(datos) == []
+    escena_0 = next(e for e in datos["escenas"] if e["numero"] == 0)
+    assert escena_0["indicaciones_ancladas"] == [
+        {
+            "texto": "Título del vídeo en pantalla.",
+            "es_nota_interna": False,
+            "instante_estimado_segundos": escena_0["indicaciones_ancladas"][0][
+                "instante_estimado_segundos"
+            ],
+        },
+        {
+            "texto": "Recordatorio interno: no mencionar el precio antiguo en la locución.",
+            "es_nota_interna": True,
+            "instante_estimado_segundos": escena_0["indicaciones_ancladas"][1][
+                "instante_estimado_segundos"
+            ],
+        },
+    ]
+    # Ambas indicaciones de esta escena se anclan al mismo (unico) bloque.
+    assert (
+        escena_0["indicaciones_ancladas"][0]["instante_estimado_segundos"]
+        == escena_0["indicaciones_ancladas"][1]["instante_estimado_segundos"]
+    )
 
 
 def test_formatear_tarjetas_json_es_json_serializable_y_valido() -> None:

@@ -3027,6 +3027,61 @@ dueño tenía que reconstruir el orden y la duración a mano antes de poder conc
   primera escena del guion de verificación — suficiente para validar de verdad el formato `file
   '...'` con `validar_lista_concat_ffmpeg`. 583→606 tests. Cuatro redes en verde.
 
+## Anclar las indicaciones EN PANTALLA/NOTA de `tarjetas.json` a un instante estimado (R-20)
+
+`origen: grieta de arquitectura verificada` (mismo patrón que R-12 a R-18, no una instrucción de
+ningún ciclo): `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12) ya calculaba, para
+la cue en vivo del reproductor, el bloque de respiración de T-11 que precede a cada indicación no
+recitable — y por tanto su instante estimado dentro de la escena — pero ese cálculo nunca llegaba a
+`tarjetas.json`, que exportaba las indicaciones como listas planas de texto sin ninguna referencia
+temporal. Depende de R-12, R-13, R-16, T-29. Cambio aditivo: no sube `version_contrato`, sin campo
+nuevo de `Configuracion` ni migración de `estado.json`.
+
+- **Requisito 1 (anclaje extraído a `reproductor.anclar_indicaciones_a_bloques`).** Mismo patrón que
+  R-19 extrajo `tomas.toma_buena` de `duracion_toma_buena`: el algoritmo de anclaje (máximo índice de
+  bloque cuyo `linea_fin` cae antes del `linea_inicio` de la indicación, o el primero si no hay
+  ninguno precedente) se promueve de privado (`_indicaciones_ancladas_por_indice`) a público,
+  devolviendo la indicación cruda (`BloqueClasificado`) por índice de bloque en vez del texto ya
+  formateado. `_indicaciones_ancladas_por_indice` pasa a ser un envoltorio de una línea que aplica el
+  formato `Pantalla:`/`Nota:` propio de la cue en vivo sobre el resultado de la función pública —
+  comportamiento del reproductor intacto, mismos tests en verde sin tocarlos.
+- **Requisito 2 (`indicaciones_ancladas` en `tarjetas.json`).** `scripts/pptx.py` gana la dataclass
+  `IndicacionAnclada` (`texto`, `es_nota_interna`, `instante_estimado_segundos`) y `Tarjeta` gana el
+  campo `indicaciones_ancladas: tuple[IndicacionAnclada, ...]`. `_indicaciones_ancladas_de_escena`
+  llama a `reproductor.anclar_indicaciones_a_bloques` con los mismos `bloques_escena` que ya usa
+  `_tarjeta_de_escena` y calcula, por cada indicación, el instante RELATIVO al inicio de la escena
+  (diferencia entre el bloque ancla y el primer bloque de la escena, en el acumulado estimado de
+  T-12); `_con_limites_absolutos` (R-16) lo convierte a instante absoluto del vídeo sumando el mismo
+  `acumulado` que ya calcula para `inicio_segundos` de la propia escena — dos pasadas, ninguna fuente
+  de tiempo nueva. Una escena sin ningún bloque de locución (sin ejemplo en los guiones reales, pero
+  válida en la convención y ya contemplada por `validar_tarjetas`) ancla cada indicación al inicio de
+  la escena (instante relativo `0.0`) en vez de perderla.
+- **Requisito 3 (cambio puramente aditivo).** `indicaciones_pantalla`/`notas_internas` no cambian ni
+  un carácter; `indicaciones_ancladas` es una vista adicional sobre el mismo conjunto, nunca un
+  reemplazo. `version_contrato` no sube.
+- **Requisito 4 (`--para-terceros`).** `_indicaciones_ancladas_de_escena` omite las notas internas con
+  el mismo criterio que ya usa `_indicaciones_de_escena` (`configuracion.incluir_notas_internas`):
+  ninguna nota interna llega a `indicaciones_ancladas` por esta ruta cuando no llega tampoco por
+  `notas_internas`.
+- **Requisitos 5-6 (documentación e invariante (a)).** `references/contrato-tarjetas.md` documenta la
+  clave nueva con su fórmula exacta y un ejemplo; `references/contrato-montaje.md` gana una sección
+  explicando que la cadena de montaje puede leer `instante_estimado_segundos` para situar cada corte a
+  pantalla sin releer el guion. Ninguna indicación se pierde ni se duplica entre las tres listas
+  (`indicaciones_pantalla` + `notas_internas` == `indicaciones_ancladas` en tamaño y contenido, mismo
+  conjunto, vista distinta).
+- **Verificación.** `tests/test_pptx.py` gana 9 tests: mismo conjunto que pantalla/notas, omisión de
+  notas internas en modo `--para-terceros`, escena sin ningún bloque ancla al inicio, instante dentro
+  del rango `[inicio_segundos, fin_segundos]` de la escena sobre los tres guiones reales, cobertura
+  total sobre los tres guiones reales, serialización exacta en `tarjetas_a_diccionario`, y un test que
+  compara el instante exacto que calcula `tarjetas.json` contra el que ya calcula el reproductor para
+  el mismo guion y la misma indicación — sin ninguna toma real de por medio, el acumulado absoluto de
+  R-16 coincide bit a bit con el acumulado de T-12 del reproductor, así que la igualdad es exacta, no
+  solo compatible (criterio de aceptación literal de R-20: "mismo bloque ancla, dos consumidores,
+  ningún cálculo divergente"). 606→613 tests. Cuatro redes en verde, incluida la etapa de validez de
+  `tarjetas.json` de `verificar_salidas.py --fixture`, que ya cubre la clave nueva sin cambios propios
+  (`validar_tarjetas` solo comprueba que es una lista, mismo nivel de rigor que
+  `indicaciones_pantalla`/`notas_internas`).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

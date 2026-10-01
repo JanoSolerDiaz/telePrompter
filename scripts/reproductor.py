@@ -109,12 +109,11 @@ def _formatear_indicacion_reproductor(
     return f"{prefijo} {' '.join(bloque.contenido.split())}"
 
 
-def _indicaciones_ancladas_por_indice(
+def anclar_indicaciones_a_bloques(
     escena: Escena,
     bloques_clasificados: list[BloqueClasificado],
     bloques_escena: list[BloqueConTiempo],
-    configuracion: Configuracion,
-) -> dict[int, list[str]]:
+) -> dict[int, list[BloqueClasificado]]:
     """Ancla cada indicacion `EN PANTALLA`/`NOTA` (T-09) al ULTIMO bloque de
     respiracion (T-11) que la precede en el guion de origen (R-12, requisito 1):
     el mayor indice cuyo `linea_fin` cae antes del `linea_inicio` de la
@@ -126,8 +125,16 @@ def _indicaciones_ancladas_por_indice(
     4). Sin ningun bloque precedente (la indicacion aparece antes de toda
     locucion de la escena, caso sin ejemplo en los guiones reales pero posible
     en la convencion) se ancla al primero: ninguna indicacion se pierde en
-    silencio (invariante (a) de §0.2, extendido por esta tarea)."""
-    indicaciones_por_indice: dict[int, list[str]] = {}
+    silencio (invariante (a) de §0.2, extendido por esta tarea).
+
+    Publica desde R-20: `pptx.py` la reutiliza tal cual para anclar
+    `indicaciones_ancladas` de `tarjetas.json` al mismo bloque (mismo patron
+    que `tomas.toma_buena`, extraida de `duracion_toma_buena` en R-19) en vez
+    de duplicar este algoritmo. Devuelve la indicacion cruda
+    (`BloqueClasificado`), sin formatear: el formateo con prefijo
+    `Pantalla:`/`Nota:` es especifico de la cue en vivo del reproductor
+    (`_formatear_indicacion_reproductor`), no del anclaje en si."""
+    indicaciones_por_indice: dict[int, list[BloqueClasificado]] = {}
     if not bloques_escena:
         return indicaciones_por_indice
     for bloque_indicacion in indicaciones_no_recitables(escena, bloques_clasificados):
@@ -137,10 +144,27 @@ def _indicaciones_ancladas_por_indice(
             if bloque_con_tiempo.bloque.linea_fin < bloque_indicacion.linea_inicio
         ]
         indice_ancla = max(candidatos) if candidatos else 0
-        indicaciones_por_indice.setdefault(indice_ancla, []).append(
-            _formatear_indicacion_reproductor(bloque_indicacion, configuracion)
-        )
+        indicaciones_por_indice.setdefault(indice_ancla, []).append(bloque_indicacion)
     return indicaciones_por_indice
+
+
+def _indicaciones_ancladas_por_indice(
+    escena: Escena,
+    bloques_clasificados: list[BloqueClasificado],
+    bloques_escena: list[BloqueConTiempo],
+    configuracion: Configuracion,
+) -> dict[int, list[str]]:
+    """Cue en vivo del reproductor (R-12): mismo anclaje de
+    `anclar_indicaciones_a_bloques`, formateado con el prefijo
+    `Pantalla:`/`Nota:` que solo necesita esta vista."""
+    por_indice = anclar_indicaciones_a_bloques(escena, bloques_clasificados, bloques_escena)
+    return {
+        indice: [
+            _formatear_indicacion_reproductor(indicacion, configuracion)
+            for indicacion in indicaciones
+        ]
+        for indice, indicaciones in por_indice.items()
+    }
 
 
 def _construir_datos(

@@ -12,6 +12,73 @@
 
 ---
 
+### Sesión 2026-10-01 (48) — Ciclo de Programador: R-20 implementada y COMPLETADA (Oleada v9)
+
+**Tarea(s):** R-20 (única `PENDIENTE` en §1 de `SEGUIMIENTO.md`, abierta el 2026-09-30 por el ciclo
+de PM anterior). Registro de hallazgos de `auditoriacontinua.md` revisado antes de elegir tarea:
+ningún `ABIERTO` de severidad alta (`#24` baja/proceso, `#27` media/robustez de `concat_ffmpeg.py`,
+ninguno urgente por §0.3); se procede directamente con la cola normal.
+
+**Arranque.** Contenedor con `HEAD` *detached*; `git checkout develop` encontró la rama local ya al
+día, solo un fast-forward trivial de un commit tras `git pull origin develop`
+(`51e38da..651bd1d`) — sin divergencia, sin denegación del clasificador de modo automático, sin
+necesitar ninguna rama auxiliar. `pip install -r requirements-dev.txt` limpio.
+
+**Implementación de R-20.** Spec completa releída en `ROADMAP_PRODUCTO.md` §Oleada v9 (seis
+requisitos + criterio de aceptación) antes de tocar código; consultado `DECISIONES_TECNICAS.md` en
+el área (el patrón de extracción de R-19, `tomas.toma_buena` desde `duracion_toma_buena`) para no
+contradecir decisiones previas.
+
+1. **`reproductor.anclar_indicaciones_a_bloques`** (nueva, pública): el algoritmo de anclaje que
+   `_indicaciones_ancladas_por_indice` (R-12) ya tenía se extrae tal cual, devolviendo la indicación
+   cruda (`BloqueClasificado`) por índice de bloque ancla en vez del texto ya formateado con el
+   prefijo `Pantalla:`/`Nota:`. `_indicaciones_ancladas_por_indice` queda como envoltorio de una línea
+   sobre la función nueva — comportamiento y tests del reproductor intactos, sin tocarlos.
+2. **`pptx.IndicacionAnclada`** (dataclass nueva: `texto`, `es_nota_interna`,
+   `instante_estimado_segundos`) y **`Tarjeta.indicaciones_ancladas`** (tupla nueva).
+   `_indicaciones_ancladas_de_escena` llama a `anclar_indicaciones_a_bloques` con los mismos
+   `bloques_escena` que ya usa `_tarjeta_de_escena`, calculando el instante RELATIVO al inicio de la
+   escena (diferencia entre el bloque ancla y el primer bloque de la escena, acumulado estimado de
+   T-12). Una escena sin ningún bloque de locución (sin ejemplo en los guiones reales, pero
+   contemplada por `validar_tarjetas`) ancla cada indicación al inicio de la escena (`0.0` relativo)
+   en vez de perderla — decisión razonada en `DECISIONES_TECNICAS.md`, cubre el hueco que dejaría
+   reutilizar `anclar_indicaciones_a_bloques` tal cual (que devuelve `{}` sin bloques, correcto para
+   el reproductor pero no para el contrato).
+3. **`_con_limites_absolutos`** (R-16, ampliada): convierte cada `instante_estimado_segundos` de
+   relativo a absoluto del vídeo sumando el mismo `acumulado` real-o-estimado que ya calcula para
+   `inicio_segundos`/`fin_segundos` — dos pasadas, ninguna fuente de tiempo nueva.
+4. **`--para-terceros`**: `_indicaciones_ancladas_de_escena` omite las notas internas con el mismo
+   criterio que ya usa `_indicaciones_de_escena` (`configuracion.incluir_notas_internas`).
+5. **Serialización y contrato**: `tarjetas_a_diccionario` serializa la lista nueva;
+   `_CLAVES_ESCENA`/`validar_tarjetas` la valida como lista (mismo rigor que `indicaciones_pantalla`/
+   `notas_internas`, sin validación profunda de cada elemento, consistente con el resto del contrato).
+   `version_contrato` no sube (cambio aditivo, requisito 3).
+6. **Documentación**: `references/contrato-tarjetas.md` (clave nueva, fórmula y ejemplo),
+   `references/contrato-montaje.md` (sección nueva sobre cómo leer `instante_estimado_segundos`),
+   `DEVELOPERS.md` (sección R-20 completa), `SKILL.md` (dos menciones actualizadas de `tarjetas.json`).
+
+**Verificación.** `tests/test_pptx.py` gana 9 tests: mismo conjunto que `indicaciones_pantalla`+
+`notas_internas` (tamaño y contenido), omisión de notas internas en `--para-terceros`, escena sin
+bloques ancla al inicio, instante dentro de `[inicio_segundos, fin_segundos]` de la escena sobre los
+tres guiones reales, cobertura total (ninguna indicación perdida) sobre los tres guiones reales,
+serialización exacta en `tarjetas_a_diccionario`, y un test que compara el instante exacto que
+calcula `tarjetas.json` contra el que ya calcula el reproductor para el mismo guion y la misma
+indicación (criterio de aceptación literal: "mismo bloque ancla, dos consumidores" — sin ninguna
+toma real de por medio, los dos acumulados coinciden bit a bit, así que la igualdad es exacta, no
+solo compatible). 606→613 tests. Cuatro redes en verde (`python scripts/ci.py` +
+`verificar_salidas.py --fixture`, dieciséis etapas, incluida "Validez de tarjetas.json" que ya cubre
+la clave nueva sin cambios propios en esa etapa).
+
+**Documentos de registro actualizados:** `SEGUIMIENTO.md` (§1: `R-20` a `COMPLETADA`; cabecera
+"Última actualización"; historial anterior condensado en bullets), `DECISIONES_TECNICAS.md` (cuatro
+filas nuevas de diseño de R-20), este archivo. Sin cambios en §3/§5/§6/§7 de `SEGUIMIENTO.md`.
+`roadmap/ROADMAP_PRODUCTO.md` no se toca en este ciclo (prosa de "Cola de producto"/"Oleada v9 — EN
+CURSO" queda para el siguiente ciclo de PM, igual que el patrón ya documentado por el hallazgo `#24`
+— el Programador no está autorizado a corregirla por su cuenta mientras la pregunta #11 de §6 siga
+`(pendiente)`).
+
+---
+
 ### Sesión 2026-09-30 (47) — Ciclo de Product Manager: archiva R-19/Oleada v8, corrige la premisa de su apertura (`auditoriacontinua.md` #26) y abre R-20 (Oleada v9)
 
 **Tarea(s):** ninguna T-XX. R-19 pasa de Oleada v8 "EN CURSO" a archivada en `ROADMAP_HISTORICO.md`

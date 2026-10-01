@@ -8,8 +8,8 @@
 >
 > `version_contrato` sube solo si el JSON cambia de forma incompatible con este
 > documento; nunca decrece (mismo criterio que `VERSION_ESQUEMA_ESTADO` de
-> `estado.json`, T-07). Version actual: **1** (R-13 y R-16 añadieron campos de
-> forma aditiva y retrocompatible, sin subir la version).
+> `estado.json`, T-07). Version actual: **1** (R-13, R-16 y R-20 añadieron
+> campos de forma aditiva y retrocompatible, sin subir la version).
 
 ## Forma completa
 
@@ -41,6 +41,18 @@
       "texto_locucion": "Primer bloque de respiración. Segundo bloque de respiración.",
       "indicaciones_pantalla": ["Título del vídeo en pantalla."],
       "notas_internas": ["Recordatorio interno: no mencionar el precio antiguo."],
+      "indicaciones_ancladas": [                      // (R-20) mismo conjunto que las dos
+        {                                              // listas de arriba, con el instante
+          "texto": "Título del vídeo en pantalla.",    // estimado dentro de la escena
+          "es_nota_interna": false,
+          "instante_estimado_segundos": 18.2
+        },
+        {
+          "texto": "Recordatorio interno: no mencionar el precio antiguo.",
+          "es_nota_interna": true,
+          "instante_estimado_segundos": 18.2
+        }
+      ],
       "inicio_segundos": 0.0,                         // (R-16) acumulado real/estimado
       "fin_segundos": 24.1                             // (R-16) inicio_segundos de la siguiente escena
     }
@@ -74,6 +86,7 @@
 | `texto_locucion` | `string` | `bloques` unidos con un espacio — la prosa continua de la escena. |
 | `indicaciones_pantalla` | `string[]` | Indicaciones no recitables que NO son nota interna de producción (mismo criterio que `pdf.es_nota_interna`, T-28): `**EN PANTALLA**` y cualquier indicación ambigua sin rótulo `NOTA` claro. |
 | `notas_internas` | `string[]` | Indicaciones marcadas `**NOTA**`. **Vacía siempre** que `metadatos.para_terceros` sea `true` — la bandera `--para-terceros` las omite del propio contrato, no solo de la presentación (requisito 3 de T-29). |
+| `indicaciones_ancladas` | `object[]` | **(R-20)** El mismo conjunto de indicaciones que `indicaciones_pantalla` + `notas_internas` (ninguna se pierde ni se duplica entre las tres listas), cada una con `{"texto": string, "es_nota_interna": bool, "instante_estimado_segundos": number}`. `instante_estimado_segundos` = `inicio_segundos` de esta escena + el instante del bloque de respiración (T-11) al que `reproductor.anclar_indicaciones_a_bloques` (R-12) ancla esa indicación, relativo al primer bloque de la escena en el acumulado estimado de T-12 — es el mismo bloque ancla que ya usa la cue en vivo del reproductor, nunca un cálculo divergente. Con `metadatos.para_terceros=true`, las notas internas se omiten también aquí (mismo criterio que `notas_internas`). Una escena sin ningún bloque de locución (sin ejemplo en los guiones reales, pero válida en la convención) ancla cada indicación al inicio de la escena (`instante_estimado_segundos == inicio_segundos`) en vez de perderla. |
 | `inicio_segundos` | `number` | **(R-16)** Instante absoluto de inicio de la escena, acumulando en orden la `duracion_real_segundos` de cada escena anterior si existe, si no su `duracion_estimada_segundos` (misma regla que `mezcla_duracion_real_y_estimada` ya usa para avisar). `0` en la primera escena. |
 | `fin_segundos` | `number` | **(R-16)** `inicio_segundos + duracion_usada` de esta misma escena (real si tiene toma buena, estimada si no) — coincide exactamente con `inicio_segundos` de la escena siguiente, sin huecos ni solapes. El de la última escena coincide con `metadatos.duracion_total_segundos` cuando ninguna escena tiene toma buena, y con el fin del último subtítulo de `guion-alineado.srt` cuando alguna la tiene. |
 

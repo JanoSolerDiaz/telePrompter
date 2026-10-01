@@ -53,6 +53,25 @@ hasta ahora le pedia a la cadena de montaje reproducir esta acumulacion a
 mano. Cambio aditivo (no sube `version_contrato`), sin campo nuevo de
 `Configuracion` -- son datos derivados de T-12/R-13, no un ajuste del
 dueno (ver `DECISIONES_TECNICAS.md`, R-16).
+
+Indicaciones ancladas a un instante estimado (tarea R-20): `Tarjeta` gana
+`indicaciones_ancladas`, el mismo conjunto de `indicaciones_pantalla`/
+`notas_internas` (ninguna se pierde ni se duplica, invariante (a) extendido)
+pero con el instante estimado dentro de la escena -- mismo anclaje que ya usa
+la cue en vivo del reproductor (`reproductor.anclar_indicaciones_a_bloques`,
+R-12), reutilizado tal cual en vez de reimplementado (mismo patron que
+`tomas.toma_buena` en R-19). `_indicaciones_ancladas_de_escena` calcula el
+instante RELATIVO al inicio de la escena (diferencia entre el bloque ancla y
+el primer bloque de la escena en el acumulado estimado de T-12);
+`_con_limites_absolutos` lo convierte a instante absoluto del video sumando
+`inicio_segundos` de la propia escena, una vez existen todas las tarjetas
+(mismo patron de dos pasadas que ya usa para `inicio_segundos`/`fin_segundos`,
+R-16). Una escena sin ningun bloque de locucion (sin ejemplo en los guiones
+reales, pero valida en la convencion -- el propio `validar_tarjetas` ya la
+contempla) no tiene ningun bloque al que anclar: cada indicacion se ancla al
+inicio de la escena (instante relativo `0.0`) en vez de perderse. Cambio
+aditivo (no sube `version_contrato`, requisito 3): `indicaciones_pantalla`/
+`notas_internas` no cambian ni un caracter.
 """
 
 from __future__ import annotations
@@ -71,10 +90,22 @@ from config import (
 )
 from parser import Escena, ResultadoParseo
 from pdf import dimensiones_png, es_nota_interna, indicaciones_no_recitables
-from tiempos import ResultadoTiempos
+from reproductor import anclar_indicaciones_a_bloques
+from tiempos import BloqueConTiempo, ResultadoTiempos
 from tomas import duracion_toma_buena
 
 RAIZ = Path(__file__).resolve().parent.parent
+
+
+@dataclass(frozen=True)
+class IndicacionAnclada:
+    """Una indicacion `EN PANTALLA`/`NOTA` con su instante estimado dentro de
+    la escena (R-20): misma indicacion que ya aparece en `indicaciones_pantalla`/
+    `notas_internas`, vista distinta sobre el mismo dato (requisito 6)."""
+
+    texto: str
+    es_nota_interna: bool
+    instante_estimado_segundos: float
 
 
 @dataclass(frozen=True)
@@ -94,6 +125,7 @@ class Tarjeta:
     texto_locucion: str
     indicaciones_pantalla: tuple[str, ...]
     notas_internas: tuple[str, ...]
+    indicaciones_ancladas: tuple[IndicacionAnclada, ...]
     inicio_segundos: float
     fin_segundos: float
 
@@ -145,6 +177,64 @@ def _indicaciones_de_escena(
     return pantalla, notas
 
 
+def _indicaciones_ancladas_de_escena(
+    escena: Escena,
+    bloques_clasificados: list[BloqueClasificado],
+    bloques_escena: list[BloqueConTiempo],
+    configuracion: Configuracion,
+) -> tuple[IndicacionAnclada, ...]:
+    """`indicaciones_ancladas` de la tarjeta (R-20, requisito 2): mismo
+    conjunto que `_indicaciones_de_escena` (ninguna indicacion se pierde ni
+    se duplica, requisito 6), pero con el instante estimado dentro de la
+    escena -- reutilizando el anclaje que ya calcula
+    `reproductor.anclar_indicaciones_a_bloques` (R-12) para la cue en vivo del
+    reproductor, en vez de reimplementar el algoritmo.
+
+    El instante devuelto es RELATIVO al inicio de la escena, en el acumulado
+    ESTIMADO de T-12 (diferencia entre el bloque ancla y el primer bloque de
+    `bloques_escena`); `_con_limites_absolutos` lo convierte al instante
+    absoluto del video. Con `incluir_notas_internas=False` (`--para-
+    terceros`), las notas internas se omiten aqui con el mismo criterio que
+    ya usa `_indicaciones_de_escena` (requisito 4) -- nunca llegan a esta
+    lista ni a la absoluta.
+
+    Una escena sin ningun bloque de locucion (sin ejemplo en los guiones
+    reales, pero valida en la convencion y ya contemplada por
+    `validar_tarjetas`) no tiene ningun bloque al que anclar: cada indicacion
+    se ancla al inicio de la escena (instante relativo `0.0`) en vez de
+    perderse, igual que R-12 ancla al primer bloque cuando la indicacion no
+    tiene ningun bloque precedente pero la escena si tiene bloques."""
+    limite = configuracion.longitud_extracto_indicacion_max
+
+    def _incluida(indicacion: BloqueClasificado) -> bool:
+        return configuracion.incluir_notas_internas or not es_nota_interna(indicacion)
+
+    def _anclada(indicacion: BloqueClasificado, instante_relativo: float) -> IndicacionAnclada:
+        return IndicacionAnclada(
+            texto=_extracto(indicacion.contenido, limite),
+            es_nota_interna=es_nota_interna(indicacion),
+            instante_estimado_segundos=instante_relativo,
+        )
+
+    if not bloques_escena:
+        return tuple(
+            _anclada(indicacion, 0.0)
+            for indicacion in indicaciones_no_recitables(escena, bloques_clasificados)
+            if _incluida(indicacion)
+        )
+    por_indice = anclar_indicaciones_a_bloques(escena, bloques_clasificados, bloques_escena)
+    inicio_escena_estimado = bloques_escena[0].inicio_segundos
+    resultado: list[IndicacionAnclada] = []
+    for indice in sorted(por_indice):
+        instante_relativo = bloques_escena[indice].inicio_segundos - inicio_escena_estimado
+        resultado.extend(
+            _anclada(indicacion, instante_relativo)
+            for indicacion in por_indice[indice]
+            if _incluida(indicacion)
+        )
+    return tuple(resultado)
+
+
 def _tarjeta_de_escena(
     escena: Escena,
     resultado_tiempos: ResultadoTiempos,
@@ -158,6 +248,9 @@ def _tarjeta_de_escena(
     ]
     textos_bloques = tuple(b.bloque.texto for b in bloques_escena)
     pantalla, notas = _indicaciones_de_escena(escena, bloques_clasificados, configuracion)
+    indicaciones_ancladas = _indicaciones_ancladas_de_escena(
+        escena, bloques_clasificados, bloques_escena, configuracion
+    )
     duracion_real = duracion_toma_buena(tomas_por_escena.get(str(escena.numero)), escena.numero)
     if duracion_real is not None and duracion_real <= 0:
         duracion_real = None
@@ -172,6 +265,7 @@ def _tarjeta_de_escena(
         texto_locucion=" ".join(textos_bloques),
         indicaciones_pantalla=pantalla,
         notas_internas=notas,
+        indicaciones_ancladas=indicaciones_ancladas,
         # Limites absolutos (R-16): se calculan en un segundo paso
         # (`_con_limites_absolutos`), una vez existen todas las tarjetas en
         # orden -- placeholder aqui, nunca el valor final.
@@ -187,7 +281,12 @@ def _con_limites_absolutos(tarjetas: tuple[Tarjeta, ...]) -> tuple[Tarjeta, ...]
     ya usa `duracion_real_segundos` (R-13): la duracion real de la escena si
     tiene toma buena, la estimada si no. Una sola pasada, sin reimplementar
     la eleccion real/estimada -- se lee directamente del campo que cada
-    `Tarjeta` ya trae calculado."""
+    `Tarjeta` ya trae calculado.
+
+    De paso (R-20, requisito 2) convierte cada `instante_estimado_segundos`
+    de `indicaciones_ancladas`, hasta ahora relativo al inicio de la escena,
+    en absoluto del video: sumando el mismo `acumulado` que esta funcion ya
+    calcula para `inicio_segundos` -- ninguna fuente de tiempo nueva."""
     resultado = []
     acumulado = 0.0
     for tarjeta in tarjetas:
@@ -196,9 +295,17 @@ def _con_limites_absolutos(tarjetas: tuple[Tarjeta, ...]) -> tuple[Tarjeta, ...]
             if tarjeta.duracion_real_segundos is not None
             else tarjeta.duracion_estimada_segundos
         )
+        indicaciones_absolutas = tuple(
+            replace(
+                indicacion,
+                instante_estimado_segundos=indicacion.instante_estimado_segundos + acumulado,
+            )
+            for indicacion in tarjeta.indicaciones_ancladas
+        )
         resultado.append(
             replace(
                 tarjeta,
+                indicaciones_ancladas=indicaciones_absolutas,
                 inicio_segundos=acumulado,
                 fin_segundos=acumulado + duracion_usada,
             )
@@ -280,6 +387,14 @@ def tarjetas_a_diccionario(resultado_tarjetas: ResultadoTarjetas) -> dict[str, A
                 "texto_locucion": tarjeta.texto_locucion,
                 "indicaciones_pantalla": list(tarjeta.indicaciones_pantalla),
                 "notas_internas": list(tarjeta.notas_internas),
+                "indicaciones_ancladas": [
+                    {
+                        "texto": indicacion.texto,
+                        "es_nota_interna": indicacion.es_nota_interna,
+                        "instante_estimado_segundos": indicacion.instante_estimado_segundos,
+                    }
+                    for indicacion in tarjeta.indicaciones_ancladas
+                ],
                 "inicio_segundos": tarjeta.inicio_segundos,
                 "fin_segundos": tarjeta.fin_segundos,
             }
@@ -320,6 +435,7 @@ _CLAVES_ESCENA: dict[str, type | tuple[type, ...]] = {
     "texto_locucion": str,
     "indicaciones_pantalla": list,
     "notas_internas": list,
+    "indicaciones_ancladas": list,
     "inicio_segundos": (int, float),
     "fin_segundos": (int, float),
 }
