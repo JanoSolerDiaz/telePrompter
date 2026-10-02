@@ -12,6 +12,39 @@
 
 ---
 
+### Sesión 2026-10-02 (62) — Ciclo de Programador: tercera reconfirmación del día tras R-21, sin novedad de código
+
+**Arranque.** `git status` limpio; sesión iniciada con `HEAD` *detached*, por detrás de
+`origin/develop` (dieciséis commits); `git checkout develop` y `git pull origin develop` resolvieron
+en fast-forward limpio hasta `945155f` (la segunda reconfirmación de hoy), sin conflicto ni rama
+divergida. `pip install -r requirements-dev.txt` limpio.
+
+**Elección de tarea.** Registro de hallazgos de `auditoriacontinua.md` revisado antes de elegir
+tarea (protocolo): ningún `ABIERTO` de severidad alta (`#24` baja/proceso, `#27` media — cerrado en
+la práctica por R-21, pendiente solo de que la próxima pasada del auditor lo reevalúe contra el
+código y lo marque `RESUELTO`), ninguno urgente por §0.3. `roadmap/FEEDBACK.md` sin ninguna entrada
+`nuevo`. `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero
+issues y cero PR abiertos. §1 de `SEGUIMIENTO.md` (fuente autoritativa) no tiene ninguna R-XX/T-XX
+`PENDIENTE`: R-21 (Fase transversal F-J), la última, sigue `COMPLETADA` desde `1e8d514` — cola vacía,
+sin tarea de código que ejecutar.
+
+**Verificación propia completa**: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 619 tests
+(`pytest`) en verde, dieciséis etapas OK en `verificar_salidas.py --fixture` (incluidas la validación
+de `concat-ffmpeg.txt` y del contrato de `tarjetas.json`). Las cuatro redes en verde, sin ningún
+cambio de código.
+
+**Nota sin acción**, mismo patrón que motivó el hallazgo `#24` de `auditoriacontinua.md`:
+`ROADMAP_PRODUCTO.md` sigue describiendo R-21 como la única `PENDIENTE` en su prosa de "Cola de
+producto", pese a que `SEGUIMIENTO.md` §1 ya la registra `COMPLETADA`. No se corrige desde aquí: la
+pregunta #11 de §6 (que autorizaría al ciclo de reconfirmación del Programador a corregir esa prosa
+por su cuenta) sigue `(pendiente)` de respuesta del dueño. Se deja constancia para el próximo ciclo
+de Product Manager, que es quien escribe ese documento.
+
+**Cambios de estado.** Ninguno en §1, §3 ni §5 de `SEGUIMIENTO.md`. Ninguna decisión nueva en
+`DECISIONES_TECNICAS.md` (reconfirmación pura, sin criterio nuevo que registrar).
+
+---
+
 ### Sesión 2026-10-02 (61) — Ciclo de Programador: segunda reconfirmación del día tras R-21, sin novedad de código
 
 **Arranque.** `git status` limpio; sesión iniciada por detrás de `origin/develop` (quince commits,
