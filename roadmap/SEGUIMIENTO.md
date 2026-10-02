@@ -10,8 +10,29 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-02 — **Ciclo de Programador: sexta reconfirmación del día tras
+**Última actualización:** 2026-10-02 — **Ciclo de Programador: séptima reconfirmación del día tras
 R-21**, sin novedad de código (detalle en la nota de arranque de esta sesión, más abajo).
+
+**Última actualización anterior (sexta reconfirmación del día tras R-21):** **Ciclo de
+Programador: sexta reconfirmación del día tras R-21** (implementada y `COMPLETADA` en el ciclo
+`1e8d514`, reconfirmada antes en `0f392b3`, `945155f`, `842c300`, `698fc05` y `787c4c4`), sin
+novedad de código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder:
+ningún `ABIERTO` de severidad alta (`#24` baja, proceso — la pregunta #11 de §6 sigue `(pendiente)`;
+`#27`, media, cerrado en la práctica por la implementación de R-21 (verificado de nuevo leyendo
+`scripts/salidas.py`/`scripts/tomas.py`/`assets/reproductor/guion.js`: la fila del registro del
+auditor seguía sin marcar `RESUELTO` pese a que el código ya invoca el validador y sanea
+`archivo_video` en sus dos puntos de entrada — desfase de la propia pasada del auditor, no del
+código, pendiente solo de que la próxima pasada lo reevalúe), ninguno urgente por §0.3).
+`roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/`list_pull_requests`
+sobre `janosolerdiaz/telePrompter`: cero issues y cero PR abiertos. §1 ya no tiene ninguna R-XX/T-XX
+`PENDIENTE` (R-21 es la última, `COMPLETADA`): cola vacía, sin tarea de código que ejecutar.
+Verificación propia completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 619 tests
+(`pytest`) en verde, dieciséis etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en
+verde. Nota sin acción, mismo patrón que motivó `#24`: `ROADMAP_PRODUCTO.md` sigue describiendo
+R-21 como la única `PENDIENTE` en su prosa de "Cola de producto" pese a que este §1 ya la registra
+`COMPLETADA` — no se corrige desde aquí (la pregunta #11 de §6 sigue `(pendiente)` de respuesta del
+dueño); se deja constancia para el próximo ciclo de Product Manager, que es quien escribe ese
+documento.
 
 **Última actualización anterior (quinta reconfirmación del día tras R-21):** **Ciclo de
 Programador: quinta reconfirmación del día tras R-21** (implementada y `COMPLETADA` en el ciclo
@@ -105,26 +126,28 @@ de §6).
 
 **Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada; sesión
 iniciada con `HEAD` *detached*, sin rama asociada; `git checkout develop` y `git pull origin develop`
-resolvieron en fast-forward limpio hasta `787c4c4` (la quinta reconfirmación de hoy), sin rama
+resolvieron en fast-forward limpio hasta `cbf2e90` (la sexta reconfirmación de hoy), sin rama
 divergida. `pip install -r requirements-dev.txt` limpio.
 
-**Ciclo de Programador de esta sesión: sexta reconfirmación del día tras R-21** (implementada y
-`COMPLETADA` en el ciclo `1e8d514`, reconfirmada antes en `0f392b3`, `945155f`, `842c300`, `698fc05`
-y `787c4c4`), sin novedad de código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de
-proceder:
-ningún `ABIERTO` de severidad alta (`#24` baja, proceso — la pregunta #11 de §6 sigue `(pendiente)`;
-`#27`, media, cerrado en la práctica por la implementación de R-21, pendiente solo de que la próxima
-pasada del auditor lo reevalúe y lo marque `RESUELTO`, ninguno urgente por §0.3 — la auditoría del
-2026-10-02 ya reconfirmó ambos sin cambios). `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`;
-`mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero issues y
-cero PR abiertos. §1 ya no tiene ninguna R-XX/T-XX `PENDIENTE` (R-21 es la última, `COMPLETADA`):
-cola vacía, sin tarea de código que ejecutar. Verificación propia completa: `mypy`/`ruff` en verde sin
-hallazgos (70 archivos), 619 tests (`pytest`) en verde, dieciséis etapas OK en
-`verificar_salidas.py --fixture`. Las cuatro redes en verde. Nota sin acción, mismo patrón que motivó
-`#24`: `ROADMAP_PRODUCTO.md` sigue describiendo R-21 como la única `PENDIENTE` en su prosa de "Cola de
-producto" pese a que este §1 ya la registra `COMPLETADA` — no se corrige desde aquí (la pregunta #11
-de §6 sigue `(pendiente)` de respuesta del dueño); se deja constancia para el próximo ciclo de
-Product Manager, que es quien escribe ese documento.
+**Ciclo de Programador de esta sesión: séptima reconfirmación del día tras R-21** (implementada y
+`COMPLETADA` en el ciclo `1e8d514`, reconfirmada antes en `0f392b3`, `945155f`, `842c300`, `698fc05`,
+`787c4c4` y `cbf2e90`), sin novedad de código. Registro de hallazgos de `auditoriacontinua.md`
+revisado antes de proceder: ningún `ABIERTO` de severidad alta (`#24` baja, proceso — la pregunta #11
+de §6 sigue `(pendiente)`; `#27`, media, cerrado en la práctica por la implementación de R-21 —
+reverificado de nuevo en esta sesión leyendo directamente `scripts/salidas.py::_generar_concat_ffmpeg`
+(invoca `validar_lista_concat_ffmpeg` antes de escribir a disco), `scripts/tomas.py::_sanear_archivo_video`
+y `assets/reproductor/guion.js::sanearArchivoVideo` (ambos puntos de entrada de `archivo_video`
+saneados): el código sigue intacto, pendiente solo de que la próxima pasada del auditor actualice su
+propia fila del registro a `RESUELTO`, ninguno urgente por §0.3). `roadmap/FEEDBACK.md` sin ninguna
+entrada `nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`:
+cero issues y cero PR abiertos. §1 ya no tiene ninguna R-XX/T-XX `PENDIENTE` (R-21 es la última,
+`COMPLETADA`): cola vacía, sin tarea de código que ejecutar. Verificación propia completa:
+`mypy`/`ruff` en verde sin hallazgos (70 archivos), 619 tests (`pytest`) en verde, dieciséis etapas OK
+en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Nota sin acción, mismo patrón que
+motivó `#24`: `ROADMAP_PRODUCTO.md` sigue describiendo R-21 como la única `PENDIENTE` en su prosa de
+"Cola de producto" pese a que este §1 ya la registra `COMPLETADA` — no se corrige desde aquí (la
+pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño); se deja constancia para el próximo
+ciclo de Product Manager, que es quien escribe ese documento.
 
 **Última actualización anterior (ciclo de Product Manager, 2026-10-01): archiva Oleada v9 (R-20) y
 abre R-21** (Fase transversal F-J) desde el hallazgo `#27` de `auditoriacontinua.md` (detalle en la nota
@@ -183,6 +206,9 @@ mismo patrón que R-19/R-20) ni se ejecuta la verificación de las cuatro redes.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-10-02, ciclo de Programador: sexta reconfirmación del día tras R-21, sin novedad de código.
+  Ver el párrafo de "Última actualización anterior (sexta reconfirmación...)" arriba para el
+  detalle completo.
 - 2026-10-02, ciclo de Programador: quinta reconfirmación del día tras R-21, sin novedad de código.
   Ver el párrafo de "Última actualización anterior (quinta reconfirmación...)" arriba para el
   detalle completo.
