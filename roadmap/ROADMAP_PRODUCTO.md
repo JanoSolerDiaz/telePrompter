@@ -8,47 +8,35 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-01 (ciclo de PM). **R-20 (Oleada v9) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del mismo día que la abrió (2026-09-30); esta prosa
-seguía describiéndola como "EN CURSO"/`PENDIENTE` durante las nueve reconfirmaciones posteriores del
-Programador (mismo patrón ya trazado por el hallazgo `#24` de `auditoriacontinua.md`, no corregido
-antes porque este ciclo es el primero de PM desde entonces). Movida a `roadmap/ROADMAP_HISTORICO.md`
-(Oleada v9) junto con el resto de oleadas y fases 100 % entregadas. La nota de gobernanza sobre cómo
-se justificó abrir R-19 (hallazgo `#26`) viaja con ella, ya cerrada por el ciclo de PM anterior y
-verificada `RESUELTO` por el auditor (2026-10-01) — no se repite aquí.
+**Última actualización:** 2026-10-02 (ciclo de PM). **R-21 (Fase transversal F-J) está
+`COMPLETADA`** (§1 de `SEGUIMIENTO.md`) desde el ciclo de Programador del mismo día que la abrió el
+ciclo de PM anterior (2026-10-01→2026-10-02, cierra el hallazgo `#27` de `auditoriacontinua.md`).
+Movida a `roadmap/ROADMAP_HISTORICO.md` (Fase transversal F-J) junto con el resto de fases 100 %
+entregadas.
 
-**Se abre R-21** (Fase transversal F-J): el hallazgo `#27` de `auditoriacontinua.md` (media,
-`ABIERTO`, detectado 2026-10-01 por la propia auditoría reproduciendo código, no solo leyéndolo) es
-el único hallazgo de esta pasada que convertir en tarea — es de robustez de una salida real
-(`concat-ffmpeg.txt`, R-19), no gobernanza ni prosa, así que entra como R-XX con `origen: auditoría
-#27` en vez de quedar solo anotado. Resumen del hallazgo: `scripts/concat_ffmpeg.py` trae su propio
-validador del formato del demuxer `concat` de ffmpeg, pero `scripts/salidas.py::
-_generar_concat_ffmpeg` nunca lo invoca antes de escribir a disco — solo lo ejercita
-`verificar_salidas.py --fixture`, un chequeo de salud aparte de la ruta real de generación.
-Reproducido por el auditor con código, no solo leído: un `archivo_video` de solo espacios (tecleable
-sin querer en el `window.prompt` de `V`/`v`) genera una línea `file '   '` que el validador acepta
-pero ffmpeg no puede abrir; un `archivo_video` con un salto de línea incrustado (alcanzable editando
-a mano el `.json` del parte de rodaje exportado, flujo que R-02 soporta explícitamente) parte una
-entrada en dos líneas mal formadas que el validador sí detecta, pero nunca llega a ejecutarse en la
-ruta real. Ningún invariante de §0.2 se rompe (salida derivada y regenerable, la generación nunca
-falla), por eso es severidad `media`, no `alta`, y no urgente por §0.3 — pero es exactamente el tipo
-de deuda de calidad sobre una entrega ya hecha que este roadmap existe para no dejar perdida.
-Detalle completo en "Fase transversal F-J" más abajo.
+**Se abre R-22** (Oleada v10): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
+las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
+verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-20. `scripts/
+capitulos_youtube.py::calcular_capitulos` ya empareja cada escena con su título de capítulo y
+calcula su instante de inicio acumulado (real, de la toma buena, o estimado de T-12), probado desde
+R-07 — pero ese cálculo solo se expone hoy en un formato pensado para pegar en la descripción de
+YouTube (`capitulos-youtube.txt`, texto `M:SS Título`), nunca en un formato que la propia fase de
+montaje con ffmpeg (la siguiente de esta skill, T-33) pueda **incrustar directamente en el vídeo
+final** como capítulos reales del archivo. Verificado leyendo `calcular_capitulos`/
+`formatear_capitulos_youtube` línea a línea (no solo `references/contrato-montaje.md`) antes de
+especificar la tarea, mismo rigor que R-20 ya aplicó para no repetir el error de `#26`. Detalle
+completo en "Oleada v10" más abajo.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
-historia de rodaje real que incorporar este ciclo. El hallazgo `#24` (prosa de "Cola de producto"
-desactualizada entre ciclos de PM) sigue enrutado a la pregunta de gobernanza #11 de
-`SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX, es la misma corrección
-de prosa que este propio ciclo acaba de aplicar.
+historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
+curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` no trae ningún
+`ABIERTO` nuevo de producto/arquitectura esta pasada: el único `ABIERTO` (`#24`, baja, prosa de "Cola
+de producto" desactualizada entre ciclos de PM) sigue enrutado a la pregunta de gobernanza #11 de
+`SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX, es la misma corrección de
+prosa que este propio ciclo acaba de aplicar de nuevo.
 
-Revisión propia de este ciclo: releído `scripts/concat_ffmpeg.py` (`validar_lista_concat_ffmpeg`,
-`_escapar_ruta_ffmpeg`, `calcular_lista_concat_ffmpeg`), `scripts/salidas.py::
-_generar_concat_ffmpeg` y `scripts/tomas.py` (`_toma_desde_dict`, validación de `archivo_video`)
-para confirmar de primera mano que el hallazgo describe el código real: el validador existe, está
-probado, y en efecto no se invoca desde la ruta de generación — mismo patrón de verificación (código
-real, no prosa) que las R-XX anteriores. Este ciclo es de PM, no de Programador: no se ha ejecutado
-la verificación de las cuatro redes; la spec de R-21 queda lista para que el siguiente ciclo de
-Programador la implemente y verifique.
+Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
+spec de R-22 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -161,76 +149,124 @@ ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en 
 (2026-10-01), junto con la nota de gobernanza sobre cómo se justificó abrir R-19 (hallazgo `#26` de
 `auditoriacontinua.md`, ya `RESUELTO`). Su spec completa y cómo se entregó viven ahí.
 
-### Fase transversal F-J — EN CURSO
+### Fase transversal F-J — entregada
 
-> No es una oleada de producto nueva: es deuda de calidad sobre una salida ya entregada (R-19,
-> `concat-ffmpeg.txt`), detectada por la auditoría reproduciendo código, no solo leyéndolo. Mismo
-> tratamiento que F-D/F-G/F-H/F-I: se cierra antes de reanudar la cola de producto principal.
+La fase F-J (validar `concat-ffmpeg.txt` en la ruta real de generación invocando su validador antes
+de escribir a disco, y sanear `archivo_video` en el origen, R-21) tiene su única R-XX en
+**COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a
+`ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-02); cierra el hallazgo `#27` de
+`auditoriacontinua.md`. Su spec completa y cómo se entregó viven ahí.
 
-#### R-21 — Validar `concat-ffmpeg.txt` en la ruta real de generación y sanear `archivo_video` en el origen
+### Oleada v10 — EN CURSO
 
-**Migración:** No (saneamiento de entrada y una llamada de validación nuevos; ningún campo de
-`estado.json` ni de `Configuracion` cambia de forma) · **Depende de:** R-19 · **Origen:** auditoría
-`#27` (media, 2026-10-01), reproducido con código por el propio auditor, no solo observado.
+#### R-22 — Capítulos reales incrustables en el vídeo final (`capitulos-ffmpeg.txt`, formato `FFMETADATA1` de ffmpeg)
 
-**Objetivo:** `scripts/concat_ffmpeg.py` trae su propio validador del formato del demuxer `concat`
-de ffmpeg (`validar_lista_concat_ffmpeg`, criterio de aceptación de R-19), pero
-`scripts/salidas.py::_generar_concat_ffmpeg` nunca lo invoca antes de escribir `concat-ffmpeg.txt` a
-disco — solo lo ejercita `verificar_salidas.py --fixture`, un chequeo de salud aparte de la
-generación real. Esto deja pasar sin aviso dos entradas que `archivo_video` admite hoy sin ningún
-saneamiento (`tomas.py` solo comprueba `isinstance(..., str)`): una cadena de solo espacios
-(tecleable por accidente en el `window.prompt` de `V`/`v`) y un salto de línea incrustado
-(alcanzable editando a mano el `.json` del parte de rodaje exportado, flujo que R-02 soporta
-explícitamente), que rompen el archivo final de formas que el validador ya sabe detectar pero que
-nunca llega a ejecutarse en la ruta real. R-19 es la primera salida de la cadena de montaje cuyo
-contenido es texto libre tecleado por el dueño (a diferencia de `srt.py`/`capitulos_youtube.py`,
-derivados internamente), lo que le da a este hueco arquitectónico preexistente consecuencias reales
-por primera vez.
+**Migración:** No (archivo derivado nuevo y un campo aditivo en `ResultadoCapitulos`; ningún campo
+de `estado.json` ni de `Configuracion` cambia de forma) · **Depende de:** R-07 · **Origen:**
+observación de arquitectura del PM (2026-10-02) — grieta de arquitectura verificada sobre código ya
+construido (mismo criterio que abrió R-12 a R-20), no hallazgo de auditoría ni entrada de
+`FEEDBACK.md`.
+
+**Objetivo:** `scripts/capitulos_youtube.py::calcular_capitulos` ya empareja cada título de la
+sección `Capítulos` del guion con su escena y calcula el instante de inicio acumulado de cada una
+(real, de la toma buena — R-02 —, o estimado del ritmo deducido del guion — T-12 —, con aviso
+explícito si se mezclan ambos). Hoy ese cálculo solo se expone en `capitulos-youtube.txt`, pensado
+para pegarse a mano en la descripción de un vídeo de YouTube — útil, pero texto para un humano, no
+un archivo que la fase de montaje (la siguiente de esta skill, T-33, que ya cierra con
+`concat-ffmpeg.txt` de R-19 y `guion-alineado.srt` de R-05) pueda pasarle a ffmpeg para que los
+capítulos queden **incrustados de verdad en el `.mp4` final** — el formador no tiene hoy ninguna
+salida de esta skill que, al unirla en el montaje, le deje un vídeo navegable por capítulos nada más
+exportarlo. ffmpeg soporta esto de forma nativa con su propio formato de metadatos (`FFMETADATA1`,
+`ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1 -codec copy video-final.mp4`): esta
+tarea genera ese archivo reutilizando tal cual el emparejamiento y los tiempos que R-07 ya calcula y
+prueba, sin inventar ningún cálculo nuevo.
 
 **Requisitos:**
-1. `scripts/salidas.py::_generar_concat_ffmpeg` invoca `concat_ffmpeg.validar_lista_concat_ffmpeg`
-   sobre el contenido generado antes de escribirlo; si la validación falla, la salida se degrada a
-   `SalidaOmitida` con el motivo exacto del fallo — mismo patrón `try`/`except` que ya aplica
-   `generar_salidas_seleccionadas` a otros fallos de generación, nunca una excepción sin capturar.
-2. `archivo_video` se sanea en el origen, en los dos puntos donde el dueño lo teclea o lo edita:
-   `assets/reproductor/guion.js` (captura de `V`/`v` y edición desde el índice) recorta espacios y
-   rechaza un valor vacío tras el recorte o con un salto de línea, tratándolo como "sin anotar";
-   `scripts/tomas.py::_toma_desde_dict` aplica el mismo recorte y rechazo al leer un parte de rodaje
-   editado a mano (R-02), nunca como error fatal — un valor inválido se normaliza a `""`, igual que
-   si nunca se hubiera anotado.
-3. `references/contrato-tomas.md` documenta la regla de saneamiento de `archivo_video` (recortado,
-   sin saltos de línea); `references/contrato-montaje.md` deja constancia de que
-   `concat-ffmpeg.txt` nunca llega a disco sin pasar por `validar_lista_concat_ffmpeg`.
-4. Fuera de alcance, explícitamente: extender el mismo patrón de validación-antes-de-escribir a
-   `srt.py`/`capitulos_youtube.py` (la misma deuda arquitectónica preexistente, pero sin las
-   consecuencias reales que le da a R-19 ser texto libre) — se deja anotado aquí como candidata
-   futura, no se amplía el alcance de esta tarea para cubrirlo.
-5. Invariantes (a)/(d) de §0.2 intactos: sanear o degradar `concat-ffmpeg.txt` nunca toca
-   `estado.json["tomas"]` ni ningún campo existente de una toma; es una salida derivada y
-   regenerable, igual que antes de R-21.
+1. `scripts/capitulos_youtube.py` gana `formatear_capitulos_ffmpeg(resultado: ResultadoCapitulos,
+   configuracion: Configuracion | None = None) -> str | None`, hermana de
+   `formatear_capitulos_youtube` y con la misma condición de `None` (sin capítulos que generar).
+   Reutiliza `resultado.capitulos` (título + `inicio_segundos` de cada capítulo) **tal cual**, sin
+   reproducir el emparejamiento ni el cálculo de tiempos de `calcular_capitulos`.
+2. **`ResultadoCapitulos` gana un campo aditivo, `duracion_total_segundos: float`** (la suma
+   acumulada tras procesar el último capítulo, el mismo `cursor_segundos` final que ya calcula el
+   bucle de `calcular_capitulos` — ninguna cuenta nueva, solo exponer un valor que el bucle ya
+   produce y hoy descarta). Es el único dato que falta para poder cerrar el último capítulo sin
+   inventar una duración: el `END` del último capítulo del `.mp4` es este valor.
+3. **Formato `FFMETADATA1` exacto:** primera línea `;FFMETADATA1`; un bloque `[CHAPTER]` por
+   capítulo con `TIMEBASE=1/1000`, `START=<ms>`, `END=<ms>` (ambos enteros, redondeando igual que
+   `_formatear_mm_ss` ya redondea hacia abajo para no adelantar nunca una marca) y `title=<título>`;
+   `END` de un capítulo es el `START` del siguiente, y el del último es `duracion_total_segundos`
+   (requisito 2) convertido a milisegundos. Separar los bloques con una línea en blanco, igual que
+   exige el propio formato de ffmpeg.
+4. **Sin la "marca mínima" de `capitulos_youtube_marca_minima_segundos`:** a diferencia de
+   `capitulos-youtube.txt` (pensado para que una lista de texto no amontone marcas casi seguidas,
+   requisito 3 de R-07), unos capítulos incrustados en el archivo no compiten por espacio de
+   lectura — cada escena emparejada con un título se convierte en su propio capítulo, sin filtrar
+   ninguno por cercanía con el anterior. Documentar esta diferencia deliberada en el propio
+   docstring de `formatear_capitulos_ffmpeg`, para que nadie la confunda con un olvido del filtro de
+   R-07.
+5. **Escapado del título según el formato `FFMETADATA1` de ffmpeg:** los caracteres `\`, `=`, `;`,
+   `#` y el salto de línea se escapan con `\` por delante (igual que ya hace `_escapar_ruta_ffmpeg`
+   de R-19 para la ruta de vídeo, mismo patrón, formato distinto) antes de escribir `title=...`.
+6. **Transparencia real/estimado:** si alguna de las marcas conservadas depende de una duración
+   estimada en vez de la toma buena real (mismo criterio y mismo texto que ya calcula
+   `formatear_capitulos_youtube`), la primera línea tras `;FFMETADATA1` es un comentario `;` con ese
+   mismo aviso — ffmpeg ignora cualquier línea de nivel superior que empiece por `;` o `#`, así que
+   el aviso no interfiere con el `-map_metadata` real.
+7. **Validar antes de escribir, desde el primer día** (lección del hallazgo `#27`/R-21, para no
+   repetir la misma deuda con una salida nueva): `scripts/capitulos_youtube.py` gana
+   `validar_capitulos_ffmpeg(contenido: str) -> list[str]`, hermana de `validar_capitulos_youtube`,
+   que exige la primera línea `;FFMETADATA1`, cada `START`/`END` entero no negativo, `START`
+   estrictamente creciente entre capítulos consecutivos y `END` de cada capítulo `<=` `START` del
+   siguiente (sin solapes). `scripts/salidas.py::_generar_capitulos_youtube` invoca este validador
+   sobre el contenido de `capitulos-ffmpeg.txt` antes de guardarlo — si falla, esa mitad de la
+   salida se degrada a `SalidaOmitida` con el motivo exacto (mismo patrón `try`/`except` que R-21 ya
+   dejó listo para `concat-ffmpeg.txt`), sin impedir que `capitulos-youtube.txt` se genere igual si
+   ese validador pasa.
+8. `scripts/config.py` gana `NOMBRE_ARCHIVO_CAPITULOS_FFMPEG: str = "capitulos-ffmpeg.txt"` (mismo
+   patrón de constante de módulo que `NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE`/
+   `NOMBRE_ARCHIVO_CONCAT_FFMPEG`, no un campo de `Configuracion`: no es un valor que el dueño deba
+   poder cambiar). Se genera junto a `capitulos-youtube.txt`, bajo la misma opción
+   `TipoSalida.CAPITULOS_YOUTUBE` del selector de T-30 (mismo patrón que `guion.srt`/
+   `guion-alineado.srt` bajo `TipoSalida.SRT`) — no es una séptima opción nueva del selector, son
+   dos archivos de la misma salida.
+9. `references/contrato-montaje.md` documenta `capitulos-ffmpeg.txt`: qué es, cuándo se genera (la
+   misma condición que `capitulos-youtube.txt`: el guion trae sección `Capítulos`), el comando de
+   ffmpeg de ejemplo (`-map_metadata`) y que, como `concat-ffmpeg.txt`, nunca llega a disco sin
+   pasar por su propio validador. `references/contrato-tomas.md` no cambia (no toca el parte de
+   rodaje).
+10. Fuera de alcance, explícitamente: extender esta misma validación-antes-de-escribir a `srt.py` o
+    a la ruta de generación ya existente de `capitulos-youtube.txt` — ya decidido fuera de alcance
+    de R-21 (`DECISIONES_TECNICAS.md`, 2026-10-01) por no tener evidencia real que lo justifique;
+    esta tarea no reabre esa decisión, solo aplica el patrón correcto a la salida nueva que ella
+    misma crea.
 
-**Criterio de aceptación:** un `archivo_video` de solo espacios tecleado en el reproductor se
-guarda como `""` (sin archivo anotado), nunca como `'   '` en `concat-ffmpeg.txt`; un `archivo_video`
-con un salto de línea incrustado en un parte de rodaje editado a mano se normaliza al cargarlo, sin
-llegar nunca a producir una línea mal formada en el archivo final; test que fuerza a
-`validar_lista_concat_ffmpeg` a fallar (contenido inválido inyectado) y confirma que
-`_generar_concat_ffmpeg` degrada a `SalidaOmitida` en vez de escribir el archivo o lanzar una
-excepción sin capturar; sobre los tres guiones reales de `fixtures/reales/` con parte de rodaje
-sintético, `concat-ffmpeg.txt` generado sigue siendo exactamente el mismo que antes de R-21 cuando
-`archivo_video` ya viene limpio (sin regresión).
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/` (los tres traen
+sección `Capítulos`), `capitulos-ffmpeg.txt` generado tiene un bloque `[CHAPTER]` por título
+emparejado, `START`/`END` contiguos sin huecos ni solapes y el `END` del último capítulo coincide
+exactamente con `duracion_total_segundos`; un guion sin sección `Capítulos` deja la salida omitida
+con el mismo motivo que ya usa `capitulos-youtube.txt`, nunca un archivo vacío ni un fallo; un título
+con `;`/`#`/`=`/`\` o un salto de línea se escapa correctamente y el archivo generado sigue siendo
+`FFMETADATA1` válido; test que fuerza a `validar_capitulos_ffmpeg` a fallar (contenido inválido
+inyectado) y confirma que `_generar_capitulos_youtube` degrada esa mitad a `SalidaOmitida` sin
+impedir la generación de `capitulos-youtube.txt`; con una mezcla de escenas con y sin toma buena, la
+primera línea tras `;FFMETADATA1` avisa de la mezcla con el mismo texto que ya usa
+`formatear_capitulos_youtube`.
 
 ---
 
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-10-01), una única R-XX `PENDIENTE`: **R-21** (Fase
-transversal F-J, detalle completo arriba), abierta por el hallazgo `#27` de `auditoriacontinua.md`
-(media, deuda de calidad sobre la salida `concat-ffmpeg.txt` de R-19, ya entregada y archivada).
-`roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`; el único otro hallazgo `ABIERTO`, `#24`
-(baja, prosa de "Cola de producto" desactualizada entre ciclos de PM), sigue enrutado a la pregunta
-de gobernanza #11 de `SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX.
-Próximo ciclo de PM: reconfirmar R-21 tras su implementación y, si el dueño responde entre tanto a
-la pregunta #11 de §6, aplicar esa respuesta.
+`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-10-02), una única R-XX `PENDIENTE`: **R-22**
+(Oleada v10, detalle completo arriba), abierta por grieta de arquitectura verificada —
+`capitulos_youtube.py` ya calcula el emparejamiento título↔escena y sus tiempos reales/estimados
+(R-07), pero solo los expone en formato de descripción de YouTube, nunca en el formato nativo de
+capítulos de ffmpeg que la fase de montaje (T-33) necesita para incrustarlos de verdad en el vídeo
+final. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`; el único hallazgo `ABIERTO` de
+`auditoriacontinua.md`, `#24` (baja, prosa de "Cola de producto" desactualizada entre ciclos de PM),
+sigue enrutado a la pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6, `(pendiente)` de respuesta
+del dueño — no es una R-XX. Próximo ciclo de PM: reconfirmar R-22 tras su implementación y, si el
+dueño responde entre tanto a la pregunta #11 de §6, aplicar esa respuesta.
 
 ---
 

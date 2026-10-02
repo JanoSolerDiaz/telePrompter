@@ -12,6 +12,66 @@
 
 ---
 
+### Sesión 2026-10-02 (69) — Ciclo de Product Manager: archiva Fase transversal F-J (R-21) y abre R-22 (Oleada v10)
+
+**Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached*
+sin rama asociada (commits de reconfirmaciones del Programador ya fusionados en `develop`); `git
+pull origin develop` resolvió en fast-forward limpio hasta `c0cb579` (novena reconfirmación del
+Programador del mismo día), sin conflicto ni rama divergida. `pip install -r requirements-dev.txt`
+limpio.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: un único
+`ABIERTO`, `#24` (baja, proceso — la pregunta de gobernanza #11 de §6 de `SEGUIMIENTO.md` sigue
+`(pendiente)` de respuesta del dueño); `#27` ya no describe código pendiente — R-21 lo cierra desde
+el ciclo de Programador de esta misma fecha, reverificado de nuevo en esta sesión leyendo
+`scripts/salidas.py::_generar_concat_ffmpeg` (invoca `validar_lista_concat_ffmpeg` antes de
+escribir), `scripts/tomas.py::_sanear_archivo_video` y
+`assets/reproductor/guion.js::sanearArchivoVideo` — queda pendiente solo de que la próxima pasada
+del auditor marque su propia fila `RESUELTO`. `roadmap/FEEDBACK.md`: sigue sin ninguna entrada
+`nuevo` (plantilla vacía) — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto, así que no
+hay feedback real de rodaje que incorporar todavía.
+
+**Archivo de Fase transversal F-J (R-21).** §1 de `SEGUIMIENTO.md` (fuente autoritativa) ya registra
+R-21 `COMPLETADA`, estable tras nueve reconfirmaciones del Programador sin cambio de código;
+`ROADMAP_PRODUCTO.md` seguía describiéndola como "EN CURSO" (mismo patrón de latencia que el
+hallazgo `#24`). Movida a `ROADMAP_HISTORICO.md` con su spec y su "Cómo se entregó" completos,
+índice del documento actualizado, y "Cola de producto"/cabecera de `ROADMAP_PRODUCTO.md` corregidas
+para dejar de mencionarla como pendiente.
+
+**Apertura de R-22 (Oleada v10).** Sin hallazgo de auditoría ni entrada de `FEEDBACK.md` que
+convertir en tarea esta pasada, se abre R-22 por la tercera fuente ya establecida para el rol de PM:
+**grieta de arquitectura verificada sobre código ya construido** (mismo criterio que abrió R-12 a
+R-20, norma dejada por escrito en `DECISIONES_TECNICAS.md` el 2026-09-30 tras el hallazgo `#26`).
+Releídos línea a línea, antes de especificar la tarea, `scripts/capitulos_youtube.py`
+(`calcular_capitulos`, `formatear_capitulos_youtube`, `validar_capitulos_youtube`) y
+`scripts/salidas.py::_generar_capitulos_youtube`: el emparejamiento título↔escena y el tiempo
+acumulado real (toma buena, R-02) o estimado (ritmo deducido, T-12) de cada capítulo ya están
+calculados y probados desde R-07 (2026-09-03), pero el único consumidor existente es
+`capitulos-youtube.txt`, pensado para pegarse a mano en la descripción de un vídeo de YouTube — un
+formato de texto para un humano, no un archivo que la fase de montaje (T-33, la siguiente de esta
+skill tras `concat-ffmpeg.txt` de R-19 y `guion-alineado.srt` de R-05) pueda pasarle a ffmpeg para
+incrustar capítulos reales en el `.mp4` final. R-22 reutiliza ese cálculo tal cual: un formateador y
+un validador hermanos nuevos (`formatear_capitulos_ffmpeg`/`validar_capitulos_ffmpeg`) producen
+`capitulos-ffmpeg.txt` en formato `FFMETADATA1` nativo de ffmpeg, con un campo aditivo nuevo
+(`ResultadoCapitulos.duracion_total_segundos`) para poder cerrar el último capítulo sin inventar
+ninguna duración. Aplicando la lección del hallazgo `#27`/R-21 desde el primer día (no después, como
+R-19→R-21 tuvo que hacerlo): la validación-antes-de-escribir se exige como requisito de la propia
+tarea, no se deja como deuda para una `R-XX` de cierre posterior. Spec completa (10 requisitos,
+criterio de aceptación verificable) en `ROADMAP_PRODUCTO.md` §Oleada v10.
+
+**Decisiones registradas** en `DECISIONES_TECNICAS.md`: archivo de F-J sin esperar a que el auditor
+cierre `#27` por su cuenta; apertura de R-22 por grieta de arquitectura verificada, no por encargo
+genérico de la rutina (norma del hallazgo `#26`); alcance de R-22 incluyendo validación-antes-de-
+escribir desde el primer commit, citando `#27`/R-21 como precedente ya resuelto que no conviene
+repetir.
+
+**Cierre de sesión.** Ciclo de PM, no de Programador: no se añade fila nueva a §1 para R-22 (la
+añadirá el Programador al implementarla) ni se ejecuta la verificación de las cuatro redes. Sin
+cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (pregunta #11 sigue `(pendiente)`). `git push
+-u origin develop` al cerrar, como exige el protocolo de rutinas de nube (§0.1 de `HOJA_DE_RUTA.md`).
+
+---
+
 ### Sesión 2026-10-02 (68) — Ciclo de Programador: novena reconfirmación del día tras R-21, sin novedad de código
 
 **Arranque.** `git status` limpio; sesión iniciada con `HEAD` *detached*, sin rama asociada

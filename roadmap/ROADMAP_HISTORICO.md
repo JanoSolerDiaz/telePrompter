@@ -61,6 +61,12 @@ reconfirmaciones del Programador listando R-20 como "EN CURSO"/`PENDIENTE` pese 
 `COMPLETADA` en §1 de `SEGUIMIENTO.md` — el mismo patrón de latencia que `auditoriacontinua.md`
 registra como hallazgo `#24`.
 
+**Movido a histórico el:** 2026-10-02, ciclo de Product Manager. Se añade la Fase transversal F-J
+(R-21), COMPLETADA por el Programador el mismo día en que se abrió el ciclo de PM anterior
+(2026-10-01→10-02) y sin ningún hito de negocio propio pendiente — mismo criterio que los diez
+movimientos anteriores. Cierra el hallazgo `#27` de `auditoriacontinua.md`, pendiente solo de que la
+siguiente pasada del auditor actualice su propia fila a `RESUELTO`.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -1053,9 +1059,87 @@ el validador, mismo rigor que el resto de listas de indicaciones). `DEVELOPERS.m
 
 ---
 
+## Fase transversal F-J — Validar `concat-ffmpeg.txt` en la ruta real de generación y sanear `archivo_video` en el origen
+
+> Deuda de calidad sobre una salida ya entregada (R-19, `concat-ffmpeg.txt`), detectada por la
+> auditoría reproduciendo código, no solo leyéndolo. Mismo tratamiento que F-D/F-G/F-H/F-I.
+
+### R-21 — Validar `concat-ffmpeg.txt` en la ruta real de generación y sanear `archivo_video` en el origen
+
+**Migración:** No (saneamiento de entrada y una llamada de validación nuevos; ningún campo de
+`estado.json` ni de `Configuracion` cambia de forma) · **Depende de:** R-19 · **Origen:** auditoría
+`#27` (media, 2026-10-01), reproducido con código por el propio auditor, no solo observado.
+
+**Objetivo:** `scripts/concat_ffmpeg.py` trae su propio validador del formato del demuxer `concat`
+de ffmpeg (`validar_lista_concat_ffmpeg`, criterio de aceptación de R-19), pero
+`scripts/salidas.py::_generar_concat_ffmpeg` nunca lo invoca antes de escribir `concat-ffmpeg.txt` a
+disco — solo lo ejercita `verificar_salidas.py --fixture`, un chequeo de salud aparte de la
+generación real. Esto deja pasar sin aviso dos entradas que `archivo_video` admite hoy sin ningún
+saneamiento (`tomas.py` solo comprueba `isinstance(..., str)`): una cadena de solo espacios
+(tecleable por accidente en el `window.prompt` de `V`/`v`) y un salto de línea incrustado
+(alcanzable editando a mano el `.json` del parte de rodaje exportado, flujo que R-02 soporta
+explícitamente), que rompen el archivo final de formas que el validador ya sabe detectar pero que
+nunca llega a ejecutarse en la ruta real. R-19 es la primera salida de la cadena de montaje cuyo
+contenido es texto libre tecleado por el dueño (a diferencia de `srt.py`/`capitulos_youtube.py`,
+derivados internamente), lo que le da a este hueco arquitectónico preexistente consecuencias reales
+por primera vez.
+
+**Requisitos:**
+1. `scripts/salidas.py::_generar_concat_ffmpeg` invoca `concat_ffmpeg.validar_lista_concat_ffmpeg`
+   sobre el contenido generado antes de escribirlo; si la validación falla, la salida se degrada a
+   `SalidaOmitida` con el motivo exacto del fallo — mismo patrón `try`/`except` que ya aplica
+   `generar_salidas_seleccionadas` a otros fallos de generación, nunca una excepción sin capturar.
+2. `archivo_video` se sanea en el origen, en los dos puntos donde el dueño lo teclea o lo edita:
+   `assets/reproductor/guion.js` (captura de `V`/`v` y edición desde el índice) recorta espacios y
+   rechaza un valor vacío tras el recorte o con un salto de línea, tratándolo como "sin anotar";
+   `scripts/tomas.py::_toma_desde_dict` aplica el mismo recorte y rechazo al leer un parte de rodaje
+   editado a mano (R-02), nunca como error fatal — un valor inválido se normaliza a `""`, igual que
+   si nunca se hubiera anotado.
+3. `references/contrato-tomas.md` documenta la regla de saneamiento de `archivo_video` (recortado,
+   sin saltos de línea); `references/contrato-montaje.md` deja constancia de que
+   `concat-ffmpeg.txt` nunca llega a disco sin pasar por `validar_lista_concat_ffmpeg`.
+4. Fuera de alcance, explícitamente: extender el mismo patrón de validación-antes-de-escribir a
+   `srt.py`/`capitulos_youtube.py` (la misma deuda arquitectónica preexistente, pero sin las
+   consecuencias reales que le da a R-19 ser texto libre) — se deja anotado aquí como candidata
+   futura, no se amplía el alcance de esta tarea para cubrirlo.
+5. Invariantes (a)/(d) de §0.2 intactos: sanear o degradar `concat-ffmpeg.txt` nunca toca
+   `estado.json["tomas"]` ni ningún campo existente de una toma; es una salida derivada y
+   regenerable, igual que antes de R-21.
+
+**Criterio de aceptación:** un `archivo_video` de solo espacios tecleado en el reproductor se
+guarda como `""` (sin archivo anotado), nunca como `'   '` en `concat-ffmpeg.txt`; un `archivo_video`
+con un salto de línea incrustado en un parte de rodaje editado a mano se normaliza al cargarlo, sin
+llegar nunca a producir una línea mal formada en el archivo final; test que fuerza a
+`validar_lista_concat_ffmpeg` a fallar (contenido inválido inyectado) y confirma que
+`_generar_concat_ffmpeg` degrada a `SalidaOmitida` en vez de escribir el archivo o lanzar una
+excepción sin capturar; sobre los tres guiones reales de `fixtures/reales/` con parte de rodaje
+sintético, `concat-ffmpeg.txt` generado sigue siendo exactamente el mismo que antes de R-21 cuando
+`archivo_video` ya viene limpio (sin regresión).
+
+**Cómo se entregó:** `scripts/salidas.py::_generar_concat_ffmpeg` llama a
+`concat_ffmpeg.validar_lista_concat_ffmpeg` sobre el contenido ya generado, justo antes de
+`guardar_lista_concat_ffmpeg`; un contenido inválido degrada a `SalidaOmitida` con el motivo exacto
+(mismo patrón `try`/`except` que ya protege a las demás salidas), nunca una excepción sin capturar ni
+un archivo corrupto en disco. `scripts/tomas.py` gana `_sanear_archivo_video` (recorta espacios,
+normaliza a `""` si queda vacío o trae `\n`/`\r`), aplicada en `_toma_desde_dict` al leer un parte de
+rodaje editado a mano; `assets/reproductor/guion.js` gana la función gemela
+`sanearArchivoVideo(valor)`, aplicada en los dos puntos donde el dueño teclea el valor
+(`pedirArchivoVideoToma` durante la grabación y el botón de edición desde el índice).
+`references/contrato-tomas.md` y `contrato-montaje.md` documentan la regla de saneamiento y la
+validación antes de escritura. Fuera de alcance, explícito: no se extiende la misma
+validación-antes-de-escribir a `srt.py`/`capitulos_youtube.py` (misma deuda preexistente, sin las
+consecuencias reales que le da a `archivo_video` ser texto libre). 6 tests nuevos (613→619): 4 en
+`test_tomas.py` (recorte, solo espacios, salto de línea, retorno de carro), 1 en `test_salidas.py`
+(contenido inválido forzado por monkeypatch degrada a omitida sin escribir), 1 nuevo más la
+actualización de uno existente en `test_reproductor.py` (los dos puntos de entrada saneados en el
+HTML generado). Cuatro redes en verde, incluidas las dieciséis etapas de
+`verificar_salidas.py --fixture`. `DEVELOPERS.md` y `SKILL.md` actualizados.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
-(R-20), 2026-10-01.)*
+(R-20), 2026-10-01; la de F-J (R-21), 2026-10-02.)*

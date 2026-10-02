@@ -10,8 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-02 — **Ciclo de Programador: novena reconfirmación del día tras
-R-21**, sin novedad de código (detalle en la nota de arranque de esta sesión, más abajo).
+**Última actualización:** 2026-10-02 — **Ciclo de Product Manager: archiva Fase transversal F-J
+(R-21) y abre R-22 (Oleada v10)** (detalle en la nota de arranque de esta sesión, más abajo).
+
+**Última actualización anterior (novena reconfirmación del día tras R-21, ciclo de Programador):**
+**Ciclo de Programador: novena reconfirmación del día tras R-21**, sin novedad de código (detalle en
+la nota de arranque de esa sesión, más abajo).
 
 **Última actualización anterior (octava reconfirmación del día tras R-21):** **Ciclo de
 Programador: octava reconfirmación del día tras R-21** (implementada y `COMPLETADA` en el ciclo
@@ -166,13 +170,50 @@ P-XX urgente antes de esta tarea (único hallazgo `ABIERTO` de severidad media, 
 que esta tarea cierra; `#24`, baja, sigue pendiente solo de la respuesta del dueño a la pregunta #11
 de §6).
 
-**Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada; sesión
-iniciada con `HEAD` *detached*, sin rama asociada (advertencia de 22 commits de reconfirmaciones
-previas sin rama asociada, descartable: son commits ya fusionados en `develop`, no trabajo perdido);
-`git checkout develop` y `git pull origin develop` resolvieron en fast-forward limpio hasta `f3a0a7d`
-(la octava reconfirmación de hoy), sin rama divergida. `pip install -r requirements-dev.txt` limpio.
+**Nota de arranque de esta sesión (ciclo de Product Manager, 2026-10-02):** sin incidencia. `git
+status` limpio antes de tocar nada; `git checkout develop` dejó el contenedor en `HEAD` *detached*
+sin rama asociada (commits de reconfirmaciones del Programador ya fusionados en `develop`,
+descartable); `git pull origin develop` resolvió en fast-forward limpio hasta `c0cb579` (novena
+reconfirmación del Programador del mismo día), sin conflicto ni rama divergida. `pip install -r
+requirements-dev.txt` limpio.
 
-**Ciclo de Programador de esta sesión: novena reconfirmación del día tras R-21** (implementada y
+**Ciclo de Product Manager (2026-10-02): archiva Fase transversal F-J (R-21) y abre R-22 (Oleada
+v10).** §1 (fuente autoritativa) ya registraba R-21 `COMPLETADA` desde el ciclo de Programador de
+esta misma fecha (`commit` del cierre del hallazgo `#27`, confirmado estable en nueve
+reconfirmaciones posteriores sin cambio de código); `ROADMAP_PRODUCTO.md` seguía describiéndola como
+"EN CURSO" (mismo patrón que el hallazgo `#24`) — movida a `ROADMAP_HISTORICO.md` con su spec
+completa, cabecera y "Cola de producto" corregidas. Registro de hallazgos de `auditoriacontinua.md`:
+un único `ABIERTO`, `#24` (baja, proceso, la pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+ajena al contenido de este roadmap) — `#27` ya no aparece como pendiente de código, solo pendiente de
+que la próxima pasada del auditor actualice su propia fila a `RESUELTO`. `roadmap/FEEDBACK.md` sigue
+sin ninguna entrada `nuevo`: no hay historia de rodaje real que incorporar este ciclo (el bloqueo #7
+de §3 — grabar un curso completo — sigue abierto). Sin ninguna de las dos fuentes habituales
+(auditoría, feedback) aportando una R-XX nueva, se abre **R-22** por la tercera fuente ya
+establecida por el propio rol de PM: **grieta de arquitectura verificada sobre código ya
+construido**, mismo criterio que abrió R-12 a R-20. Releído línea a línea
+`scripts/capitulos_youtube.py` (`calcular_capitulos`, `formatear_capitulos_youtube`,
+`validar_capitulos_youtube`) y `scripts/salidas.py::_generar_capitulos_youtube` antes de especificar
+la tarea, no solo `references/contrato-montaje.md` (mismo rigor que R-20 aplicó para no repetir el
+error de `#26`): el emparejamiento título↔escena y el tiempo acumulado real/estimado de cada
+capítulo ya están calculados y probados desde R-07, pero solo se exponen en el formato de texto para
+la descripción de YouTube — nunca en el formato `FFMETADATA1` nativo de ffmpeg que la fase de
+montaje (T-33, la siguiente de esta skill) necesita para incrustar capítulos de verdad en el
+`.mp4` final. Spec completa (campo aditivo `duracion_total_segundos` en `ResultadoCapitulos`,
+formateador y validador nuevos, validación-antes-de-escribir desde el primer día para no repetir la
+lección de `#27`/R-21) en `ROADMAP_PRODUCTO.md` §Oleada v10. Decisiones registradas en
+`DECISIONES_TECNICAS.md`; detalle completo de este ciclo en `HISTORIAL_SESIONES.md`. Sin cambios en
+§3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`). Este ciclo es de
+PM, no de Programador: no se añade fila nueva a §1 para R-22 (la añade el Programador al
+implementarla, mismo patrón que R-12 en adelante) ni se ejecuta la verificación de las cuatro redes.
+
+**Nota de arranque de la sesión anterior (novena reconfirmación del día tras R-21, ciclo de
+Programador):** sin incidencia. `git status` limpio antes de tocar nada; sesión iniciada con `HEAD`
+*detached*, sin rama asociada (advertencia de 22 commits de reconfirmaciones previas sin rama
+asociada, descartable: son commits ya fusionados en `develop`, no trabajo perdido); `git checkout
+develop` y `git pull origin develop` resolvieron en fast-forward limpio hasta `f3a0a7d` (la octava
+reconfirmación de hoy), sin rama divergida. `pip install -r requirements-dev.txt` limpio.
+
+**Ciclo de Programador de esa sesión: novena reconfirmación del día tras R-21** (implementada y
 `COMPLETADA` en el ciclo `1e8d514`, reconfirmada antes en `0f392b3`, `945155f`, `842c300`, `698fc05`,
 `787c4c4`, `cbf2e90`, `e5125ee` y `f3a0a7d`), sin novedad de código. Registro de hallazgos de
 `auditoriacontinua.md` revisado antes de proceder: ningún `ABIERTO` de severidad alta (`#24` baja,
@@ -250,6 +291,9 @@ mismo patrón que R-19/R-20) ni se ejecuta la verificación de las cuatro redes.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-10-02, ciclo de Programador: novena reconfirmación del día tras R-21, sin novedad de código.
+  Ver el párrafo de "Última actualización anterior (novena reconfirmación...)" arriba para el
+  detalle completo.
 - 2026-10-02, ciclo de Programador: octava reconfirmación del día tras R-21, sin novedad de código.
   Ver el párrafo de "Última actualización anterior (octava reconfirmación...)" arriba para el
   detalle completo.
