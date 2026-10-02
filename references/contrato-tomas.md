@@ -83,7 +83,7 @@ todavía no aparece en el archivo, en vez de aparecer con `"tomas": []`).
 | `duracion_segundos` | `number` (≥ 0) | Tiempo de reloj real transcurrido durante la toma (mismo cronómetro que T-23, congelado en pausa), redondeado a una décima. |
 | `nota` | `string` | Nota rápida escrita durante la grabación (tecla `N`/`n` por defecto, `Configuracion.mapa_teclas_reproductor`). Cadena vacía si no se escribió ninguna. |
 | `buena` | `bool` | `true` si esa toma fue marcada como la buena (tecla `G`/`g` por defecto). Como mucho una toma por escena lo tiene a `true`: marcar una nueva desmarca cualquier otra de la misma escena. |
-| `archivo_video` | `string` (R-19, opcional) | Nombre del archivo de vídeo real de la cámara que corresponde a esta toma, tecleado por el dueño (tecla `V`/`v` por defecto durante la grabación, o editable después desde el índice para la toma ya marcada buena, sin volver a grabar). Cadena vacía si no se ha anotado — nunca obligatorio para cerrar una toma ni para marcarla `buena`. `scripts/concat_ffmpeg.py` (R-19) lo usa para generar `concat-ffmpeg.txt`. |
+| `archivo_video` | `string` (R-19, opcional) | Nombre del archivo de vídeo real de la cámara que corresponde a esta toma, tecleado por el dueño (tecla `V`/`v` por defecto durante la grabación, o editable después desde el índice para la toma ya marcada buena, sin volver a grabar). Cadena vacía si no se ha anotado — nunca obligatorio para cerrar una toma ni para marcarla `buena`. `scripts/concat_ffmpeg.py` (R-19) lo usa para generar `concat-ffmpeg.txt`. **Saneado en el origen (R-21, hallazgo `#27`):** recortado de espacios y nunca con un salto de línea — un valor de solo espacios o con un salto de línea incrustado se normaliza a `""` (como si no se hubiera anotado) tanto al teclearlo en `guion.js` como al leer un parte de rodaje editado a mano (`tomas._sanear_archivo_video`), nunca un error fatal. |
 
 ## Cómo se cierra una toma
 
@@ -137,7 +137,9 @@ anterior).
 3. Cada escena tiene `numero` numérico; `tomas`, si aparece, es una lista.
 4. Cada toma tiene `numero` entero positivo y `duracion_segundos` numérico no
    negativo; `nota` (si aparece) es texto; `buena` (si aparece) se interpreta
-   como booleano; `archivo_video` (si aparece, R-19) es texto.
+   como booleano; `archivo_video` (si aparece, R-19) es texto, saneado
+   (recortado, sin saltos de línea; R-21) antes de fusionarse en
+   `estado.json`.
 
 Sin `jsonschema` ni ninguna biblioteca externa (§0.2): comprobación a mano,
 mismo patrón que `pptx.validar_tarjetas` (T-29) y `srt.validar_srt` (T-27).

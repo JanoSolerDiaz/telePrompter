@@ -10,9 +10,35 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-01 — **Ciclo de Product Manager: archiva Oleada v9 (R-20) y abre
-R-21** (Fase transversal F-J) desde el hallazgo `#27` de `auditoriacontinua.md` (detalle en la nota
-de arranque de esta sesión, más abajo).
+**Última actualización:** 2026-10-02 — **Ciclo de Programador: R-21 implementada y `COMPLETADA`**
+(Fase transversal F-J, cierra el hallazgo `#27` de `auditoriacontinua.md`). `scripts/salidas.py::_generar_concat_ffmpeg`
+invoca ahora `concat_ffmpeg.validar_lista_concat_ffmpeg` sobre el contenido antes de escribirlo —
+hasta ahora solo lo ejercitaba `verificar_salidas.py --fixture`, nunca la ruta real de generación —
+degradando a `SalidaOmitida` con el motivo exacto si falla, nunca una excepción sin capturar.
+`scripts/tomas.py` gana `_sanear_archivo_video` (recorta espacios, normaliza a `""` si queda vacío o
+trae `\n`/`\r`) aplicada al leer un parte de rodaje editado a mano; `assets/reproductor/guion.js` gana
+la función gemela `sanearArchivoVideo(valor)` aplicada en los dos puntos donde el dueño teclea el
+valor (grabación con `V`/`v` y edición desde el índice). 6 tests nuevos (613→619). Cuatro redes en
+verde, incluidas las dieciséis etapas de `verificar_salidas.py --fixture`. `references/contrato-tomas.md`,
+`contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados. Decisión registrada en
+`DECISIONES_TECNICAS.md`; detalle completo de este ciclo en `HISTORIAL_SESIONES.md`. §1 pasa `R-21` a
+`COMPLETADA`. Sin hallazgo de severidad alta `ABIERTO` en `auditoriacontinua.md` que atender como
+P-XX urgente antes de esta tarea (único hallazgo `ABIERTO` de severidad media, `#27`, es justamente el
+que esta tarea cierra; `#24`, baja, sigue pendiente solo de la respuesta del dueño a la pregunta #11
+de §6).
+
+**Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada;
+`git checkout develop && git pull origin develop` resolvió en fast-forward limpio hasta `4890134`
+(trece commits), sin `HEAD` *detached* ni rama divergida esta vez. `pip install -r
+requirements-dev.txt` limpio. Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`, ninguno
+de severidad alta — `#24` (baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y
+`#27` (media, exactamente el hallazgo que esta tarea atiende). Siguiente tarea según §1: `R-21`
+(única R-XX `PENDIENTE` tras R-20, abierta por el ciclo de PM anterior, spec completa en
+`ROADMAP_PRODUCTO.md` §Fase transversal F-J).
+
+**Última actualización anterior (ciclo de Product Manager, 2026-10-01): archiva Oleada v9 (R-20) y
+abre R-21** (Fase transversal F-J) desde el hallazgo `#27` de `auditoriacontinua.md` (detalle en la nota
+de arranque de esa sesión, más abajo).
 
 **Última actualización anterior (R-20, implementada en el ciclo previo):** `scripts/reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el
 algoritmo de anclaje (máximo bloque de respiración cuyo `linea_fin` precede a la indicación, o el
@@ -41,13 +67,14 @@ de indicaciones). `DEVELOPERS.md`, `SKILL.md` y `references/contrato-tarjetas.md
 en §3 (bloqueos) ni §5 (P-XX); ningún hallazgo de `auditoriacontinua.md` es de severidad alta
 (`#24` baja, `#27` media, ninguno urgente por §0.3); §1 pasa `R-20` a `COMPLETADA`.
 
-**Nota de arranque de esta sesión:** sin incidencia. `git status` limpio antes de tocar nada;
-`git checkout develop` dejó el contenedor en `HEAD` *detached* 11 commits por detrás de
-`origin/develop` (reconfirmaciones del Programador ya superadas); `git pull origin develop` resolvió
-con fast-forward trivial (`51e38da..8e155bf`) sin conflicto ni pérdida — ningún `git reset --hard` ni
-rama auxiliar necesarios. `pip install -r requirements-dev.txt` limpio.
+**Nota de arranque de la sesión anterior (ciclo de Product Manager, 2026-10-01):** sin incidencia.
+`git status` limpio antes de tocar nada; `git checkout develop` dejó el contenedor en `HEAD`
+*detached* 11 commits por detrás de `origin/develop` (reconfirmaciones del Programador ya superadas);
+`git pull origin develop` resolvió con fast-forward trivial (`51e38da..8e155bf`) sin conflicto ni
+pérdida — ningún `git reset --hard` ni rama auxiliar necesarios. `pip install -r
+requirements-dev.txt` limpio.
 
-**Ciclo de Product Manager de esta sesión: archiva Oleada v9 (R-20) y abre R-21 (Fase transversal
+**Ciclo de Product Manager (2026-10-01): archiva Oleada v9 (R-20) y abre R-21 (Fase transversal
 F-J).** §1 (fuente autoritativa) ya registraba R-20 `COMPLETADA` desde el 2026-09-30, tras nueve
 reconfirmaciones del Programador sin cambio de código; `ROADMAP_PRODUCTO.md` seguía describiéndola
 como "EN CURSO"/`PENDIENTE` (mismo patrón que el hallazgo `#24`) — movida a `ROADMAP_HISTORICO.md`
@@ -66,6 +93,11 @@ mismo patrón que R-19/R-20) ni se ejecuta la verificación de las cuatro redes.
 
 **Última actualización anterior (resumen; detalle completo en `HISTORIAL_SESIONES.md` y
 `DECISIONES_TECNICAS.md`, no repetido aquí para no seguir engordando este documento):**
+- 2026-10-01, ciclo de Product Manager: archiva Oleada v9 (R-20) a `ROADMAP_HISTORICO.md` y abre
+  R-21 (Fase transversal F-J) desde el hallazgo `#27` de `auditoriacontinua.md` (media, validación de
+  `concat-ffmpeg.txt` nunca invocada en la ruta real de generación, `archivo_video` sin sanear).
+  Detalle completo arriba (ver "Ciclo de Product Manager (2026-10-01)") y en `HISTORIAL_SESIONES.md`
+  (sesión 58).
 - 2026-10-01, ciclo de Programador: novena reconfirmación tras R-20, tras la octava de hoy
   (`ae3107a`), sin novedad de código. Verificación propia completa: `mypy`/`ruff` en verde sin
   hallazgos, 613 tests (`pytest`) en verde, dieciséis etapas OK en `verificar_salidas.py --fixture`.
@@ -660,6 +692,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-18 | Integrar en el selector de salidas (T-30, `scripts/salidas.py`) las salidas que dependen de tomas reales: `guion-alineado.srt` (R-05), `capitulos-youtube.txt` (R-07, hoy ni siquiera seleccionable) y los campos reales de `tarjetas.json` (R-13/R-16) | **COMPLETADA** | 2026-09-17 | `scripts/salidas.py`: `generar_salidas_seleccionadas` gana `tomas_por_escena` opcional (`EstadoProyecto.tomas` tal cual); con al menos una toma `buena`, `SRT` genera también `guion-alineado.srt` (R-05) bajo el mismo `TipoSalida.SRT`, y `PPTX` pasa las tomas a `exportar_pptx` para duración real/límites absolutos (R-13/R-16). `TipoSalida` gana `CAPITULOS_YOUTUBE` (quinta opción), generado con `capitulos_youtube.generar_capitulos_youtube`; sin sección `Capítulos`, queda `SalidaOmitida` con el motivo exacto, nunca fallo ni latente. `verificar_salidas.py::verificar_generacion` distingue ahora un fallo real (prefijo `"fallo al generar:"`) de esa omisión esperada. Sin tomas, comportamiento idéntico al de antes de R-18 (test de regresión byte a byte sobre los tres guiones reales). 8 tests nuevos (575→583). Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` |
 | R-19 | Enlazar la toma buena de cada escena con su archivo de vídeo real (campo opcional tecleado en el reproductor) y generar `concat-ffmpeg.txt`, la lista de concatenación lista para `ffmpeg -f concat` | **COMPLETADA** | 2026-09-30 | `Toma.archivo_video` (opcional, `""` por defecto) anotable con `V`/`v` durante la grabación o editable después desde el índice sin volver a grabar; `references/contrato-tomas.md` sube a versión 2 (aditivo, sin migración). `scripts/concat_ffmpeg.py` nuevo: reutiliza `tomas.toma_buena` (extraída de `duracion_toma_buena`, misma regla de exclusividad de R-11/#16) para generar `file '<archivo_video>'` o `# ESCENA N: <motivo>` por escena, en su orden real. `TipoSalida.CONCAT_FFMPEG` (sexta opción de T-30): omitida sin ningún parte de rodaje, nunca falla por escenas pendientes de anotar. 23 tests nuevos (583→606). Cuatro redes en verde, incluidas dos etapas nuevas en `verificar_salidas.py --fixture` (dieciséis en total). Verificado además con Playwright/Chromium real: anotar durante la grabación, editar desde el índice sin regrabar, exportar el parte de rodaje y generar `concat-ffmpeg.txt` con una ruta con comilla simple correctamente escapada. `DEVELOPERS.md`, `SKILL.md` y las referencias de `contrato-tomas.md`/`contrato-montaje.md`/`mapa-teclas.md` actualizados. Oleada v8, archivada en `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-09-30, junto con la nota de gobernanza sobre cómo se justificó su apertura (`auditoriacontinua.md` #26) |
 | R-20 | Anclar cada indicación `EN PANTALLA`/`NOTA` de `tarjetas.json` a un instante estimado dentro de la escena (`indicaciones_ancladas`, campo aditivo), reutilizando el anclaje que R-12 ya calcula para la cue en vivo del reproductor | **COMPLETADA** | 2026-10-01 | `reproductor.py::_indicaciones_ancladas_por_indice` (R-12) se divide: el anclaje se extrae a la función pública `anclar_indicaciones_a_bloques` (mismo patrón que `tomas.toma_buena` en R-19), reutilizada tal cual por `pptx.py`. `Tarjeta` gana `indicaciones_ancladas` (dataclass `IndicacionAnclada`: `texto`/`es_nota_interna`/`instante_estimado_segundos`), mismo conjunto que `indicaciones_pantalla`+`notas_internas`, calculado relativo a la escena y convertido a absoluto en `_con_limites_absolutos` (R-16, mismo acumulado que `inicio_segundos`/`fin_segundos`). Escena sin bloques de locución (sin ejemplo real, contemplada por `validar_tarjetas`): ancla al inicio de la escena. `--para-terceros` omite notas internas también aquí. Cambio aditivo, `version_contrato` no sube, sin migración. 7 tests nuevos (606→613), incluido uno que compara el instante exacto contra la cue del reproductor para el mismo guion (sin toma real: acumulados idénticos bit a bit). Cuatro redes en verde. `references/contrato-tarjetas.md`/`contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados |
+| R-21 | Validar `concat-ffmpeg.txt` en la ruta real de generación (`scripts/salidas.py`) invocando el validador propio del demuxer `concat` de ffmpeg antes de escribirlo, y sanear `archivo_video` en el origen (recorte de espacios, rechazo de salto de línea) | **COMPLETADA** | 2026-10-02 | `scripts/salidas.py::_generar_concat_ffmpeg` llama a `concat_ffmpeg.validar_lista_concat_ffmpeg` sobre el contenido ya generado antes de `guardar_lista_concat_ffmpeg`; un contenido inválido degrada a `SalidaOmitida` con el motivo exacto (mismo patrón `try`/`except` que ya protege a las demás salidas), nunca una excepción sin capturar ni un archivo corrupto en disco. `scripts/tomas.py` gana `_sanear_archivo_video` (recorta espacios, normaliza a `""` si queda vacío o trae `\n`/`\r`), aplicada en `_toma_desde_dict` al leer un parte de rodaje editado a mano; `assets/reproductor/guion.js` gana la función gemela `sanearArchivoVideo(valor)`, aplicada en los dos puntos donde el dueño teclea el valor (`pedirArchivoVideoToma` durante la grabación y el botón de edición desde el índice). `references/contrato-tomas.md` y `contrato-montaje.md` documentan la regla de saneamiento y la validación antes de escritura. Fuera de alcance, explícito: no se extiende la misma validación-antes-de-escribir a `srt.py`/`capitulos_youtube.py` (misma deuda preexistente, sin las consecuencias reales que le da a `archivo_video` ser texto libre). 6 tests nuevos (613→619): 4 en `test_tomas.py` (recorte, solo espacios, salto de línea, retorno de carro), 1 en `test_salidas.py` (contenido inválido forzado por monkeypatch degrada a omitida sin escribir), 1 nuevo más la actualización de uno existente en `test_reproductor.py` (los dos puntos de entrada saneados en el HTML generado). Cuatro redes en verde, incluidas las dieciséis etapas de `verificar_salidas.py --fixture`. Fase transversal F-J, cierra el hallazgo `#27` de `auditoriacontinua.md`. `DEVELOPERS.md` y `SKILL.md` actualizados |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

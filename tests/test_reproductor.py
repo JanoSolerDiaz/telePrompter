@@ -1116,8 +1116,21 @@ def test_guion_js_permite_editar_el_archivo_video_desde_el_indice_sin_regrabar()
     # que volver a grabar la toma" -- un boton PROPIO, fuera del <button> de
     # la fila (anidar controles interactivos rompe la semantica).
     assert "btn-archivo-video" in pagina
-    assert "toma.archivo_video = valor;" in pagina
+    # R-21 (hallazgo #27): el valor tecleado se sanea antes de asignarse.
+    assert "toma.archivo_video = sanearArchivoVideo(valor);" in pagina
     assert "guardarTomasEscena(indiceEscena);" in pagina
+
+
+def test_guion_js_sanea_el_archivo_video_en_los_dos_puntos_de_entrada() -> None:
+    """R-21 (hallazgo #27): tanto el prompt de grabacion (`V`/`v`) como la
+    edicion desde el indice pasan por `sanearArchivoVideo` antes de guardar
+    -- ninguno de los dos deja llegar un valor de solo espacios o con un
+    salto de linea sin normalizar a `""`."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function sanearArchivoVideo(valor)" in pagina
+    assert "archivoVideoTomaEnCurso = sanearArchivoVideo(archivoIngresado);" in pagina
+    assert "toma.archivo_video = sanearArchivoVideo(valor);" in pagina
 
 
 def test_parte_de_rodaje_exportado_sube_a_version_2() -> None:

@@ -3082,6 +3082,54 @@ nuevo de `Configuracion` ni migración de `estado.json`.
   (`validar_tarjetas` solo comprueba que es una lista, mismo nivel de rigor que
   `indicaciones_pantalla`/`notas_internas`).
 
+## Validar `concat-ffmpeg.txt` en la ruta real y sanear `archivo_video` en el origen (R-21)
+
+`origen: auditoría #27` (media, 2026-10-01), reproducido con código por el propio auditor:
+`scripts/concat_ffmpeg.py` traía su propio validador del formato del demuxer `concat` de ffmpeg
+desde R-19 (`validar_lista_concat_ffmpeg`), pero `scripts/salidas.py::_generar_concat_ffmpeg` nunca
+lo invocaba antes de escribir `concat-ffmpeg.txt` a disco — solo lo ejercitaba
+`verificar_salidas.py --fixture`, un chequeo de salud aparte de la generación real. Dos huecos
+verificados con reproducción directa de código: un `archivo_video` de solo espacios producía
+`file '   '` (sintácticamente válido, pero inabrible por ffmpeg), y uno con un salto de línea
+incrustado (alcanzable editando a mano el `.json` del parte de rodaje, flujo que R-02 soporta
+explícitamente) partía una entrada lógica en dos líneas físicas. Depende de R-19. Sin migración
+(saneamiento de entrada y una llamada de validación nuevos; ningún campo de `estado.json` ni de
+`Configuracion` cambia de forma).
+
+- **Requisito 1 (`_generar_concat_ffmpeg` valida antes de escribir).** `scripts/salidas.py` importa
+  `concat_ffmpeg.validar_lista_concat_ffmpeg` y la invoca sobre el contenido ya generado, antes de
+  `guardar_lista_concat_ffmpeg`: si devuelve algún problema, la salida se degrada a `SalidaOmitida`
+  con el motivo exacto (mismo patrón `try`/`except` que ya protege a las demás salidas de
+  `generar_salidas_seleccionadas`), nunca una excepción sin capturar ni un archivo corrupto en disco.
+- **Requisito 2 (`archivo_video` saneado en el origen).** `scripts/tomas.py` gana
+  `_sanear_archivo_video`: recorta espacios y, si el resultado queda vacío o contiene `\n`/`\r`, lo
+  normaliza a `""` (nunca error fatal) — `_toma_desde_dict` la aplica al leer un parte de rodaje
+  editado a mano. `assets/reproductor/guion.js` gana la función gemela `sanearArchivoVideo(valor)`,
+  aplicada en los dos puntos donde el dueño teclea el valor: `pedirArchivoVideoToma` (tecla `V`/`v`
+  durante la grabación) y el diálogo de edición desde el índice sin volver a grabar. Mismo criterio
+  en los dos lenguajes, para que ninguno de los dos puntos de entrada deje pasar un valor que el
+  validador de Python tendría que rechazar después.
+- **Requisito 3 (documentación).** `references/contrato-tomas.md` documenta la regla de saneamiento
+  de `archivo_video` (recortado, sin saltos de línea) en la tabla de campos y en los invariantes que
+  `cargar_parte_de_rodaje` comprueba; `references/contrato-montaje.md` deja constancia en la sección
+  de `concat-ffmpeg.txt` de que el archivo nunca llega a disco sin pasar por
+  `validar_lista_concat_ffmpeg`.
+- **Requisito 4 (fuera de alcance, explícito).** `srt.py`/`capitulos_youtube.py` no ganan la misma
+  validación-antes-de-escribir: misma deuda arquitectónica preexistente, pero sin las consecuencias
+  reales que le da a `archivo_video` ser la primera entrada de texto libre tecleada por el dueño en
+  la cadena de montaje.
+- **Requisito 5 (invariantes (a)/(d) intactos).** Sanear o degradar `concat-ffmpeg.txt` nunca toca
+  `estado.json["tomas"]` ni ningún campo existente de una toma — sigue siendo una salida derivada y
+  regenerable, igual que antes de R-21.
+- **Verificación.** `tests/test_tomas.py` gana 4 tests (recorte de espacios, solo espacios → `""`,
+  salto de línea → `""`, retorno de carro → `""`); `tests/test_salidas.py` gana 1 test que fuerza
+  `validar_lista_concat_ffmpeg` a fallar (monkeypatch) y confirma que `_generar_concat_ffmpeg` degrada
+  a `SalidaOmitida` sin escribir el archivo; `tests/test_reproductor.py` actualiza el test existente
+  de edición desde el índice (ahora pasa por `sanearArchivoVideo`) y gana uno nuevo que confirma los
+  dos puntos de entrada saneados. 613→619 tests. Cuatro redes en verde, incluidas las dieciséis
+  etapas de `verificar_salidas.py --fixture` (la de validez de `concat-ffmpeg.txt` ya existía desde
+  R-19 y sigue en verde, ahora reforzada por la invocación real en `salidas.py`).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

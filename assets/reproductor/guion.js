@@ -22,6 +22,21 @@
     return minutos + ":" + (resto < 10 ? "0" : "") + resto;
   }
 
+  // Normaliza `archivo_video` en el origen (R-21, requisito 2: hallazgo #27
+  // de `auditoriacontinua.md`): recorta espacios y, si queda vacio tras el
+  // recorte o trae un salto de linea, se trata como "sin anotar" (""). Mismo
+  // criterio que aplica `tomas._sanear_archivo_video` al leer un parte de
+  // rodaje editado a mano, para que ninguno de los dos puntos de entrada deje
+  // pasar un valor que `concat_ffmpeg.py` tendria que rechazar despues en la
+  // ruta real de generacion.
+  function sanearArchivoVideo(valor) {
+    var recortado = (valor || "").trim();
+    if (!recortado || recortado.indexOf("\n") !== -1 || recortado.indexOf("\r") !== -1) {
+      return "";
+    }
+    return recortado;
+  }
+
   // Persistencia local del ajuste de espejo (T-25, requisito 3 y criterio de
   // aceptacion: "el ajuste persiste tras recargar"). T-26 disena el mecanismo
   // general para el resto de preferencias (tamano de texto, velocidad por
@@ -476,7 +491,7 @@
               toma.archivo_video || ""
             );
             if (valor !== null) {
-              toma.archivo_video = valor;
+              toma.archivo_video = sanearArchivoVideo(valor);
               guardarTomasEscena(indiceEscena);
               renderizarIndice();
             }
@@ -1032,7 +1047,7 @@
       archivoVideoTomaEnCurso
     );
     if (archivoIngresado !== null) {
-      archivoVideoTomaEnCurso = archivoIngresado;
+      archivoVideoTomaEnCurso = sanearArchivoVideo(archivoIngresado);
       actualizarIndicadorToma();
     }
   }

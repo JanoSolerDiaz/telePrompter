@@ -10,6 +10,7 @@ import pytest
 from capitulos_youtube import generar_capitulos_youtube
 from concat_ffmpeg import generar_lista_concat_ffmpeg
 from config import (
+    NOMBRE_ARCHIVO_CONCAT_FFMPEG,
     NOMBRE_ARCHIVO_SRT_ALINEADO,
     NOMBRE_ARCHIVO_TARJETAS_JSON,
     Configuracion,
@@ -434,6 +435,36 @@ def test_concat_ffmpeg_con_tomas_sin_archivo_anotado_genera_solo_comentarios(
     assert "# ESCENA 0: sin_archivo_anotado" in contenido
     assert "# ESCENA 1: sin_toma_buena" in contenido
     assert "file '" not in contenido
+
+
+def test_concat_ffmpeg_con_contenido_invalido_degrada_a_omitida_en_vez_de_escribir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-21 (hallazgo #27): `_generar_concat_ffmpeg` valida el contenido con
+    `concat_ffmpeg.validar_lista_concat_ffmpeg` antes de escribirlo. Se
+    fuerza aqui un contenido invalido (el saneamiento en el origen ya
+    impide llegar a este caso en uso normal, requisito del criterio de
+    aceptacion): la salida se omite con el motivo exacto, nunca se escribe
+    a disco ni se lanza una excepcion sin capturar."""
+    import salidas as modulo_salidas
+
+    monkeypatch.setattr(
+        modulo_salidas, "validar_lista_concat_ffmpeg", lambda _contenido: ["problema simulado"]
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CONCAT_FFMPEG,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+    )
+    assert resumen.generadas == ()
+    omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.CONCAT_FFMPEG)
+    assert "problema simulado" in omitida.motivo
+    assert not omitida.motivo.startswith("fallo al generar")
+    assert not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()
 
 
 def test_regresion_guiones_reales_sin_tomas_identica_a_antes_de_r18(

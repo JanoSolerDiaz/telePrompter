@@ -42,6 +42,13 @@ se ha anotado) -- el nombre del archivo de video real de la camara que
 aditivo (`references/contrato-tomas.md` version 2): un parte de rodaje o un
 `estado.json` de antes de R-19 se lee igual, con `""` por defecto.
 
+R-21 (hallazgo #27): `_sanear_archivo_video` recorta espacios y descarta un
+valor vacio tras el recorte o con un salto de linea al leer un parte de
+rodaje editado a mano, normalizandolo a `""` (nunca error fatal) -- mismo
+criterio que aplica `guion.js` al teclearlo, para que ninguno de los dos
+puntos de entrada deje llegar a `concat_ffmpeg.py` un valor que su
+validador tendria que rechazar en la ruta real de generacion.
+
 Contrato del archivo exportado y de `estado.json["tomas"]`: `references/contrato-tomas.md`.
 """
 
@@ -97,6 +104,21 @@ def _requerido(bruto: dict[str, Any], clave: str, contexto: str) -> Any:
     return bruto[clave]
 
 
+def _sanear_archivo_video(archivo_video: str) -> str:
+    """Normaliza `archivo_video` al leer un parte de rodaje editado a mano
+    (R-21, requisito 2): recorta espacios y, si queda vacio tras el recorte o
+    contiene un salto de linea, se trata como "sin anotar" (`""`) en vez de
+    como error fatal -- el dueno no pierde el parte de rodaje por una entrada
+    invalida en un solo campo opcional. Mismo criterio que aplica
+    `guion.js` al teclear el valor, para que ninguno de los dos puntos de
+    entrada deje pasar un valor que `concat_ffmpeg.py` tendria luego que
+    rechazar en la ruta real de generacion (hallazgo `#27`)."""
+    recortado = archivo_video.strip()
+    if not recortado or "\n" in recortado or "\r" in recortado:
+        return ""
+    return recortado
+
+
 def _toma_desde_dict(bruto: Any, contexto: str) -> Toma:
     if not isinstance(bruto, dict):
         raise RegistroTomasError(
@@ -119,6 +141,7 @@ def _toma_desde_dict(bruto: Any, contexto: str) -> Toma:
     archivo_video = bruto.get("archivo_video", "")
     if not isinstance(archivo_video, str):
         raise RegistroTomasError(f"{contexto}: 'archivo_video' debe ser texto.")
+    archivo_video = _sanear_archivo_video(archivo_video)
     return Toma(
         numero=numero,
         duracion_segundos=duracion,

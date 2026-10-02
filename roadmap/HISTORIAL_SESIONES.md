@@ -12,6 +12,77 @@
 
 ---
 
+### Sesión 2026-10-02 (59) — Ciclo de Programador: R-21 implementada y `COMPLETADA` (Fase transversal F-J)
+
+**Arranque.** `git status` limpio antes de tocar nada; `git checkout develop && git pull origin
+develop` resolvió en fast-forward limpio hasta `4890134` (trece commits), sin `HEAD` *detached* ni
+rama divergida. `pip install -r requirements-dev.txt` limpio.
+
+**Lectura previa (protocolo §0.4).** `roadmap/SEGUIMIENTO.md` §1 (fuente autoritativa): R-20
+`COMPLETADA`, sin fila para R-21 todavía (abierta por el ciclo de PM anterior, pendiente de
+implementación); §3/§5 sin filas nuevas; §6 con la pregunta #11 todavía `(pendiente)`.
+`auditoriacontinua.md`, registro de hallazgos: dos `ABIERTO`, ninguno de severidad alta — `#24`
+(baja, proceso, pregunta #11) y `#27` (media, exactamente el hallazgo que R-21 atiende, ya con
+tarea vinculada). Ninguno exige P-XX urgente por §0.3. Spec de R-21 leída en `ROADMAP_PRODUCTO.md`
+§Fase transversal F-J.
+
+**Implementación (requisitos 1-3 de R-21).**
+
+1. `scripts/salidas.py::_generar_concat_ffmpeg` importa `concat_ffmpeg.validar_lista_concat_ffmpeg`
+   y la invoca sobre el contenido ya generado por `generar_lista_concat_ffmpeg`, justo antes de
+   `guardar_lista_concat_ffmpeg`: un contenido inválido degrada a `SalidaOmitida` con el motivo
+   exacto (`"contenido invalido para el demuxer concat de ffmpeg: " + problemas`), mismo patrón
+   `try`/`except` que ya protege a las demás cinco salidas de `generar_salidas_seleccionadas` — hasta
+   ahora el validador solo se ejercitaba desde `verificar_salidas.py --fixture`.
+2. `scripts/tomas.py` gana `_sanear_archivo_video` (recorta espacios; si el resultado queda vacío o
+   contiene `\n`/`\r`, lo normaliza a `""`), aplicada en `_toma_desde_dict` al leer un parte de rodaje
+   editado a mano. `assets/reproductor/guion.js` gana la función gemela `sanearArchivoVideo(valor)`,
+   aplicada en `pedirArchivoVideoToma` (tecla `V`/`v` durante la grabación) y en el diálogo de edición
+   desde el índice (botón `btn-archivo-video`) — los dos puntos de entrada donde el dueño teclea el
+   valor, sin reintroducir la lógica de saneamiento una tercera vez en ninguno de los dos lenguajes.
+3. `references/contrato-tomas.md` documenta la regla de saneamiento en la tabla de campos de `Toma` y
+   en los invariantes de `cargar_parte_de_rodaje`; `references/contrato-montaje.md` deja constancia en
+   la sección de `concat-ffmpeg.txt` de que el archivo nunca llega a disco sin pasar por el validador.
+
+**Fuera de alcance (requisito 4, explícito en la spec).** No se extiende la misma
+validación-antes-de-escribir a `srt.py`/`capitulos_youtube.py`: misma deuda arquitectónica
+preexistente, pero sin las consecuencias reales que le da a `archivo_video` ser la primera entrada de
+texto libre tecleada por el dueño en la cadena de montaje (razonamiento ya en la spec de R-21, no
+repetido aquí).
+
+**Invariantes (requisito 5).** Sanear o degradar `concat-ffmpeg.txt` nunca toca
+`estado.json["tomas"]` ni ningún campo existente de una toma — sigue siendo una salida derivada y
+regenerable, igual que antes de R-21; confirmado releyendo el diff completo antes del commit.
+
+**Verificación (criterio de aceptación).** `tests/test_tomas.py` gana 4 tests (recorte de espacios,
+solo espacios → `""`, salto de línea → `""`, retorno de carro → `""`, todos vía
+`cargar_parte_de_rodaje`). `tests/test_salidas.py` gana 1 test que fuerza `validar_lista_concat_ffmpeg`
+a fallar (monkeypatch) y confirma que `_generar_concat_ffmpeg` degrada a `SalidaOmitida` sin escribir
+`concat-ffmpeg.txt` a disco. `tests/test_reproductor.py` actualiza el test existente de edición desde
+el índice (ahora pasa por `sanearArchivoVideo`, no por asignación directa) y gana uno nuevo que
+confirma los dos puntos de entrada saneados en el HTML generado. 613→619 tests. Cuatro redes en
+verde: `python -m mypy scripts/ tests/` (70 archivos, limpio), `python -m ruff check .` ("All checks
+passed!"), `python -m pytest` (619 passed), `python scripts/verificar_salidas.py --fixture` (dieciséis
+etapas OK, incluida "Generación"/"Validez de la lista de concatenación de ffmpeg" sobre
+`guion-ejemplo.md`, igual que antes de R-21 cuando `archivo_video` ya viene limpio — sin regresión).
+
+**Documentación.** `DEVELOPERS.md` gana la sección "Validar `concat-ffmpeg.txt` en la ruta real y
+sanear `archivo_video` en el origen (R-21)"; `SKILL.md` actualizado en "Registro de tomas por escena"
+y "Lista de concatenación de ffmpeg (R-19)" con la nota de saneamiento/validación de R-21.
+
+**Cambios de estado.** `roadmap/SEGUIMIENTO.md` §1 gana la fila `R-21` `COMPLETADA`; cabecera
+("Última actualización") actualizada, la nota de la sesión de PM anterior demovida a "Última
+actualización anterior" y condensada también en la lista de historial. Tres decisiones nuevas en
+`DECISIONES_TECNICAS.md` (fecha 2026-10-02, tarea R-21): por qué validar en `salidas.py` y no dentro
+de `concat_ffmpeg.py`; por qué sanear en los dos lenguajes por separado en vez de centralizar; por
+qué normalizar a `""` en vez de rechazar con error fatal. Sin cambios en §3 (bloqueos) ni §5 (P-XX);
+§6 sin novedad (pregunta #11 sigue `(pendiente)`). Próximo ciclo de PM: `ROADMAP_PRODUCTO.md` "Cola
+de producto" queda sin ninguna R-XX `PENDIENTE` tras esta sesión — reconfirmar cola vacía o abrir la
+siguiente si surge un hallazgo nuevo de auditoría, `FEEDBACK.md` o una grieta de arquitectura
+verificada.
+
+---
+
 ### Sesión 2026-10-01 (58) — Ciclo de Product Manager: archiva Oleada v9 (R-20) y abre R-21 (Fase transversal F-J) desde el hallazgo `#27`
 
 **Arranque.** `git checkout develop` dejó el contenedor en `HEAD` *detached* 11 commits por detrás

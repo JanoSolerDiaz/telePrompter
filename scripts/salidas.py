@@ -44,6 +44,15 @@ R-19 anade una sexta opcion, `CONCAT_FFMPEG`: con `tomas_por_escena` no vacio
 mismo patron de `SalidaOmitida` que `CAPITULOS_YOUTUBE` cuando no hay nada
 real que concatenar todavia (sin parte de rodaje en absoluto) -- nunca un
 fallo ni una salida latente.
+
+R-21 (hallazgo #27): `_generar_concat_ffmpeg` invoca ademas
+`concat_ffmpeg.validar_lista_concat_ffmpeg` sobre el contenido ya generado,
+antes de escribirlo a disco -- hasta entonces el validador solo se
+ejercitaba desde `verificar_salidas.py --fixture`, nunca en esta ruta real.
+Un contenido invalido (alcanzable solo si `archivo_video` llega sin sanear
+desde `estado.tomas`, algo que `tomas._sanear_archivo_video` ya impide en el
+origen) degrada a `SalidaOmitida` con el motivo exacto, nunca una excepcion
+sin capturar ni un archivo corrupto en disco.
 """
 
 from __future__ import annotations
@@ -54,7 +63,11 @@ from pathlib import Path
 from typing import Any
 
 from capitulos_youtube import generar_capitulos_youtube, guardar_capitulos_youtube
-from concat_ffmpeg import generar_lista_concat_ffmpeg, guardar_lista_concat_ffmpeg
+from concat_ffmpeg import (
+    generar_lista_concat_ffmpeg,
+    guardar_lista_concat_ffmpeg,
+    validar_lista_concat_ffmpeg,
+)
 from config import Configuracion
 from estado import EstadoProyecto, marca_de_tiempo
 from parser import ResultadoParseo
@@ -341,6 +354,17 @@ def _generar_concat_ffmpeg(
     contenido, calculo = generar_lista_concat_ffmpeg(resultado_tiempos, tomas_por_escena)
     if contenido is None:
         motivo = calculo.motivo_sin_generar or "no hay ninguna toma buena registrada todavía."
+        return [], [SalidaOmitida(TipoSalida.CONCAT_FFMPEG, motivo)]
+    # R-21 (hallazgo #27): el validador del formato del demuxer `concat` de
+    # ffmpeg existia desde R-19 pero nunca se invocaba en esta ruta real de
+    # generacion, solo desde `verificar_salidas.py --fixture`. Se ejecuta
+    # aqui antes de escribir a disco, mismo patron `try`/`except` que ya
+    # protege a las demas salidas: un contenido invalido degrada a
+    # `SalidaOmitida` con el motivo exacto, nunca una excepcion sin capturar
+    # ni un archivo corrupto en disco.
+    problemas = validar_lista_concat_ffmpeg(contenido)
+    if problemas:
+        motivo = "contenido invalido para el demuxer concat de ffmpeg: " + "; ".join(problemas)
         return [], [SalidaOmitida(TipoSalida.CONCAT_FFMPEG, motivo)]
     ruta = guardar_lista_concat_ffmpeg(contenido, carpeta_salida)
     return [ArchivoGenerado(TipoSalida.CONCAT_FFMPEG, ruta, ruta.stat().st_size)], []

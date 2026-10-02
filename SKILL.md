@@ -196,7 +196,7 @@ El botón **"Exportar parte de rodaje"** del índice vuelca el registro completo
 | Exportar parte de rodaje | botón en el índice | Descarga `teleprompter-tomas-<guion>.json`; mismo plan B de copiar a mano si la descarga falla |
 | Fusión en `estado.json` | `scripts/tomas.registrar_tomas` | Reemplaza por escena con lo más reciente exportado; nunca borra tomas de una escena que la exportación no menciona |
 
-Desde R-19, cada toma gana además el campo opcional `archivo_video`: el nombre del archivo de vídeo real de la cámara que corresponde a esa toma. Se anota igual que la nota rápida, con `V`/`v`, sin salir del modo de grabación — y también **editable después, desde el índice**, con un botón propio junto a cada escena que ya tiene una toma marcada buena (sin tener que volver a grabarla). Nunca obligatorio para cerrar una toma ni para marcarla buena. Es la pieza que usa `scripts/concat_ffmpeg.py` (ver más abajo) para generar la lista de concatenación de ffmpeg.
+Desde R-19, cada toma gana además el campo opcional `archivo_video`: el nombre del archivo de vídeo real de la cámara que corresponde a esa toma. Se anota igual que la nota rápida, con `V`/`v`, sin salir del modo de grabación — y también **editable después, desde el índice**, con un botón propio junto a cada escena que ya tiene una toma marcada buena (sin tener que volver a grabarla). Nunca obligatorio para cerrar una toma ni para marcarla buena. Es la pieza que usa `scripts/concat_ffmpeg.py` (ver más abajo) para generar la lista de concatenación de ffmpeg. Desde R-21, el valor se sanea en el momento de teclearlo (recortado de espacios, un salto de línea incrustado lo normaliza a "sin anotar") tanto aquí como al leer un parte de rodaje editado a mano.
 
 ## Marcar tropiezos durante la toma (R-03)
 
@@ -266,6 +266,8 @@ Formato exacto de YouTube (requisito de la propia plataforma): la primera marca 
 Recorre las escenas en su orden real (el mismo de `tarjetas.json`/`guion.srt`) y, por cada una, busca su toma buena reutilizando el mismo criterio de exclusividad que R-04/R-05/R-07 (`tomas.toma_buena`, como mucho una por escena). Si tiene `archivo_video` anotado, escribe `file '<archivo_video>'` en el formato exacto del demuxer `concat` de ffmpeg (comillas simples, cualquier comilla simple interna escapada con la secuencia estándar `'\''`). Si no — sin toma buena todavía, o con ella pero sin anotar —, **nunca** inventa una ruta ni silencia la escena: escribe un comentario `# ESCENA N: <motivo>` (`sin_toma_buena` / `sin_archivo_anotado`; el demuxer de ffmpeg ignora las líneas que empiezan por `#`) y la cuenta como pendiente en el resumen final.
 
 Sin ningún parte de rodaje registrado todavía, esta salida no se genera (no hay nada real que concatenar) y queda omitida con el motivo exacto, nunca como fallo — mismo criterio que los capítulos de YouTube sin sección `Capítulos`. Con al menos una toma, el archivo se genera siempre, mezclando líneas `file` y comentarios según haga falta.
+
+Desde R-21, `concat-ffmpeg.txt` nunca llega a disco sin pasar antes por `validar_lista_concat_ffmpeg` sobre su propio contenido: un contenido inválido (solo alcanzable si se rompe el saneamiento de `archivo_video` en el origen) degrada la salida a omitida con el motivo exacto, en vez de escribir un archivo corrupto.
 
 | Opción | Por defecto | Nota |
 |--------|-------------|------|

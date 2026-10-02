@@ -170,6 +170,17 @@ Sin ningún parte de rodaje en absoluto, este archivo no se genera (no hay
 nada real que concatenar todavía) — la cadena de montaje no debe asumir que
 existe hasta que el dueño haya grabado al menos una toma.
 
+**Validado antes de llegar a disco (R-21, hallazgo `#27`):** `concat-ffmpeg.txt`
+nunca se escribe sin pasar antes por `concat_ffmpeg.validar_lista_concat_ffmpeg`
+sobre su propio contenido — hasta R-21 ese validador solo se ejercitaba desde
+`verificar_salidas.py --fixture`, un chequeo de salud aparte de la generación
+real. Si el contenido no cumple el formato del demuxer `concat`, la salida se
+omite con el motivo exacto en vez de escribirse corrupta o lanzar una
+excepción sin capturar. `archivo_video` llega ya saneado desde su origen
+(recortado, sin saltos de línea; `references/contrato-tomas.md`), así que este
+caso solo se da si esa garantía se rompe — nunca por una toma anotada con
+normalidad.
+
 ## Qué quedaba fuera de esta tarea (T-33), ya completado por sesiones posteriores
 
 Nota historica: en el momento de T-33 (2026-09-02), `R-02`, `R-04` y `R-05`

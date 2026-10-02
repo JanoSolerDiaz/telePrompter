@@ -159,6 +159,41 @@ def test_toma_sin_nota_ni_buena_usa_defectos(tmp_path: Path) -> None:
     assert parte.escenas[0].tomas[0].buena is False
 
 
+# --- saneamiento de `archivo_video` (R-21, hallazgo #27) -----------------------------
+
+
+def test_archivo_video_se_recorta_de_espacios(tmp_path: Path) -> None:
+    contenido = _parte_valido()
+    contenido["escenas"][0]["tomas"][1]["archivo_video"] = "  CLIP0002.MP4  "
+    ruta = _escribir_parte(tmp_path, contenido)
+    parte = cargar_parte_de_rodaje(ruta, nombre_guion="mi-guion")
+    assert parte.escenas[0].tomas[1].archivo_video == "CLIP0002.MP4"
+
+
+def test_archivo_video_de_solo_espacios_se_normaliza_a_vacio(tmp_path: Path) -> None:
+    contenido = _parte_valido()
+    contenido["escenas"][0]["tomas"][1]["archivo_video"] = "   "
+    ruta = _escribir_parte(tmp_path, contenido)
+    parte = cargar_parte_de_rodaje(ruta, nombre_guion="mi-guion")
+    assert parte.escenas[0].tomas[1].archivo_video == ""
+
+
+def test_archivo_video_con_salto_de_linea_se_normaliza_a_vacio(tmp_path: Path) -> None:
+    contenido = _parte_valido()
+    contenido["escenas"][0]["tomas"][1]["archivo_video"] = "a.mp4\nfile 'evil.mp4'"
+    ruta = _escribir_parte(tmp_path, contenido)
+    parte = cargar_parte_de_rodaje(ruta, nombre_guion="mi-guion")
+    assert parte.escenas[0].tomas[1].archivo_video == ""
+
+
+def test_archivo_video_con_retorno_de_carro_se_normaliza_a_vacio(tmp_path: Path) -> None:
+    contenido = _parte_valido()
+    contenido["escenas"][0]["tomas"][1]["archivo_video"] = "a.mp4\rfile 'evil.mp4'"
+    ruta = _escribir_parte(tmp_path, contenido)
+    parte = cargar_parte_de_rodaje(ruta, nombre_guion="mi-guion")
+    assert parte.escenas[0].tomas[1].archivo_video == ""
+
+
 # --- registrar_tomas ------------------------------------------------------------------
 
 
