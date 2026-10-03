@@ -10,8 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-02 — **Ciclo de Product Manager: archiva Fase transversal F-J
-(R-21) y abre R-22 (Oleada v10)** (detalle en la nota de arranque de esta sesión, más abajo).
+**Última actualización:** 2026-10-03 — **Ciclo de Product Manager: reconfirmación de cola, sin
+R-XX nueva abierta.** R-22 (Oleada v10) sigue `PENDIENTE` de implementación por el Programador
+(detalle en la nota de esta sesión, más abajo).
+
+**Última actualización anterior (2026-10-02, ciclo de Product Manager): archiva Fase transversal F-J
+(R-21) y abre R-22 (Oleada v10)** (detalle en la nota de arranque de esa sesión, más abajo).
 
 **Última actualización anterior (novena reconfirmación del día tras R-21, ciclo de Programador):**
 **Ciclo de Programador: novena reconfirmación del día tras R-21**, sin novedad de código (detalle en
@@ -170,12 +174,47 @@ P-XX urgente antes de esta tarea (único hallazgo `ABIERTO` de severidad media, 
 que esta tarea cierra; `#24`, baja, sigue pendiente solo de la respuesta del dueño a la pregunta #11
 de §6).
 
-**Nota de arranque de esta sesión (ciclo de Product Manager, 2026-10-02):** sin incidencia. `git
+**Nota de arranque de esta sesión (ciclo de Product Manager, 2026-10-03):** sin incidencia. `git
 status` limpio antes de tocar nada; `git checkout develop` dejó el contenedor en `HEAD` *detached*
-sin rama asociada (commits de reconfirmaciones del Programador ya fusionados en `develop`,
-descartable); `git pull origin develop` resolvió en fast-forward limpio hasta `c0cb579` (novena
-reconfirmación del Programador del mismo día), sin conflicto ni rama divergida. `pip install -r
+(commits de la auditoría del mismo día ya fusionados en `develop`, descartable); `git pull origin
+develop` resolvió en fast-forward limpio hasta `113ae14` (la auditoría 2026-10-03, que cierra `#27`
+y reconfirma `#24` por cuarta vez), sin conflicto ni rama divergida. `pip install -r
 requirements-dev.txt` limpio.
+
+**Ciclo de Product Manager (2026-10-03): reconfirmación de cola, sin R-XX nueva abierta.**
+Revisión de entrada (protocolo): registro de hallazgos de `auditoriacontinua.md` reconfirma un único
+`ABIERTO`, `#24` (baja, proceso — la pregunta de gobernanza #11 de §6 sigue `(pendiente)` de
+respuesta del dueño, decimoséptima pasada consecutiva esperándola; no es una R-XX, ya enrutada); la
+auditoría del mismo día (narrativa "sin hallazgos nuevos") no aporta ningún hallazgo de
+producto/arquitectura que convertir. `roadmap/FEEDBACK.md`: sigue sin ninguna entrada `nuevo`
+(plantilla vacía) — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto, así que no hay
+historia de rodaje real que incorporar. §1 (fuente autoritativa): sin fila nueva para R-22 — el
+ciclo de Programador que la implementa aún no ha corrido desde que se abrió (2026-10-02); R-22
+sigue siendo la única R-XX `PENDIENTE` de todo el roadmap, ya especificada por completo en
+"Oleada v10" de `ROADMAP_PRODUCTO.md`, sin ningún cambio necesario en su ficha. Releídos de nuevo
+`scripts/capitulos_youtube.py`, `scripts/salidas.py` y `references/contrato-montaje.md` buscando
+otra grieta de arquitectura del mismo tipo que abrió R-12 a R-22 (observación directa del PM, no
+del auditor): ninguna encontrada — ni `capitulos-ffmpeg.txt` ni `FFMETADATA1` aparecen todavía en
+ningún módulo de `scripts/` ni en `references/`, consistente con que R-22 sigue sin implementar.
+**No se abre ninguna R-XX nueva en este ciclo**: abrir una R-23 especulativa mientras R-22 — la
+única candidata legítima de este propio criterio — sigue sin wiring real implementado contradiría
+el principio ya establecido el 2026-09-17/22/23 (no apilar R-XX sin evidencia real solo para no
+dejar el ciclo "vacío"); además rompería por primera vez el patrón histórico de abrir como mucho
+una R-XX pendiente de código a la vez. Decisión registrada en `DECISIONES_TECNICAS.md`; detalle
+completo de este ciclo en `HISTORIAL_SESIONES.md`. Sin cambios en §3, §5, §6 ni §7; ningún cambio
+necesario en `ROADMAP_PRODUCTO.md` (su cabecera y "Cola de producto" ya describen R-22 con
+exactitud, sin latencia que corregir esta vez). Este ciclo es de PM, no de Programador: no se
+ejecuta la verificación de las cuatro redes.
+
+**Última actualización anterior (2026-10-02, ciclo de Product Manager): archiva Fase transversal
+F-J (R-21) y abre R-22 (Oleada v10)** (detalle completo abajo).
+
+**Nota de arranque de la sesión anterior (ciclo de Product Manager, 2026-10-02):** sin incidencia.
+`git status` limpio antes de tocar nada; `git checkout develop` dejó el contenedor en `HEAD`
+*detached* sin rama asociada (commits de reconfirmaciones del Programador ya fusionados en
+`develop`, descartable); `git pull origin develop` resolvió en fast-forward limpio hasta `c0cb579`
+(novena reconfirmación del Programador del mismo día), sin conflicto ni rama divergida. `pip
+install -r requirements-dev.txt` limpio.
 
 **Ciclo de Product Manager (2026-10-02): archiva Fase transversal F-J (R-21) y abre R-22 (Oleada
 v10).** §1 (fuente autoritativa) ya registraba R-21 `COMPLETADA` desde el ciclo de Programador de

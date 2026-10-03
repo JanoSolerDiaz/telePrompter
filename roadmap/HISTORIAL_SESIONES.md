@@ -12,6 +12,43 @@
 
 ---
 
+### Sesión 2026-10-03 (70) — Ciclo de Product Manager: reconfirmación de cola, sin R-XX nueva abierta
+
+**Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached*
+(commits de la auditoría del mismo día ya fusionados en `develop`); `git pull origin develop`
+resolvió en fast-forward limpio hasta `113ae14` (la auditoría 2026-10-03), sin conflicto ni rama
+divergida. `pip install -r requirements-dev.txt` limpio.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: la pasada de
+hoy ("Auditoría 2026-10-03 — sin hallazgos nuevos; R-21 implementada y verificada, cierra `#27`;
+R-22 abierta y aún sin implementar") no aporta ningún hallazgo nuevo que convertir en tarea; único
+`ABIERTO` del registro, `#24` (baja, proceso — pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+decimoséptima pasada consecutiva esperándola), ya enrutado, no es una R-XX. `roadmap/FEEDBACK.md`:
+sigue sin ninguna entrada `nuevo` (plantilla vacía) — el bloqueo #7 de §3 (grabar un curso completo)
+sigue abierto.
+
+**Estado de §1 (fuente autoritativa).** Sin fila nueva para R-22: el ciclo de Programador que la
+implementaría aún no ha corrido desde que el ciclo de PM anterior (2026-10-02) la abrió. R-22 sigue
+siendo la única R-XX `PENDIENTE` de todo el roadmap, ya especificada por completo (10 requisitos,
+criterio de aceptación verificable) en `ROADMAP_PRODUCTO.md` §Oleada v10, sin ningún cambio
+necesario en su ficha ni en la cabecera/"Cola de producto" del documento (ya la describen con
+exactitud, sin la latencia prosa-vs-código que señala `#24` en otros ciclos).
+
+**Búsqueda de otra grieta de arquitectura.** Releídos `scripts/capitulos_youtube.py`,
+`scripts/salidas.py` y `references/contrato-montaje.md` buscando otra grieta del mismo tipo que
+abrió R-12 a R-22 (observación directa del PM, no del auditor): ninguna encontrada. Confirmado por
+`grep` que `capitulos-ffmpeg.txt`/`FFMETADATA1` no aparecen todavía en ningún módulo de `scripts/`
+ni en `references/`, consistente con que R-22 sigue sin implementar.
+
+**No se abre ninguna R-XX nueva en este ciclo.** Abrir una R-23 especulativa mientras R-22 — la
+única candidata legítima de las tres fuentes ya establecidas — sigue sin implementar rompería por
+primera vez el patrón histórico de no tener más de una R-XX pendiente de código a la vez, sin
+ninguna evidencia real (auditoría, `FEEDBACK.md`) que lo justifique. Decisión registrada en
+`DECISIONES_TECNICAS.md`. Sin cambios en §3, §5, §6 ni §7 de `SEGUIMIENTO.md`. Este ciclo es de PM,
+no de Programador: no se ejecuta la verificación de las cuatro redes.
+
+---
+
 ### Sesión 2026-10-02 (69) — Ciclo de Product Manager: archiva Fase transversal F-J (R-21) y abre R-22 (Oleada v10)
 
 **Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached*
