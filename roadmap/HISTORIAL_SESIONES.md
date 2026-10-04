@@ -12,6 +12,39 @@
 
 ---
 
+### Sesión 2026-10-04 (71) — Ciclo de Product Manager: reconfirmación de cola, sin R-XX nueva abierta
+
+**Arranque.** `git status` limpio; `git checkout develop` avisó de 27 commits por detrás sin rama
+asociada (reconfirmaciones y auditorías ya fusionadas en `develop`, descartable); `git pull origin
+develop` resolvió en fast-forward limpio hasta `6689d90` (la auditoría 2026-10-04, "sin hallazgos
+nuevos, sin cambios de código desde la pasada anterior"), sin conflicto ni rama divergida. `pip
+install -r requirements-dev.txt` limpio.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: contado por
+columna `Estado` sobre las 27 filas del registro (no solo la narrativa), el único `ABIERTO` sigue
+siendo `#24` (baja, proceso — pregunta de gobernanza #11 de §6 sigue `(pendiente)`, decimoctava
+pasada consecutiva esperándola según la propia auditoría de hoy), ya enrutado, no es una R-XX.
+`roadmap/FEEDBACK.md`: sigue con la única fila de plantilla vacía, ninguna entrada `nuevo` real — el
+bloqueo #7 de §3 (grabar un curso completo) sigue abierto. `mcp__github__list_issues`/
+`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero issues y cero PR abiertos.
+
+**Estado de §1 (fuente autoritativa).** Sin fila nueva para R-22: el ciclo de Programador que la
+implementaría no ha corrido todavía. Confirmado con `git log` que `scripts/capitulos_youtube.py`,
+`scripts/salidas.py`, `scripts/config.py` y `references/contrato-montaje.md` siguen sin tocarse
+desde el 2026-10-02 (cuando se abrió R-22), y con `grep` que `FFMETADATA1`/`capitulos-ffmpeg`/
+`formatear_capitulos_ffmpeg` siguen sin aparecer en ningún módulo de `scripts/`. R-22 sigue siendo
+la única R-XX `PENDIENTE` de todo el roadmap, ya especificada por completo en `ROADMAP_PRODUCTO.md`
+§Oleada v10, sin cambio necesario en su ficha ni en la cabecera/"Cola de producto" del documento.
+
+**No se abre ninguna R-XX nueva en este ciclo.** Mismo razonamiento que el ciclo de PM del
+2026-10-03 (ver `DECISIONES_TECNICAS.md`): abrir una R-23 especulativa mientras R-22 sigue sin
+implementar rompería el patrón de no tener más de una R-XX pendiente de código a la vez, sin ninguna
+evidencia real (auditoría, `FEEDBACK.md`, grieta de arquitectura nueva) que lo justifique. Decisión
+registrada en `DECISIONES_TECNICAS.md`. Sin cambios en §3, §5, §6 ni §7 de `SEGUIMIENTO.md`. Este
+ciclo es de PM, no de Programador: no se ejecuta la verificación de las cuatro redes.
+
+---
+
 ### Sesión 2026-10-03 (70) — Ciclo de Product Manager: reconfirmación de cola, sin R-XX nueva abierta
 
 **Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached*

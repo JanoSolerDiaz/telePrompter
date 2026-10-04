@@ -10,9 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-03 — **Ciclo de Product Manager: reconfirmación de cola, sin
+**Última actualización:** 2026-10-04 — **Ciclo de Product Manager: reconfirmación de cola, sin
 R-XX nueva abierta.** R-22 (Oleada v10) sigue `PENDIENTE` de implementación por el Programador
 (detalle en la nota de esta sesión, más abajo).
+
+**Última actualización anterior (2026-10-03, ciclo de Product Manager): reconfirmación de cola, sin
+R-XX nueva abierta** (detalle en la nota de arranque de esa sesión, más abajo).
 
 **Última actualización anterior (2026-10-02, ciclo de Product Manager): archiva Fase transversal F-J
 (R-21) y abre R-22 (Oleada v10)** (detalle en la nota de arranque de esa sesión, más abajo).
@@ -174,7 +177,41 @@ P-XX urgente antes de esta tarea (único hallazgo `ABIERTO` de severidad media, 
 que esta tarea cierra; `#24`, baja, sigue pendiente solo de la respuesta del dueño a la pregunta #11
 de §6).
 
-**Nota de arranque de esta sesión (ciclo de Product Manager, 2026-10-03):** sin incidencia. `git
+**Nota de arranque de esta sesión (ciclo de Product Manager, 2026-10-04):** sin incidencia. `git
+status` limpio antes de tocar nada; `git checkout develop` avisó de 27 commits por detrás sin rama
+asociada (reconfirmaciones y auditorías ya fusionadas en `develop`, descartable); `git pull origin
+develop` resolvió en fast-forward limpio hasta `6689d90` (la auditoría 2026-10-04, "sin hallazgos
+nuevos, sin cambios de código desde la pasada anterior"), sin conflicto ni rama divergida. `pip
+install -r requirements-dev.txt` limpio.
+
+**Ciclo de Product Manager (2026-10-04): reconfirmación de cola, sin R-XX nueva abierta.**
+Revisión de entrada (protocolo): registro de hallazgos de `auditoriacontinua.md` reconfirma un único
+`ABIERTO`, `#24` (baja, proceso — la pregunta de gobernanza #11 de §6 sigue `(pendiente)` de
+respuesta del dueño, decimoctava pasada consecutiva esperándola según la propia auditoría de hoy;
+no es una R-XX, ya enrutada) — confirmado contando la columna `Estado` de las 27 filas del registro,
+no solo leyendo la narrativa. `roadmap/FEEDBACK.md`: sigue con la única fila de plantilla vacía,
+ninguna entrada `nuevo` real — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto, así que
+no hay historia de rodaje real que incorporar. `mcp__github__list_issues`/`list_pull_requests` sobre
+`janosolerdiaz/teleprompter`: cero issues y cero PR abiertos. §1 (fuente autoritativa): sin fila
+nueva para R-22 — el ciclo de Programador que la implementa no ha corrido todavía desde que se abrió
+(2026-10-02); confirmado con `git log` que `scripts/capitulos_youtube.py`, `scripts/salidas.py`,
+`scripts/config.py` y `references/contrato-montaje.md` no se han tocado desde entonces, y con
+`grep` que `FFMETADATA1`/`capitulos-ffmpeg`/`formatear_capitulos_ffmpeg` siguen sin aparecer en
+ningún módulo de `scripts/`. R-22 sigue siendo la única R-XX `PENDIENTE` de todo el roadmap, ya
+especificada por completo en "Oleada v10" de `ROADMAP_PRODUCTO.md`, sin ningún cambio necesario en
+su ficha ni en la cabecera/"Cola de producto" del documento (ambas siguen describiendo R-22 con
+exactitud). **No se abre ninguna R-XX nueva en este ciclo:** mismo razonamiento que el ciclo de PM
+del 2026-10-03 (ver `DECISIONES_TECNICAS.md`) — abrir una R-23 especulativa mientras R-22 sigue sin
+implementar rompería el patrón de no tener más de una R-XX pendiente de código a la vez, sin ninguna
+evidencia real (auditoría, `FEEDBACK.md`, grieta de arquitectura nueva) que lo justifique. Decisión
+registrada en `DECISIONES_TECNICAS.md`; detalle completo de este ciclo en `HISTORIAL_SESIONES.md`.
+Sin cambios en §3, §5, §6 ni §7. Este ciclo es de PM, no de Programador: no se ejecuta la
+verificación de las cuatro redes.
+
+**Última actualización anterior (2026-10-03, ciclo de Product Manager): reconfirmación de cola, sin
+R-XX nueva abierta** (detalle completo abajo).
+
+**Nota de arranque de la sesión anterior (ciclo de Product Manager, 2026-10-03):** sin incidencia. `git
 status` limpio antes de tocar nada; `git checkout develop` dejó el contenedor en `HEAD` *detached*
 (commits de la auditoría del mismo día ya fusionados en `develop`, descartable); `git pull origin
 develop` resolvió en fast-forward limpio hasta `113ae14` (la auditoría 2026-10-03, que cierra `#27`
