@@ -10,18 +10,18 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-05 — **Ciclo de Programador: primera reconfirmación del día
+**Última actualización:** 2026-10-05 — **Ciclo de Programador: segunda reconfirmación del día
 tras R-22**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, primera reconfirmación del día tras
+**Nota de arranque de esta sesión (ciclo de Programador, segunda reconfirmación del día tras
 R-22, 2026-10-05):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout
-develop` avisó de 30 commits por delante de cualquier rama local, sin rama asociada (resto de un
+develop` avisó de 31 commits por delante de cualquier rama local, sin rama asociada (resto de un
 contenedor anterior, descartable: ya fusionados en `develop`); `git pull origin develop` resolvió
-en fast-forward limpio hasta `979a620` (la implementación de R-22 de la sesión anterior), sin
+en fast-forward limpio hasta `5f2575f` (la primera reconfirmación del día tras R-22), sin
 conflicto ni rama divergida. `pip install -r requirements-dev.txt` limpio (mismas versiones
 pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador: primera reconfirmación del día tras R-22**, sin novedad de código.
+**Ciclo de Programador: segunda reconfirmación del día tras R-22**, sin novedad de código.
 Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: único `ABIERTO` sigue
 siendo `#24` (baja, proceso — la pregunta de gobernanza #11 de §6 sigue `(pendiente)`, diecinueve
 pasadas consecutivas), ninguno de severidad alta que atender como P-XX urgente antes de esta
@@ -36,6 +36,9 @@ motivó `#24`: `ROADMAP_PRODUCTO.md` seguirá describiendo R-22 como "EN CURSO"/
 prosa de "Cola de producto" hasta el siguiente ciclo de Product Manager, que es quien archiva la
 oleada — no se corrige desde este ciclo de Programador (la pregunta #11 de §6 sigue `(pendiente)`
 de respuesta del dueño).
+
+**Última actualización anterior (2026-10-05, ciclo de Programador): primera reconfirmación del día
+tras R-22**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Última actualización anterior (2026-10-05, ciclo de Programador): R-22 implementada y
 `COMPLETADA`.** Oleada v10 (`capitulos-ffmpeg.txt`, formato `FFMETADATA1` nativo de ffmpeg)
