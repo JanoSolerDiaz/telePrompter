@@ -10,11 +10,38 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-05 — **Ciclo de Programador: R-22 implementada y
-`COMPLETADA`.** Oleada v10 (`capitulos-ffmpeg.txt`, formato `FFMETADATA1` nativo de ffmpeg)
-cierra la única R-XX que quedaba en cola (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-05 — **Ciclo de Programador: primera reconfirmación del día
+tras R-22**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, 2026-10-05):** sin incidencia. `git
+**Nota de arranque de esta sesión (ciclo de Programador, primera reconfirmación del día tras
+R-22, 2026-10-05):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout
+develop` avisó de 30 commits por delante de cualquier rama local, sin rama asociada (resto de un
+contenedor anterior, descartable: ya fusionados en `develop`); `git pull origin develop` resolvió
+en fast-forward limpio hasta `979a620` (la implementación de R-22 de la sesión anterior), sin
+conflicto ni rama divergida. `pip install -r requirements-dev.txt` limpio (mismas versiones
+pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Ciclo de Programador: primera reconfirmación del día tras R-22**, sin novedad de código.
+Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: único `ABIERTO` sigue
+siendo `#24` (baja, proceso — la pregunta de gobernanza #11 de §6 sigue `(pendiente)`, diecinueve
+pasadas consecutivas), ninguno de severidad alta que atender como P-XX urgente antes de esta
+tarea. `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
+`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero issues y cero PR abiertos. §1 (fuente
+autoritativa) ya no tiene ninguna R-XX/T-XX `PENDIENTE` (R-22 es la última, `COMPLETADA`): cola
+vacía, sin tarea de código que ejecutar. Verificación propia completa: `mypy`/`ruff` en verde sin
+hallazgos (70 archivos), 637 tests (`pytest`) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos) ni §5
+(P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`). Nota sin acción, mismo patrón que
+motivó `#24`: `ROADMAP_PRODUCTO.md` seguirá describiendo R-22 como "EN CURSO"/`PENDIENTE` en su
+prosa de "Cola de producto" hasta el siguiente ciclo de Product Manager, que es quien archiva la
+oleada — no se corrige desde este ciclo de Programador (la pregunta #11 de §6 sigue `(pendiente)`
+de respuesta del dueño).
+
+**Última actualización anterior (2026-10-05, ciclo de Programador): R-22 implementada y
+`COMPLETADA`.** Oleada v10 (`capitulos-ffmpeg.txt`, formato `FFMETADATA1` nativo de ffmpeg)
+cierra la única R-XX que quedaba en cola (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de la sesión anterior (ciclo de Programador, 2026-10-05):** sin incidencia. `git
 status` limpio antes de tocar nada; `git checkout develop` avisó de 29 commits por delante de
 cualquier rama local, sin rama asociada (resto de un contenedor anterior, descartable: ya
 fusionados en `develop`); `git pull origin develop` resolvió en fast-forward limpio hasta
