@@ -12,6 +12,52 @@
 
 ---
 
+### Sesión 2026-10-05 (82) — Ciclo de Product Manager: archiva Oleada v10 (R-22) y abre R-23 (Oleada v11)
+
+**Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta `5e42f6e` (la novena reconfirmación del día de Programador tras R-22), sin
+conflicto ni rama divergida. `pip install -r requirements-dev.txt` limpio (mismas versiones
+pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: único
+`ABIERTO` sigue siendo `#24` (baja, proceso — pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+diecinueve pasadas consecutivas de auditoría), ya enrutado a esa pregunta, no es una R-XX nueva.
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` —
+bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse.
+
+**Archiva Oleada v10 (R-22).** §1 de `SEGUIMIENTO.md` ya tenía a R-22 como `COMPLETADA` desde el
+ciclo de Programador de esta misma fecha; nueve reconfirmaciones posteriores del Programador el
+mismo día dejaron `ROADMAP_PRODUCTO.md` describiéndola como "EN CURSO"/`PENDIENTE` en su prosa de
+"Cola de producto" (mismo patrón que motivó el hallazgo `#24`). Movida íntegra (spec + "Cómo se
+entregó") a `roadmap/ROADMAP_HISTORICO.md` como Oleada v10, con su entrada de índice.
+
+**Abre R-23 (Oleada v11): desviaciones de convención visibles donde de verdad hacen falta.** Por
+grieta de arquitectura verificada, mismo criterio que abrió R-12 a R-22: delegada una exploración de
+candidatas a un subagente de solo lectura (sin escribir código), que propuso tres — se eligió y
+verificó de forma propia e independiente, leyendo el código línea a línea, la más alta prioridad:
+`scripts/convencion.py::detectar_desviaciones` (T-10, ampliada en T-33 con
+`numero_escena_duplicado`/`numero_escena_no_creciente`) calcula correctamente las desviaciones de
+convención, pero `grep -rn "detectar_desviaciones" **/*.py` confirma que nunca se llama desde
+`scripts/documento_revision.py` (`guion-escenas.md`) ni `scripts/pptx.py` (`tarjetas.json`) — solo
+desde sus propios tests. Agravante verificado en `references/contrato-montaje.md:68-73`: el propio
+documento le dice a la futura cadena de montaje, citando esta función por su nombre, que la
+numeración de escena "ya NO se da por supuesta en silencio", una afirmación que hoy ningún archivo
+generado real respalda. Spec completa de R-23 en `ROADMAP_PRODUCTO.md` (Oleada v11): cablear
+`detectar_desviaciones` a `guion-escenas.md` (al pie de cada escena, mismo patrón visual que las
+indicaciones de T-16) y a `tarjetas.json.metadatos.desviaciones_convencion`, sin tocar la lógica de
+detección en sí. Decisiones registradas en `DECISIONES_TECNICAS.md` (apertura y alcance de R-23,
+archivo de Oleada v10).
+
+**Sin novedad de código.** Este ciclo es de PM, no de Programador: no se ha tocado `scripts/`,
+`tests/` ni `assets/`, ni se ha ejecutado la verificación de las cuatro redes — la spec de R-23 queda
+lista para el siguiente ciclo de Programador.
+
+**Cierre.** §1 de `SEGUIMIENTO.md` gana la fila de R-23 (`PENDIENTE`), tras la de R-22. Sin cambios
+en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva
+desviación en §7.
+
+---
+
 ### Sesión 2026-10-05 (81) — Ciclo de Programador: novena reconfirmación del día tras R-22
 
 **Arranque.** `git status` limpio; el contenedor ya estaba en `develop` (sin *detached HEAD*);

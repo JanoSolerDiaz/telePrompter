@@ -67,6 +67,14 @@ registra como hallazgo `#24`.
 movimientos anteriores. Cierra el hallazgo `#27` de `auditoriacontinua.md`, pendiente solo de que la
 siguiente pasada del auditor actualice su propia fila a `RESUELTO`.
 
+**Movido a histórico el:** 2026-10-05, ciclo de Product Manager. Se añade la Oleada v10 (R-22),
+COMPLETADA por el Programador el mismo día en que se abrió el ciclo de PM anterior (2026-10-02→05,
+con varias reconfirmaciones de cola vacía entre medias) y sin ningún hito de negocio propio
+pendiente — mismo criterio que los once movimientos anteriores. Este movimiento corrige además la
+prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`, que llevaba nueve reconfirmaciones del
+Programador listando R-22 como pendiente pese a estar ya `COMPLETADA` en §1 de `SEGUIMIENTO.md` —
+el mismo patrón de latencia que `auditoriacontinua.md` registra como hallazgo `#24`.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -1137,9 +1145,108 @@ HTML generado). Cuatro redes en verde, incluidas las dieciséis etapas de
 
 ---
 
+## Oleada v10 — Capítulos reales incrustables en el vídeo final (`capitulos-ffmpeg.txt`, formato `FFMETADATA1` de ffmpeg)
+
+### R-22 — Capítulos reales incrustables en el vídeo final (`capitulos-ffmpeg.txt`, formato `FFMETADATA1` de ffmpeg)
+
+**Migración:** No (archivo derivado nuevo y un campo aditivo en `ResultadoCapitulos`; ningún campo
+de `estado.json` ni de `Configuracion` cambia de forma) · **Depende de:** R-07 · **Origen:**
+observación de arquitectura del PM (2026-10-02) — grieta de arquitectura verificada sobre código ya
+construido (mismo criterio que abrió R-12 a R-20), no hallazgo de auditoría ni entrada de
+`FEEDBACK.md`.
+
+**Objetivo:** `scripts/capitulos_youtube.py::calcular_capitulos` ya empareja cada título de la
+sección `Capítulos` del guion con su escena y calcula el instante de inicio acumulado de cada una
+(real, de la toma buena — R-02 —, o estimado del ritmo deducido del guion — T-12 —, con aviso
+explícito si se mezclan ambos). Hoy ese cálculo solo se expone en `capitulos-youtube.txt`, pensado
+para pegarse a mano en la descripción de un vídeo de YouTube — útil, pero texto para un humano, no
+un archivo que la fase de montaje (la siguiente de esta skill, T-33, que ya cierra con
+`concat-ffmpeg.txt` de R-19 y `guion-alineado.srt` de R-05) pueda pasarle a ffmpeg para que los
+capítulos queden incrustados de verdad en el `.mp4` final. ffmpeg soporta esto de forma nativa con
+su propio formato de metadatos (`FFMETADATA1`,
+`ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1 -codec copy video-final.mp4`): esta
+tarea genera ese archivo reutilizando tal cual el emparejamiento y los tiempos que R-07 ya calcula y
+prueba, sin inventar ningún cálculo nuevo.
+
+**Requisitos:**
+1. `scripts/capitulos_youtube.py` gana `formatear_capitulos_ffmpeg(resultado: ResultadoCapitulos,
+   configuracion: Configuracion | None = None) -> str | None`, hermana de
+   `formatear_capitulos_youtube` y con la misma condición de `None` (sin capítulos que generar).
+   Reutiliza `resultado.capitulos` (título + `inicio_segundos` de cada capítulo) tal cual, sin
+   reproducir el emparejamiento ni el cálculo de tiempos de `calcular_capitulos`.
+2. `ResultadoCapitulos` gana un campo aditivo, `duracion_total_segundos: float` (la suma acumulada
+   tras procesar el último capítulo, el mismo `cursor_segundos` final que ya calcula el bucle de
+   `calcular_capitulos` y hoy descarta). Es el único dato que falta para poder cerrar el último
+   capítulo sin inventar una duración: el `END` del último capítulo del `.mp4` es este valor.
+3. Formato `FFMETADATA1` exacto: primera línea `;FFMETADATA1`; un bloque `[CHAPTER]` por capítulo
+   con `TIMEBASE=1/1000`, `START=<ms>`, `END=<ms>` (ambos enteros, redondeando igual que
+   `_formatear_mm_ss` ya redondea hacia abajo) y `title=<título>`; `END` de un capítulo es el
+   `START` del siguiente, y el del último es `duracion_total_segundos` (requisito 2) convertido a
+   milisegundos. Separar los bloques con una línea en blanco, igual que exige el propio formato.
+4. Sin la "marca mínima" de `capitulos_youtube_marca_minima_segundos`: a diferencia de
+   `capitulos-youtube.txt`, unos capítulos incrustados en el archivo no compiten por espacio de
+   lectura — cada escena emparejada con un título se convierte en su propio capítulo, sin filtrar
+   ninguno por cercanía con el anterior. Documentar esta diferencia deliberada en el docstring de
+   `formatear_capitulos_ffmpeg`.
+5. Escapado del título según `FFMETADATA1`: `\`, `=`, `;`, `#` y el salto de línea se escapan con
+   `\` por delante (igual que `_escapar_ruta_ffmpeg` de R-19) antes de escribir `title=...`.
+6. Transparencia real/estimado: si alguna marca conservada depende de una duración estimada en vez
+   de la toma buena real, la primera línea tras `;FFMETADATA1` es un comentario `;` con ese aviso —
+   ffmpeg ignora toda línea de nivel superior que empiece por `;` o `#`.
+7. Validar antes de escribir, desde el primer día (lección del hallazgo `#27`/R-21):
+   `validar_capitulos_ffmpeg(contenido: str) -> list[str]`, hermana de `validar_capitulos_youtube`,
+   exige `;FFMETADATA1`, `START`/`END` enteros no negativos, `START` estrictamente creciente y
+   `END` sin solapes. `scripts/salidas.py::_generar_capitulos_youtube` invoca este validador antes
+   de guardar `capitulos-ffmpeg.txt`; si falla, degrada solo esa mitad a `SalidaOmitida` con el
+   motivo exacto, sin impedir que `capitulos-youtube.txt` se genere igual.
+8. `scripts/config.py` gana `NOMBRE_ARCHIVO_CAPITULOS_FFMPEG: str = "capitulos-ffmpeg.txt"`. Se
+   genera junto a `capitulos-youtube.txt`, bajo la misma opción `TipoSalida.CAPITULOS_YOUTUBE` del
+   selector de T-30 — no es una séptima opción nueva del selector, son dos archivos de la misma
+   salida.
+9. `references/contrato-montaje.md` documenta `capitulos-ffmpeg.txt`.
+10. Fuera de alcance: extender la validación-antes-de-escribir a `srt.py` o a
+    `capitulos-youtube.txt` (ya decidido fuera de alcance de R-21).
+
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/`,
+`capitulos-ffmpeg.txt` generado tiene un bloque `[CHAPTER]` por título emparejado, `START`/`END`
+contiguos sin huecos ni solapes y el `END` del último capítulo coincide exactamente con
+`duracion_total_segundos`; un guion sin sección `Capítulos` deja la salida omitida con el mismo
+motivo que ya usa `capitulos-youtube.txt`; un título con `;`/`#`/`=`/`\` o un salto de línea se
+escapa correctamente; test que fuerza a `validar_capitulos_ffmpeg` a fallar confirma que
+`_generar_capitulos_youtube` degrada esa mitad a `SalidaOmitida` sin impedir
+`capitulos-youtube.txt`; con una mezcla de escenas con y sin toma buena, la nota de transparencia
+aparece con el mismo texto que ya usa `formatear_capitulos_youtube`.
+
+**Cómo se entregó:** `ResultadoCapitulos` gana el campo aditivo `duracion_total_segundos` (el
+cursor final que el bucle de `calcular_capitulos` ya acumulaba y hasta ahora descartaba, `0.0` en
+los tres casos de `motivo_sin_generar`). `scripts/capitulos_youtube.py` gana
+`formatear_capitulos_ffmpeg` (hermana de `formatear_capitulos_youtube`: primera línea
+`;FFMETADATA1`, un bloque `[CHAPTER]` por capítulo con `TIMEBASE=1/1000`/`START`/`END` en
+milisegundos truncados hacia abajo y `title=<título>` escapado según el propio formato — `\`, `=`,
+`;`, `#` y salto de línea con `\` por delante, mismo patrón que `concat_ffmpeg._escapar_ruta_ffmpeg`
+de R-19; `END` de un capítulo es el `START` del siguiente, el del último es
+`duracion_total_segundos` convertido a ms; nota de transparencia real/estimado como comentario `;`
+cuando aplica), deliberadamente sin la marca mínima de YouTube (requisito 4) y
+`validar_capitulos_ffmpeg` (exige `;FFMETADATA1`, `START`/`END` enteros no negativos, `START`
+estrictamente creciente, sin solapes). `scripts/salidas.py::_generar_capitulos_youtube` genera
+`capitulos-ffmpeg.txt` como segunda mitad de la misma opción `CAPITULOS_YOUTUBE` (no una séptima,
+mismo patrón que `guion.srt`/`guion-alineado.srt` bajo `SRT`, R-18), validándolo antes de escribir
+desde el primer día: un contenido inválido degrada solo esa mitad a `SalidaOmitida`, sin impedir que
+`capitulos-youtube.txt` se mantenga. `config.NOMBRE_ARCHIVO_CAPITULOS_FFMPEG = "capitulos-ffmpeg.txt"`
+(constante de módulo, no campo de `Configuracion`). 18 tests nuevos (619→637):
+`tests/test_capitulos_youtube.py` (formato exacto, contigüidad `END`=`START` siguiente, sin
+filtrado por marca mínima a diferencia de YouTube, escapado de caracteres especiales, nota de
+transparencia, criterio de aceptación sobre los tres guiones reales, validador independiente,
+guardado) y `tests/test_salidas.py` (contenido coincide con la llamada directa; contenido inválido
+forzado por monkeypatch degrada solo esa mitad sin afectar a `capitulos-youtube.txt`). Cuatro redes
+en verde, `verificar_salidas.py --fixture` gana dos etapas nuevas (dieciocho en total).
+`references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
-(R-20), 2026-10-01; la de F-J (R-21), 2026-10-02.)*
+(R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05.)*

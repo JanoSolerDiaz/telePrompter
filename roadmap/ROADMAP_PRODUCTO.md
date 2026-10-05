@@ -8,24 +8,26 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-02 (ciclo de PM). **R-21 (Fase transversal F-J) está
-`COMPLETADA`** (§1 de `SEGUIMIENTO.md`) desde el ciclo de Programador del mismo día que la abrió el
-ciclo de PM anterior (2026-10-01→2026-10-02, cierra el hallazgo `#27` de `auditoriacontinua.md`).
-Movida a `roadmap/ROADMAP_HISTORICO.md` (Fase transversal F-J) junto con el resto de fases 100 %
-entregadas.
+**Última actualización:** 2026-10-05 (ciclo de PM). **R-22 (Oleada v10) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-05 que la implementó (`capitulos-ffmpeg.txt`,
+formato `FFMETADATA1`). Nueve reconfirmaciones del Programador el mismo día la dejaron en este
+documento como "EN CURSO"/`PENDIENTE` en vez de archivarla (mismo patrón que el hallazgo `#24` de
+`auditoriacontinua.md`, pendiente de la respuesta del dueño a la pregunta de gobernanza #11 de
+`SEGUIMIENTO.md` §6 sobre quién puede corregir esa prosa). Movida a `roadmap/ROADMAP_HISTORICO.md`
+(Oleada v10) junto con el resto de oleadas 100 % entregadas.
 
-**Se abre R-22** (Oleada v10): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
+**Se abre R-23** (Oleada v11): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
 las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
-verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-20. `scripts/
-capitulos_youtube.py::calcular_capitulos` ya empareja cada escena con su título de capítulo y
-calcula su instante de inicio acumulado (real, de la toma buena, o estimado de T-12), probado desde
-R-07 — pero ese cálculo solo se expone hoy en un formato pensado para pegar en la descripción de
-YouTube (`capitulos-youtube.txt`, texto `M:SS Título`), nunca en un formato que la propia fase de
-montaje con ffmpeg (la siguiente de esta skill, T-33) pueda **incrustar directamente en el vídeo
-final** como capítulos reales del archivo. Verificado leyendo `calcular_capitulos`/
-`formatear_capitulos_youtube` línea a línea (no solo `references/contrato-montaje.md`) antes de
-especificar la tarea, mismo rigor que R-20 ya aplicó para no repetir el error de `#26`. Detalle
-completo en "Oleada v10" más abajo.
+verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-22. `scripts/
+convencion.py::detectar_desviaciones` (T-10, ampliada en T-33 con `numero_escena_duplicado`/
+`numero_escena_no_creciente`) calcula, correctamente y con tests, las desviaciones de la convención
+de marcado que más le importan a la cadena de montaje — pero verificado leyendo el código (no solo
+la documentación), **no se llama desde ningún punto de la generación real**: ni
+`scripts/documento_revision.py` (el `guion-escenas.md` que el dueño de verdad revisa) ni
+`scripts/pptx.py` (`tarjetas.json`, el contrato de montaje) la invocan; solo la ejercitan sus propios
+tests. `references/contrato-montaje.md` le dice hoy a la cadena de montaje que la numeración de
+escena "ya NO se da por supuesta en silencio" citando literalmente esta función — una afirmación que
+el código no respalda en ningún archivo generado real. Detalle completo en "Oleada v11" más abajo.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
@@ -33,10 +35,10 @@ curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md
 `ABIERTO` nuevo de producto/arquitectura esta pasada: el único `ABIERTO` (`#24`, baja, prosa de "Cola
 de producto" desactualizada entre ciclos de PM) sigue enrutado a la pregunta de gobernanza #11 de
 `SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX, es la misma corrección de
-prosa que este propio ciclo acaba de aplicar de nuevo.
+prosa que este propio ciclo acaba de aplicar de nuevo, esta vez sobre R-22.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-22 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-23 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -157,116 +159,101 @@ de escribir a disco, y sanear `archivo_video` en el origen, R-21) tiene su únic
 `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-02); cierra el hallazgo `#27` de
 `auditoriacontinua.md`. Su spec completa y cómo se entregó viven ahí.
 
-### Oleada v10 — EN CURSO
+### Oleada v10 — entregada
 
-#### R-22 — Capítulos reales incrustables en el vídeo final (`capitulos-ffmpeg.txt`, formato `FFMETADATA1` de ffmpeg)
+La oleada v10 (capítulos reales incrustables en el vídeo final, `capitulos-ffmpeg.txt` en formato
+`FFMETADATA1` de ffmpeg, R-22) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin
+ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM
+(2026-10-05). Su spec completa y cómo se entregó viven ahí.
 
-**Migración:** No (archivo derivado nuevo y un campo aditivo en `ResultadoCapitulos`; ningún campo
-de `estado.json` ni de `Configuracion` cambia de forma) · **Depende de:** R-07 · **Origen:**
-observación de arquitectura del PM (2026-10-02) — grieta de arquitectura verificada sobre código ya
-construido (mismo criterio que abrió R-12 a R-20), no hallazgo de auditoría ni entrada de
-`FEEDBACK.md`.
+### Oleada v11 — EN CURSO
 
-**Objetivo:** `scripts/capitulos_youtube.py::calcular_capitulos` ya empareja cada título de la
-sección `Capítulos` del guion con su escena y calcula el instante de inicio acumulado de cada una
-(real, de la toma buena — R-02 —, o estimado del ritmo deducido del guion — T-12 —, con aviso
-explícito si se mezclan ambos). Hoy ese cálculo solo se expone en `capitulos-youtube.txt`, pensado
-para pegarse a mano en la descripción de un vídeo de YouTube — útil, pero texto para un humano, no
-un archivo que la fase de montaje (la siguiente de esta skill, T-33, que ya cierra con
-`concat-ffmpeg.txt` de R-19 y `guion-alineado.srt` de R-05) pueda pasarle a ffmpeg para que los
-capítulos queden **incrustados de verdad en el `.mp4` final** — el formador no tiene hoy ninguna
-salida de esta skill que, al unirla en el montaje, le deje un vídeo navegable por capítulos nada más
-exportarlo. ffmpeg soporta esto de forma nativa con su propio formato de metadatos (`FFMETADATA1`,
-`ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1 -codec copy video-final.mp4`): esta
-tarea genera ese archivo reutilizando tal cual el emparejamiento y los tiempos que R-07 ya calcula y
-prueba, sin inventar ningún cálculo nuevo.
+#### R-23 — Desviaciones de convención visibles donde de verdad hacen falta: `guion-escenas.md` y `tarjetas.json`
+
+**Migración:** No (aditivo: una sección nueva en el documento de revisión y una clave nueva en
+`tarjetas.json.metadatos`; ningún campo de `estado.json` ni de `Configuracion` cambia de forma) ·
+**Depende de:** T-10, T-16, T-29 (las tres ya `COMPLETADA`) · **Origen:** observación de
+arquitectura del PM (2026-10-05) — grieta de arquitectura verificada sobre código ya construido
+(mismo criterio que abrió R-12 a R-22), no hallazgo de auditoría ni entrada de `FEEDBACK.md`.
+
+**Objetivo:** `scripts/convencion.py::detectar_desviaciones` (T-10, ampliada en T-33 con
+`numero_escena_duplicado`/`numero_escena_no_creciente`, requisito 2 de T-33) calcula, de forma
+correcta y probada por `tests/test_convencion.py`, exactamente las señales que más le importan a
+este proyecto: una escena sin rótulo de locución, un rótulo desconocido, una sección auxiliar no
+reconocida y —la más grave para la fase de montaje— un número de escena duplicado o no creciente,
+que es "la única clave que permite casar una toma grabada con su escena sin ambigüedad"
+(`references/contrato-montaje.md`). Verificado leyendo el código, no solo la documentación: **esta
+función no se llama desde ningún punto de la generación real.** Ni `scripts/documento_revision.py`
+(que construye `guion-escenas.md`, el único archivo que el dueño de verdad revisa de una sentada,
+T-16) ni `scripts/pptx.py` (que construye `tarjetas.json`, el contrato de montaje, T-29) la
+importan; solo la ejercitan sus propios tests y `tests/test_integracion_montaje.py`. El efecto
+práctico es doble: (a) el dueño puede validar y grabar un guion con una escena sin rótulo o con un
+número de escena duplicado sin que absolutamente nada se lo señale en el documento que revisa, y
+(b) `references/contrato-montaje.md` le dice hoy a la futura cadena de montaje, con esta función
+citada por su nombre, que la numeración de escena "ya NO se da por supuesta en silencio" — una
+afirmación que ningún archivo generado real respalda todavía. Es el mismo patrón de "cálculo ya
+construido y probado, pero no conectado a su consumidor real" que abrió R-12 a R-22, con el matiz de
+que aquí la falta de conexión contradice además la propia documentación del contrato.
 
 **Requisitos:**
-1. `scripts/capitulos_youtube.py` gana `formatear_capitulos_ffmpeg(resultado: ResultadoCapitulos,
-   configuracion: Configuracion | None = None) -> str | None`, hermana de
-   `formatear_capitulos_youtube` y con la misma condición de `None` (sin capítulos que generar).
-   Reutiliza `resultado.capitulos` (título + `inicio_segundos` de cada capítulo) **tal cual**, sin
-   reproducir el emparejamiento ni el cálculo de tiempos de `calcular_capitulos`.
-2. **`ResultadoCapitulos` gana un campo aditivo, `duracion_total_segundos: float`** (la suma
-   acumulada tras procesar el último capítulo, el mismo `cursor_segundos` final que ya calcula el
-   bucle de `calcular_capitulos` — ninguna cuenta nueva, solo exponer un valor que el bucle ya
-   produce y hoy descarta). Es el único dato que falta para poder cerrar el último capítulo sin
-   inventar una duración: el `END` del último capítulo del `.mp4` es este valor.
-3. **Formato `FFMETADATA1` exacto:** primera línea `;FFMETADATA1`; un bloque `[CHAPTER]` por
-   capítulo con `TIMEBASE=1/1000`, `START=<ms>`, `END=<ms>` (ambos enteros, redondeando igual que
-   `_formatear_mm_ss` ya redondea hacia abajo para no adelantar nunca una marca) y `title=<título>`;
-   `END` de un capítulo es el `START` del siguiente, y el del último es `duracion_total_segundos`
-   (requisito 2) convertido a milisegundos. Separar los bloques con una línea en blanco, igual que
-   exige el propio formato de ffmpeg.
-4. **Sin la "marca mínima" de `capitulos_youtube_marca_minima_segundos`:** a diferencia de
-   `capitulos-youtube.txt` (pensado para que una lista de texto no amontone marcas casi seguidas,
-   requisito 3 de R-07), unos capítulos incrustados en el archivo no compiten por espacio de
-   lectura — cada escena emparejada con un título se convierte en su propio capítulo, sin filtrar
-   ninguno por cercanía con el anterior. Documentar esta diferencia deliberada en el propio
-   docstring de `formatear_capitulos_ffmpeg`, para que nadie la confunda con un olvido del filtro de
-   R-07.
-5. **Escapado del título según el formato `FFMETADATA1` de ffmpeg:** los caracteres `\`, `=`, `;`,
-   `#` y el salto de línea se escapan con `\` por delante (igual que ya hace `_escapar_ruta_ffmpeg`
-   de R-19 para la ruta de vídeo, mismo patrón, formato distinto) antes de escribir `title=...`.
-6. **Transparencia real/estimado:** si alguna de las marcas conservadas depende de una duración
-   estimada en vez de la toma buena real (mismo criterio y mismo texto que ya calcula
-   `formatear_capitulos_youtube`), la primera línea tras `;FFMETADATA1` es un comentario `;` con ese
-   mismo aviso — ffmpeg ignora cualquier línea de nivel superior que empiece por `;` o `#`, así que
-   el aviso no interfiere con el `-map_metadata` real.
-7. **Validar antes de escribir, desde el primer día** (lección del hallazgo `#27`/R-21, para no
-   repetir la misma deuda con una salida nueva): `scripts/capitulos_youtube.py` gana
-   `validar_capitulos_ffmpeg(contenido: str) -> list[str]`, hermana de `validar_capitulos_youtube`,
-   que exige la primera línea `;FFMETADATA1`, cada `START`/`END` entero no negativo, `START`
-   estrictamente creciente entre capítulos consecutivos y `END` de cada capítulo `<=` `START` del
-   siguiente (sin solapes). `scripts/salidas.py::_generar_capitulos_youtube` invoca este validador
-   sobre el contenido de `capitulos-ffmpeg.txt` antes de guardarlo — si falla, esa mitad de la
-   salida se degrada a `SalidaOmitida` con el motivo exacto (mismo patrón `try`/`except` que R-21 ya
-   dejó listo para `concat-ffmpeg.txt`), sin impedir que `capitulos-youtube.txt` se genere igual si
-   ese validador pasa.
-8. `scripts/config.py` gana `NOMBRE_ARCHIVO_CAPITULOS_FFMPEG: str = "capitulos-ffmpeg.txt"` (mismo
-   patrón de constante de módulo que `NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE`/
-   `NOMBRE_ARCHIVO_CONCAT_FFMPEG`, no un campo de `Configuracion`: no es un valor que el dueño deba
-   poder cambiar). Se genera junto a `capitulos-youtube.txt`, bajo la misma opción
-   `TipoSalida.CAPITULOS_YOUTUBE` del selector de T-30 (mismo patrón que `guion.srt`/
-   `guion-alineado.srt` bajo `TipoSalida.SRT`) — no es una séptima opción nueva del selector, son
-   dos archivos de la misma salida.
-9. `references/contrato-montaje.md` documenta `capitulos-ffmpeg.txt`: qué es, cuándo se genera (la
-   misma condición que `capitulos-youtube.txt`: el guion trae sección `Capítulos`), el comando de
-   ffmpeg de ejemplo (`-map_metadata`) y que, como `concat-ffmpeg.txt`, nunca llega a disco sin
-   pasar por su propio validador. `references/contrato-tomas.md` no cambia (no toca el parte de
-   rodaje).
-10. Fuera de alcance, explícitamente: extender esta misma validación-antes-de-escribir a `srt.py` o
-    a la ruta de generación ya existente de `capitulos-youtube.txt` — ya decidido fuera de alcance
-    de R-21 (`DECISIONES_TECNICAS.md`, 2026-10-01) por no tener evidencia real que lo justifique;
-    esta tarea no reabre esa decisión, solo aplica el patrón correcto a la salida nueva que ella
-    misma crea.
+1. `scripts/documento_revision.py::generar_documento_revision` llama una vez a
+   `convencion.detectar_desviaciones(resultado_parseo, resultado_clasificacion, configuracion)`
+   (misma firma que ya usan sus tests), igual que ya hace con los avisos de T-14. El resultado
+   (`list[Desviacion]`) se reparte en `guion-escenas.md` por el mismo criterio que ya separa avisos
+   e indicaciones: las que caen dentro del rango `[linea_inicio, linea_fin]` de una escena se listan
+   al pie de esa escena (mismo bloque visual que las indicaciones no recitables, requisito 4 de
+   T-16, con su propio encabezado "Desviaciones de la convención" para no mezclarse con ellas); las
+   que no pertenecen a ninguna escena (p. ej. `seccion_auxiliar_no_reconocida`) van en una sección
+   propia tras el resumen global de cabecera.
+2. La cabecera de `guion-escenas.md` (requisito 5 de T-16) gana un recuento más: "Desviaciones de la
+   convención: N", junto a los que ya existen (avisos, reescrituras pendientes). `N = 0` no añade
+   ninguna sección nueva al documento — mismo criterio de "nada que no aporte" que ya sigue el resto
+   del documento con avisos y reescrituras vacíos.
+3. `scripts/pptx.py::ResultadoTarjetas` gana un campo aditivo a nivel de `metadatos` (no por
+   tarjeta, porque una desviación como el número de escena duplicado implica a más de una escena a
+   la vez): `desviaciones_convencion: list[str]`, los textos de `Desviacion.descripcion` tal cual
+   (sin reformatearlos ni reinventar redacción), lista vacía si `detectar_desviaciones` no encuentra
+   ninguna. `generar_tarjetas` llama a `detectar_desviaciones` una sola vez, reutilizando el mismo
+   `resultado_parseo`/`resultado_clasificacion` que ya recibe para el resto de la tarjeta — ningún
+   parseo ni clasificación nuevos.
+4. `--para-terceros` (bandera ya existente de T-28/T-29) excluye `desviaciones_convencion` del
+   `tarjetas.json` exportado a terceros y de cualquier brief derivado, igual que ya excluye el resto
+   del aparato de producción interno (son avisos para el dueño y la cadena de montaje, no contenido
+   para el espectador ni para un tercero). El `.pdf`/`guion-escenas.md` de repaso completo (sin esa
+   bandera) sí los muestra.
+5. `references/contrato-tarjetas.md` documenta la clave nueva de `metadatos`.
+   `references/contrato-montaje.md` deja de afirmar en abstracto que la numeración "ya NO se da por
+   supuesta en silencio" y pasa a decir exactamente dónde mirar:
+   `tarjetas.json.metadatos.desviaciones_convencion`.
+6. Sin ningún cambio en `convencion.detectar_desviaciones` en sí (T-10/T-33 ya la especifican,
+   calculan y prueban correctamente) — esta tarea es pura exposición/cableado hacia los dos
+   consumidores reales, no nueva lógica de detección.
 
-**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/` (los tres traen
-sección `Capítulos`), `capitulos-ffmpeg.txt` generado tiene un bloque `[CHAPTER]` por título
-emparejado, `START`/`END` contiguos sin huecos ni solapes y el `END` del último capítulo coincide
-exactamente con `duracion_total_segundos`; un guion sin sección `Capítulos` deja la salida omitida
-con el mismo motivo que ya usa `capitulos-youtube.txt`, nunca un archivo vacío ni un fallo; un título
-con `;`/`#`/`=`/`\` o un salto de línea se escapa correctamente y el archivo generado sigue siendo
-`FFMETADATA1` válido; test que fuerza a `validar_capitulos_ffmpeg` a fallar (contenido inválido
-inyectado) y confirma que `_generar_capitulos_youtube` degrada esa mitad a `SalidaOmitida` sin
-impedir la generación de `capitulos-youtube.txt`; con una mezcla de escenas con y sin toma buena, la
-primera línea tras `;FFMETADATA1` avisa de la mezcla con el mismo texto que ya usa
-`formatear_capitulos_youtube`.
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/` (sin desviaciones
+conocidas hoy), `guion-escenas.md` no muestra ninguna sección de desviaciones y
+`tarjetas.json.metadatos.desviaciones_convencion` sale `[]`; con una fixture modificada a mano con
+una escena sin rótulo de locución y otra que repite el número de una anterior, ambas desviaciones
+aparecen localizadas correctamente en `guion-escenas.md` (al pie de la escena que corresponda) y en
+`tarjetas.json.metadatos.desviaciones_convencion`, con el mismo texto en los dos sitios; con
+`--para-terceros`, la lista no aparece en el `tarjetas.json` exportado; test de regresión que
+reproduce el estado anterior a esta tarea (mismo guion con desviaciones, ningún archivo generado las
+muestra) para dejar constancia del hallazgo que motivó la tarea.
 
 ---
 
 ### Cola de producto
 
-`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-10-02), una única R-XX `PENDIENTE`: **R-22**
-(Oleada v10, detalle completo arriba), abierta por grieta de arquitectura verificada —
-`capitulos_youtube.py` ya calcula el emparejamiento título↔escena y sus tiempos reales/estimados
-(R-07), pero solo los expone en formato de descripción de YouTube, nunca en el formato nativo de
-capítulos de ffmpeg que la fase de montaje (T-33) necesita para incrustarlos de verdad en el vídeo
-final. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`; el único hallazgo `ABIERTO` de
-`auditoriacontinua.md`, `#24` (baja, prosa de "Cola de producto" desactualizada entre ciclos de PM),
-sigue enrutado a la pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6, `(pendiente)` de respuesta
-del dueño — no es una R-XX. Próximo ciclo de PM: reconfirmar R-22 tras su implementación y, si el
-dueño responde entre tanto a la pregunta #11 de §6, aplicar esa respuesta.
+`ROADMAP_PRODUCTO.md` tiene, en este ciclo (2026-10-05), una única R-XX `PENDIENTE`: **R-23**
+(Oleada v11, detalle completo arriba), abierta por grieta de arquitectura verificada —
+`convencion.detectar_desviaciones` calcula correctamente las desviaciones de convención (incluida la
+numeración de escena duplicada/no creciente, crítica para la cadena de montaje) pero no se llama
+desde ningún punto de la generación real, pese a que `references/contrato-montaje.md` afirma lo
+contrario citando esa misma función. `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo`; el
+único hallazgo `ABIERTO` de `auditoriacontinua.md`, `#24` (baja, prosa de "Cola de producto"
+desactualizada entre ciclos de PM), sigue enrutado a la pregunta de gobernanza #11 de
+`SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX. Próximo ciclo de PM:
+reconfirmar R-23 tras su implementación y, si el dueño responde entre tanto a la pregunta #11 de §6,
+aplicar esa respuesta.
 
 ---
 
