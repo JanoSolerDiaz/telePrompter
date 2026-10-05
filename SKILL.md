@@ -259,6 +259,30 @@ Formato exacto de YouTube (requisito de la propia plataforma): la primera marca 
 | Título de la sección de capítulos | `Capítulos` | Prefijo con el que se reconoce la sección auxiliar (T-08) que trae la tabla |
 | Marca mínima entre capítulos | 10 s | Mínimo de la propia plataforma YouTube; una marca más cercana a la anterior se omite |
 
+## Capítulos reales incrustables en el vídeo final (R-22)
+
+El mismo emparejamiento título↔escena y los mismos tiempos real/estimado de arriba se
+exponen también en `capitulos-ffmpeg.txt`, el formato nativo de metadatos de ffmpeg
+(`FFMETADATA1`): un bloque `[CHAPTER]` por capítulo, con `TIMEBASE=1/1000`, `START`/`END` en
+milisegundos y `title=<título>`. La fase de montaje lo incrusta directamente en el `.mp4`
+final con `ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1 -codec copy
+video-final.mp4`, sin recronometrar nada.
+
+A diferencia de `capitulos-youtube.txt`, este archivo **no filtra por la marca mínima** de la
+tabla anterior: un archivo de metadatos incrustado no compite por espacio de lectura como una
+lista de texto, así que cada escena emparejada con un título es su propio capítulo. El título
+de cada capítulo se escapa según el propio formato (`\`, `=`, `;`, `#` y el salto de línea con
+`\` por delante), y si alguna marca depende de una duración estimada, la primera línea tras
+`;FFMETADATA1` es un comentario `;` con el mismo aviso que `capitulos-youtube.txt` — ffmpeg
+ignora cualquier línea de nivel superior que empiece por `;` o `#`. Igual que
+`concat-ffmpeg.txt` (R-21), nunca llega a disco sin pasar antes por su propio validador
+(`validar_capitulos_ffmpeg`): un contenido inválido degrada esa mitad de la salida a omitida
+con el motivo exacto, sin impedir que `capitulos-youtube.txt` se genere igual.
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Nombre del archivo de capítulos ffmpeg | `capitulos-ffmpeg.txt` | En la carpeta de salida del guion, junto a `capitulos-youtube.txt`, misma condición de generación |
+
 ## Lista de concatenación de ffmpeg (R-19)
 
 `scripts/concat_ffmpeg.py` cierra el hueco entre el parte de rodaje (R-02) y el montaje con ffmpeg: hoy `estado.json["tomas"]` sabe qué escena tiene una toma buena y cuánto duró, pero no qué archivo de la tarjeta de la cámara le corresponde — el dueño tenía que reconstruirlo a mano, por orden y duración. El campo `archivo_video` de cada toma (R-19, ver "Registro de tomas por escena" arriba) añade esa pieza, tecleada por el propio dueño; este módulo produce directamente `concat-ffmpeg.txt`, la lista lista para `ffmpeg -f concat -safe 0 -i concat-ffmpeg.txt`.

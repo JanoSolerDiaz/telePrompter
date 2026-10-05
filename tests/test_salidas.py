@@ -7,9 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from capitulos_youtube import generar_capitulos_youtube
+from capitulos_youtube import formatear_capitulos_ffmpeg, generar_capitulos_youtube
 from concat_ffmpeg import generar_lista_concat_ffmpeg
 from config import (
+    NOMBRE_ARCHIVO_CAPITULOS_FFMPEG,
     NOMBRE_ARCHIVO_CONCAT_FFMPEG,
     NOMBRE_ARCHIVO_SRT_ALINEADO,
     NOMBRE_ARCHIVO_TARJETAS_JSON,
@@ -366,6 +367,68 @@ def test_capitulos_youtube_sin_seccion_queda_omitida_nunca_latente_ni_fallo(
     omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.CAPITULOS_YOUTUBE)
     assert not omitida.motivo.startswith("fallo al generar")
     assert "no seleccionada" not in omitida.motivo
+
+
+def test_capitulos_ffmpeg_generado_junto_a_youtube_coincide_con_la_llamada_directa(
+    tmp_path: Path,
+) -> None:
+    """R-22: seleccionar `CAPITULOS_YOUTUBE` genera tambien
+    `capitulos-ffmpeg.txt` (formato FFMETADATA1), con el mismo contenido que
+    la llamada directa a `capitulos_youtube.formatear_capitulos_ffmpeg` sobre
+    el mismo calculo -- no es una septima opcion, son dos archivos de la
+    misma opcion (requisito 8)."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CAPITULOS_YOUTUBE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA,
+    )
+    generados_capitulos = [a for a in resumen.generadas if a.tipo is TipoSalida.CAPITULOS_YOUTUBE]
+    assert len(generados_capitulos) == 2
+    archivo_ffmpeg = next(
+        a for a in generados_capitulos if a.ruta.name == NOMBRE_ARCHIVO_CAPITULOS_FFMPEG
+    )
+
+    _, calculo = generar_capitulos_youtube(resultado, tiempos, _TOMAS_ESCENA_0_BUENA)
+    contenido_directo = formatear_capitulos_ffmpeg(calculo)
+    assert contenido_directo is not None
+    assert archivo_ffmpeg.ruta.read_text(encoding="utf-8") == contenido_directo
+
+
+def test_capitulos_ffmpeg_con_contenido_invalido_degrada_solo_esa_mitad(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-22 (requisito 7, misma leccion que el hallazgo #27/R-21): un
+    contenido invalido para FFMETADATA1 degrada solo capitulos-ffmpeg.txt a
+    `SalidaOmitida`, sin impedir que capitulos-youtube.txt (ya generado) se
+    mantenga -- nunca una excepcion sin capturar ni un archivo corrupto."""
+    import salidas as modulo_salidas
+
+    monkeypatch.setattr(
+        modulo_salidas, "validar_capitulos_ffmpeg", lambda _contenido: ["problema simulado"]
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CAPITULOS_YOUTUBE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA,
+    )
+    generados_capitulos = [a for a in resumen.generadas if a.tipo is TipoSalida.CAPITULOS_YOUTUBE]
+    assert len(generados_capitulos) == 1  # solo capitulos-youtube.txt
+    assert not (tmp_path / NOMBRE_ARCHIVO_CAPITULOS_FFMPEG).exists()
+    omitida = next(
+        o
+        for o in resumen.omitidas
+        if o.tipo is TipoSalida.CAPITULOS_YOUTUBE and "problema simulado" in o.motivo
+    )
+    assert "capitulos-ffmpeg.txt" in omitida.motivo
+    assert not omitida.motivo.startswith("fallo al generar")
 
 
 # --- R-19: CONCAT_FFMPEG, sexta opcion del selector ---------------------------------

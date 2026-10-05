@@ -23,6 +23,7 @@ aislamiento, §0.2 de `HOJA_DE_RUTA.md`):
 ├── tarjetas.json            # contrato de tarjetas (T-29) — CONTRATO DE MONTAJE
 ├── brief-pptx.md            # brief de invocación a 480-branded-pptx (T-29)
 ├── capitulos-youtube.txt    # capítulos con marcas de tiempo reales (R-07), si el guion trae la sección
+├── capitulos-ffmpeg.txt     # capítulos FFMETADATA1 incrustables (R-22), misma condición que el anterior
 ├── concat-ffmpeg.txt        # lista de concatenación de ffmpeg (R-19), si existe parte de rodaje
 ├── diccionario-locucion.json  # opcional, del dueño (T-13)
 └── teleprompter.log         # diagnóstico técnico (T-02); no lo consume el montaje
@@ -149,6 +150,69 @@ montaje puede leer esa clave directamente para situar cada corte a pantalla
 sin releer el guion ni el propio vídeo a ojo — es una estimación (el nombre
 lo deja explícito), basada en el ritmo deducido del guion (T-12), no en un
 instante medido sobre la toma real.
+
+## `capitulos-ffmpeg.txt` — capítulos incrustables de verdad en el vídeo final (R-22)
+
+`capitulos-youtube.txt` (R-07, ver "Qué quedaba fuera de esta tarea" más
+abajo) es texto pensado para pegar a mano en la descripción de un vídeo de
+YouTube — útil, pero no algo que ffmpeg pueda consumir. `capitulos-ffmpeg.txt`
+reutiliza exactamente el mismo emparejamiento título↔escena y los mismos
+tiempos real/estimado que ya calcula `capitulos_youtube.calcular_capitulos`
+(misma condición de generación: el guion trae sección `Capítulos`), pero
+formateados en `FFMETADATA1`, el formato nativo de metadatos de ffmpeg:
+
+```
+;FFMETADATA1
+[;Nota de tiempos estimados, si aplica — ffmpeg ignora toda línea que empiece por ';' o '#']
+
+[CHAPTER]
+TIMEBASE=1/1000
+START=0
+END=12500
+title=Título del primer capítulo
+
+[CHAPTER]
+TIMEBASE=1/1000
+START=12500
+END=...
+title=Título del segundo capítulo
+```
+
+La cadena de montaje puede incrustar este archivo en el `.mp4` final sin
+tocar nada más:
+
+```
+ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1 -codec copy video-final.mp4
+```
+
+Diferencias deliberadas con `capitulos-youtube.txt`, ambas documentadas en el
+docstring de `capitulos_youtube.formatear_capitulos_ffmpeg`:
+
+- **Sin la "marca mínima" de `capitulos_youtube_marca_minima_segundos`:** un
+  archivo de metadatos incrustado no compite por espacio de lectura como una
+  lista de texto — cada escena emparejada con un título es su propio
+  capítulo, sin filtrar ninguno por cercanía con el anterior.
+- **`END` de cada capítulo es el `START` del siguiente**, y el del último es
+  `ResultadoCapitulos.duracion_total_segundos` (el mismo cursor de tiempo
+  acumulado que ya calculaba `calcular_capitulos` y hasta R-22 descartaba)
+  convertido a milisegundos — sin huecos ni solapes entre capítulos
+  consecutivos.
+- Los caracteres `\`, `=`, `;`, `#` y el salto de línea de cada `title=...`
+  se escapan con `\` por delante, igual que `concat_ffmpeg._escapar_ruta_ffmpeg`
+  escapa la ruta de vídeo (R-19), mismo patrón, formato distinto.
+
+Misma condición de ausencia que `capitulos-youtube.txt`: sin sección
+`Capítulos` en el guion, este archivo no se genera — la cadena de montaje no
+debe asumir que existe.
+
+**Validado antes de llegar a disco, desde el primer día (misma lección que
+`concat-ffmpeg.txt`, hallazgo `#27`/R-21):** `capitulos-ffmpeg.txt` nunca se
+escribe sin pasar antes por `capitulos_youtube.validar_capitulos_ffmpeg`
+sobre su propio contenido — exige la primera línea `;FFMETADATA1`, cada
+`START`/`END` entero no negativo, `START` estrictamente creciente y `END` de
+cada capítulo sin solaparse con el `START` del siguiente. Un contenido
+inválido degrada esa mitad de la salida a omitida con el motivo exacto, sin
+impedir que `capitulos-youtube.txt` se genere igual.
 
 ## `concat-ffmpeg.txt` — lista de concatenación lista para ffmpeg (R-19)
 

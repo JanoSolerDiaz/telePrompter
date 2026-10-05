@@ -12,6 +12,61 @@
 
 ---
 
+### Sesión 2026-10-05 (72) — Ciclo de Programador: R-22 implementada y `COMPLETADA`
+
+**Arranque.** `git status` limpio; `git checkout develop` avisó de 29 commits por delante de
+cualquier rama local, sin rama asociada (resto de un contenedor anterior, descartable); `git pull
+origin develop` resolvió en fast-forward limpio hasta `d926ede` (la auditoría 2026-10-05, "sin
+hallazgos nuevos"), sin conflicto ni rama divergida. `pip install -r requirements-dev.txt` limpio
+(mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: único
+`ABIERTO` sigue siendo `#24` (baja, proceso — pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+decimonovena pasada consecutiva), ninguno de severidad alta que atender como P-XX urgente antes de
+esta tarea. §1 (fuente autoritativa) tenía a R-22 (Oleada v10) como la única R-XX `PENDIENTE`, ya
+especificada por completo en `ROADMAP_PRODUCTO.md` §"Oleada v10" desde el ciclo de PM del
+2026-10-02.
+
+**R-22 — Capítulos reales incrustables en el vídeo final (`capitulos-ffmpeg.txt`, formato
+`FFMETADATA1` de ffmpeg).** Reutiliza tal cual el emparejamiento título↔escena y los tiempos
+real/estimado que `capitulos_youtube.calcular_capitulos` ya calcula para `capitulos-youtube.txt`
+(R-07) — sin recalcular nada, solo exponerlos en el formato nativo de metadatos de ffmpeg.
+`ResultadoCapitulos` gana el campo aditivo `duracion_total_segundos` (el cursor final que el bucle
+ya acumulaba y hasta ahora descartaba). `scripts/capitulos_youtube.py` gana
+`formatear_capitulos_ffmpeg` (primera línea `;FFMETADATA1`, un bloque `[CHAPTER]` por capítulo con
+`START`/`END` en milisegundos y `title=<título>` escapado según el propio formato, SIN la marca
+mínima de YouTube — requisito 4, cada escena emparejada es su propio capítulo) y
+`validar_capitulos_ffmpeg` (exige la primera línea, `START`/`END` enteros no negativos, `START`
+estrictamente creciente, sin solapes). `scripts/salidas.py::_generar_capitulos_youtube` genera
+`capitulos-ffmpeg.txt` como segunda mitad de la misma opción `CAPITULOS_YOUTUBE` del selector (no
+una séptima opción, requisito 8 — mismo patrón que `guion.srt`/`guion-alineado.srt` bajo `SRT`,
+R-18), validando antes de escribir desde el primer día (requisito 7, misma lección que el hallazgo
+`#27`/R-21): un contenido inválido degrada solo esa mitad a `SalidaOmitida`, sin impedir que
+`capitulos-youtube.txt` se mantenga. `config.NOMBRE_ARCHIVO_CAPITULOS_FFMPEG =
+"capitulos-ffmpeg.txt"` (constante de módulo, no campo de `Configuracion`).
+
+**Verificación.** 18 tests nuevos (619→637): `tests/test_capitulos_youtube.py` (formato exacto,
+contigüidad `END`=`START` siguiente, sin filtrado por marca mínima a diferencia de YouTube,
+escapado de caracteres especiales, nota de transparencia real/estimado, criterio de aceptación
+sobre los tres guiones reales de `fixtures/reales/`, validador independiente, guardado en disco);
+`tests/test_salidas.py` (contenido generado junto a `capitulos-youtube.txt` coincide con la
+llamada directa; contenido inválido forzado por monkeypatch degrada solo esa mitad sin afectar a
+`capitulos-youtube.txt`). Cuatro redes en verde: `mypy`/`ruff` sin hallazgos (70 archivos), 637
+tests (`pytest`), dieciocho etapas OK en `verificar_salidas.py --fixture` (dos nuevas: "Generación
+de capítulos de ffmpeg (FFMETADATA1)" y "Validez de los capítulos de ffmpeg (FFMETADATA1)").
+`references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados. Decisiones
+registradas en `DECISIONES_TECNICAS.md` (fila "R-22 (implementación)" ×3: reparto en
+`_generar_capitulos_youtube` en vez de una rama independiente del selector; nota de transparencia
+como función propia en vez de compartida con `formatear_capitulos_youtube`; dos etapas de
+verificación propias en vez de fusionarlas con las de YouTube). §1 de `SEGUIMIENTO.md` pasa `R-22`
+a `COMPLETADA`. Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue
+`(pendiente)`). Ningún hallazgo de `auditoriacontinua.md` es de severidad alta. `ROADMAP_PRODUCTO.md`
+sigue describiendo R-22 como "EN CURSO"/`PENDIENTE` en su prosa de "Cola de producto" hasta el
+siguiente ciclo de PM, que es quien archiva la oleada — mismo patrón que motivó el hallazgo `#24`,
+no corregido desde este ciclo de Programador.
+
+---
+
 ### Sesión 2026-10-04 (71) — Ciclo de Product Manager: reconfirmación de cola, sin R-XX nueva abierta
 
 **Arranque.** `git status` limpio; `git checkout develop` avisó de 27 commits por detrás sin rama

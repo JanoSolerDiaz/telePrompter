@@ -53,6 +53,16 @@ Un contenido invalido (alcanzable solo si `archivo_video` llega sin sanear
 desde `estado.tomas`, algo que `tomas._sanear_archivo_video` ya impide en el
 origen) degrada a `SalidaOmitida` con el motivo exacto, nunca una excepcion
 sin capturar ni un archivo corrupto en disco.
+
+R-22: `_generar_capitulos_youtube` genera ademas `capitulos-ffmpeg.txt`
+(formato `FFMETADATA1` nativo de ffmpeg, `capitulos_youtube.py`) bajo la
+misma opcion `TipoSalida.CAPITULOS_YOUTUBE` -- no es una septima salida
+nueva del selector, son dos archivos de la misma opcion, mismo patron que
+`guion.srt`/`guion-alineado.srt` bajo `TipoSalida.SRT` (R-18). Validado con
+`capitulos_youtube.validar_capitulos_ffmpeg` antes de escribir a disco desde
+el primer dia (misma leccion que R-21): un contenido invalido degrada solo
+esa mitad a `SalidaOmitida`, sin impedir que `capitulos-youtube.txt` se
+genere igual.
 """
 
 from __future__ import annotations
@@ -62,7 +72,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from capitulos_youtube import generar_capitulos_youtube, guardar_capitulos_youtube
+from capitulos_youtube import (
+    formatear_capitulos_ffmpeg,
+    generar_capitulos_youtube,
+    guardar_capitulos_ffmpeg,
+    guardar_capitulos_youtube,
+    validar_capitulos_ffmpeg,
+)
 from concat_ffmpeg import (
     generar_lista_concat_ffmpeg,
     guardar_lista_concat_ffmpeg,
@@ -339,7 +355,31 @@ def _generar_capitulos_youtube(
         motivo = calculo.motivo_sin_generar or "el guion no aporta ningun capitulo que generar."
         return [], [SalidaOmitida(TipoSalida.CAPITULOS_YOUTUBE, motivo)]
     ruta = guardar_capitulos_youtube(contenido, carpeta_salida)
-    return [ArchivoGenerado(TipoSalida.CAPITULOS_YOUTUBE, ruta, ruta.stat().st_size)], []
+    generadas = [ArchivoGenerado(TipoSalida.CAPITULOS_YOUTUBE, ruta, ruta.stat().st_size)]
+    omitidas: list[SalidaOmitida] = []
+
+    # R-22: capitulos-ffmpeg.txt (formato FFMETADATA1 nativo de ffmpeg) se
+    # genera junto a capitulos-youtube.txt, bajo la misma opcion del selector
+    # (requisito 8) -- validado antes de escribir desde el primer dia
+    # (requisito 7, misma leccion que el hallazgo #27/R-21): un contenido
+    # invalido degrada solo esta mitad a SalidaOmitida, sin impedir que
+    # capitulos-youtube.txt ya generado arriba se mantenga.
+    contenido_ffmpeg = formatear_capitulos_ffmpeg(calculo, configuracion)
+    if contenido_ffmpeg is not None:
+        problemas = validar_capitulos_ffmpeg(contenido_ffmpeg)
+        if problemas:
+            motivo_ffmpeg = "capitulos-ffmpeg.txt: contenido invalido para FFMETADATA1: " + (
+                "; ".join(problemas)
+            )
+            omitidas.append(SalidaOmitida(TipoSalida.CAPITULOS_YOUTUBE, motivo_ffmpeg))
+        else:
+            ruta_ffmpeg = guardar_capitulos_ffmpeg(contenido_ffmpeg, carpeta_salida)
+            generadas.append(
+                ArchivoGenerado(
+                    TipoSalida.CAPITULOS_YOUTUBE, ruta_ffmpeg, ruta_ffmpeg.stat().st_size
+                )
+            )
+    return generadas, omitidas
 
 
 def _generar_concat_ffmpeg(

@@ -140,6 +140,10 @@ TITULO_SECCION_CAPITULOS: str = "Capítulos"
 CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS: float = 10.0
 # Nombre del archivo de capitulos dentro de la carpeta de salida del guion.
 NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE: str = "capitulos-youtube.txt"
+# Nombre del archivo de capitulos en formato FFMETADATA1 nativo de ffmpeg (R-22),
+# generado junto a NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE bajo la misma opcion del
+# selector de T-30 -- no es un valor que el dueno deba poder cambiar.
+NOMBRE_ARCHIVO_CAPITULOS_FFMPEG: str = "capitulos-ffmpeg.txt"
 
 # --- Lista de concatenacion de ffmpeg (R-19) ---------------------------------------
 # Nombre del archivo, listo para `ffmpeg -f concat -safe 0 -i <este archivo>`,

@@ -3130,6 +3130,76 @@ explícitamente) partía una entrada lógica en dos líneas físicas. Depende de
   etapas de `verificar_salidas.py --fixture` (la de validez de `concat-ffmpeg.txt` ya existía desde
   R-19 y sigue en verde, ahora reforzada por la invocación real en `salidas.py`).
 
+## Capítulos reales incrustables en el vídeo final (R-22)
+
+`capitulos_youtube.py` (R-07) ya empareja título↔escena y calcula el tiempo acumulado de
+inicio de cada capítulo (real, de la toma buena, o estimado del ritmo deducido del guion),
+pero hasta R-22 ese cálculo solo se exponía en `capitulos-youtube.txt`, pensado para pegarse
+a mano en la descripción de un vídeo de YouTube — nunca en el formato nativo de metadatos de
+ffmpeg (`FFMETADATA1`) que la fase de montaje (T-33) necesita para incrustar capítulos de
+verdad en el `.mp4` final con `ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1
+-codec copy video-final.mp4`.
+
+- **Requisito 2 (`ResultadoCapitulos.duracion_total_segundos`, campo aditivo).** El cursor de
+  tiempo que `calcular_capitulos` ya acumulaba en su bucle y hasta ahora descartaba — mismo
+  valor final, ninguna cuenta nueva — se expone ahora para poder cerrar el `END` del último
+  capítulo sin inventar una duración. `0.0` en los tres casos de `motivo_sin_generar`.
+- **Requisito 1 y 3 (`formatear_capitulos_ffmpeg`, formato `FFMETADATA1` exacto).** Hermana de
+  `formatear_capitulos_youtube`, reutiliza `resultado.capitulos` tal cual: primera línea
+  `;FFMETADATA1`, un bloque `[CHAPTER]` por capítulo (`TIMEBASE=1/1000`, `START=<ms>`,
+  `END=<ms>`, `title=<título>`), bloques separados por una línea en blanco. `END` de un
+  capítulo es el `START` del siguiente; el del último es `duracion_total_segundos` convertido
+  a milisegundos. `START`/`END` se truncan igual que `_formatear_mm_ss` ya redondeaba hacia
+  abajo (una marca nunca puede caer después del instante real en que empieza la escena).
+- **Requisito 4 (sin la marca mínima de YouTube, diferencia deliberada).** A diferencia de
+  `formatear_capitulos_youtube`, `formatear_capitulos_ffmpeg` NO filtra por
+  `capitulos_youtube_marca_minima_segundos`: un archivo de metadatos incrustado no compite
+  por espacio de lectura como una lista de texto, así que cada escena emparejada con un
+  título es su propio capítulo. Documentado en el propio docstring de la función, para que
+  nadie lo confunda con un olvido del filtro de R-07.
+- **Requisito 5 (escapado del título).** `_escapar_titulo_ffmpeg` antepone `\` a `\`, `=`,
+  `;`, `#` y al salto de línea — mismo patrón que `concat_ffmpeg._escapar_ruta_ffmpeg` (R-19)
+  para la ruta de vídeo, formato distinto.
+- **Requisito 6 (transparencia real/estimado).** `_nota_tiempos_estimados` reutiliza el mismo
+  texto de aviso que ya calcula `formatear_capitulos_youtube`, pero sobre TODOS los capítulos
+  de `resultado` (sin el filtrado por marca mínima de YouTube, "las marcas conservadas" son
+  aquí todas). Se antepone como comentario `;` tras `;FFMETADATA1` — ffmpeg ignora cualquier
+  línea de nivel superior que empiece por `;` o `#`.
+- **Requisito 7 (`validar_capitulos_ffmpeg`, validar antes de escribir desde el primer día —
+  misma lección que el hallazgo `#27`/R-21).** Exige la primera línea `;FFMETADATA1`, cada
+  `START`/`END` entero no negativo, `START` estrictamente creciente entre capítulos
+  consecutivos y `END` de cada capítulo `<=` `START` del siguiente (sin solapes).
+  `scripts/salidas.py::_generar_capitulos_youtube` lo invoca sobre el contenido de
+  `capitulos-ffmpeg.txt` antes de `guardar_capitulos_ffmpeg`: si falla, degrada solo esa
+  mitad de la salida a `SalidaOmitida` con el motivo exacto, sin impedir que
+  `capitulos-youtube.txt` se genere igual (mismo patrón `try`/`except` que R-21 dejó listo
+  para `concat-ffmpeg.txt`).
+- **Requisito 8 (`capitulos-ffmpeg.txt`, misma opción del selector, no una séptima).**
+  `config.NOMBRE_ARCHIVO_CAPITULOS_FFMPEG = "capitulos-ffmpeg.txt"` (constante de módulo, no
+  un campo de `Configuracion`); se genera junto a `capitulos-youtube.txt` bajo la misma
+  `TipoSalida.CAPITULOS_YOUTUBE` del selector de T-30 — mismo patrón que
+  `guion.srt`/`guion-alineado.srt` bajo `TipoSalida.SRT` (R-18).
+- **Requisito 9 (documentación).** `references/contrato-montaje.md` gana una sección propia
+  para `capitulos-ffmpeg.txt`: qué es, cuándo se genera (misma condición que
+  `capitulos-youtube.txt`), el comando de ffmpeg de ejemplo y la garantía de que nunca llega a
+  disco sin pasar por su propio validador. `references/contrato-tomas.md` no cambia.
+- **Requisito 10 (fuera de alcance, explícito).** No se extiende la misma
+  validación-antes-de-escribir a `srt.py` ni a la ruta de generación ya existente de
+  `capitulos-youtube.txt` — ya decidido fuera de alcance de R-21 por no tener evidencia real
+  que lo justifique; R-22 no reabre esa decisión, solo aplica el patrón correcto a la salida
+  nueva que ella misma crea.
+- **Verificación.** `tests/test_capitulos_youtube.py` gana 18 tests (`duracion_total_segundos`
+  correcto y en `0.0` sin capítulos; formato `FFMETADATA1` exacto, contigüidad `END`=`START`
+  siguiente, sin filtrado por marca mínima a diferencia de YouTube, escapado de caracteres
+  especiales, nota de transparencia con y sin tiempos estimados, criterio de aceptación sobre
+  los tres guiones reales; `validar_capitulos_ffmpeg` detecta cada regla por separado;
+  guardado en disco). `tests/test_salidas.py` gana 2 tests (`CAPITULOS_YOUTUBE` genera también
+  `capitulos-ffmpeg.txt` con el mismo contenido que la llamada directa; un contenido inválido
+  forzado por monkeypatch degrada solo esa mitad sin afectar a `capitulos-youtube.txt`).
+  619→637 tests. `verificar_salidas.py --fixture` gana dos etapas ("Generación de capítulos de
+  ffmpeg (FFMETADATA1)" y "Validez de los capítulos de ffmpeg (FFMETADATA1)"), dieciocho en
+  total. Cuatro redes en verde.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

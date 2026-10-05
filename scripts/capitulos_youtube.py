@@ -62,6 +62,25 @@ desaparecer sin rastro: la seccion auxiliar del guion sigue integra (no es
 perdida de la fuente), pero quien orquesta la generacion puede avisar al
 dueno de que un titulo de capitulo no llego a `capitulos-youtube.txt`.
 
+R-22 (capitulos reales incrustables en el video final, formato `FFMETADATA1`
+nativo de ffmpeg): el emparejamiento titulo<->escena y los tiempos
+real/estimado de cada capitulo que `calcular_capitulos` ya produce para
+`capitulos-youtube.txt` son exactamente los que necesita la fase de montaje
+(T-33) para incrustar capitulos de verdad en el `.mp4` final con
+`ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1 -codec copy
+video-final.mp4` -- este modulo no recalcula nada, solo lo formatea en el
+segundo formato. `ResultadoCapitulos.duracion_total_segundos` (campo aditivo)
+expone el cursor de tiempo final que el bucle de `calcular_capitulos` ya
+acumula y hasta ahora descartaba: es el unico dato que faltaba para poder
+cerrar el `END` del ultimo capitulo sin inventar una duracion.
+`formatear_capitulos_ffmpeg`, a diferencia de `formatear_capitulos_youtube`,
+NO filtra por `capitulos_youtube_marca_minima_segundos` (requisito 4): un
+archivo de metadatos incrustado no compite por espacio de lectura como una
+lista de texto, asi que cada escena emparejada se convierte en su propio
+capitulo. `validar_capitulos_ffmpeg` se invoca desde `scripts/salidas.py`
+antes de escribir a disco, desde el primer dia (leccion del hallazgo
+`#27`/R-21, para no repetir la misma deuda con una salida nueva).
+
 Requisito 5 (regenerable sin intervencion manual): este modulo no persiste nada
 por si mismo -- es una funcion pura del `ResultadoParseo`/`ResultadoTiempos` y de
 `EstadoProyecto.tomas` que se le pasen, igual que `srt_alineado.py`. La skill no
@@ -78,7 +97,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from config import NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE, Configuracion
+from config import (
+    NOMBRE_ARCHIVO_CAPITULOS_FFMPEG,
+    NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE,
+    Configuracion,
+)
 from parser import ResultadoParseo, SeccionAuxiliar
 from tiempos import ResultadoTiempos
 from tomas import duracion_toma_buena
@@ -173,11 +196,16 @@ class ResultadoCapitulos:
     tabla de capitulos que no llegaron a emparejarse con ninguna escena por
     haber MAS titulos que escenas (requisito 2 de R-11, hallazgo #17); vacio
     en el caso normal (mismo numero de titulos que escenas, o menos).
+    `duracion_total_segundos` (R-22, requisito 2) es el cursor de tiempo
+    acumulado tras procesar el ultimo capitulo -- el mismo valor final que ya
+    calculaba el bucle y hasta ahora descartaba, sin ninguna cuenta nueva;
+    `0.0` cuando `capitulos` esta vacio (nada que cerrar).
     """
 
     capitulos: tuple[CapituloYoutube, ...]
     escenas_sin_toma_buena: tuple[int, ...]
     titulos_sobrantes: tuple[str, ...]
+    duracion_total_segundos: float
     motivo_sin_generar: str | None
 
 
@@ -200,6 +228,7 @@ def calcular_capitulos(
             capitulos=(),
             escenas_sin_toma_buena=(),
             titulos_sobrantes=(),
+            duracion_total_segundos=0.0,
             motivo_sin_generar=(
                 f"el guion no trae ninguna seccion '{configuracion.titulo_seccion_capitulos}'."
             ),
@@ -210,6 +239,7 @@ def calcular_capitulos(
             capitulos=(),
             escenas_sin_toma_buena=(),
             titulos_sobrantes=(),
+            duracion_total_segundos=0.0,
             motivo_sin_generar=(
                 f"la seccion '{seccion.titulo}' no trae ninguna fila de tabla legible."
             ),
@@ -244,12 +274,14 @@ def calcular_capitulos(
             capitulos=(),
             escenas_sin_toma_buena=(),
             titulos_sobrantes=tuple(titulos),
+            duracion_total_segundos=0.0,
             motivo_sin_generar="el guion no tiene ninguna escena con la que emparejar un capitulo.",
         )
     return ResultadoCapitulos(
         capitulos=tuple(capitulos),
         escenas_sin_toma_buena=tuple(escenas_sin_toma_buena),
         titulos_sobrantes=tuple(titulos[numero_capitulos:]),
+        duracion_total_segundos=cursor_segundos,
         motivo_sin_generar=None,
     )
 
@@ -366,6 +398,161 @@ def validar_capitulos_youtube(
                 )
         segundos_anterior = segundos
     return problemas
+
+
+_CARACTERES_ESCAPABLES_FFMETADATA = "\\=;#\n"
+_PATRON_LINEA_CAPITULO_FFMPEG = re.compile(r"^(START|END)=(-?\d+)$")
+
+
+def _escapar_titulo_ffmpeg(titulo: str) -> str:
+    """Escapa `titulo` segun el formato `FFMETADATA1` de ffmpeg (requisito 5
+    de R-22): `\\`, `=`, `;`, `#` y el salto de linea se escapan con `\\` por
+    delante -- mismo patron que `_escapar_ruta_ffmpeg` de R-19 para la ruta de
+    video, formato distinto."""
+    partes = []
+    for caracter in titulo:
+        if caracter in _CARACTERES_ESCAPABLES_FFMETADATA:
+            partes.append("\\")
+        partes.append(caracter)
+    return "".join(partes)
+
+
+def _nota_tiempos_estimados(resultado: ResultadoCapitulos) -> str | None:
+    """Mismo texto de aviso (requisito 6 de R-22, "Transparencia
+    real/estimado") que ya calcula `formatear_capitulos_youtube`, pero sobre
+    TODOS los capitulos de `resultado` -- a diferencia del `.txt` de YouTube,
+    `formatear_capitulos_ffmpeg` no filtra ninguno por marca minima (requisito
+    4), asi que "las marcas conservadas" son aqui todas."""
+    numeros_reportados = {c.numero_escena for c in resultado.capitulos}
+    estimadas_reportadas = sorted(
+        n for n in resultado.escenas_sin_toma_buena if n in numeros_reportados
+    )
+    if not estimadas_reportadas:
+        return None
+    if len(estimadas_reportadas) == len(resultado.capitulos):
+        return (
+            "tiempos ESTIMADOS (T-12): todavia no hay ninguna toma buena registrada (R-02)."
+        )
+    lista = ", ".join(str(n) for n in estimadas_reportadas)
+    return (
+        f"tiempos ESTIMADOS (T-12) en la(s) escena(s) {lista} -- sin toma buena registrada "
+        "todavia (R-02); el resto de marcas usa la duracion real de su toma buena."
+    )
+
+
+def formatear_capitulos_ffmpeg(
+    resultado: ResultadoCapitulos, configuracion: Configuracion | None = None
+) -> str | None:
+    """Texto final de `capitulos-ffmpeg.txt` (R-22), formato `FFMETADATA1`
+    nativo de ffmpeg. `None` si `resultado` no trae ningun capitulo (requisito
+    4 de R-07: nada que generar) -- hermana de `formatear_capitulos_youtube`,
+    mismo dato de entrada, formato distinto.
+
+    Requisito 3: primera linea `;FFMETADATA1`; un bloque `[CHAPTER]` por
+    capitulo, con `TIMEBASE=1/1000`, `START=<ms>` y `END=<ms>` (enteros,
+    redondeados hacia abajo igual que `_formatear_mm_ss`) y `title=<titulo>`
+    escapado (requisito 5); `END` de un capitulo es el `START` del siguiente y
+    el del ultimo es `resultado.duracion_total_segundos` (requisito 2)
+    convertido a milisegundos. Bloques separados por una linea en blanco,
+    como exige el propio formato.
+
+    Requisito 4 (diferencia deliberada con `formatear_capitulos_youtube`):
+    NO se filtra ningun capitulo por `capitulos_youtube_marca_minima_segundos`
+    -- un archivo de metadatos incrustado no compite por espacio de lectura
+    como una lista de texto para pegar a mano, asi que cada escena emparejada
+    con un titulo se convierte en su propio capitulo.
+
+    Requisito 6: si alguna marca depende de una duracion estimada, la primera
+    linea tras `;FFMETADATA1` es un comentario `;` con el aviso -- ffmpeg
+    ignora cualquier linea de nivel superior que empiece por `;` o `#`."""
+    configuracion = configuracion or Configuracion()
+    if not resultado.capitulos:
+        return None
+
+    lineas = [";FFMETADATA1"]
+    nota = _nota_tiempos_estimados(resultado)
+    if nota is not None:
+        lineas.append(f";{nota}")
+
+    limites = [c.inicio_segundos for c in resultado.capitulos] + [
+        resultado.duracion_total_segundos
+    ]
+    for indice, capitulo in enumerate(resultado.capitulos):
+        inicio_ms = int(limites[indice] * 1000)
+        fin_ms = int(limites[indice + 1] * 1000)
+        lineas.append("")
+        lineas.append("[CHAPTER]")
+        lineas.append("TIMEBASE=1/1000")
+        lineas.append(f"START={inicio_ms}")
+        lineas.append(f"END={fin_ms}")
+        lineas.append(f"title={_escapar_titulo_ffmpeg(capitulo.titulo)}")
+
+    return "\n".join(lineas) + "\n"
+
+
+def validar_capitulos_ffmpeg(contenido: str) -> list[str]:
+    """Requisito 7 de R-22 (misma leccion que el hallazgo `#27`/R-21: validar
+    antes de escribir, desde el primer dia): exige la primera linea
+    `;FFMETADATA1`, cada `START`/`END` entero no negativo, `START`
+    estrictamente creciente entre capitulos consecutivos y `END` de cada
+    capitulo `<=` `START` del siguiente (sin solapes)."""
+    lineas = contenido.splitlines()
+    if not lineas or lineas[0] != ";FFMETADATA1":
+        return ["la primera linea debe ser ';FFMETADATA1'."]
+
+    problemas: list[str] = []
+    bloques: list[dict[str, int]] = []
+    actual: dict[str, int] | None = None
+    for numero_linea, linea in enumerate(lineas[1:], start=2):
+        if linea == "[CHAPTER]":
+            actual = {}
+            bloques.append(actual)
+            continue
+        if actual is None:
+            continue
+        coincidencia = _PATRON_LINEA_CAPITULO_FFMPEG.match(linea)
+        if not coincidencia:
+            continue
+        clave, valor_bruto = coincidencia.groups()
+        valor = int(valor_bruto)
+        if valor < 0:
+            problemas.append(f"linea {numero_linea}: {clave} negativo ({valor}).")
+        actual[clave] = valor
+
+    if not bloques:
+        problemas.append("el archivo no tiene ningun bloque '[CHAPTER]'.")
+        return problemas
+
+    anterior_start: int | None = None
+    anterior_end: int | None = None
+    for indice, bloque in enumerate(bloques):
+        if "START" not in bloque or "END" not in bloque:
+            problemas.append(f"capitulo {indice + 1}: falta START o END.")
+            continue
+        start, end = bloque["START"], bloque["END"]
+        if anterior_start is not None and start <= anterior_start:
+            problemas.append(
+                f"capitulo {indice + 1}: START {start} no es mayor que el START anterior "
+                f"{anterior_start}."
+            )
+        if anterior_end is not None and start < anterior_end:
+            problemas.append(
+                f"capitulo {indice + 1}: START {start} se solapa con el END anterior "
+                f"{anterior_end}."
+            )
+        anterior_start, anterior_end = start, end
+    return problemas
+
+
+def guardar_capitulos_ffmpeg(contenido: str, carpeta_salida: Path) -> Path:
+    """Escribe `capitulos-ffmpeg.txt` en la carpeta de salida del guion.
+    Nunca fuera de `carpeta_salida` (regla de aislamiento, §0.2). No llamar
+    con `contenido=None` (requisito 4 de R-07): quien orquesta decide no
+    escribir nada."""
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+    destino = carpeta_salida / NOMBRE_ARCHIVO_CAPITULOS_FFMPEG
+    destino.write_text(contenido, encoding="utf-8", newline="\n")
+    return destino
 
 
 def generar_capitulos_youtube(

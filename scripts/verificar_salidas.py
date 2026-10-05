@@ -56,6 +56,14 @@ la primera escena del guion de verificacion -- suficiente para validar de
 verdad el formato `file '...'` del demuxer `concat` con el mismo validador
 estricto que usa el criterio de aceptacion (`validar_lista_concat_ffmpeg`),
 sin que eso sea el rodaje real del guion de ejemplo (que nunca se grabo).
+
+R-22 anade "Generación de capítulos de ffmpeg (FFMETADATA1)" y "Validez de
+los capítulos de ffmpeg (FFMETADATA1)" (`scripts/capitulos_youtube.py`):
+mismo guion de verificacion y mismo emparejamiento/tiempos que ya ejercitan
+las dos etapas de capítulos de YouTube, solo formateados en el `FFMETADATA1`
+nativo de ffmpeg en vez del texto para pegar en una descripcion -- sin la
+marca minima de YouTube (requisito 4), asi que valida de verdad que `END`
+del ultimo capitulo coincide con `duracion_total_segundos`.
 """
 
 from __future__ import annotations
@@ -70,8 +78,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from capitulos_youtube import (
+    formatear_capitulos_ffmpeg,
     generar_capitulos_youtube,
+    guardar_capitulos_ffmpeg,
     guardar_capitulos_youtube,
+    validar_capitulos_ffmpeg,
     validar_capitulos_youtube,
 )
 from concat_ffmpeg import (
@@ -80,6 +91,7 @@ from concat_ffmpeg import (
     validar_lista_concat_ffmpeg,
 )
 from config import (
+    NOMBRE_ARCHIVO_CAPITULOS_FFMPEG,
     NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE,
     NOMBRE_ARCHIVO_CONCAT_FFMPEG,
     NOMBRE_ARCHIVO_HTML_IMPRESION,
@@ -108,6 +120,7 @@ RUTA_SRT_ALINEADO_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_SRT_ALINEADO
 RUTA_HTML_IMPRESION_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_HTML_IMPRESION
 RUTA_TARJETAS_JSON_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_TARJETAS_JSON
 RUTA_CAPITULOS_YOUTUBE_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE
+RUTA_CAPITULOS_FFMPEG_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_CAPITULOS_FFMPEG
 RUTA_CONCAT_FFMPEG_FIXTURE = CARPETA_SALIDA_FIXTURE / NOMBRE_ARCHIVO_CONCAT_FFMPEG
 
 # Patrones prohibidos en cualquier salida .html (§0.2, "salida autocontenida").
@@ -404,6 +417,67 @@ def verificar_capitulos_youtube(ruta_txt: Path) -> Resultado:
     )
 
 
+def generar_capitulos_ffmpeg_fixture() -> Resultado:
+    """Genera `capitulos-ffmpeg.txt` (R-22, formato FFMETADATA1 nativo de
+    ffmpeg) sobre el mismo guion de verificacion que usa
+    `capitulos-youtube.txt` -- mismo emparejamiento titulo<->escena y mismos
+    tiempos de `calcular_capitulos`, solo formateados distinto (sin la marca
+    minima de YouTube, requisito 4 de R-22)."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
+        return Resultado(
+            "Generación de capítulos de ffmpeg (FFMETADATA1)",
+            "NO APLICABLE",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
+        )
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        _, calculo = generar_capitulos_youtube(resultado, tiempos, {})
+        contenido = formatear_capitulos_ffmpeg(calculo)
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación de capítulos de ffmpeg (FFMETADATA1)",
+            "FALLO",
+            f"no se pudo generar los capitulos sobre {ruta_guion.name}: {excepcion}",
+        )
+    if contenido is None:
+        return Resultado(
+            "Generación de capítulos de ffmpeg (FFMETADATA1)",
+            "NO APLICABLE",
+            f"{ruta_guion.name} no trae seccion 'Capítulos': {calculo.motivo_sin_generar}",
+        )
+    guardar_capitulos_ffmpeg(contenido, CARPETA_SALIDA_FIXTURE)
+    detalle = (
+        f"generado sobre {ruta_guion.name}. END del ultimo capitulo = "
+        f"duracion_total_segundos ({calculo.duracion_total_segundos:.2f}s), sin filtrar "
+        "por marca minima (requisito 4: cada escena emparejada es su propio capitulo)."
+    )
+    return Resultado("Generación de capítulos de ffmpeg (FFMETADATA1)", "OK", detalle)
+
+
+def verificar_capitulos_ffmpeg(ruta_txt: Path) -> Resultado:
+    """Valida `capitulos-ffmpeg.txt` con las mismas reglas que exige el
+    formato FFMETADATA1 de ffmpeg (R-22, requisito 7)."""
+    if not ruta_txt.exists():
+        return Resultado(
+            "Validez de los capítulos de ffmpeg (FFMETADATA1)",
+            "NO APLICABLE",
+            f"no se ha generado ningun archivo de capitulos en {ruta_txt}.",
+        )
+    problemas = validar_capitulos_ffmpeg(ruta_txt.read_text(encoding="utf-8"))
+    if problemas:
+        return Resultado(
+            "Validez de los capítulos de ffmpeg (FFMETADATA1)", "FALLO", "; ".join(problemas)
+        )
+    return Resultado(
+        "Validez de los capítulos de ffmpeg (FFMETADATA1)",
+        "OK",
+        f"{ruta_txt.name} cumple el formato FFMETADATA1 de ffmpeg.",
+    )
+
+
 def generar_concat_ffmpeg_fixture() -> Resultado:
     """Genera la lista de concatenacion de ffmpeg (R-19) sobre el mismo guion
     de verificacion que usa el .srt. En esta maquina no hay ningun parte de
@@ -625,6 +699,8 @@ def main() -> int:
         verificar_srt_alineado(RUTA_SRT_ALINEADO_FIXTURE),
         generar_capitulos_youtube_fixture(),
         verificar_capitulos_youtube(RUTA_CAPITULOS_YOUTUBE_FIXTURE),
+        generar_capitulos_ffmpeg_fixture(),
+        verificar_capitulos_ffmpeg(RUTA_CAPITULOS_FFMPEG_FIXTURE),
         generar_concat_ffmpeg_fixture(),
         verificar_concat_ffmpeg(RUTA_CONCAT_FFMPEG_FIXTURE),
         generar_pdf_fixture(),

@@ -8,18 +8,26 @@ tres guiones reales de calibracion para el criterio de aceptacion literal.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
 
 from capitulos_youtube import (
     calcular_capitulos,
+    formatear_capitulos_ffmpeg,
     formatear_capitulos_youtube,
     generar_capitulos_youtube,
+    guardar_capitulos_ffmpeg,
     guardar_capitulos_youtube,
+    validar_capitulos_ffmpeg,
     validar_capitulos_youtube,
 )
-from config import NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE, Configuracion
+from config import (
+    NOMBRE_ARCHIVO_CAPITULOS_FFMPEG,
+    NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE,
+    Configuracion,
+)
 from parser import ResultadoParseo, parsear_guion
 from tiempos import ResultadoTiempos, calcular_tiempos
 
@@ -306,4 +314,190 @@ def test_generar_y_guardar_capitulos_youtube(tmp_path: Path) -> None:
 
     destino = guardar_capitulos_youtube(contenido, tmp_path)
     assert destino.name == NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE
+    assert destino.read_text(encoding="utf-8") == contenido
+
+
+# --- R-22: capitulos-ffmpeg.txt (FFMETADATA1) ---------------------------------------
+
+
+def test_duracion_total_segundos_es_el_cursor_final_tras_el_ultimo_capitulo() -> None:
+    resultado, tiempos = _analizar(
+        _guion_con_capitulos(["Uno", "Dos", "Tres"], [8, 8, 8], duracion_por_escena_segundos=15)
+    )
+    calculo = calcular_capitulos(resultado, tiempos, _tomas_por_escena({0: 10.0, 1: 20.0}))
+
+    cursor = 10.0 + 20.0 + tiempos.escenas[2].duracion_estimada_segundos
+    assert calculo.duracion_total_segundos == pytest.approx(cursor, abs=1e-6)
+
+
+def test_duracion_total_segundos_es_cero_sin_ningun_capitulo() -> None:
+    resultado, tiempos = _analizar(_guion_sin_capitulos([8, 8]))
+    calculo = calcular_capitulos(resultado, tiempos, {})
+
+    assert calculo.capitulos == ()
+    assert calculo.duracion_total_segundos == 0.0
+    assert formatear_capitulos_ffmpeg(calculo) is None
+
+
+def test_formatear_ffmpeg_primera_linea_y_un_bloque_chapter_por_capitulo() -> None:
+    resultado, tiempos = _analizar(_guion_con_capitulos(["Uno", "Dos"], [8, 8]))
+    calculo = calcular_capitulos(resultado, tiempos, _tomas_por_escena({0: 30.0, 1: 30.0}))
+    contenido = formatear_capitulos_ffmpeg(calculo)
+
+    assert contenido is not None
+    assert contenido.startswith(";FFMETADATA1\n")
+    assert contenido.count("[CHAPTER]") == 2
+    assert "TIMEBASE=1/1000" in contenido
+    assert "START=0" in contenido
+    assert "END=30000" in contenido
+    assert "title=Uno" in contenido
+    assert "title=Dos" in contenido
+
+
+def test_formatear_ffmpeg_end_de_cada_capitulo_es_el_start_del_siguiente() -> None:
+    resultado, tiempos = _analizar(_guion_con_capitulos(["Uno", "Dos", "Tres"], [8, 8, 8]))
+    calculo = calcular_capitulos(
+        resultado, tiempos, _tomas_por_escena({0: 12.5, 1: 7.25, 2: 20.0})
+    )
+    contenido = formatear_capitulos_ffmpeg(calculo)
+    assert contenido is not None
+
+    starts = [int(v) for v in re.findall(r"START=(\d+)", contenido)]
+    ends = [int(v) for v in re.findall(r"END=(\d+)", contenido)]
+    assert starts == [0, 12500, 19750]
+    assert ends == [12500, 19750, int(calculo.duracion_total_segundos * 1000)]
+    assert ends[:-1] == starts[1:]  # END de un capitulo es el START del siguiente
+
+
+def test_formatear_ffmpeg_no_filtra_por_marca_minima_a_diferencia_de_youtube() -> None:
+    """Requisito 4: dos escenas a solo 3s una de otra -- YouTube la omitiria
+    (test_formatear_omite_una_marca_demasiado_cercana_a_la_anterior), el
+    formato FFMETADATA1 la conserva como su propio capitulo."""
+    resultado, tiempos = _analizar(_guion_con_capitulos(["Uno", "Dos"], [8, 8]))
+    calculo = calcular_capitulos(resultado, tiempos, _tomas_por_escena({0: 3.0, 1: 8.0}))
+    contenido = formatear_capitulos_ffmpeg(calculo)
+
+    assert contenido is not None
+    assert contenido.count("[CHAPTER]") == 2
+    assert "title=Uno" in contenido
+    assert "title=Dos" in contenido
+
+
+def test_formatear_ffmpeg_escapa_caracteres_especiales_del_titulo() -> None:
+    resultado, tiempos = _analizar(
+        _guion_con_capitulos([r"Antes\Despues; Capitulo #1 = Final"], [8])
+    )
+    calculo = calcular_capitulos(resultado, tiempos, _tomas_por_escena({0: 10.0}))
+    contenido = formatear_capitulos_ffmpeg(calculo)
+
+    assert contenido is not None
+    assert r"title=Antes\\Despues\; Capitulo \#1 \= Final" in contenido
+    assert validar_capitulos_ffmpeg(contenido) == []
+
+
+def test_formatear_ffmpeg_sin_ninguna_toma_buena_advierte_con_comentario() -> None:
+    resultado, tiempos = _analizar(_guion_con_capitulos(["Uno", "Dos"], [8, 8]))
+    calculo = calcular_capitulos(resultado, tiempos, {})
+    contenido = formatear_capitulos_ffmpeg(calculo)
+
+    assert contenido is not None
+    lineas = contenido.splitlines()
+    assert lineas[0] == ";FFMETADATA1"
+    assert lineas[1].startswith(";")
+    assert "ESTIMADOS" in lineas[1]
+
+
+def test_formatear_ffmpeg_con_toma_buena_en_todas_las_escenas_no_lleva_nota() -> None:
+    resultado, tiempos = _analizar(_guion_con_capitulos(["Uno", "Dos"], [8, 8]))
+    calculo = calcular_capitulos(resultado, tiempos, _tomas_por_escena({0: 30.0, 1: 30.0}))
+    contenido = formatear_capitulos_ffmpeg(calculo)
+
+    assert contenido is not None
+    comentarios_extra = [
+        linea
+        for linea in contenido.splitlines()
+        if linea.startswith(";") and linea != ";FFMETADATA1"
+    ]
+    assert comentarios_extra == []
+
+
+def test_capitulos_ffmpeg_de_los_guiones_reales_cumple_el_criterio_de_aceptacion(
+    texto_guiones_reales: dict[str, str],
+) -> None:
+    alguno_generado = False
+    for nombre, texto in texto_guiones_reales.items():
+        resultado, tiempos = _analizar(texto)
+        calculo = calcular_capitulos(resultado, tiempos, {})
+        contenido = formatear_capitulos_ffmpeg(calculo)
+        if calculo.motivo_sin_generar is not None:
+            assert contenido is None
+            continue
+        alguno_generado = True
+        assert contenido is not None
+        assert validar_capitulos_ffmpeg(contenido) == [], (
+            f"capitulos-ffmpeg.txt de {nombre} no pasa el validador estricto."
+        )
+        starts = [int(v) for v in re.findall(r"START=(\d+)", contenido)]
+        ends = [int(v) for v in re.findall(r"END=(\d+)", contenido)]
+        assert len(starts) == len(calculo.capitulos) == len(ends)
+        assert ends[:-1] == starts[1:]
+        assert ends[-1] == int(calculo.duracion_total_segundos * 1000)
+    assert alguno_generado, "ningun guion real trae seccion Capítulos: el test no prueba nada."
+
+
+# --- Validador FFMETADATA1 independiente ---------------------------------------------
+
+
+def test_validar_ffmpeg_exige_primera_linea_ffmetadata1() -> None:
+    problemas = validar_capitulos_ffmpeg("[CHAPTER]\nSTART=0\nEND=1000\ntitle=Uno\n")
+    assert any("FFMETADATA1" in p for p in problemas)
+
+
+def test_validar_ffmpeg_detecta_start_no_creciente() -> None:
+    contenido = (
+        ";FFMETADATA1\n\n[CHAPTER]\nSTART=0\nEND=1000\ntitle=Uno\n\n"
+        "[CHAPTER]\nSTART=0\nEND=2000\ntitle=Dos\n"
+    )
+    problemas = validar_capitulos_ffmpeg(contenido)
+    assert problemas
+
+
+def test_validar_ffmpeg_detecta_solape_entre_capitulos() -> None:
+    contenido = (
+        ";FFMETADATA1\n\n[CHAPTER]\nSTART=0\nEND=2000\ntitle=Uno\n\n"
+        "[CHAPTER]\nSTART=1000\nEND=3000\ntitle=Dos\n"
+    )
+    problemas = validar_capitulos_ffmpeg(contenido)
+    assert problemas
+
+
+def test_validar_ffmpeg_detecta_valor_negativo() -> None:
+    contenido = ";FFMETADATA1\n\n[CHAPTER]\nSTART=-5\nEND=1000\ntitle=Uno\n"
+    problemas = validar_capitulos_ffmpeg(contenido)
+    assert problemas
+
+
+def test_validar_ffmpeg_ignora_el_comentario_de_nota() -> None:
+    contenido = (
+        ";FFMETADATA1\n;tiempos ESTIMADOS\n\n[CHAPTER]\nSTART=0\nEND=1000\ntitle=Uno\n"
+    )
+    assert validar_capitulos_ffmpeg(contenido) == []
+
+
+def test_validar_ffmpeg_sin_ningun_bloque_chapter() -> None:
+    problemas = validar_capitulos_ffmpeg(";FFMETADATA1\n")
+    assert problemas
+
+
+# --- Guardado --------------------------------------------------------------------------
+
+
+def test_guardar_capitulos_ffmpeg(tmp_path: Path) -> None:
+    resultado, tiempos = _analizar(_guion_con_capitulos(["Uno", "Dos"], [8, 8]))
+    calculo = calcular_capitulos(resultado, tiempos, _tomas_por_escena({0: 10.0, 1: 10.0}))
+    contenido = formatear_capitulos_ffmpeg(calculo)
+    assert contenido is not None
+
+    destino = guardar_capitulos_ffmpeg(contenido, tmp_path)
+    assert destino.name == NOMBRE_ARCHIVO_CAPITULOS_FFMPEG
     assert destino.read_text(encoding="utf-8") == contenido
