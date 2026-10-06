@@ -10,10 +10,42 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-06 — **Ciclo de Programador: segunda reconfirmación del día tras
+**Última actualización:** 2026-10-06 — **Ciclo de Programador: tercera reconfirmación del día tras
 R-23**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, segunda reconfirmación del día tras R-23,
+**Nota de arranque de esta sesión (ciclo de Programador, tercera reconfirmación del día tras R-23,
+2026-10-06):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop`
+dejó el contenedor en `HEAD` *detached* (resto de un contenedor anterior, descartable: ya
+fusionado en `develop`); `git pull origin develop` resolvió en fast-forward limpio hasta `ec88c28`
+(la segunda reconfirmación del día tras R-23), sin conflicto ni rama divergida. `pip install -r
+requirements-dev.txt` con el `pip` pelado de este contenedor instaló contra Python 3.13 en vez del
+3.11.17 real del proyecto — mismo síntoma ya registrado (no un hallazgo nuevo, `#22`/R-15 ya
+documentan el riesgo de invocar herramientas sin pasar por el intérprete correcto en un contenedor
+de nube con más de un Python instalado); resuelto con `python3 -m pip install -r
+requirements-dev.txt`, que sí resuelve al intérprete correcto (mismas versiones pineadas:
+`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Ciclo de Programador de esta sesión: tercera reconfirmación del día tras R-23**, sin novedad de
+código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: único
+`ABIERTO` sigue siendo `#24` (baja, proceso — la pregunta de gobernanza #11 de §6 sigue
+`(pendiente)`, veintiuna pasadas consecutivas, sin cambio desde la pasada anterior por no haber
+corrido ningún ciclo de auditoría entre medias), ninguno de severidad alta que atender como P-XX
+urgente antes de esta tarea. `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`;
+`mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero issues y
+cero PR abiertos. §1 (fuente autoritativa) ya no tiene ninguna R-XX/T-XX `PENDIENTE` (R-23 es la
+última, `COMPLETADA`): cola vacía, sin tarea de código que ejecutar. Verificación propia completa:
+`mypy`/`ruff` en verde sin hallazgos (70 archivos), 646 tests (`pytest`) en verde, dieciocho etapas
+OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos) ni
+§5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`). Nota sin acción, mismo patrón que
+motivó `#24`: `ROADMAP_PRODUCTO.md` (líneas 246-256, "Cola de producto") sigue describiendo R-23
+como `PENDIENTE` en su prosa, pese a que §1 ya la registra `COMPLETADA` — hasta el siguiente ciclo
+de Product Manager, que es quien archiva la oleada, no se corrige desde este ciclo de Programador
+(la pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño).
+
+**Última actualización anterior (2026-10-06, ciclo de Programador): segunda reconfirmación del día
+tras R-23**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Programador, segunda reconfirmación del día tras R-23,
 2026-10-06):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop`
 dejó el contenedor en `HEAD` *detached* (resto de un contenedor anterior, descartable: ya
 fusionado en `develop`); `git pull origin develop` resolvió en fast-forward limpio hasta `e71ceb9`
@@ -25,7 +57,7 @@ de nube con más de un Python instalado); resuelto con `python3 -m pip install -
 requirements-dev.txt`, que sí resuelve al intérprete correcto (mismas versiones pineadas:
 `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador de esta sesión: segunda reconfirmación del día tras R-23**, sin novedad de
+**Ciclo de Programador de esa sesión: segunda reconfirmación del día tras R-23**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: único
 `ABIERTO` sigue siendo `#24` (baja, proceso — la pregunta de gobernanza #11 de §6 sigue
 `(pendiente)`, veintiuna pasadas consecutivas, sin cambio desde la pasada anterior por no haber
