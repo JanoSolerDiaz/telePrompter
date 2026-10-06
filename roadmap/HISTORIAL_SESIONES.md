@@ -12,6 +12,43 @@
 
 ---
 
+### Sesión 2026-10-06 (90) — Ciclo de Programador: séptima reconfirmación del día tras R-23, sin novedad de código
+
+**Arranque.** `git status` limpio; `git checkout develop`/`git pull origin develop` dejó el
+contenedor en `HEAD` *detached* (resto de un contenedor anterior, descartable: ya fusionado en
+`develop`) y resolvió en fast-forward limpio hasta `744d4b4` (la sexta reconfirmación del día
+tras R-23, sesión 89), sin conflicto ni rama divergida. `pip install -r requirements-dev.txt` con
+el `pip` pelado de este contenedor instaló contra Python 3.13 en vez del 3.11.17 real del proyecto
+(mismo síntoma ya documentado por `#22`/R-15, no un hallazgo nuevo); resuelto con `python3 -m pip
+install -r requirements-dev.txt`. Mismas versiones pineadas tras la reinstalación correcta:
+`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: único
+`ABIERTO` sigue siendo `#24` (baja, proceso — pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+veinte pasadas consecutivas según la cifra de la propia auditoría del 2026-10-06, sin cambio desde
+entonces por no haber corrido ningún ciclo de auditoría nuevo), ninguno de severidad alta que
+atender como P-XX urgente antes de esta tarea. `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`;
+`mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y
+cero PR abiertos. §1 de `SEGUIMIENTO.md` ya no tiene ninguna R-XX/T-XX `PENDIENTE` (R-23 es la
+última, `COMPLETADA` desde la sesión 83): cola vacía, sin tarea de código que ejecutar.
+
+**Sin novedad de código.** Verificación propia completa: `mypy`/`ruff` en verde sin hallazgos (70
+archivos), 646 tests (`pytest`) en verde, dieciocho etapas OK en `verificar_salidas.py --fixture`.
+Las cuatro redes en verde.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** ninguna (sin cambio de código ni de criterio).
+
+**Cambios de estado en `SEGUIMIENTO.md` §1:** ninguno (R-23 sigue `COMPLETADA`, sin ninguna R-XX/T-XX
+nueva que registrar).
+
+**Sin acción (mismo patrón que motivó `#24`):** `ROADMAP_PRODUCTO.md` (sección "Cola de producto")
+sigue describiendo R-23 como `PENDIENTE` en su prosa pese a que §1 ya la registra `COMPLETADA`,
+hasta el siguiente ciclo de Product Manager, que es quien archiva la oleada — no se corrige desde
+este ciclo de Programador (la pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño). Sin
+cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad; sin nueva desviación en §7.
+
+---
+
 ### Sesión 2026-10-06 (89) — Ciclo de Programador: sexta reconfirmación del día tras R-23, sin novedad de código
 
 **Arranque.** `git status` limpio; `git checkout develop`/`git pull origin develop` dejó el
