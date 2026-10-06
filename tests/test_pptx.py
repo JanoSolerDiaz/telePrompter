@@ -6,7 +6,9 @@ import json
 import re
 from pathlib import Path
 
+from clasificador import clasificar_guion
 from config import NOMBRE_ARCHIVO_BRIEF_PPTX, NOMBRE_ARCHIVO_TARJETAS_JSON, Configuracion
+from convencion import detectar_desviaciones
 from parser import ResultadoParseo, parsear_guion
 from pptx import (
     ResultadoPptx,
@@ -101,6 +103,58 @@ def test_generar_tarjetas_modo_para_terceros_omite_notas_internas() -> None:
         assert tarjeta.notas_internas == ()
     # las indicaciones de pantalla se mantienen siempre, con o sin --para-terceros
     assert tarjetas.tarjetas[0].indicaciones_pantalla == ("Título del vídeo en pantalla.",)
+
+
+# --- desviaciones de la convencion (R-23) ---------------------------------------------
+
+_GUION_CON_ESCENA_SIN_ROTULO = """# Guion de prueba
+
+## BLOQUE 0 — Arranque (0:00 – 0:10)
+
+**LOCUCIÓN**
+
+> Esta es la primera frase del bloque.
+
+## BLOQUE 1 — Sin rótulo (0:10 – 0:20)
+
+Esto es locución sin marcar con ningún rótulo, solo texto suelto.
+"""
+
+
+def test_generar_tarjetas_sin_desviaciones_lista_vacia() -> None:
+    """Criterio de aceptacion de R-23: sin desviaciones conocidas,
+    `desviaciones_convencion` sale `[]` -- caso de los tres guiones reales."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos)
+    assert tarjetas.desviaciones_convencion == ()
+
+
+def test_generar_tarjetas_con_desviacion_expone_la_misma_descripcion() -> None:
+    """R-23, requisito 3: `desviaciones_convencion` reutiliza tal cual las
+    descripciones de `convencion.detectar_desviaciones` sobre el MISMO
+    `resultado`/`clasificacion` que ya recibe el resto de la tarjeta -- ningun
+    parseo ni clasificacion nuevos, ningun texto reformateado."""
+    configuracion = Configuracion()
+    resultado, tiempos = _pipeline(_GUION_CON_ESCENA_SIN_ROTULO, configuracion)
+    clasificacion = clasificar_guion(resultado, configuracion)
+    esperadas = tuple(
+        d.descripcion for d in detectar_desviaciones(resultado, clasificacion, configuracion)
+    )
+    assert esperadas != ()
+
+    tarjetas = generar_tarjetas(resultado, tiempos, configuracion=configuracion)
+    assert tarjetas.desviaciones_convencion == esperadas
+
+
+def test_generar_tarjetas_modo_para_terceros_omite_desviaciones_convencion() -> None:
+    """R-23, requisito 4: `--para-terceros` excluye `desviaciones_convencion`
+    del contrato, igual que ya excluye `notas_internas` -- son avisos para el
+    dueño y la cadena de montaje, no contenido para un tercero."""
+    configuracion = Configuracion(incluir_notas_internas=False)
+    resultado, tiempos = _pipeline(_GUION_CON_ESCENA_SIN_ROTULO, configuracion)
+    tarjetas = generar_tarjetas(resultado, tiempos, configuracion=configuracion)
+    assert tarjetas.para_terceros is True
+    assert tarjetas.desviaciones_convencion == ()
 
 
 # --- duracion real por escena (R-13) --------------------------------------------------
@@ -346,6 +400,16 @@ def test_tarjetas_a_diccionario_incluye_duracion_real_y_aviso_de_mezcla() -> Non
     assert escena_0["inicio_segundos"] == 0.0
     assert escena_0["fin_segundos"] == 9.0
     assert escena_1["inicio_segundos"] == 9.0
+
+
+def test_tarjetas_a_diccionario_incluye_desviaciones_convencion() -> None:
+    configuracion = Configuracion()
+    resultado, tiempos = _pipeline(_GUION_CON_ESCENA_SIN_ROTULO, configuracion)
+    tarjetas = generar_tarjetas(resultado, tiempos, configuracion=configuracion)
+    datos = tarjetas_a_diccionario(tarjetas)
+    assert validar_tarjetas(datos) == []
+    assert datos["metadatos"]["desviaciones_convencion"] == list(tarjetas.desviaciones_convencion)
+    assert datos["metadatos"]["desviaciones_convencion"] != []
 
 
 def test_tarjetas_a_diccionario_incluye_indicaciones_ancladas() -> None:

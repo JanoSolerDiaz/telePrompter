@@ -7,8 +7,12 @@
 ## Estructura, de arriba a abajo
 
 1. **Cabecera global**: instrucciones breves de edición y el resumen agregado del
-   guion completo (escenas, palabras, duración, ritmo, avisos, reescrituras
-   pendientes).
+   guion completo (escenas, palabras, duración, ritmo, avisos, desviaciones de la
+   convención, reescrituras pendientes).
+1b. **Desviaciones de la convención fuera de escena** (R-23), solo si existe
+   alguna (p. ej. una sección auxiliar no reconocida): sección propia
+   "## Desviaciones de la convención (fuera de escena)" tras la cabecera global,
+   antes de la primera escena.
 2. **Una sección por escena**, en el mismo orden del guion de origen, con el mismo
    encabezado `## BLOQUE N — <título>` (ver `references/convencion-guion.md`) más
    duración estimada/objetivo, palabras y número de bloques.
@@ -33,7 +37,12 @@
    y sus **avisos de locutabilidad** (T-14) que no dieron ya lugar a una reescritura
    de partición, para no repetir el mismo aviso dos veces.
 5. Al pie de cada escena, las **indicaciones no recitables** (`**EN PANTALLA**`,
-   `**NOTA**`, y texto sin rótulo marcado `revisar`) con su motivo.
+   `**NOTA**`, y texto sin rótulo marcado `revisar`) con su motivo y, si las hay,
+   las **desviaciones de la convención** (R-23: escena sin rótulo de locución,
+   rótulo desconocido, número de escena duplicado o no creciente) que caen
+   dentro de esta escena, en su propia sección separada de las indicaciones
+   ("### Desviaciones de la convención") para no mezclarlas. Sin ninguna
+   desviación en la escena, esta sección no aparece.
 6. Al final del documento, la **marca de estado de la revisión completa**:
    ```
    **Estado de la revisión:** PENDIENTE

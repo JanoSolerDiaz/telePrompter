@@ -8,7 +8,7 @@
 >
 > `version_contrato` sube solo si el JSON cambia de forma incompatible con este
 > documento; nunca decrece (mismo criterio que `VERSION_ESQUEMA_ESTADO` de
-> `estado.json`, T-07). Version actual: **1** (R-13, R-16 y R-20 añadieron
+> `estado.json`, T-07). Version actual: **1** (R-13, R-16, R-20 y R-23 añadieron
 > campos de forma aditiva y retrocompatible, sin subir la version).
 
 ## Forma completa
@@ -23,8 +23,12 @@
     "palabras_locucion_total": 412,
     "duracion_total_segundos": 187.4,
     "duracion_objetivo_total_segundos": [180, 210],  // o null si el guion no trae objetivo
-    "mezcla_duracion_real_y_estimada": false          // true (R-13) si alguna escena tiene
+    "mezcla_duracion_real_y_estimada": false,         // true (R-13) si alguna escena tiene
                                                        // duracion real y otra no
+    "desviaciones_convencion": []                     // (R-23) descripciones de
+                                                       // convencion.detectar_desviaciones;
+                                                       // [] si no hay ninguna o si
+                                                       // para_terceros es true
   },
   "escenas": [
     {
@@ -71,6 +75,7 @@
 | `duracion_total_segundos` | `number` | Duración estimada total (T-12). |
 | `duracion_objetivo_total_segundos` | `[number, number]` \| `null` | Horquilla objetivo del metadato de cabecera del guion, si lo trae. |
 | `mezcla_duracion_real_y_estimada` | `bool` | **(R-13)** `true` si el conjunto de escenas mezcla duración real (con toma buena) y estimada (sin ella todavía) — mismo aviso que ya resuelve R-07 para los capítulos de YouTube. `false` si todas las escenas están en el mismo caso (todas con toma buena, o ninguna). |
+| `desviaciones_convencion` | `string[]` | **(R-23)** Las descripciones de `convencion.detectar_desviaciones` (T-10/T-33: escena sin rótulo de locución, rótulo desconocido, sección auxiliar no reconocida, número de escena duplicado o no creciente) tal cual, sin reformatear. A nivel de metadatos, no por escena, porque una desviación como el número de escena duplicado implica a más de una a la vez. `[]` si no hay ninguna, o si `metadatos.para_terceros` es `true` (se excluye del contrato exportado a terceros, mismo criterio que `notas_internas`). |
 
 ## Claves de cada elemento de `escenas` (requisito 1)
 

@@ -71,7 +71,12 @@ Estas dos primeras propiedades ya NO se dan siempre por supuestas en silencio:
 nunca bloquean el proceso (la escena se sigue generando con el número tal cual
 viene del encabezado, igual que el resto de desviaciones de esa función), pero
 si aparecen, la cadena de montaje no debe confiar en el número de escena para
-casar tomas hasta que el guion de origen se corrija. Los tres guiones reales de
+casar tomas hasta que el guion de origen se corrija. Desde R-23, la señal
+llega a los dos consumidores reales: al pie de la escena que corresponda en
+`guion-escenas.md` (que el dueño revisa de una sentada) y en
+`tarjetas.json.metadatos.desviaciones_convencion` (ausente del contrato
+exportado con `--para-terceros`) — la cadena de montaje puede y debe mirar
+esa clave antes de confiar en `numero`. Los tres guiones reales de
 `fixtures/reales/` y el guion de ejemplo de `fixtures/guion-ejemplo.md` (T-32)
 numeran sus escenas `0, 1, 2, …` sin huecos ni repeticiones — la convención que
 `references/convencion-guion.md` ya documenta como recomendada, ahora también

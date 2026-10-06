@@ -335,6 +335,89 @@ def test_pie_de_escena_incluye_bloques_revisar() -> None:
     assert "Un aparte sin cita de bloque" in documento
 
 
+# --- Desviaciones de la convencion (R-23) --------------------------------------------
+
+_GUION_CON_DESVIACIONES = """# Guion de prueba
+
+## BLOQUE 0 — Arranque (0:00 - 0:10)
+
+**LOCUCIÓN**
+> Primera frase citada.
+
+**ALGO RARO**
+Un rotulo que no existe en la convencion.
+
+**EN PANTALLA**
+Descripcion de plano.
+
+---
+
+## BLOQUE 1 — Sin rotulo (0:10 - 0:20)
+
+Esto es locucion sin marcar con ningun rotulo, solo texto suelto.
+
+---
+
+## Seccion rara sin marcar
+
+Esta seccion no esta en la lista negra ni tiene el rotulo de locucion.
+"""
+
+
+def test_desviaciones_se_listan_al_pie_de_la_escena_que_corresponda() -> None:
+    """R-23, requisito 1: una desviacion localizada dentro del rango de una
+    escena aparece en SU seccion, con su propio encabezado separado de las
+    indicaciones no recitables, nunca en la escena equivocada."""
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_CON_DESVIACIONES)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+
+    inicio_bloque_0 = documento.index("## BLOQUE 0 — Arranque")
+    inicio_bloque_1 = documento.index("## BLOQUE 1 — Sin rotulo")
+    seccion_bloque_0 = documento[inicio_bloque_0:inicio_bloque_1]
+    seccion_bloque_1 = documento[inicio_bloque_1:]
+
+    assert "### Desviaciones de la convención" in seccion_bloque_0
+    assert "[rotulo_desconocido]" in seccion_bloque_0
+    assert "ALGO RARO" in seccion_bloque_0
+    assert "[escena_sin_rotulo_locucion]" not in seccion_bloque_0
+
+    assert "### Desviaciones de la convención" in seccion_bloque_1
+    assert "[escena_sin_rotulo_locucion]" in seccion_bloque_1
+    assert "[rotulo_desconocido]" not in seccion_bloque_1
+
+
+def test_desviaciones_sin_escena_van_en_su_propia_seccion_antes_del_cuerpo() -> None:
+    """R-23, requisito 1: una desviacion que no cae en ninguna escena (p. ej.
+    una seccion auxiliar no reconocida) va en una seccion propia tras el
+    resumen global, nunca al pie de ninguna escena."""
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_CON_DESVIACIONES)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+
+    inicio_seccion = documento.index("## Desviaciones de la convención (fuera de escena)")
+    inicio_bloque_0 = documento.index("## BLOQUE 0 — Arranque")
+    assert inicio_seccion < inicio_bloque_0
+    assert "[seccion_auxiliar_no_reconocida]" in documento[inicio_seccion:inicio_bloque_0]
+    assert "Seccion rara sin marcar" in documento[inicio_seccion:inicio_bloque_0]
+
+
+def test_resumen_global_cuenta_las_desviaciones_de_la_convencion() -> None:
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_CON_DESVIACIONES)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+    assert "**Desviaciones de la convención:** 3" in documento
+
+
+def test_sin_desviaciones_no_anade_ninguna_seccion_nueva() -> None:
+    """Requisito 2 de R-23: `N = 0` no añade ninguna sección nueva al
+    documento -- ni al pie de ninguna escena ni fuera de ellas -- solo el
+    recuento de cabecera en 0, mismo criterio que ya sigue el resto del
+    documento con avisos y reescrituras vacios."""
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_DOS_ESCENAS)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+    assert "**Desviaciones de la convención:** 0" in documento
+    assert "### Desviaciones de la convención" not in documento
+    assert "## Desviaciones de la convención (fuera de escena)" not in documento
+
+
 def test_formatear_indicaciones_sin_bloques_dice_ninguna() -> None:
     assert formatear_indicaciones([]) == "*(ninguna)*"
 

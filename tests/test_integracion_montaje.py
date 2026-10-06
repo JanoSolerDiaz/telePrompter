@@ -18,6 +18,7 @@ from capitulos_youtube import calcular_capitulos
 from clasificador import clasificar_guion
 from config import Configuracion
 from convencion import detectar_desviaciones
+from documento_revision import generar_documento_revision
 from parser import parsear_guion
 from pptx import generar_tarjetas, tarjetas_a_diccionario, validar_tarjetas
 from srt import exportar_srt, formatear_srt, generar_entradas_srt, validar_srt
@@ -329,3 +330,51 @@ def test_tarjetas_json_sin_ninguna_toma_buena_se_comporta_como_antes_de_r13(
         assert all(escena["duracion_real_segundos"] is None for escena in datos["escenas"])
         suma_estimada = sum(escena["duracion_estimada_segundos"] for escena in datos["escenas"])
         assert suma_estimada == datos["metadatos"]["duracion_total_segundos"]
+
+
+_GUION_CON_ESCENA_SIN_ROTULO = """# Guion de prueba
+
+## BLOQUE 0 — Arranque (0:00 - 0:10)
+
+**LOCUCIÓN**
+> Primera frase citada en el bloque cero.
+
+---
+
+## BLOQUE 1 — Sin rótulo (0:10 - 0:20)
+
+Esto es locución sin marcar con ningún rótulo, solo texto suelto para que haya
+contenido que trocear.
+"""
+
+
+def test_desviaciones_de_convencion_coinciden_en_guion_escenas_y_tarjetas_json() -> None:
+    """Criterio de aceptacion de R-23: una desviacion de la convencion
+    aparece localizada en `guion-escenas.md` (al pie de la escena que
+    corresponda) y en `tarjetas.json.metadatos.desviaciones_convencion`, con
+    el MISMO texto en los dos sitios -- ambos consumidores reutilizan tal
+    cual `convencion.detectar_desviaciones` sobre el mismo `resultado`/
+    `clasificacion`, nunca una segunda implementacion divergente (lo que
+    motivo abrir la tarea: antes de R-23 ningun archivo generado real
+    mostraba nada de esto, pese a que `references/contrato-montaje.md` ya
+    afirmaba lo contrario)."""
+    configuracion = Configuracion()
+    resultado = parsear_guion(_GUION_CON_ESCENA_SIN_ROTULO, configuracion=configuracion)
+    clasificacion = clasificar_guion(resultado, configuracion)
+    resultado_tiempos = calcular_tiempos(resultado, configuracion)
+
+    desviaciones_esperadas = detectar_desviaciones(resultado, clasificacion, configuracion)
+    assert desviaciones_esperadas != []
+
+    documento = generar_documento_revision(resultado, resultado_tiempos, [], [], configuracion)
+    resultado_tarjetas = generar_tarjetas(resultado, resultado_tiempos, "guion", configuracion)
+    datos_tarjetas = tarjetas_a_diccionario(resultado_tarjetas)
+    assert validar_tarjetas(datos_tarjetas) == []
+
+    for desviacion in desviaciones_esperadas:
+        assert desviacion.descripcion in documento, (
+            f"falta en guion-escenas.md: {desviacion.descripcion!r}"
+        )
+        assert desviacion.descripcion in datos_tarjetas["metadatos"]["desviaciones_convencion"], (
+            f"falta en tarjetas.json: {desviacion.descripcion!r}"
+        )

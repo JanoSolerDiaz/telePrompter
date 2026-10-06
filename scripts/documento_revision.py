@@ -21,7 +21,10 @@ Estructura del documento, escena a escena:
   no dieron ya lugar a una reescritura de particion, para no repetir el mismo
   aviso dos veces.
 - Al pie de cada escena, las indicaciones no recitables (`**EN PANTALLA**`,
-  `**NOTA**`, texto sin rotulo marcado `revisar`) con su motivo (requisito 4).
+  `**NOTA**`, texto sin rotulo marcado `revisar`) con su motivo (requisito 4), y
+  si las hay, las desviaciones de la convencion que caen dentro de la escena
+  (R-23: `convencion.detectar_desviaciones`, T-10/T-33, cableada aqui por
+  primera vez a un consumidor real).
 - Cabecera global con el resumen agregado de todo el guion (requisito 5) e
   instrucciones breves de edicion, incluida la marca de estado de la revision
   completa (requisito 6, ver `extraer_estado_revision`): el mismo mecanismo de
@@ -41,6 +44,7 @@ from pathlib import Path
 
 from clasificador import TIPO_LOCUCION, BloqueClasificado, clasificar_guion
 from config import NOMBRE_ARCHIVO_GUION_ESCENAS, Configuracion
+from convencion import Desviacion, detectar_desviaciones
 from deteccion import Aviso, ResultadoDeteccionBloque
 from parser import Escena, ResultadoParseo
 from reescrituras import Reescritura, formatear_reescritura, pendientes
@@ -278,6 +282,41 @@ def formatear_indicaciones(
     return "\n".join(lineas)
 
 
+def _desviaciones_de_escena(escena: Escena, desviaciones: list[Desviacion]) -> list[Desviacion]:
+    """Desviaciones de convencion (R-23) que caen dentro del rango de lineas
+    de esta escena -- misma idea de localizacion por rango que
+    `_indicaciones_no_recitables`, pero sobre `Desviacion.linea` (un punto,
+    no un bloque con inicio/fin)."""
+    return [d for d in desviaciones if escena.linea_inicio <= d.linea <= escena.linea_fin]
+
+
+def _desviaciones_sin_escena(
+    resultado: ResultadoParseo, desviaciones: list[Desviacion]
+) -> list[Desviacion]:
+    """Desviaciones que no caen dentro del rango de ninguna escena (p. ej.
+    una seccion auxiliar no reconocida, requisito 1 de R-23): van en una
+    seccion propia tras el resumen global, no al pie de ninguna escena."""
+    return [
+        d
+        for d in desviaciones
+        if not any(
+            escena.linea_inicio <= d.linea <= escena.linea_fin for escena in resultado.escenas
+        )
+    ]
+
+
+def formatear_desviaciones(desviaciones: list[Desviacion]) -> str:
+    """Formatea una lista de desviaciones de la convencion (R-23), mismo
+    patron de vineta que `formatear_indicaciones`. Solo se llama cuando la
+    lista no esta vacia -- una lista vacia no anade ninguna seccion
+    (requisito 2 de R-23), igual que ya hace el resto del documento con
+    avisos y reescrituras vacios."""
+    return "\n".join(
+        f"- **[{desviacion.tipo}]** (línea {desviacion.linea}): {desviacion.descripcion}"
+        for desviacion in desviaciones
+    )
+
+
 def _formatear_resumen_global(
     resultado: ResultadoParseo,
     resultado_tiempos: ResultadoTiempos,
@@ -285,11 +324,13 @@ def _formatear_resumen_global(
     palabras_excluidas: int,
     total_avisos: int,
     reescrituras: list[Reescritura],
+    total_desviaciones: int,
 ) -> str:
     """Cabecera con el resumen global del guion completo (requisito 5): total
-    de escenas, palabras, duracion estimada, avisos y reescrituras pendientes,
-    ritmo aplicado -- todo tomado de `calcular_tiempos` (T-12), la unica
-    fuente de tiempos del proyecto, nunca recalculado aqui."""
+    de escenas, palabras, duracion estimada, avisos, desviaciones de la
+    convencion (R-23) y reescrituras pendientes, ritmo aplicado -- todo
+    tomado de `calcular_tiempos` (T-12), la unica fuente de tiempos del
+    proyecto, nunca recalculado aqui."""
     objetivo = resultado_tiempos.duracion_objetivo_total_segundos
     objetivo_texto = (
         f" (objetivo: {_mmss(objetivo[0])} — {_mmss(objetivo[1])})" if objetivo is not None else ""
@@ -306,6 +347,7 @@ def _formatear_resumen_global(
         f"- **Ritmo aplicado:** {ritmo.ppm_aplicado} ppm (origen: {ritmo.origen}) — "
         f"{ritmo.motivo}\n"
         f"- **Avisos de locutabilidad:** {total_avisos}\n"
+        f"- **Desviaciones de la convención:** {total_desviaciones}\n"
         f"- **Reescrituras:** {total_pendientes} pendientes de decidir, de "
         f"{len(reescrituras)} en total"
     )
@@ -320,10 +362,14 @@ def formatear_escena(
     reescrituras: list[Reescritura],
     detecciones: list[ResultadoDeteccionBloque],
     tropiezos_por_escena: dict[int, frozenset[str]] | None = None,
+    desviaciones: list[Desviacion] | None = None,
 ) -> str:
     """Una escena completa del documento de revision: cabecera (requisito 1),
     bloques de respiracion numerados (requisito 2) con sus reescrituras y
-    avisos (requisito 3), e indicaciones no recitables al pie (requisito 4)."""
+    avisos (requisito 3), indicaciones no recitables al pie (requisito 4) y,
+    si las hay, las desviaciones de la convencion (R-23) que caen dentro de
+    esta escena, en su propia seccion para no mezclarse con las
+    indicaciones."""
     tiempo_escena = next(t for t in resultado_tiempos.escenas if t.numero == escena.numero)
     bloques_escena = _bloques_de_escena(resultado_tiempos, escena.numero)
 
@@ -344,6 +390,12 @@ def formatear_escena(
         cuerpo_bloques = "*(sin locución en esta escena)*"
 
     indicaciones = _indicaciones_no_recitables(escena, bloques_clasificados)
+    desviaciones_escena = _desviaciones_de_escena(escena, desviaciones or [])
+    seccion_desviaciones = (
+        f"\n\n### Desviaciones de la convención\n\n{formatear_desviaciones(desviaciones_escena)}"
+        if desviaciones_escena
+        else ""
+    )
 
     return (
         f"## BLOQUE {escena.numero} — {escena.titulo}\n\n"
@@ -355,6 +407,7 @@ def formatear_escena(
         f"{cuerpo_bloques}\n\n"
         "### Indicaciones no recitables\n\n"
         f"{formatear_indicaciones(indicaciones)}"
+        f"{seccion_desviaciones}"
     )
 
 
@@ -379,6 +432,7 @@ def generar_documento_revision(
     para encadenar con esta funcion."""
     configuracion = configuracion or Configuracion()
     clasificacion = clasificar_guion(resultado, configuracion)
+    desviaciones = detectar_desviaciones(resultado, clasificacion, configuracion)
 
     total_avisos = sum(len(deteccion.avisos) for deteccion in detecciones)
     palabras_locucion_total = sum(r.palabras_locucion for r in clasificacion.resumenes)
@@ -391,6 +445,7 @@ def generar_documento_revision(
         palabras_excluidas_total,
         total_avisos,
         reescrituras,
+        len(desviaciones),
     )
 
     escenas_formateadas = []
@@ -406,16 +461,25 @@ def generar_documento_revision(
                 reescrituras,
                 detecciones,
                 tropiezos_por_escena,
+                desviaciones,
             )
         )
 
     cuerpo_escenas = "\n\n---\n\n".join(escenas_formateadas)
+    desviaciones_sin_escena = _desviaciones_sin_escena(resultado, desviaciones)
+    bloque_desviaciones_globales = (
+        "## Desviaciones de la convención (fuera de escena)\n\n"
+        f"{formatear_desviaciones(desviaciones_sin_escena)}\n\n---\n\n"
+        if desviaciones_sin_escena
+        else ""
+    )
     return (
         f"# Guion de revisión — {nombre_guion}\n\n"
         f"{_INSTRUCCIONES}\n\n"
         "---\n\n"
         f"{cabecera_global}\n\n"
         "---\n\n"
+        f"{bloque_desviaciones_globales}"
         f"{cuerpo_escenas}\n"
     )
 

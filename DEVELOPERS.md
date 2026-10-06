@@ -3200,6 +3200,58 @@ verdad en el `.mp4` final con `ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_
   ffmpeg (FFMETADATA1)" y "Validez de los capítulos de ffmpeg (FFMETADATA1)"), dieciocho en
   total. Cuatro redes en verde.
 
+## Desviaciones de convención visibles en `guion-escenas.md` y `tarjetas.json` (R-23)
+
+`convencion.detectar_desviaciones` (T-10, ampliada en T-33 con `numero_escena_duplicado`/
+`numero_escena_no_creciente`) calculaba correctamente las desviaciones de convención que más
+le importan a la cadena de montaje, pero hasta R-23 solo la ejercitaban sus propios tests y
+`tests/test_integracion_montaje.py` — ni `documento_revision.py` (`guion-escenas.md`, lo único
+que el dueño revisa de una sentada) ni `pptx.py` (`tarjetas.json`, el contrato de montaje) la
+llamaban, pese a que `references/contrato-montaje.md` ya afirmaba lo contrario citando esa
+función por nombre. R-23 es pura exposición/cableado hacia esos dos consumidores reales: cero
+cambio en `convencion.detectar_desviaciones` en sí (requisito 6).
+
+- **Requisito 1 (`documento_revision.py`, localización por rango de líneas).**
+  `generar_documento_revision` llama una vez a `detectar_desviaciones(resultado, clasificacion,
+  configuracion)` (misma `clasificacion` que ya calculaba para el resto del documento, ningún
+  parseo nuevo). `_desviaciones_de_escena` reparte cada `Desviacion` a la escena cuyo rango
+  `[linea_inicio, linea_fin]` contiene `Desviacion.linea` (mismo criterio de localización que
+  `_indicaciones_no_recitables`, T-16), con su propia sección "### Desviaciones de la
+  convención" al pie de la escena — separada de "### Indicaciones no recitables" para no
+  mezclar dos cosas distintas. Lo que no cae en ninguna escena (p. ej.
+  `seccion_auxiliar_no_reconocida`, que vive fuera de toda escena) lo reparte
+  `_desviaciones_sin_escena` en una sección propia ("## Desviaciones de la convención (fuera de
+  escena)") tras el resumen global, antes del cuerpo de escenas.
+- **Requisito 2 (cabecera, `N = 0` no añade sección).** El resumen global gana una línea más,
+  "Desviaciones de la convención: N", siempre presente (igual que "Avisos de locutabilidad" y
+  "Reescrituras"); pero ninguna de las dos secciones nuevas (al pie de escena o fuera de ella)
+  se añade si está vacía — mismo criterio de "nada que no aporte" que ya sigue el resto del
+  documento. Verificado con el guion de ejemplo (`fixtures/guion-ejemplo-esperado.md`,
+  regenerado: el único cambio es la línea de cabecera en 0, ninguna sección nueva).
+- **Requisito 3 (`pptx.py`, `ResultadoTarjetas.desviaciones_convencion`).** Campo aditivo a
+  nivel de `metadatos` (no por tarjeta: una desviación como el número de escena duplicado
+  implica a más de una escena a la vez). `generar_tarjetas` llama a `detectar_desviaciones`
+  una sola vez, reutilizando el mismo `resultado`/`clasificacion` que ya recibe el resto de la
+  función — ninguna segunda implementación que pudiera divergir de `documento_revision.py`.
+  `[]` si no hay ninguna desviación.
+- **Requisito 4 (`--para-terceros` excluye la lista).** Mismo criterio que ya aplica
+  `_indicaciones_de_escena` a `notas_internas`: con `configuracion.incluir_notas_internas=False`
+  (`--para-terceros`), `desviaciones_convencion` sale `()`/`[]` directamente en
+  `ResultadoTarjetas`, nunca filtrado a posteriori — son avisos para el dueño y la cadena de
+  montaje, no contenido para un tercero.
+- **Requisito 5 (documentación).** `references/contrato-tarjetas.md` documenta la clave nueva
+  de `metadatos`. `references/contrato-montaje.md:68-73` deja de afirmar en abstracto que la
+  numeración "ya NO se da por supuesta en silencio" y pasa a decir exactamente dónde mirar:
+  `guion-escenas.md` (al pie de la escena) y `tarjetas.json.metadatos.desviaciones_convencion`.
+- **Verificación.** 9 tests nuevos (637→646): `tests/test_documento_revision.py` (localización
+  correcta al pie de la escena que corresponde, sección fuera de escena, recuento de cabecera,
+  `N=0` no añade ninguna sección), `tests/test_pptx.py` (lista vacía sin desviaciones, misma
+  descripción que `detectar_desviaciones`, exclusión con `--para-terceros`, serialización en
+  `tarjetas_a_diccionario`) y `tests/test_integracion_montaje.py` (el mismo texto de desviación
+  aparece en los dos consumidores reales a la vez — el hallazgo concreto que motivó la tarea).
+  Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho etapas (R-23 no
+  añade ninguna salida nueva, solo enriquece dos ya existentes).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

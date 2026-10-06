@@ -88,6 +88,7 @@ from config import (
     VERSION_CONTRATO_TARJETAS,
     Configuracion,
 )
+from convencion import detectar_desviaciones
 from parser import Escena, ResultadoParseo
 from pdf import dimensiones_png, es_nota_interna, indicaciones_no_recitables
 from reproductor import anclar_indicaciones_a_bloques
@@ -133,7 +134,13 @@ class Tarjeta:
 @dataclass(frozen=True)
 class ResultadoTarjetas:
     """El contrato completo antes de serializar: metadatos de cabecera
-    (requisito 1) mas una tarjeta por escena, en orden."""
+    (requisito 1) mas una tarjeta por escena, en orden.
+
+    `desviaciones_convencion` (R-23): las descripciones de
+    `convencion.detectar_desviaciones` (T-10/T-33) tal cual, a nivel de
+    metadatos porque una desviacion como el numero de escena duplicado
+    implica a mas de una escena a la vez. Vacia si no hay ninguna desviacion
+    o si `para_terceros` es verdadero (requisito 4 de R-23)."""
 
     titulo: str
     para_terceros: bool
@@ -141,6 +148,7 @@ class ResultadoTarjetas:
     duracion_objetivo_total_segundos: tuple[int, int] | None
     palabras_locucion_total: int
     mezcla_duracion_real_y_estimada: bool
+    desviaciones_convencion: tuple[str, ...]
     tarjetas: tuple[Tarjeta, ...]
 
 
@@ -345,6 +353,17 @@ def generar_tarjetas(
     tarjetas = _con_limites_absolutos(tarjetas)
     tiene_real = any(tarjeta.duracion_real_segundos is not None for tarjeta in tarjetas)
     tiene_estimada = any(tarjeta.duracion_real_segundos is None for tarjeta in tarjetas)
+    # R-23, requisito 4: sin notas internas (`--para-terceros`) tampoco se
+    # exponen las desviaciones de convencion -- mismo criterio que ya aplica
+    # `_indicaciones_de_escena` al resto del aparato de produccion interno.
+    desviaciones_convencion = (
+        tuple(
+            desviacion.descripcion
+            for desviacion in detectar_desviaciones(resultado, clasificacion, configuracion)
+        )
+        if configuracion.incluir_notas_internas
+        else ()
+    )
     return ResultadoTarjetas(
         titulo=nombre_guion,
         para_terceros=not configuracion.incluir_notas_internas,
@@ -352,6 +371,7 @@ def generar_tarjetas(
         duracion_objetivo_total_segundos=resultado_tiempos.duracion_objetivo_total_segundos,
         palabras_locucion_total=palabras_totales,
         mezcla_duracion_real_y_estimada=tiene_real and tiene_estimada,
+        desviaciones_convencion=desviaciones_convencion,
         tarjetas=tarjetas,
     )
 
@@ -374,6 +394,7 @@ def tarjetas_a_diccionario(resultado_tarjetas: ResultadoTarjetas) -> dict[str, A
                 else None
             ),
             "mezcla_duracion_real_y_estimada": resultado_tarjetas.mezcla_duracion_real_y_estimada,
+            "desviaciones_convencion": list(resultado_tarjetas.desviaciones_convencion),
         },
         "escenas": [
             {
@@ -426,6 +447,7 @@ _CLAVES_METADATOS: dict[str, type | tuple[type, ...]] = {
     "palabras_locucion_total": int,
     "duracion_total_segundos": (int, float),
     "mezcla_duracion_real_y_estimada": bool,
+    "desviaciones_convencion": list,
 }
 _CLAVES_ESCENA: dict[str, type | tuple[type, ...]] = {
     "numero": int,

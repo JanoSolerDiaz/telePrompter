@@ -12,6 +12,72 @@
 
 ---
 
+### Sesión 2026-10-06 (83) — Ciclo de Programador: R-23 implementada y `COMPLETADA`
+
+**Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta `48004a1` (la auditoría del 2026-10-06, "sin hallazgos nuevos"), sin
+conflicto ni rama divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este
+contenedor instaló contra Python 3.13 en vez del 3.11.17 real del proyecto; resuelto con
+`python3 -m pip install -r requirements-dev.txt` (mismo síntoma ya documentado por `#22`/R-15, no un
+hallazgo nuevo). Mismas versiones pineadas tras la reinstalación correcta: `mypy==1.18.2`,
+`ruff==0.14.0`, `pytest==8.4.2`.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: único
+`ABIERTO` sigue siendo `#24` (baja, proceso — pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+veinte pasadas consecutivas de auditoría), ninguno de severidad alta que atender como P-XX urgente
+antes de esta tarea. §1 de `SEGUIMIENTO.md` tenía a R-23 como la única R-XX `PENDIENTE`, ya
+especificada por completo en `ROADMAP_PRODUCTO.md` §"Oleada v11" por el ciclo de PM del 2026-10-05
+(sesión 82).
+
+**R-23 implementada: desviaciones de convención visibles en `guion-escenas.md` y `tarjetas.json`.**
+`scripts/documento_revision.py::generar_documento_revision` llama una vez a
+`convencion.detectar_desviaciones` (reutilizando la misma `clasificacion` que ya calculaba para el
+resto del documento) y reparte cada `Desviacion` por rango de línea con dos helpers nuevos:
+`_desviaciones_de_escena` (al pie de la escena que corresponda, sección propia
+"### Desviaciones de la convención" separada de las indicaciones no recitables) y
+`_desviaciones_sin_escena` (lo que no cae en ninguna escena — p. ej. una sección auxiliar no
+reconocida — en una sección aparte "## Desviaciones de la convención (fuera de escena)" tras el
+resumen global). La cabecera gana el recuento "Desviaciones de la convención: N", siempre presente;
+`N=0` no añade ninguna sección nueva (mismo criterio que ya sigue el resto del documento con avisos
+y reescrituras vacíos). `scripts/pptx.py::ResultadoTarjetas` gana el campo aditivo
+`metadatos.desviaciones_convencion` (mismo `resultado`/`clasificacion` reutilizado en
+`generar_tarjetas`, ninguna segunda implementación que pudiera divergir de `documento_revision.py`),
+vacío con `--para-terceros` desde el origen (mismo patrón que `notas_internas`). Cero cambio en
+`convencion.detectar_desviaciones` en sí (requisito 6 de la ficha). `references/contrato-
+tarjetas.md` documenta la clave nueva; `references/contrato-montaje.md:68-73` deja de afirmar en
+abstracto que la numeración "ya NO se da por supuesta en silencio" y pasa a decir exactamente dónde
+mirar en los dos consumidores reales. `references/formato-guion-escenas.md`, `DEVELOPERS.md` y
+`SKILL.md` actualizados.
+
+**Verificación.** 9 tests nuevos (637→646): `tests/test_documento_revision.py` (localización
+correcta al pie de la escena que corresponde, sección fuera de escena antes del cuerpo, recuento de
+cabecera, `N=0` no añade ninguna sección), `tests/test_pptx.py` (lista vacía sin desviaciones, misma
+descripción que `detectar_desviaciones`, exclusión con `--para-terceros`, serialización en
+`tarjetas_a_diccionario`) y `tests/test_integracion_montaje.py` (el mismo texto de desviación
+aparece en `guion-escenas.md` y `tarjetas.json` a la vez — el hallazgo concreto que motivó abrir la
+tarea). Fixture dorada `fixtures/guion-ejemplo-esperado.md` regenerada tras revisar el diff a mano:
+el único cambio es la línea nueva de cabecera en `0` (los tres guiones reales y el guion de ejemplo
+no tienen desviaciones conocidas, confirmando el criterio de aceptación de la ficha). Verificación
+pre-push completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 646 tests (`pytest`), dieciocho
+etapas OK en `verificar_salidas.py --fixture` (sin cambios de cuenta: R-23 no añade ninguna salida
+nueva, solo enriquece dos ya existentes). Las cuatro redes en verde.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md` (2026-10-06):** localización de `Desviacion` por
+rango de línea en `documento_revision.py` en vez de ampliar la propia dataclass; sección por escena
+y "fuera de escena" ocultas si están vacías frente a la línea de cabecera, siempre presente;
+exclusión de `desviaciones_convencion` en origen (`generar_tarjetas`) con `--para-terceros`, mismo
+patrón que `notas_internas`.
+
+**Cambios de estado en `SEGUIMIENTO.md` §1:** R-23 pasa de `PENDIENTE` a `COMPLETADA`.
+
+**Sin acción (mismo patrón que motivó `#24`):** `ROADMAP_PRODUCTO.md` seguirá describiendo R-23
+como "EN CURSO"/`PENDIENTE` en su prosa de "Cola de producto" hasta el siguiente ciclo de Product
+Manager, que es quien archiva la oleada — no se corrige desde este ciclo de Programador (la
+pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño). Sin cambios en §3 (bloqueos) ni §5
+(P-XX); §6 sin novedad; sin nueva desviación en §7.
+
+---
+
 ### Sesión 2026-10-05 (82) — Ciclo de Product Manager: archiva Oleada v10 (R-22) y abre R-23 (Oleada v11)
 
 **Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
