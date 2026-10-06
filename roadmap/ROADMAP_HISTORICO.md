@@ -75,6 +75,14 @@ prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`, que llevaba nueve reconfir
 Programador listando R-22 como pendiente pese a estar ya `COMPLETADA` en §1 de `SEGUIMIENTO.md` —
 el mismo patrón de latencia que `auditoriacontinua.md` registra como hallazgo `#24`.
 
+**Movido a histórico el:** 2026-10-06, ciclo de Product Manager. Se añade la Oleada v11 (R-23),
+COMPLETADA por el Programador el mismo día en que se abrió el ciclo de PM anterior (2026-10-05→06)
+y sin ningún hito de negocio propio pendiente — mismo criterio que los doce movimientos anteriores.
+Este movimiento corrige además la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md`, que llevaba
+nueve reconfirmaciones del Programador listando R-23 como pendiente pese a estar ya `COMPLETADA` en
+§1 de `SEGUIMIENTO.md` — el mismo patrón de latencia que `auditoriacontinua.md` registra como
+hallazgo `#24`.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -1244,9 +1252,106 @@ en verde, `verificar_salidas.py --fixture` gana dos etapas nuevas (dieciocho en 
 
 ---
 
+## Oleada v11 — Desviaciones de convención visibles donde de verdad hacen falta: `guion-escenas.md` y `tarjetas.json`
+
+### R-23 — Desviaciones de convención visibles donde de verdad hacen falta: `guion-escenas.md` y `tarjetas.json`
+
+**Migración:** No (aditivo: una sección nueva en el documento de revisión y una clave nueva en
+`tarjetas.json.metadatos`; ningún campo de `estado.json` ni de `Configuracion` cambia de forma) ·
+**Depende de:** T-10, T-16, T-29 (las tres ya `COMPLETADA`) · **Origen:** observación de
+arquitectura del PM (2026-10-05) — grieta de arquitectura verificada sobre código ya construido
+(mismo criterio que abrió R-12 a R-22), no hallazgo de auditoría ni entrada de `FEEDBACK.md`.
+
+**Objetivo:** `scripts/convencion.py::detectar_desviaciones` (T-10, ampliada en T-33 con
+`numero_escena_duplicado`/`numero_escena_no_creciente`, requisito 2 de T-33) calcula, de forma
+correcta y probada por `tests/test_convencion.py`, exactamente las señales que más le importan a
+este proyecto: una escena sin rótulo de locución, un rótulo desconocido, una sección auxiliar no
+reconocida y —la más grave para la fase de montaje— un número de escena duplicado o no creciente,
+que es "la única clave que permite casar una toma grabada con su escena sin ambigüedad"
+(`references/contrato-montaje.md`). Verificado leyendo el código, no solo la documentación: **esta
+función no se llama desde ningún punto de la generación real.** Ni `scripts/documento_revision.py`
+(que construye `guion-escenas.md`, el único archivo que el dueño de verdad revisa de una sentada,
+T-16) ni `scripts/pptx.py` (que construye `tarjetas.json`, el contrato de montaje, T-29) la
+importan; solo la ejercitan sus propios tests y `tests/test_integracion_montaje.py`. El efecto
+práctico es doble: (a) el dueño puede validar y grabar un guion con una escena sin rótulo o con un
+número de escena duplicado sin que absolutamente nada se lo señale en el documento que revisa, y
+(b) `references/contrato-montaje.md` le dice hoy a la futura cadena de montaje, con esta función
+citada por su nombre, que la numeración de escena "ya NO se da por supuesta en silencio" — una
+afirmación que ningún archivo generado real respalda todavía. Es el mismo patrón de "cálculo ya
+construido y probado, pero no conectado a su consumidor real" que abrió R-12 a R-22, con el matiz de
+que aquí la falta de conexión contradice además la propia documentación del contrato.
+
+**Requisitos:**
+1. `scripts/documento_revision.py::generar_documento_revision` llama una vez a
+   `convencion.detectar_desviaciones(resultado_parseo, resultado_clasificacion, configuracion)`
+   (misma firma que ya usan sus tests), igual que ya hace con los avisos de T-14. El resultado
+   (`list[Desviacion]`) se reparte en `guion-escenas.md` por el mismo criterio que ya separa avisos
+   e indicaciones: las que caen dentro del rango `[linea_inicio, linea_fin]` de una escena se listan
+   al pie de esa escena (mismo bloque visual que las indicaciones no recitables, requisito 4 de
+   T-16, con su propio encabezado "Desviaciones de la convención" para no mezclarse con ellas); las
+   que no pertenecen a ninguna escena (p. ej. `seccion_auxiliar_no_reconocida`) van en una sección
+   propia tras el resumen global de cabecera.
+2. La cabecera de `guion-escenas.md` (requisito 5 de T-16) gana un recuento más: "Desviaciones de la
+   convención: N", junto a los que ya existen (avisos, reescrituras pendientes). `N = 0` no añade
+   ninguna sección nueva al documento — mismo criterio de "nada que no aporte" que ya sigue el resto
+   del documento con avisos y reescrituras vacíos.
+3. `scripts/pptx.py::ResultadoTarjetas` gana un campo aditivo a nivel de `metadatos` (no por
+   tarjeta, porque una desviación como el número de escena duplicado implica a más de una escena a
+   la vez): `desviaciones_convencion: list[str]`, los textos de `Desviacion.descripcion` tal cual
+   (sin reformatearlos ni reinventar redacción), lista vacía si `detectar_desviaciones` no encuentra
+   ninguna. `generar_tarjetas` llama a `detectar_desviaciones` una sola vez, reutilizando el mismo
+   `resultado_parseo`/`resultado_clasificacion` que ya recibe para el resto de la tarjeta — ningún
+   parseo ni clasificación nuevos.
+4. `--para-terceros` (bandera ya existente de T-28/T-29) excluye `desviaciones_convencion` del
+   `tarjetas.json` exportado a terceros y de cualquier brief derivado, igual que ya excluye el resto
+   del aparato de producción interno (son avisos para el dueño y la cadena de montaje, no contenido
+   para el espectador ni para un tercero). El `.pdf`/`guion-escenas.md` de repaso completo (sin esa
+   bandera) sí los muestra.
+5. `references/contrato-tarjetas.md` documenta la clave nueva de `metadatos`.
+   `references/contrato-montaje.md` deja de afirmar en abstracto que la numeración "ya NO se da por
+   supuesta en silencio" y pasa a decir exactamente dónde mirar:
+   `tarjetas.json.metadatos.desviaciones_convencion`.
+6. Sin ningún cambio en `convencion.detectar_desviaciones` en sí (T-10/T-33 ya la especifican,
+   calculan y prueban correctamente) — esta tarea es pura exposición/cableado hacia los dos
+   consumidores reales, no nueva lógica de detección.
+
+**Criterio de aceptación:** sobre los tres guiones reales de `fixtures/reales/` (sin desviaciones
+conocidas hoy), `guion-escenas.md` no muestra ninguna sección de desviaciones y
+`tarjetas.json.metadatos.desviaciones_convencion` sale `[]`; con una fixture modificada a mano con
+una escena sin rótulo de locución y otra que repite el número de una anterior, ambas desviaciones
+aparecen localizadas correctamente en `guion-escenas.md` (al pie de la escena que corresponda) y en
+`tarjetas.json.metadatos.desviaciones_convencion`, con el mismo texto en los dos sitios; con
+`--para-terceros`, la lista no aparece en el `tarjetas.json` exportado; test de regresión que
+reproduce el estado anterior a esta tarea (mismo guion con desviaciones, ningún archivo generado las
+muestra) para dejar constancia del hallazgo que motivó la tarea.
+
+**Cómo se entregó:** `documento_revision.generar_documento_revision` llama una vez a
+`detectar_desviaciones` (misma `clasificacion` ya calculada) y reparte cada desviación por rango de
+línea: al pie de la escena que corresponda (`### Desviaciones de la convención`, separada de las
+indicaciones no recitables) o, si no cae en ninguna escena (p. ej. sección auxiliar no reconocida),
+en una sección propia tras el resumen global (`## Desviaciones de la convención (fuera de escena)`);
+la cabecera gana el recuento "Desviaciones de la convención: N" (siempre presente, `N=0` no añade
+ninguna sección nueva). `pptx.py::ResultadoTarjetas` gana el campo aditivo
+`metadatos.desviaciones_convencion` (mismo `resultado`/`clasificacion` reutilizado, sin segunda
+implementación), vacío con `--para-terceros` igual que `notas_internas`. Cero cambio en
+`convencion.detectar_desviaciones` en sí (requisito 6). `references/contrato-tarjetas.md` y
+`contrato-montaje.md:68-73` actualizados — este último deja de afirmar en abstracto que la
+numeración "ya NO se da por supuesta en silencio" y dice exactamente dónde mirar. 9 tests nuevos
+(637→646): `tests/test_documento_revision.py` (localización correcta, sección fuera de escena,
+recuento de cabecera, `N=0` sin sección nueva), `tests/test_pptx.py` (lista vacía, misma descripción
+que `detectar_desviaciones`, exclusión `--para-terceros`, serialización) y
+`tests/test_integracion_montaje.py` (mismo texto en `guion-escenas.md` y `tarjetas.json` a la vez —
+el hallazgo que motivó la tarea). Fixture dorada `guion-ejemplo-esperado.md` regenerada (único
+cambio: la línea de cabecera en 0, ninguna sección nueva, confirma que los tres guiones reales no
+tienen desviaciones). Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho
+etapas (ninguna salida nueva). `DEVELOPERS.md` y `SKILL.md` actualizados.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
-(R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05.)*
+(R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05; la de v11 (R-23),
+2026-10-06.)*

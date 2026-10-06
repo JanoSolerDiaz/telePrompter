@@ -10,8 +10,57 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-06 — **Ciclo de Programador: novena reconfirmación del día tras
-R-23**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-06 — **Ciclo de Product Manager: archiva Oleada v11 (R-23) y abre
+R-24 (Oleada v12)** (detalle en la nota de esta sesión, más abajo).
+
+**Nota de arranque de esta sesión (ciclo de Product Manager, 2026-10-06):** sin incidencia. `git
+status` limpio antes de tocar nada; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta `8cbb4e4` (la novena reconfirmación del día de Programador tras R-23), sin
+conflicto ni rama divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este
+contenedor instaló contra Python 3.13 en vez del 3.11.17 real del proyecto — mismo síntoma ya
+registrado (no un hallazgo nuevo, `#22`/R-15); resuelto con `python3 -m pip install -r
+requirements-dev.txt`.
+
+**Ciclo de Product Manager: archiva Oleada v11 (R-23) y abre R-24 (Oleada v12).** Revisión de
+entrada (protocolo): registro de hallazgos de `auditoriacontinua.md` reconfirma un único `ABIERTO`,
+`#24` (baja, proceso — la pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veinte pasadas
+consecutivas de auditoría), ninguno de severidad alta ni de producto/arquitectura que convertir en
+R-XX nueva este ciclo — el propio `#24` ya está enrutado a la pregunta #11, no es una R-XX.
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` que
+incorporar — el bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse. §1 (fuente
+autoritativa) tenía a R-23 como `COMPLETADA` desde el ciclo de Programador del mismo día (2026-10-06)
+que la abrió el ciclo de PM anterior (2026-10-05), con nueve reconfirmaciones posteriores del
+Programador dejando `ROADMAP_PRODUCTO.md` describiéndola como `PENDIENTE` en su prosa de "Cola de
+producto" — el mismo patrón de latencia que motivó `#24`. Este ciclo corrige esa prosa: Oleada v11
+(R-23) se mueve íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo se entregó"), con su
+entrada de índice correspondiente.
+
+**Se abre R-24** (Oleada v12) por grieta de arquitectura verificada, mismo criterio que abrió R-12 a
+R-23. Se delegó una primera pasada de exploración a un subagente, que propuso tres candidatas
+(`convencion.generar_convencion_guiones`/`guardar_convencion_guiones` sin ningún consumidor real;
+`reescrituras.revertir_reescrituras` sin disparador documentado para el dueño; la infraestructura de
+diagnóstico de T-02/T-05 sin consumidor real). Verificación independiente propia, no delegada:
+confirmada la tercera leyendo `scripts/logger.py`, `scripts/monitorizacion.py` y
+`scripts/salidas.py::generar_salidas_seleccionadas` línea a línea — `logger.py`/`monitorizacion.py`
+se construyeron el primer día del proyecto (T-02/T-05, 2026-09-01) anticipando explícitamente un
+futuro "punto de entrada real" que los usara; ese punto de entrada llegó después como
+`generar_salidas_seleccionadas` (T-30/R-18), y su manejo de errores (línea ~499) reinventa por su
+cuenta exactamente lo que T-05 quería evitar: muestra al dueño el `repr` crudo de la excepción y no
+vuelca ningún diagnóstico a disco ni pasa por el logger centralizado — contradice dos reglas
+explícitas de §0.2 ("Logger centralizado", "Errores accionables en español, nunca trazas crudas").
+Las otras dos candidatas se descartan por menor valor/mayor incertidumbre de diseño: la primera
+(`convencion-guiones.md`) es un documento pensado para explicarle la convención a un guionista
+distinto del locutor, pero en el ICP de este proyecto el guionista y el dueño son la misma persona,
+que ya conoce la convención (documentada además de forma estable en `references/convencion-guion.md`
+para cuando haga falta consultarla); la segunda
+(`revertir_reescrituras`) no tiene un disparador de producto obvio (requeriría diseñar una superficie
+nueva, no solo cablear un cálculo ya existente a un consumidor que ya existe). Spec completa de R-24
+en `ROADMAP_PRODUCTO.md` (Oleada v12), lista para que el siguiente ciclo de Programador la implemente
+y verifique. Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro
+redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin
+nueva desviación en §7.
 
 **Nota de arranque de esta sesión (ciclo de Programador, novena reconfirmación del día tras R-23,
 2026-10-06):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop`
@@ -1442,6 +1491,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-21 | Validar `concat-ffmpeg.txt` en la ruta real de generación (`scripts/salidas.py`) invocando el validador propio del demuxer `concat` de ffmpeg antes de escribirlo, y sanear `archivo_video` en el origen (recorte de espacios, rechazo de salto de línea) | **COMPLETADA** | 2026-10-02 | `scripts/salidas.py::_generar_concat_ffmpeg` llama a `concat_ffmpeg.validar_lista_concat_ffmpeg` sobre el contenido ya generado antes de `guardar_lista_concat_ffmpeg`; un contenido inválido degrada a `SalidaOmitida` con el motivo exacto (mismo patrón `try`/`except` que ya protege a las demás salidas), nunca una excepción sin capturar ni un archivo corrupto en disco. `scripts/tomas.py` gana `_sanear_archivo_video` (recorta espacios, normaliza a `""` si queda vacío o trae `\n`/`\r`), aplicada en `_toma_desde_dict` al leer un parte de rodaje editado a mano; `assets/reproductor/guion.js` gana la función gemela `sanearArchivoVideo(valor)`, aplicada en los dos puntos donde el dueño teclea el valor (`pedirArchivoVideoToma` durante la grabación y el botón de edición desde el índice). `references/contrato-tomas.md` y `contrato-montaje.md` documentan la regla de saneamiento y la validación antes de escritura. Fuera de alcance, explícito: no se extiende la misma validación-antes-de-escribir a `srt.py`/`capitulos_youtube.py` (misma deuda preexistente, sin las consecuencias reales que le da a `archivo_video` ser texto libre). 6 tests nuevos (613→619): 4 en `test_tomas.py` (recorte, solo espacios, salto de línea, retorno de carro), 1 en `test_salidas.py` (contenido inválido forzado por monkeypatch degrada a omitida sin escribir), 1 nuevo más la actualización de uno existente en `test_reproductor.py` (los dos puntos de entrada saneados en el HTML generado). Cuatro redes en verde, incluidas las dieciséis etapas de `verificar_salidas.py --fixture`. Fase transversal F-J, cierra el hallazgo `#27` de `auditoriacontinua.md`. `DEVELOPERS.md` y `SKILL.md` actualizados |
 | R-22 | Capítulos reales incrustables en el vídeo final: `capitulos-ffmpeg.txt`, formato `FFMETADATA1` nativo de ffmpeg, reutilizando tal cual el emparejamiento título↔escena y los tiempos real/estimado que `capitulos_youtube.calcular_capitulos` ya calcula para `capitulos-youtube.txt` (R-07) | **COMPLETADA** | 2026-10-05 | `ResultadoCapitulos` gana el campo aditivo `duracion_total_segundos` (el cursor final que el bucle de `calcular_capitulos` ya acumulaba y hasta ahora descartaba, `0.0` en los tres casos de `motivo_sin_generar`). `scripts/capitulos_youtube.py` gana `formatear_capitulos_ffmpeg` (hermana de `formatear_capitulos_youtube`: primera línea `;FFMETADATA1`, un bloque `[CHAPTER]` por capítulo con `TIMEBASE=1/1000`/`START`/`END` en milisegundos truncados hacia abajo y `title=<título>` escapado según el propio formato — `\`, `=`, `;`, `#` y salto de línea con `\` por delante, mismo patrón que `concat_ffmpeg._escapar_ruta_ffmpeg` de R-19; `END` de un capítulo es el `START` del siguiente, el del último es `duracion_total_segundos` convertido a ms; nota de transparencia real/estimado como comentario `;` cuando aplica), deliberadamente SIN la marca mínima de YouTube (requisito 4: cada escena emparejada es su propio capítulo, un archivo de metadatos incrustado no compite por espacio de lectura) y `validar_capitulos_ffmpeg` (exige `;FFMETADATA1`, `START`/`END` enteros no negativos, `START` estrictamente creciente, sin solapes). `scripts/salidas.py::_generar_capitulos_youtube` genera `capitulos-ffmpeg.txt` como segunda mitad de la misma opción `CAPITULOS_YOUTUBE` (no una séptima, mismo patrón que `guion.srt`/`guion-alineado.srt` bajo `SRT`, R-18), validándolo antes de escribir desde el primer día (lección del hallazgo `#27`/R-21): un contenido inválido degrada solo esa mitad a `SalidaOmitida`, sin impedir que `capitulos-youtube.txt` se mantenga. `config.NOMBRE_ARCHIVO_CAPITULOS_FFMPEG = "capitulos-ffmpeg.txt"` (constante de módulo, no campo de `Configuracion`). 18 tests nuevos (619→637): `tests/test_capitulos_youtube.py` (formato exacto, contigüidad `END`=`START` siguiente, sin filtrado por marca mínima a diferencia de YouTube, escapado de caracteres especiales, nota de transparencia, criterio de aceptación sobre los tres guiones reales, validador independiente, guardado) y `tests/test_salidas.py` (contenido coincide con la llamada directa; contenido inválido forzado por monkeypatch degrada solo esa mitad sin afectar a `capitulos-youtube.txt`). Cuatro redes en verde, `verificar_salidas.py --fixture` gana dos etapas nuevas (dieciocho en total). `references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados. Oleada v10, `origen: observación de arquitectura del PM (2026-10-02)` |
 | R-23 | Desviaciones de convención visibles donde de verdad hacen falta: `scripts/convencion.py::detectar_desviaciones` (T-10/T-33) calcula correctamente escena sin rótulo, rótulo desconocido, sección auxiliar no reconocida y número de escena duplicado/no creciente, pero no se llama desde `documento_revision.py` (`guion-escenas.md`) ni `pptx.py` (`tarjetas.json`) — solo desde sus propios tests, pese a que `contrato-montaje.md` afirma lo contrario citando esa función | **COMPLETADA** | 2026-10-06 | `documento_revision.generar_documento_revision` llama una vez a `detectar_desviaciones` (misma `clasificacion` ya calculada) y reparte cada desviación por rango de línea: al pie de la escena que corresponda (`### Desviaciones de la convención`, separada de las indicaciones no recitables) o, si no cae en ninguna escena (p. ej. sección auxiliar no reconocida), en una sección propia tras el resumen global (`## Desviaciones de la convención (fuera de escena)`); cabecera gana el recuento "Desviaciones de la convención: N" (siempre presente, `N=0` no añade ninguna sección nueva). `pptx.py::ResultadoTarjetas` gana el campo aditivo `metadatos.desviaciones_convencion` (mismo `resultado`/`clasificacion` reutilizado, sin segunda implementación), vacío con `--para-terceros` igual que `notas_internas`. Cero cambio en `convencion.detectar_desviaciones` en sí (requisito 6). `references/contrato-tarjetas.md` y `contrato-montaje.md:68-73` actualizados — este último deja de afirmar en abstracto que la numeración "ya NO se da por supuesta en silencio" y dice exactamente dónde mirar. 9 tests nuevos (637→646): `tests/test_documento_revision.py` (localización correcta, sección fuera de escena, recuento de cabecera, `N=0` sin sección nueva), `tests/test_pptx.py` (lista vacía, misma descripción que `detectar_desviaciones`, exclusión `--para-terceros`, serialización) y `tests/test_integracion_montaje.py` (mismo texto en `guion-escenas.md` y `tarjetas.json` a la vez — el hallazgo que motivó la tarea). Fixture dorada `guion-ejemplo-esperado.md` regenerada (único cambio: la línea de cabecera en 0, ninguna sección nueva, confirma que los tres guiones reales no tienen desviaciones). Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho etapas (ninguna salida nueva). `DEVELOPERS.md` y `SKILL.md` actualizados. Oleada v11, `origen: observación de arquitectura del PM (2026-10-05)` |
+| R-24 | Diagnóstico real de un fallo al generar una salida: `scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18) captura hoy cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca ningún diagnóstico, en vez de usar la infraestructura de logger/diagnóstico de T-02/T-05 que se construyó el primer día del proyecto anticipando exactamente este consumidor | **PENDIENTE** | 2026-10-06 | Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v12). `origen: observación de arquitectura del PM (2026-10-06)`, tras una primera pasada de un subagente de exploración que propuso tres candidatas (ver `DECISIONES_TECNICAS.md`) |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

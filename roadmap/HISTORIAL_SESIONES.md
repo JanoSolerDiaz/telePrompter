@@ -12,6 +12,61 @@
 
 ---
 
+### Sesión 2026-10-06 (93) — Ciclo de Product Manager: archiva Oleada v11 (R-23) y abre R-24 (Oleada v12)
+
+**Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta `8cbb4e4` (la novena reconfirmación del día de Programador tras R-23,
+sesión 92), sin conflicto ni rama divergida. `pip install -r requirements-dev.txt` con el `pip`
+pelado de este contenedor instaló contra Python 3.13 en vez del 3.11.17 real del proyecto (mismo
+síntoma ya documentado por `#22`/R-15, no un hallazgo nuevo); resuelto con `python3 -m pip install -r
+requirements-dev.txt`.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: único
+`ABIERTO` sigue siendo `#24` (baja, proceso — pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+veinte pasadas consecutivas), ninguno de severidad alta ni de producto/arquitectura que convertir en
+R-XX nueva este ciclo. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna
+entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse. §1 tenía a
+R-23 como `COMPLETADA` desde el ciclo de Programador de esta misma fecha, con nueve reconfirmaciones
+posteriores dejando `ROADMAP_PRODUCTO.md` describiéndola como `PENDIENTE` en su prosa de "Cola de
+producto" — el mismo patrón de latencia que motivó `#24`.
+
+**Archiva Oleada v11 (R-23).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa +
+"Cómo se entregó"), con su entrada de índice correspondiente. `ROADMAP_PRODUCTO.md` corrige la prosa
+de "Cola de producto".
+
+**Abre R-24 (Oleada v12): diagnóstico real de un fallo al generar una salida.** Por grieta de
+arquitectura verificada, mismo criterio que abrió R-12 a R-23. Se delegó una primera pasada de
+exploración a un subagente (`Explore`), que revisó sistemáticamente los ~33 módulos de `scripts/` y
+propuso tres candidatas: (1) `convencion.generar_convencion_guiones`/`guardar_convencion_guiones`
+(documento `convencion-guiones.md` nunca generado desde ningún punto real); (2)
+`reescrituras.revertir_reescrituras` ("deshacer global" de T-15 sin disparador documentado); (3) la
+infraestructura de `scripts/logger.py`/`scripts/monitorizacion.py` (T-02/T-05), construida el primer
+día del proyecto anticipando un consumidor real que nunca llegó a cablearse. Verificación
+independiente propia, no delegada: confirmada la candidata (3) leyendo `scripts/logger.py`,
+`scripts/monitorizacion.py` y `scripts/salidas.py::generar_salidas_seleccionadas` línea a línea —
+esta última (T-30/R-18, el consumidor real que hoy genera cada salida seleccionable) captura
+cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca
+ningún diagnóstico ni pasa por el logger centralizado, contradiciendo dos reglas explícitas de §0.2
+("Logger centralizado", "Errores accionables en español, nunca trazas crudas"). Las otras dos
+candidatas se descartan: (1) por menor valor real (el guionista y el dueño son la misma persona, que
+ya tiene la convención documentada en `references/convencion-guion.md`); (2) por exigir diseñar una
+superficie de producto nueva (ningún disparador existe hoy), no solo cablear un cálculo ya construido
+a un consumidor que ya existe. Spec completa de R-24 en `ROADMAP_PRODUCTO.md` (Oleada v12), lista
+para el siguiente ciclo de Programador.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** 4 filas (archivo de Oleada v11; apertura de R-24
+con las tres candidatas y por qué se descartaron dos; alcance de R-24 sobre por qué no se cablea
+`ejecutar_con_diagnostico` entera).
+
+**Cambios de estado en `SEGUIMIENTO.md` §1:** R-23 sin cambio (ya `COMPLETADA`); R-24 añadida como
+`PENDIENTE`.
+
+**Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad** (la pregunta #11 sigue `(pendiente)`);
+**sin nueva desviación en §7.** Este ciclo es de PM, no de Programador: no se ha ejecutado la
+verificación de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+---
+
 ### Sesión 2026-10-06 (92) — Ciclo de Programador: novena reconfirmación del día tras R-23, sin novedad de código
 
 **Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
