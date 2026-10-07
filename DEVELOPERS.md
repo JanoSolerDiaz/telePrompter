@@ -9,8 +9,11 @@
 2. Instala las herramientas de desarrollo (mypy, ruff, pytest). **Son solo de desarrollo**:
    la skill se ejecuta sin ellas, únicamente con la biblioteca estándar de Python 3.
    ```
-   pip install -r requirements-dev.txt
+   python3 -m pip install -r requirements-dev.txt
    ```
+   El `pip` "pelado" (sin `python3 -m` por delante) puede resolver contra un intérprete
+   distinto del que usa el proyecto en un contenedor con más de un Python instalado —
+   mismo riesgo que el binario pelado de la nota más abajo, ver `origen: auditoría #28`.
 3. Instala el hook de pre-commit (§0.1). No está en `.git/hooks/` tras clonar porque esa
    carpeta no se versiona; hay que instalarlo una vez por clon:
    ```
@@ -61,6 +64,15 @@ python scripts/verificar_salidas.py --fixture
 > válida es `python scripts/ci.py`, o si hace falta suelto, `python -m mypy`/`python -m
 > ruff`/`python -m pytest` como arriba — nunca el nombre pelado en la terminal.
 > (`origen: auditoría #22`, R-15.)
+>
+> **Tampoco el `pip` "pelado" al instalar** (`pip install -r requirements-dev.txt` sin
+> `python3 -m` por delante): el mismo contenedor con más de un Python puede resolverlo
+> contra el intérprete equivocado (por ejemplo Python 3.13 en vez del 3.11.x real del
+> proyecto), con lo que las tres herramientas quedan instaladas donde `sys.executable` no
+> las encuentra y `scripts/ci.py` falla en redondo con `No module named mypy`/`ruff`/
+> `pytest`, en vez de dar la señal distinta y engañosa del caso anterior. Instala siempre
+> con `python3 -m pip install -r requirements-dev.txt`, como arriba.
+> (`origen: auditoría #28`, variante de `#22`/R-15 no cubierta por su cierre original.)
 
 ## Salida al usuario y diagnóstico (T-02)
 

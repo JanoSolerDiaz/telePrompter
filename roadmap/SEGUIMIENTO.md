@@ -10,8 +10,49 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-07 — **Ciclo de Programador: segunda reconfirmación del día tras
-R-24**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-07 — **Ciclo de Programador: tercera reconfirmación del día tras
+R-24, con P-06** (extiende a la instalación de dependencias la nota de `DEVELOPERS.md`/`SKILL.md`
+que ya cubría el binario "pelado"; cierra el hallazgo `#28` de documentación, código sin cambios —
+detalle en la nota de esta sesión, más abajo).
+
+**Nota de arranque de esta sesión (ciclo de Programador, tercera reconfirmación del día tras R-24,
+2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop`
+dejó el contenedor en `HEAD` *detached* (resto de un contenedor anterior, descartable: ya fusionado
+en `develop`); `git pull origin develop` resolvió en fast-forward limpio hasta `f030cab` (la segunda
+reconfirmación del día tras R-24), sin conflicto ni rama divergida. `pip install -r
+requirements-dev.txt` con el `pip` pelado de este contenedor instaló de nuevo contra Python 3.13 en
+vez del 3.11.17 real del proyecto — mismo síntoma del hallazgo `#28`, reproducido una vez más (la
+undécima repetición consecutiva); resuelto con `python3 -m pip install -r requirements-dev.txt`, que
+sí resuelve al intérprete correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`,
+`pytest==8.4.2`).
+
+**Ciclo de Programador de esta sesión: tercera reconfirmación del día tras R-24, con P-06.**
+Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`, ambos de
+severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y `#28`
+(infraestructura, el mismo síntoma de `pip` pelado de este preámbulo, reproducido ya once veces
+seguidas sin quedar nunca documentado). Ninguno de severidad alta que atender como P-XX urgente
+antes de esta tarea. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna
+entrada `nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`:
+cero issues y cero PR abiertos. §1 (fuente autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE`
+(R-24 es la última, `COMPLETADA`): cola de la columna vertebral vacía. Con la tarea en curso
+terminada y `#28` ya trayendo su propia recomendación de cierre escrita por el auditor, esta sesión
+registra y ejecuta **P-06** (§5): extiende la nota de `DEVELOPERS.md`/`SKILL.md` que ya cubría el
+binario "pelado" de `ruff`/`mypy`/`pytest` (R-15, `#22`) para que también cubra expresamente el
+`pip install` pelado al instalar las dependencias de desarrollo, recomendando siempre `python3 -m
+pip install -r requirements-dev.txt`. Alcance puramente documental: cero cambio en `scripts/`,
+`tests/` ni `assets/`. Verificación propia completa tras el cambio: `mypy`/`ruff` en verde sin
+hallazgos (70 archivos), 649 tests (`pytest`, sin cambio: P-06 no añade lógica) en verde, dieciocho
+etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3
+(bloqueos); §6 sin novedad (la pregunta #11 sigue `(pendiente)`). El cierre de la fila `#28` a
+`RESUELTO` en `auditoriacontinua.md` queda para la siguiente pasada del auditor (solo él modifica
+ese archivo, §0.4): esta sesión deja el commit listo para que lo verifique de forma independiente.
+Nota sin acción, mismo patrón que motivó `#24`: `ROADMAP_PRODUCTO.md` (sección "Cola de producto")
+seguirá describiendo R-24 como `PENDIENTE`/"EN CURSO" en su prosa hasta el siguiente ciclo de
+Product Manager, que es quien archiva la oleada — no se corrige desde este ciclo de Programador (la
+pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño).
+
+**Última actualización anterior (2026-10-07, ciclo de Programador): segunda reconfirmación del día
+tras R-24**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Nota de arranque de esta sesión (ciclo de Programador, segunda reconfirmación del día tras R-24,
 2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop` dejó
@@ -1647,6 +1688,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | P-03 | Corregir en `revalidacion.py` la duplicación de contenido en una revalidación posterior a un conflicto edición/partición ya pospuesto (P-02), cuando el dueño no vuelve a tocar el documento | `origen: auditoría #14` (severidad alta). El límite que P-02 había dejado documentado como "un fragmento de texto sin editar" resultó ser, verificado con reproducción de código, una duplicación real de contenido en `guion-escenas.md` sin ningún aviso — rompía el invariante (c) por desajuste de esquema de identidad entre pasadas. Atendida como urgente antes de R-01, según §0.1/§0.3. | **COMPLETADA** 2026-09-03 |  |
 | P-04 | Endurecer el cierre de `#14`: lectura tolerante de la disposición persistida, persistir solo las particiones realmente pospuestas, incidencia cuando las anclas del documento no son las previstas, y corregir el mensaje del conflicto edición/partición | `origen: auditoría #14` (ya cerrado por P-03, que es correcto). Tres grietas alrededor: (1) `estado.validacion` no se valida al cargar, así que basura en `particiones_pospuestas` tiraba la revalidación entera en vez de degradar; (2) se persistía el conjunto sin filtrar de bloques editados, no el de particiones pospuestas, dejando en `estado.json` índices que nunca tuvieron nada que posponer; (3) **un `estado.json` anterior a P-03, justo en mitad de un conflicto, reproduce el #14 tal cual y en silencio** — sin la clave persistida, la reconstrucción vuelve a ser optimista. Además el aviso del conflicto invitaba a «revalidar sin tocar ese bloque» para materializar la partición, que es justo lo que no funciona: lo hace retirar la edición, como demuestra el test que dejó P-03. | **COMPLETADA** 2026-09-03 |  |
 | P-05 | `instalar_skill.py` deja de guardar la copia de seguridad DENTRO de `~/.claude/skills/`; pasa a `~/.claude/teleprompter-copias-de-seguridad/` | **Detectado en vivo en la máquina del dueño** al reinstalar la skill en esta misma sesión: Claude Code registra como skill toda subcarpeta de `~/.claude/skills/` que tenga un `SKILL.md`, así que `teleprompter.bak-<marca>` apareció en la lista de skills disponibles **como una segunda `teleprompter`, con nombre y descripción idénticos**, compitiendo con la real en la selección. Cada reinstalación añadía una. No es cosmético: degrada la funcionalidad principal de la skill justo cuando el dueño va a usarla. La copia de la instalación de hoy se movió a mano fuera de `skills/`; el arreglo evita que vuelva a pasar. | **COMPLETADA** 2026-09-03 |  |
+| P-06 | Extender la nota de `DEVELOPERS.md`/`SKILL.md` que ya cubre el binario "pelado" de `ruff`/`mypy`/`pytest` (R-15, `origen: auditoría #22`) para que también cubra la **instalación** (`pip install -r requirements-dev.txt` sin `python3 -m`), no solo la invocación | `origen: auditoría #28` (baja, infraestructura). Formalizado tras diez sesiones consecutivas resolviendo el mismo síntoma sin que quedara documentado: el `pip` pelado de los contenedores de nube de este proyecto instala contra Python 3.13 en vez del 3.11.x real, dejando las tres redes de tipos/estilo/tests en rojo con `No module named mypy/ruff/pytest` hasta reinstalar con `python3 -m pip install -r requirements-dev.txt`. Cola de tareas vacía tras R-24 (§1), hallazgo de severidad baja con recomendación de cierre ya escrita por el propio auditor: aprovechado como P-XX de esta sesión en vez de esperar a que el PM lo convierta en R-XX. Alcance puramente documental, sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-07 |  |
 
 ---
 
