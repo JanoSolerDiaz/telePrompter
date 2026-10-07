@@ -10,12 +10,46 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-07 — **Ciclo de Programador: tercera reconfirmación del día tras
-R-24, con P-06** (extiende a la instalación de dependencias la nota de `DEVELOPERS.md`/`SKILL.md`
-que ya cubría el binario "pelado"; cierra el hallazgo `#28` de documentación, código sin cambios —
-detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-07 — **Ciclo de Programador: cuarta reconfirmación del día tras
+R-24**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, tercera reconfirmación del día tras R-24,
+**Nota de arranque de esta sesión (ciclo de Programador, cuarta reconfirmación del día tras R-24,
+2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop`
+dejó el contenedor en `HEAD` *detached* (resto de un contenedor anterior, descartable: ya fusionado
+en `develop`); `git pull origin develop` resolvió en fast-forward limpio hasta `0a8e90e` (P-06, la
+tercera reconfirmación del día tras R-24), sin conflicto ni rama divergida. `pip install -r
+requirements-dev.txt` con el `pip` pelado de este contenedor instaló de nuevo contra Python 3.13 en
+vez del 3.11.x real del proyecto — mismo síntoma del hallazgo `#28`, reproducido una vez más (la
+duodécima repetición consecutiva, ya documentada por P-06 en `DEVELOPERS.md`/`SKILL.md` esta misma
+mañana); resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí resuelve al
+intérprete correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Ciclo de Programador de esta sesión: cuarta reconfirmación del día tras R-24**, sin novedad de
+código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`,
+ambos de severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y
+`#28` (infraestructura, mismo síntoma de `pip` pelado de este preámbulo, ya con su recomendación de
+cierre aplicada por P-06 en esta misma jornada; el cierre a `RESUELTO` en `auditoriacontinua.md`
+queda para la siguiente pasada del auditor, que es quien modifica ese archivo). Ninguno de
+severidad alta que atender como P-XX urgente antes de esta tarea. `roadmap/FEEDBACK.md` sigue con
+su única fila de plantilla vacía, sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
+`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. §1 (fuente
+autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE` (R-24 es la última, `COMPLETADA`): cola de la
+columna vertebral vacía, sin tarea de código que ejecutar ni hallazgo nuevo que convertir en P-XX
+(P-06 ya agotó la recomendación de cierre de `#28` esta misma mañana). Verificación propia completa:
+`mypy`/`ruff` en verde sin hallazgos (70 archivos), 649 tests (`pytest`, sin cambio) en verde,
+dieciocho etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en
+§3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`). Nota sin acción,
+mismo patrón que motivó `#24`: `ROADMAP_PRODUCTO.md` (sección "Cola de producto") seguirá
+describiendo R-24 como `PENDIENTE`/"EN CURSO" en su prosa hasta el siguiente ciclo de Product
+Manager, que es quien archiva la oleada — no se corrige desde este ciclo de Programador (la pregunta
+#11 de §6 sigue `(pendiente)` de respuesta del dueño).
+
+**Última actualización anterior (2026-10-07, ciclo de Programador): tercera reconfirmación del día
+tras R-24, con P-06** (extiende a la instalación de dependencias la nota de `DEVELOPERS.md`/`SKILL.md`
+que ya cubría el binario "pelado"; cierra el hallazgo `#28` de documentación, código sin cambios —
+detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Programador, tercera reconfirmación del día tras R-24,
 2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop`
 dejó el contenedor en `HEAD` *detached* (resto de un contenedor anterior, descartable: ya fusionado
 en `develop`); `git pull origin develop` resolvió en fast-forward limpio hasta `f030cab` (la segunda
