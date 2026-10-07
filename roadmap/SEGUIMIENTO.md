@@ -10,10 +10,40 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-07 — **Ciclo de Programador: primera reconfirmación del día tras
+**Última actualización:** 2026-10-07 — **Ciclo de Programador: segunda reconfirmación del día tras
 R-24**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, primera reconfirmación del día tras R-24,
+**Nota de arranque de esta sesión (ciclo de Programador, segunda reconfirmación del día tras R-24,
+2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop` dejó
+el contenedor en `HEAD` *detached* (resto de un contenedor anterior, descartable: ya fusionado en
+`develop`); `git pull origin develop` resolvió en fast-forward limpio hasta `79387f4` (la primera
+reconfirmación del día tras R-24), sin conflicto ni rama divergida. `pip install -r
+requirements-dev.txt` con el `pip` pelado de este contenedor instaló de nuevo contra Python 3.13 en
+vez del 3.11.17 real del proyecto — mismo síntoma del hallazgo `#28`, reproducido una vez más;
+resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí resuelve al intérprete
+correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Ciclo de Programador de esta sesión: segunda reconfirmación del día tras R-24**, sin novedad de
+código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`,
+ambos de severidad baja y sin coste real más allá de la repetición — `#24` (proceso, pregunta de
+gobernanza #11 de §6 sigue `(pendiente)`) y `#28` (infraestructura, el mismo síntoma de `pip`
+pelado de este preámbulo). Ninguno de severidad alta que atender como P-XX urgente antes de esta
+tarea. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero
+issues y cero PR abiertos. §1 (fuente autoritativa) ya no tiene ninguna R-XX/T-XX `PENDIENTE` (R-24
+es la última, `COMPLETADA`): cola vacía, sin tarea de código que ejecutar. Verificación propia
+completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 649 tests (`pytest`) en verde,
+dieciocho etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en
+§3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`). Nota sin acción,
+mismo patrón que motivó `#24`: `ROADMAP_PRODUCTO.md` (sección "Cola de producto") seguirá
+describiendo R-24 como `PENDIENTE`/"EN CURSO" en su prosa hasta el siguiente ciclo de Product
+Manager, que es quien archiva la oleada — no se corrige desde este ciclo de Programador (la
+pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño).
+
+**Última actualización anterior (2026-10-07, ciclo de Programador): primera reconfirmación del día
+tras R-24**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Programador, primera reconfirmación del día tras R-24,
 2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop &&
 git pull origin develop` ya estaba en `develop`, al día con `origin/develop` (sin fast-forward
 necesario: este contenedor arrancó ya sobre `03c7aa1`, el commit de R-24). `pip install -r
@@ -22,7 +52,7 @@ vez del 3.11.17 real del proyecto — mismo síntoma del hallazgo `#28`, reprodu
 resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí resuelve al intérprete
 correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador de esta sesión: primera reconfirmación del día tras R-24**, sin novedad de
+**Ciclo de Programador de esa sesión: primera reconfirmación del día tras R-24**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`,
 ambos de severidad baja y sin coste real más allá de la repetición — `#24` (proceso, pregunta de
 gobernanza #11 de §6 sigue `(pendiente)`) y `#28` (infraestructura, el mismo síntoma de `pip`

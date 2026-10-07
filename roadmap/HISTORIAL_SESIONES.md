@@ -12,6 +12,40 @@
 
 ---
 
+### Sesión 2026-10-07 (96) — Ciclo de Programador: segunda reconfirmación del día tras R-24
+
+**Arranque.** `git status` limpio; `git checkout develop` dejó el contenedor en `HEAD` *detached*
+(resto de un contenedor anterior, descartable: ya fusionado en `develop`); `git pull origin
+develop` resolvió en fast-forward limpio hasta `79387f4` (la primera reconfirmación del día tras
+R-24, sesión 95), sin conflicto ni rama divergida. `pip install -r requirements-dev.txt` pelado
+volvió a instalar contra Python 3.13 en vez del 3.11.17 real — mismo síntoma del hallazgo `#28`,
+reproducido una vez más; resuelto con `python3 -m pip install -r requirements-dev.txt`.
+
+**Revisión de entrada.** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`, ambos baja
+severidad sin coste real — `#24` (pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y `#28`
+(mismo síntoma de `pip` ya descrito arriba). Ninguno de severidad alta que atender como P-XX
+urgente. `roadmap/FEEDBACK.md` sin ninguna entrada `nuevo`; `mcp__github__list_issues`/
+`list_pull_requests` sobre `janosolerdiaz/telePrompter`: cero issues y cero PR abiertos. §1 ya no
+tiene ninguna R-XX/T-XX `PENDIENTE` (R-24 es la última, `COMPLETADA`): cola vacía, sin tarea de
+código que ejecutar.
+
+**Sin novedad de código.** Verificación propia completa: `mypy`/`ruff` en verde sin hallazgos (70
+archivos), 649 tests (`pytest`) en verde, dieciocho etapas OK en `verificar_salidas.py --fixture`.
+Cuatro redes en verde.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** ninguna (sesión de reconfirmación sin cambio de
+código ni decisión nueva).
+
+**Cambios de estado en `SEGUIMIENTO.md` §1:** ninguno (R-24 sigue `COMPLETADA`).
+
+**Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad** (la pregunta #11 sigue `(pendiente)`);
+**sin nueva desviación en §7.** Nota sin acción, mismo patrón que motivó `#24`:
+`ROADMAP_PRODUCTO.md` (sección "Cola de producto") sigue describiendo R-24 como `PENDIENTE`/"EN
+CURSO" en su prosa pese a que §1 ya la registra `COMPLETADA` — hasta el siguiente ciclo de Product
+Manager, que es quien archiva la oleada, no se corrige desde este ciclo de Programador.
+
+---
+
 ### Sesión 2026-10-07 (95) — Ciclo de Programador: primera reconfirmación del día tras R-24
 
 **Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` ya estaba al
