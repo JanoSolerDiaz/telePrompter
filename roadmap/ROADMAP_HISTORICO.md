@@ -83,6 +83,13 @@ nueve reconfirmaciones del Programador listando R-23 como pendiente pese a estar
 §1 de `SEGUIMIENTO.md` — el mismo patrón de latencia que `auditoriacontinua.md` registra como
 hallazgo `#24`.
 
+**Movido a histórico el:** 2026-10-07, ciclo de Product Manager. Se añade la Oleada v12 (R-24),
+COMPLETADA por el Programador el mismo día en que se abrió (2026-10-07) y sin ningún hito de negocio
+propio pendiente — mismo criterio que los trece movimientos anteriores. Mismo patrón de latencia de
+`ROADMAP_PRODUCTO.md` (hallazgo `#24` de `auditoriacontinua.md`) reconfirmado una sexta vez por el
+auditor (nueve reconfirmaciones del Programador el 2026-10-07 listando R-24 como pendiente pese a
+`COMPLETADA` en §1 de `SEGUIMIENTO.md`) y corregido por este mismo movimiento.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -1348,10 +1355,113 @@ etapas (ninguna salida nueva). `DEVELOPERS.md` y `SKILL.md` actualizados.
 
 ---
 
+## Oleada v12 — Diagnóstico real de un fallo al generar una salida
+
+Cierra la grieta de arquitectura entre la infraestructura de logger/diagnóstico construida el primer
+día del proyecto (T-02/T-05, 2026-09-01, anticipando explícitamente un futuro "punto de entrada real"
+que las usara) y el punto de entrada real que de verdad llegó después (`scripts/salidas.py::
+generar_salidas_seleccionadas`, T-30/R-18): hasta esta oleada, un fallo real al generar una salida
+seleccionable mostraba al dueño el `repr` crudo de la excepción de Python, sin volcar ningún
+diagnóstico ni pasar por el logger centralizado — justo el escenario que T-05 se construyó para
+evitar. Contiene R-24, su única R-XX. **Entregada 2026-10-07** (COMPLETADA el mismo ciclo del
+Programador en que se implementó, tras abrirse el mismo día).
+
+### R-24 — Diagnóstico real de un fallo al generar una salida, en vez de la traza cruda de la excepción
+
+**Migración:** No (cambio interno de manejo de errores dentro de una función ya existente;
+promoción de visibilidad de una función privada a pública; ningún campo de `estado.json` ni de
+`Configuracion` cambia) · **Depende de:** T-02, T-05, T-30 (las tres ya `COMPLETADA`) ·
+**Origen:** observación de arquitectura del PM (2026-10-06) — grieta de arquitectura verificada
+sobre código ya construido (mismo criterio que abrió R-12 a R-23), no hallazgo de auditoría ni
+entrada de `FEEDBACK.md`.
+
+**Objetivo:** `scripts/logger.py` (T-02) y `scripts/monitorizacion.py` (T-05) se construyeron el
+primer día del proyecto (2026-09-01) como la única capa autorizada para diagnóstico técnico y para
+capturar un fallo no controlado, anticipando explícitamente un futuro "punto de entrada real" que
+las usara en vez de inventar su propio manejo de errores (cita literal del docstring de la época:
+*"todavía no hay un `main()` real que envolver... esta tarea deja la mecánica lista y probada para
+que cada punto de entrada futuro la use"*). Ese punto de entrada real llegó después, no como un único
+`main()` de CLI sino como `scripts/salidas.py::generar_salidas_seleccionadas` (T-30, ampliada por
+R-18): la función que hoy genera de verdad cada salida seleccionable del dueño (reproductor, `.srt`,
+`.pdf`, `.pptx`, capítulos, concat). Verificado leyendo el código, no solo la documentación: su
+manejo de errores (línea ~499) es exactamente el "manejo de errores inventado por su cuenta" que T-05
+quería evitar — `except Exception as excepcion: omitidas.append(SalidaOmitida(tipo, f"fallo al
+generar: {excepcion}"))`, sin volcar ningún diagnóstico a disco ni pasar por el logger centralizado,
+y mostrando al dueño el `repr` crudo de la excepción de Python en el `motivo` de la salida omitida en
+vez de un mensaje accionable en español. Contradice dos reglas explícitas de §0.2 de
+`HOJA_DE_RUTA.md` ("Logger centralizado — nunca dejar `print()` de depuración... los diagnósticos
+por el logger" y "Errores accionables en español, nunca trazas crudas"). Para un formador en
+solitario sin conocimientos técnicos, un fallo real durante una grabación (el propio bloqueo #7 de
+`SEGUIMIENTO.md` §3, cuando por fin ocurra) dejaría hoy un mensaje como `fallo al generar:
+KeyError('x')` sin ningún rastro recuperable para depurarlo después — exactamente el escenario que
+T-05 se construyó para evitar. Mismo patrón de "infraestructura ya construida y probada, pero no
+conectada a su consumidor real" que abrió R-12 a R-23.
+
+**Requisitos:**
+1. `scripts/monitorizacion.py::_volcar_diagnostico` se promueve a pública (`volcar_diagnostico`,
+   mismo patrón de promoción de visibilidad que `tomas.toma_buena`/R-19 y
+   `reproductor.anclar_indicaciones_a_bloques`/R-20: cambio de nombre/visibilidad, no de firma ni de
+   ubicación, cero riesgo sobre su regla dura ya probada de nunca volcar variables locales).
+2. `scripts/salidas.py::generar_salidas_seleccionadas` importa `logger.obtener_logger` y
+   `monitorizacion.ruta_diagnostico`/`volcar_diagnostico` (ya construidas y probadas por T-02/T-05,
+   sin reimplementar nada). En el `except Exception as excepcion` (requisito 3 de T-30, que no se
+   toca: el alcance del `try`/`except` sigue siendo por tipo de salida, una salida rota nunca impide
+   las demás), antes de construir la `SalidaOmitida`: vuelca el diagnóstico técnico completo a
+   `<carpeta_salida>/diagnostico-<timestamp>.log` (`volcar_diagnostico`, reutilizada tal cual) y
+   registra la excepción en el logger centralizado (`obtener_logger().error(...,
+   exc_info=excepcion)`), exactamente igual que ya hace `ejecutar_con_diagnostico` para el fallo no
+   controlado de su propio punto de entrada — la diferencia es que aquí NO se aborta el bucle ni se
+   devuelve ningún código de salida, porque esta ruta sigue siendo una de varias salidas
+   independientes entre sí.
+3. El `motivo` de la `SalidaOmitida` deja de llevar `str(excepcion)` crudo (que puede ser una traza
+   técnica en inglés, un nombre de variable interna o la ruta de un archivo del sistema) y pasa a ser
+   un mensaje accionable en español que remite al archivo de diagnóstico recién escrito (p. ej.
+   `f"fallo al generar: revisa el diagnóstico técnico en {ruta}"`), mismo criterio de "nunca trazas
+   crudas" que ya aplica `ejecutar_con_diagnostico` al mensaje que muestra `presentacion.py`.
+4. `obtener_logger()` nunca lanza ni necesita que `configurar_logger` se haya llamado antes en el
+   mismo proceso (ya documentado así en `logger.py`: sin configurar, devuelve un logger sin
+   manejadores) — esta tarea no exige cablear `configurar_logger` en ningún punto nuevo, solo dejar
+   que el logger ya existente reciba el error cuando el proceso que lo invoque lo haya configurado.
+5. `DEVELOPERS.md` (secciones "Monitorización de errores (T-05)" y "Selector de salidas por
+   validación (T-30)") documenta que, desde esta tarea, un fallo real al generar una salida
+   seleccionable deja constancia recuperable (`teleprompter.log` si el proceso configuró el logger,
+   `diagnostico-<timestamp>.log` siempre) en vez de perderse solo en el texto libre de
+   `SalidaOmitida.motivo`.
+6. Fuera de alcance, explícito: no se diseña ningún `main()` de CLI nuevo ni se cablea
+   `ejecutar_con_diagnostico` (pensada para abortar un proceso entero con código de salida, semántica
+   que no encaja con "una salida rota nunca tumba las demás") — esta tarea conecta las piezas de
+   T-02/T-05 que sí encajan (el volcado de diagnóstico y el logger), no todas.
+
+**Criterio de aceptación:** test que fuerza (monkeypatch, mismo patrón que `test_salidas.py` ya usa
+para forzar el fallo de validación de `concat-ffmpeg.txt` en R-21) una excepción dentro de una de las
+ramas de `generar_salidas_seleccionadas` confirma que: (a) la salida rota queda `SalidaOmitida` con
+un motivo en español que cita la ruta del diagnóstico, nunca el `repr`/mensaje crudo de la excepción;
+(b) aparece un archivo `diagnostico-<timestamp>.log` en `carpeta_salida` con el traceback completo,
+sin ninguna variable local del guion de entrada; (c) el logger centralizado registra la entrada de
+error cuando el proceso ya lo configuró; (d) las demás salidas seleccionadas de la misma pasada se
+generan con normalidad (regresión del requisito 3 de T-30, ya cubierta por tests existentes, debe
+seguir en verde). Cuatro redes en verde.
+
+**Cómo se entregó:** `scripts/monitorizacion.py::_volcar_diagnostico` promovida tal cual a pública
+(`volcar_diagnostico`, sin cambio de firma ni de ubicación). `scripts/salidas.py::
+generar_salidas_seleccionadas` reutiliza `logger.obtener_logger` y `monitorizacion.volcar_diagnostico`
+dentro del `except Exception` ya existente (alcance por tipo de salida intacto, requisito 3 de T-30
+sin tocar): antes de construir la `SalidaOmitida`, vuelca `diagnostico-<timestamp>.log` en
+`carpeta_salida` y registra la excepción en el logger centralizado con `exc_info`, sin cablear
+`ejecutar_con_diagnostico` (que aborta el proceso, semántica que no encaja aquí) ni diseñar ningún
+`main()` de CLI nuevo. El `motivo` de la `SalidaOmitida` deja el `repr` crudo de la excepción y pasa a
+citar la ruta del diagnóstico recién escrito, en español. `DEVELOPERS.md` documenta el nuevo rastro
+recuperable. 3 tests nuevos (646→649): fuerzan por monkeypatch un fallo en una rama de
+`generar_salidas_seleccionadas` y confirman el motivo en español con la ruta del diagnóstico, el
+archivo `diagnostico-<timestamp>.log` con el traceback completo sin variables del guion de entrada, y
+que las demás salidas de la misma pasada se siguen generando con normalidad. Cuatro redes en verde.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
 (R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05; la de v11 (R-23),
-2026-10-06.)*
+2026-10-06; la de v12 (R-24), 2026-10-07.)*

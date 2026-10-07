@@ -10,10 +10,55 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-07 — **Ciclo de Programador: novena reconfirmación del día tras
-R-24**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-07 — **Ciclo de Product Manager: archiva Oleada v12 (R-24) y abre
+R-25 (Oleada v13)**, sin tocar código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, novena reconfirmación del día tras R-24,
+**Ciclo de Product Manager: archiva Oleada v12 (R-24) y abre R-25 (Oleada v13).** Revisión de
+entrada (protocolo): registro de hallazgos de `auditoriacontinua.md` reconfirma dos `ABIERTO`, ambos
+baja severidad y ya enrutados sin necesitar R-XX — `#24` (proceso, la pregunta de gobernanza #11 de
+§6 sigue `(pendiente)`, veintiuna pasadas consecutivas de auditoría) y `#28` (el `pip` pelado de los
+contenedores de nube instala contra el intérprete equivocado; su recomendación de cierre ya está
+aplicada por `P-06`, completada el mismo día en que se abrió el hallazgo — el cierre a `RESUELTO` en
+`auditoriacontinua.md` queda para la siguiente pasada del auditor, que es quien escribe ese
+registro). Ninguno de severidad alta ni de producto/arquitectura que convertir en R-XX nueva este
+ciclo. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo`
+que incorporar — el bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse. §1 (fuente
+autoritativa) tenía a R-24 como `COMPLETADA` desde el ciclo de Programador del mismo día (2026-10-07)
+que la abrió el ciclo de PM anterior (2026-10-06), con nueve reconfirmaciones posteriores del
+Programador dejando `ROADMAP_PRODUCTO.md` describiéndola como `PENDIENTE` en su prosa de "Cola de
+producto" — el mismo patrón de latencia que motivó `#24`, repetido una sexta vez. Este ciclo corrige
+esa prosa: Oleada v12 (R-24) se mueve íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo
+se entregó"), con su entrada de índice correspondiente.
+
+**Se abre R-25** (Oleada v13) por grieta de arquitectura verificada, mismo criterio que abrió R-12 a
+R-24. Se delegó una primera pasada de exploración a un subagente, en paralelo con verificación propia
+directa (no solo delegada): ambas convergen en `scripts/convencion.py::
+generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) como la candidata más sólida —
+confirmado con `grep -rn "generar_convencion_guiones\|guardar_convencion_guiones" scripts/*.py
+SKILL.md`, cero resultado fuera de `scripts/convencion.py` y sus propios tests. La función genera,
+según su propio docstring, un documento pensado para que el dueño lo "pegue en su plantilla de
+guiones" y evite así desviaciones de convención en guiones futuros — complemento natural de R-23
+(2026-10-06), que acaba de hacer visibles las desviaciones ya ocurridas. Nunca se ofrece: no está
+entre las seis opciones de `scripts/salidas.py::TipoSalida` (T-30/R-18/R-19) ni ningún paso de
+`SKILL.md` le dice a Claude cuándo generarla. Dos candidatas alternativas descartadas tras la misma
+verificación: `scripts/calibracion.py::calcular_calibracion` (R-04) tiene la misma falta de gancho en
+`SKILL.md`, pero conectarla de verdad exigiría descubrir "guiones hermanos" entre proyectos
+distintos — pieza de arquitectura nueva que hoy no existe (aislamiento por proyecto de guión, §0.2) y
+que no conviene construir por adelantado mientras el bloqueo #7 (cero curso grabado todavía) siga
+abierto; `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer global) también carece de
+disparador documentado, pero revierte decisiones ya tomadas del dueño y su valor es menor que el de
+prevenir una desviación futura con coste y riesgo mínimos. Spec completa de R-25 en
+`ROADMAP_PRODUCTO.md` (Oleada v13), lista para que el siguiente ciclo de Programador la implemente y
+verifique. Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro
+redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin
+nueva desviación en §7.
+
+**Última actualización anterior (2026-10-07, ciclo de Programador): novena reconfirmación del día
+tras R-24**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Programador, novena reconfirmación del día tras R-24,
 2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
 `HEAD` *detached* en `882b341` (resto de un contenedor anterior, descartable: ya fusionado en
 `develop`); `git checkout develop` dejó la rama local en `cc0ac86`; `git pull origin develop`
@@ -24,7 +69,7 @@ síntoma del hallazgo `#28`, reproducido una vez más (la decimoséptima repetic
 resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí resuelve al intérprete
 correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador de esta sesión: novena reconfirmación del día tras R-24**, sin novedad de
+**Ciclo de Programador de esa sesión: novena reconfirmación del día tras R-24**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`,
 ambos de severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y
 `#28` (infraestructura, mismo síntoma de `pip` pelado de este preámbulo, ya con su recomendación de

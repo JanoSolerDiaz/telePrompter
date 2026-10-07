@@ -8,44 +8,54 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-06 (ciclo de PM). **R-23 (Oleada v11) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-06 que la implementó (desviaciones de
-convención en `guion-escenas.md`/`tarjetas.json`). Nueve reconfirmaciones del Programador el mismo
-día la dejaron en este documento como `PENDIENTE` en vez de archivarla (mismo patrón que el hallazgo
-`#24` de `auditoriacontinua.md`, pendiente de la respuesta del dueño a la pregunta de gobernanza #11
-de `SEGUIMIENTO.md` §6 sobre quién puede corregir esa prosa). Movida a `roadmap/ROADMAP_HISTORICO.md`
-(Oleada v11) junto con el resto de oleadas 100 % entregadas.
+**Última actualización:** 2026-10-07 (ciclo de PM). **R-24 (Oleada v12) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-07 que la implementó (diagnóstico real de
+un fallo al generar una salida, en vez de la traza cruda de la excepción). Nueve reconfirmaciones del
+Programador el mismo día la dejaron en este documento como `PENDIENTE` en vez de archivarla (mismo
+patrón que el hallazgo `#24` de `auditoriacontinua.md`, pendiente de la respuesta del dueño a la
+pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6 sobre quién puede corregir esa prosa). Movida a
+`roadmap/ROADMAP_HISTORICO.md` (Oleada v12) junto con el resto de oleadas 100 % entregadas.
 
-**Se abre R-24** (Oleada v12): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
+**Se abre R-25** (Oleada v13): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
 las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
-verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-23. Un subagente de
-exploración propuso tres candidatas (`convencion.generar_convencion_guiones`/`guardar_convencion_guiones`
-sin ningún consumidor; `reescrituras.revertir_reescrituras` sin disparador documentado; la
-infraestructura de diagnóstico de T-02/T-05 sin consumidor real); verificación independiente propia,
-leyendo el código línea a línea antes de especificar la tarea: `scripts/logger.py` (T-02) y
-`scripts/monitorizacion.py` (T-05) se construyeron el primer día del proyecto (2026-09-01)
-anticipando un futuro "punto de entrada real" que las usara — su propio docstring de entonces lo dice
-literalmente: *"todavía no hay un `main()` real que envolver... esta tarea deja la mecánica lista y
-probada para que cada punto de entrada futuro la use en vez de inventar su propio manejo de
-errores"*. Ese punto de entrada real llegó después, no como un `main()` único sino como
-`scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18), que hoy genera de verdad las salidas
-seleccionables del dueño — y su manejo de errores (línea ~499) es exactamente ese "manejo de errores
-inventado por su cuenta" que T-05 quería evitar: `except Exception as excepcion:
-omitidas.append(SalidaOmitida(tipo, f"fallo al generar: {excepcion}"))`, sin volcar ningún diagnóstico
-y mostrando al dueño el `repr` crudo de la excepción en vez de un mensaje accionable en español —
-contradice directamente dos reglas de §0.2 ("Logger centralizado", "Errores accionables en español,
-nunca trazas crudas"). Detalle completo en "Oleada v12" más abajo.
+verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-24. Verificación propia
+más un subagente de exploración independiente, ambos leyendo el código línea a línea (no solo nombres
+ni docstrings) antes de especificar la tarea, coinciden en que `scripts/convencion.py::
+generar_convencion_guiones`/`guardar_convencion_guiones` (T-10, 2026-09-01) no tienen ningún
+consumidor fuera de sus propios tests: `grep -rn "generar_convencion_guiones\|guardar_convencion_guiones"
+scripts/*.py SKILL.md` no devuelve ningún resultado fuera de `scripts/convencion.py` y
+`tests/test_convencion*.py`. La función genera, según su propio docstring, un documento de una
+página pensado explícitamente para que el dueño lo "pegue en su plantilla de guiones" y así sus
+futuros guiones ya nazcan sin desviaciones de la convención contractual — pero nunca se ofrece: no
+está entre las seis salidas seleccionables de `scripts/salidas.py::TipoSalida` (T-30/R-18/R-19) ni
+ningún paso del flujo documentado en `SKILL.md` le dice a Claude cuándo generarla. R-23 (2026-10-06)
+acaba de hacer visibles las desviaciones de convención al pie de cada escena de `guion-escenas.md` y
+en `tarjetas.json`; sin este documento conectado, el dueño ve la desviación pero no tiene a mano,
+dentro del propio flujo de la skill, la herramienta que se la evitaría la próxima vez. Dos candidatas
+alternativas quedaron descartadas tras la misma verificación, ambas documentadas en el detalle de
+R-25: `scripts/calibracion.py::calcular_calibracion` (R-04) tiene la misma falta de gancho en
+`SKILL.md`, pero conectarla de verdad exigiría descubrir "guiones hermanos" entre proyectos
+distintos — pieza de arquitectura nueva que hoy no existe (§0.2: aislamiento por proyecto de guión) y
+que no hace falta construir por adelantado mientras el bloqueo #7 de `SEGUIMIENTO.md` §3 (cero curso
+grabado todavía) siga abierto; `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer
+global) también carece de disparador documentado, pero su valor es menor y revierte decisiones ya
+tomadas del dueño, frente al beneficio inmediato y de bajo riesgo de entregar la convención. Detalle
+completo en "Oleada v13" más abajo.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
 curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` no trae ningún
-`ABIERTO` nuevo de producto/arquitectura esta pasada: el único `ABIERTO` (`#24`, baja, prosa de "Cola
-de producto" desactualizada entre ciclos de PM) sigue enrutado a la pregunta de gobernanza #11 de
-`SEGUIMIENTO.md` §6, `(pendiente)` de respuesta del dueño — no es una R-XX, es la misma corrección de
-prosa que este propio ciclo acaba de aplicar de nuevo, esta vez sobre R-23.
+`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan dos `ABIERTO`, ambos de proceso/entorno y
+ya enrutados sin necesitar una R-XX — `#24` (baja, prosa de "Cola de producto" desactualizada entre
+ciclos de PM) sigue pendiente de la respuesta del dueño a la pregunta de gobernanza #11 de
+`SEGUIMIENTO.md` §6 (es la misma corrección de prosa que este propio ciclo acaba de aplicar de nuevo,
+esta vez sobre R-24); `#28` (baja, el `pip` pelado de los contenedores de nube instala contra el
+intérprete equivocado) ya tiene su recomendación de cierre aplicada por `P-06` (§5 de
+`SEGUIMIENTO.md`, completada el mismo día que se abrió el hallazgo) — el cierre a `RESUELTO` en
+`auditoriacontinua.md` queda para la siguiente pasada del auditor, que es quien escribe ese registro.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-24 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-25 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -177,86 +187,80 @@ ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en 
 
 La oleada v11 (desviaciones de convención visibles en `guion-escenas.md` y `tarjetas.json`, R-23)
 tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio
-pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-06). Su spec completa y
+pendiente. Se movió a `ROADMAP_HISTORICO.md` en el ciclo de PM del 2026-10-06. Su spec completa y
 cómo se entregó viven ahí.
 
-### Oleada v12 — EN CURSO
+### Oleada v12 — entregada
 
-#### R-24 — Diagnóstico real de un fallo al generar una salida, en vez de la traza cruda de la excepción
+La oleada v12 (diagnóstico real de un fallo al generar una salida, conectando el logger/diagnóstico
+de T-02/T-05 a su consumidor real de `scripts/salidas.py`, R-24) tiene su única R-XX en
+**COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a
+`ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-07). Su spec completa y cómo se entregó viven
+ahí.
 
-**Migración:** No (cambio interno de manejo de errores dentro de una función ya existente;
-promoción de visibilidad de una función privada a pública; ningún campo de `estado.json` ni de
-`Configuracion` cambia de forma) · **Depende de:** T-02, T-05, T-30 (las tres ya `COMPLETADA`) ·
-**Origen:** observación de arquitectura del PM (2026-10-06) — grieta de arquitectura verificada
-sobre código ya construido (mismo criterio que abrió R-12 a R-23), no hallazgo de auditoría ni
+### Oleada v13 — EN CURSO
+
+#### R-25 — Entregar `convencion-guiones.md` de verdad al dueño: conectar `convencion.py` (T-10) al selector real de salidas (T-30)
+
+**Migración:** No (aditiva: una séptima opción en el enum `TipoSalida` ya existente; ningún campo de
+`estado.json` ni de `Configuracion` cambia) · **Depende de:** T-10, T-30 (ambas ya `COMPLETADA`) ·
+**Origen:** observación de arquitectura del PM (2026-10-07) — grieta de arquitectura verificada
+sobre código ya construido (mismo criterio que abrió R-12 a R-24), no hallazgo de auditoría ni
 entrada de `FEEDBACK.md`.
 
-**Objetivo:** `scripts/logger.py` (T-02) y `scripts/monitorizacion.py` (T-05) se construyeron el
-primer día del proyecto (2026-09-01) como la única capa autorizada para diagnóstico técnico y para
-capturar un fallo no controlado, anticipando explícitamente un futuro "punto de entrada real" que
-las usara en vez de inventar su propio manejo de errores (cita literal del docstring de la época:
-*"todavía no hay un `main()` real que envolver... esta tarea deja la mecánica lista y probada para
-que cada punto de entrada futuro la use"*). Ese punto de entrada real llegó después, no como un único
-`main()` de CLI sino como `scripts/salidas.py::generar_salidas_seleccionadas` (T-30, ampliada por
-R-18): la función que hoy genera de verdad cada salida seleccionable del dueño (reproductor, `.srt`,
-`.pdf`, `.pptx`, capítulos, concat). Verificado leyendo el código, no solo la documentación: su
-manejo de errores (línea ~499) es exactamente el "manejo de errores inventado por su cuenta" que T-05
-quería evitar — `except Exception as excepcion: omitidas.append(SalidaOmitida(tipo, f"fallo al
-generar: {excepcion}"))`, sin volcar ningún diagnóstico a disco ni pasar por el logger centralizado,
-y mostrando al dueño el `repr` crudo de la excepción de Python en el `motivo` de la salida omitida en
-vez de un mensaje accionable en español. Contradice dos reglas explícitas de §0.2 de
-`HOJA_DE_RUTA.md` ("Logger centralizado — nunca dejar `print()` de depuración... los diagnósticos
-por el logger" y "Errores accionables en español, nunca trazas crudas"). Para un formador en
-solitario sin conocimientos técnicos, un fallo real durante una grabación (el propio bloqueo #7 de
-`SEGUIMIENTO.md` §3, cuando por fin ocurra) dejaría hoy un mensaje como `fallo al generar:
-KeyError('x')` sin ningún rastro recuperable para depurarlo después — exactamente el escenario que
-T-05 se construyó para evitar. Mismo patrón de "infraestructura ya construida y probada, pero no
-conectada a su consumidor real" que abrió R-12 a R-23.
+**Objetivo:** `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones`
+(T-10, 2026-09-01) generan un documento de una página — "Convención de guiones" — que, según su
+propio docstring, está pensado explícitamente para que el dueño lo "pegue en su plantilla de guiones"
+y así sus futuros guiones ya nazcan siguiendo la convención contractual (encabezado de escena,
+rótulos de locución/no locución, numeración), en vez de inferirla y avisar de la desviación cada vez.
+Verificado leyendo el código, no solo el docstring: `grep -rn
+"generar_convencion_guiones\|guardar_convencion_guiones" scripts/*.py SKILL.md` no devuelve ningún
+resultado fuera de `scripts/convencion.py` y sus propios tests — ningún script de producción la
+importa, no está entre las seis opciones de `scripts/salidas.py::TipoSalida` (T-30/R-18/R-19) y
+ningún paso del flujo documentado en `SKILL.md` le dice a Claude cuándo ofrecerla. R-23 (2026-10-06)
+acaba de conectar `convencion.detectar_desviaciones` a sus dos consumidores reales (`guion-escenas.md`
+y `tarjetas.json`), así que el dueño ya ve la desviación cuando ocurre; sin esta tarea, no tiene a
+mano, dentro del propio flujo de la skill, el documento que se la evitaría la próxima vez — tendría
+que saber que `convencion.py` existe y pedir explícitamente que se genere. Dos candidatas se
+descartaron tras la misma verificación: `scripts/calibracion.py::calcular_calibracion` (R-04) tiene
+la misma falta de gancho en `SKILL.md`, pero conectarla de verdad exigiría descubrir "guiones
+hermanos" entre proyectos distintos — una pieza de arquitectura nueva (hoy todo opera aislado por
+proyecto de guión, §0.2) para un escenario que el bloqueo #7 de `SEGUIMIENTO.md` §3 confirma que
+todavía no se ha dado (cero curso grabado hasta hoy); se deja para cuando ese bloqueo se resuelva, en
+vez de construir por adelantado. `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer
+global) también carece de disparador documentado, pero revierte decisiones ya tomadas por el dueño y
+su valor es menor que el de prevenir una desviación futura con coste y riesgo mínimos.
 
 **Requisitos:**
-1. `scripts/monitorizacion.py::_volcar_diagnostico` se promueve a pública (`volcar_diagnostico`,
-   mismo patrón de promoción de visibilidad que `tomas.toma_buena`/R-19 y
-   `reproductor.anclar_indicaciones_a_bloques`/R-20: cambio de nombre/visibilidad, no de firma ni de
-   ubicación, cero riesgo sobre su regla dura ya probada de nunca volcar variables locales).
-2. `scripts/salidas.py::generar_salidas_seleccionadas` importa `logger.obtener_logger` y
-   `monitorizacion.ruta_diagnostico`/`volcar_diagnostico` (ya construidas y probadas por T-02/T-05,
-   sin reimplementar nada). En el `except Exception as excepcion` (requisito 3 de T-30, que no se
-   toca: el alcance del `try`/`except` sigue siendo por tipo de salida, una salida rota nunca impide
-   las demás), antes de construir la `SalidaOmitida`: vuelca el diagnóstico técnico completo a
-   `<carpeta_salida>/diagnostico-<timestamp>.log` (`volcar_diagnostico`, reutilizada tal cual) y
-   registra la excepción en el logger centralizado (`obtener_logger().error(...,
-   exc_info=excepcion)`), exactamente igual que ya hace `ejecutar_con_diagnostico` para el fallo no
-   controlado de su propio punto de entrada — la diferencia es que aquí NO se aborta el bucle ni se
-   devuelve ningún código de salida, porque esta ruta sigue siendo una de varias salidas
-   independientes entre sí.
-3. El `motivo` de la `SalidaOmitida` deja de llevar `str(excepcion)` crudo (que puede ser una traza
-   técnica en inglés, un nombre de variable interna o la ruta de un archivo del sistema) y pasa a ser
-   un mensaje accionable en español que remite al archivo de diagnóstico recién escrito (p. ej.
-   `f"fallo al generar: revisa el diagnóstico técnico en {ruta}"`), mismo criterio de "nunca trazas
-   crudas" que ya aplica `ejecutar_con_diagnostico` al mensaje que muestra `presentacion.py`.
-4. `obtener_logger()` nunca lanza ni necesita que `configurar_logger` se haya llamado antes en el
-   mismo proceso (ya documentado así en `logger.py`: sin configurar, devuelve un logger sin
-   manejadores) — esta tarea no exige cablear `configurar_logger` en ningún punto nuevo, solo dejar
-   que el logger ya existente reciba el error cuando el proceso que lo invoque lo haya configurado.
-5. `DEVELOPERS.md` (secciones "Monitorización de errores (T-05)" y "Selector de salidas por
-   validación (T-30)") documenta que, desde esta tarea, un fallo real al generar una salida
-   seleccionable deja constancia recuperable (`teleprompter.log` si el proceso configuró el logger,
-   `diagnostico-<timestamp>.log` siempre) en vez de perderse solo en el texto libre de
-   `SalidaOmitida.motivo`.
-6. Fuera de alcance, explícito: no se diseña ningún `main()` de CLI nuevo ni se cablea
-   `ejecutar_con_diagnostico` (pensada para abortar un proceso entero con código de salida, semántica
-   que no encaja con "una salida rota nunca tumba las demás") — esta tarea conecta las piezas de
-   T-02/T-05 que sí encajan (el volcado de diagnóstico y el logger), no todas.
+1. `TipoSalida` (`scripts/salidas.py`) gana una séptima opción, `CONVENCION_GUIONES`, al final del
+   orden ya establecido en `construir_pregunta_salidas`/`_DESCRIPCIONES`/`ResumenSalidas` (mismo
+   patrón que añadió `CAPITULOS_YOUTUBE` en R-18 y `CONCAT_FFMPEG` en R-19: nunca se reordenan las
+   seis existentes).
+2. `generar_salidas_seleccionadas` llama a `convencion.guardar_convencion_guiones(carpeta_salida,
+   configuracion)` reutilizada tal cual (cero segunda implementación, cero cambio en
+   `generar_convencion_guiones`/`guardar_convencion_guiones` en sí). A diferencia de las seis salidas
+   actuales, esta no depende del parseo ni de la clasificación del guion de entrada — solo de
+   `Configuracion` —, así que nunca puede quedar `SalidaOmitida` por un problema del guion; el único
+   fallo posible es de escritura a disco, cubierto por el mismo patrón `except`/diagnóstico que ya
+   protege a las demás salidas desde R-24.
+3. A diferencia de las salidas condicionadas a tomas de rodaje (SRT alineado, capítulos, concat),
+   `CONVENCION_GUIONES` se ofrece siempre en `construir_pregunta_salidas`, sin depender de
+   `estado.salidas_generadas` ni de ningún parte de rodaje — no cambia de un guion a otro salvo que
+   el dueño edite `Configuracion`, pero es el propio dueño quien decide cada vez si quiere
+   regenerarla (p. ej. tras cambiar alguna clave de convención).
+4. `references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` documentan la nueva salida
+   seleccionable, aclarando que complementa a R-23 (prevención de desviaciones futuras) en vez de
+   sustituir su detección (desviaciones ya ocurridas en el guion actual).
+5. Fuera de alcance, explícito: no se añade ninguna lógica nueva a
+   `generar_convencion_guiones`/`guardar_convencion_guiones` (T-10 ya las especifica, genera y prueba
+   correctamente); no se auto-genera sin que el dueño la seleccione, igual que las demás salidas.
 
-**Criterio de aceptación:** test que fuerza (monkeypatch, mismo patrón que `test_salidas.py` ya usa
-para forzar el fallo de validación de `concat-ffmpeg.txt` en R-21) una excepción dentro de una de las
-ramas de `generar_salidas_seleccionadas` confirma que: (a) la salida rota queda `SalidaOmitida` con
-un motivo en español que cita la ruta del diagnóstico, nunca el `repr`/mensaje crudo de la excepción;
-(b) aparece un archivo `diagnostico-<timestamp>.log` en `carpeta_salida` con el traceback completo,
-sin ninguna variable local del guion de entrada; (c) el logger centralizado registra la entrada de
-error cuando el proceso ya lo configuró; (d) las demás salidas seleccionadas de la misma pasada se
-generan con normalidad (regresión del requisito 3 de T-30, ya cubierta por tests existentes, debe
-seguir en verde). Cuatro redes en verde.
+**Criterio de aceptación:** test que confirma que seleccionar `CONVENCION_GUIONES` en
+`generar_salidas_seleccionadas` escribe `convencion-guiones.md` en `carpeta_salida` con el mismo
+contenido byte a byte que una llamada directa a `generar_convencion_guiones`; test que confirma que
+se sigue ofreciendo en la pregunta de selección incluso sin ningún parte de rodaje ni toma marcada
+(a diferencia de las salidas condicionadas); regresión de las seis salidas existentes sin cambios
+(mismo patrón que R-18/R-19 ya verifican sobre los tres guiones reales). Cuatro redes en verde.
 
 ---
 
