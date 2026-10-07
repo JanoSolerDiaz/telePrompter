@@ -10,21 +10,21 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-07 — **Ciclo de Programador: séptima reconfirmación del día tras
+**Última actualización:** 2026-10-07 — **Ciclo de Programador: octava reconfirmación del día tras
 R-24**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, séptima reconfirmación del día tras R-24,
+**Nota de arranque de esta sesión (ciclo de Programador, octava reconfirmación del día tras R-24,
 2026-10-07):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
-`HEAD` *detached* en `c6e01d8` (resto de un contenedor anterior, descartable: ya fusionado en
+`HEAD` *detached* en `7560fc9` (resto de un contenedor anterior, descartable: ya fusionado en
 `develop`); `git checkout develop` dejó la rama local en `cc0ac86`; `git pull origin develop`
-resolvió en fast-forward limpio hasta `c6e01d8` (la sexta reconfirmación del día tras R-24), sin
+resolvió en fast-forward limpio hasta `7560fc9` (la séptima reconfirmación del día tras R-24), sin
 conflicto ni rama divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este
 contenedor instaló de nuevo contra Python 3.13 en vez del 3.11.17 real del proyecto — mismo
-síntoma del hallazgo `#28`, reproducido una vez más (la decimoquinta repetición consecutiva);
+síntoma del hallazgo `#28`, reproducido una vez más (la decimosexta repetición consecutiva);
 resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí resuelve al intérprete
 correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador de esta sesión: séptima reconfirmación del día tras R-24**, sin novedad de
+**Ciclo de Programador de esta sesión: octava reconfirmación del día tras R-24**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`,
 ambos de severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y
 `#28` (infraestructura, mismo síntoma de `pip` pelado de este preámbulo, ya con su recomendación de
@@ -32,7 +32,7 @@ cierre aplicada por P-06; el cierre a `RESUELTO` en `auditoriacontinua.md` queda
 pasada del auditor, que es quien modifica ese archivo). Ninguno de severidad alta que atender como
 P-XX urgente antes de esta tarea. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía,
 sin ninguna entrada `nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre
-`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. §1 (fuente autoritativa) sigue sin
+`janosolerdiaz/telePrompter`: cero issues y cero PR abiertos. §1 (fuente autoritativa) sigue sin
 ninguna R-XX/T-XX `PENDIENTE` (R-24 es la última, `COMPLETADA`): cola de la columna vertebral
 vacía, sin tarea de código que ejecutar ni hallazgo nuevo que convertir en P-XX. Verificación propia
 completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 649 tests (`pytest`, sin cambio) en
@@ -43,7 +43,7 @@ seguirá describiendo R-24 como `PENDIENTE`/"EN CURSO" en su prosa hasta el sigu
 Product Manager, que es quien archiva la oleada — no se corrige desde este ciclo de Programador (la
 pregunta #11 de §6 sigue `(pendiente)` de respuesta del dueño).
 
-**Última actualización anterior (2026-10-07, ciclo de Programador): sexta reconfirmación del día
+**Última actualización anterior (2026-10-07, ciclo de Programador): séptima reconfirmación del día
 tras R-24**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Nota de arranque de esa sesión (ciclo de Programador, sexta reconfirmación del día tras R-24,
