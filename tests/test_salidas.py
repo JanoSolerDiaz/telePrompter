@@ -189,7 +189,70 @@ def test_fallo_de_una_salida_no_impide_las_demas(
 
     assert {a.tipo for a in resumen.generadas} == {TipoSalida.HTML}
     omitida_srt = next(o for o in resumen.omitidas if o.tipo is TipoSalida.SRT)
-    assert "fallo simulado" in omitida_srt.motivo
+    # R-24: el motivo ya no lleva la traza cruda de la excepcion, remite al
+    # diagnostico tecnico volcado a disco (ver tests dedicados mas abajo).
+    assert "fallo simulado" not in omitida_srt.motivo
+    assert "RuntimeError" not in omitida_srt.motivo
+    assert omitida_srt.motivo.startswith("fallo al generar: revisa el diagnóstico técnico en")
+
+
+def test_fallo_de_una_salida_vuelca_diagnostico_recuperable_sin_variables_locales(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Criterio de aceptacion de R-24 (a, b): el motivo cita la ruta del
+    diagnostico y ese archivo existe con el traceback completo, nunca el
+    contenido de una variable local del marco donde salto la excepcion."""
+    import salidas as modulo_salidas
+
+    texto_guion_secreto = "LOCUCIÓN de un guion real que jamas deberia salir en un log"
+
+    def _reventar(*_args: object, **_kwargs: object) -> None:
+        contenido_del_guion = texto_guion_secreto  # noqa: F841 - variable local a propósito
+        raise RuntimeError("fallo simulado del exportador de .srt")
+
+    monkeypatch.setattr(modulo_salidas, "exportar_srt", _reventar)
+
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    seleccion = SeleccionSalidas((TipoSalida.SRT,))
+    resumen = generar_salidas_seleccionadas(
+        seleccion, resultado, tiempos, tmp_path, nombre_guion="prueba"
+    )
+
+    omitida_srt = next(o for o in resumen.omitidas if o.tipo is TipoSalida.SRT)
+    archivos_diagnostico = list(tmp_path.glob("diagnostico-*.log"))
+    assert len(archivos_diagnostico) == 1
+    ruta = archivos_diagnostico[0]
+    assert str(ruta) in omitida_srt.motivo
+
+    contenido = ruta.read_text(encoding="utf-8")
+    assert "RuntimeError" in contenido
+    assert "fallo simulado del exportador de .srt" in contenido
+    assert texto_guion_secreto not in contenido
+
+
+def test_fallo_de_una_salida_registra_en_el_logger_centralizado_si_esta_configurado(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Criterio de aceptacion de R-24 (c): si el proceso ya configuro el
+    logger centralizado (T-02), el fallo queda tambien en `teleprompter.log`."""
+    import salidas as modulo_salidas
+    from config import NOMBRE_ARCHIVO_LOG
+    from logger import configurar_logger
+
+    def _reventar(*_args: object, **_kwargs: object) -> None:
+        raise RuntimeError("fallo simulado del exportador de .srt")
+
+    monkeypatch.setattr(modulo_salidas, "exportar_srt", _reventar)
+    configurar_logger(tmp_path)
+
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    seleccion = SeleccionSalidas((TipoSalida.SRT,))
+    generar_salidas_seleccionadas(seleccion, resultado, tiempos, tmp_path, nombre_guion="prueba")
+
+    contenido_log = (tmp_path / NOMBRE_ARCHIVO_LOG).read_text(encoding="utf-8")
+    assert "srt" in contenido_log.lower()
+    assert "RuntimeError" in contenido_log
+    assert "fallo simulado del exportador de .srt" in contenido_log
 
 
 def test_pptx_latente_no_impide_las_demas(tmp_path: Path) -> None:

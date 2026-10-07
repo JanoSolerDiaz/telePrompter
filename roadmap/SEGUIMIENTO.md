@@ -10,10 +10,61 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-06 — **Ciclo de Product Manager: archiva Oleada v11 (R-23) y abre
-R-24 (Oleada v12)** (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-07 — **Ciclo de Programador: R-24 implementada y `COMPLETADA`.**
+Diagnóstico real de un fallo al generar una salida, en vez del `repr` crudo de la excepción
+(detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Product Manager, 2026-10-06):** sin incidencia. `git
+**Nota de arranque de esta sesión (ciclo de Programador, 2026-10-07):** sin incidencia. `git
+status` limpio antes de tocar nada; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta `bca7a2d` (la auditoría del 2026-10-07, hallazgo `#28` formalizado), sin
+conflicto ni rama divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este
+contenedor instaló de nuevo contra Python 3.13 en vez del 3.11.17 real del proyecto — exactamente
+el síntoma que el hallazgo `#28` (recién formalizado por la auditoría de esta misma fecha) describe;
+resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí resuelve al intérprete
+correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Revisión de entrada (protocolo):** registro de hallazgos de `auditoriacontinua.md` reconfirma dos
+`ABIERTO`, ambos de severidad baja y sin coste real más allá de la repetición: `#24` (proceso,
+pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y `#28` (infraestructura, el mismo síntoma de
+`pip` pelado de este preámbulo, ya con la recomendación de cierre escrita en el propio hallazgo).
+Ninguno de severidad alta que atender como P-XX urgente antes de esta tarea. §1 (fuente
+autoritativa) tenía a R-24 como la única R-XX `PENDIENTE`, ya especificada por completo en
+`ROADMAP_PRODUCTO.md` §"Oleada v12" por el ciclo de PM del 2026-10-06.
+
+**Ciclo de Programador: R-24 implementada y `COMPLETADA`.** `scripts/monitorizacion.py::
+_volcar_diagnostico` se promueve a pública (`volcar_diagnostico`, mismo patrón de promoción de
+visibilidad que `tomas.toma_buena`/R-19 y `reproductor.anclar_indicaciones_a_bloques`/R-20: cambio
+de nombre, cero cambio de firma). `scripts/salidas.py::generar_salidas_seleccionadas` importa
+`logger.obtener_logger` y `monitorizacion.ruta_diagnostico`/`volcar_diagnostico`; dentro del
+`except Exception` ya existente (requisito 3 de T-30, intacto: una salida rota nunca impide las
+demás), antes de construir la `SalidaOmitida`, vuelca el diagnóstico técnico completo a
+`<carpeta_salida>/diagnostico-<timestamp>.log` y registra la excepción en el logger centralizado
+con `exc_info`. Deliberadamente NO se cablea `ejecutar_con_diagnostico` (pensada para abortar un
+proceso entero con código de salida, semántica que no encaja aquí). El `motivo` de la
+`SalidaOmitida` deja de llevar `str(excepcion)` crudo y pasa a `"fallo al generar: revisa el
+diagnóstico técnico en <ruta>"`, mismo criterio de "nunca trazas crudas" que ya aplica
+`ejecutar_con_diagnostico`. 3 tests nuevos (646→649): dos en `tests/test_salidas.py` (el motivo ya
+no contiene la traza cruda ni el texto de la excepción simulada, cita la ruta real del
+`diagnostico-<timestamp>.log`, que existe con el traceback completo sin arrastrar una variable
+local con contenido de guion; con el logger ya configurado, `teleprompter.log` recoge la misma
+entrada) y uno en `tests/test_monitorizacion.py` (`volcar_diagnostico` invocable fuera de
+`ejecutar_con_diagnostico`). El test ya existente que comprobaba literalmente la traza cruda en el
+motivo (`test_fallo_de_una_salida_no_impide_las_demas`) se actualiza al contrato nuevo en el mismo
+commit, en vez de dejarlo en rojo o duplicarlo (detalle en `DECISIONES_TECNICAS.md`).
+`DEVELOPERS.md` gana una sección nueva ("Diagnóstico real de un fallo al generar una salida
+(R-24)") y una nota en "Monitorización de errores (T-05)" señalando el consumidor nuevo;
+`SKILL.md` no cambia (R-24 no añade ni modifica ningún campo de `Configuracion` ni comportamiento
+visible para el dueño más allá del mensaje de error, ya cubierto por el criterio de aceptación).
+Verificación pre-push completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 649 tests
+(`pytest`, 646→649), dieciocho etapas OK en `verificar_salidas.py --fixture` (sin cambio: R-24 no
+añade ninguna salida nueva). Las cuatro redes en verde. Sin cambios en §3 (bloqueos) ni §5 (P-XX);
+§6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva desviación en §7. §1 ya no tiene
+ninguna R-XX/T-XX `PENDIENTE`: cola vacía hasta el siguiente ciclo de Product Manager.
+
+**Última actualización anterior (2026-10-06, ciclo de Product Manager): archiva Oleada v11 (R-23) y
+abre R-24 (Oleada v12)** (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Product Manager, 2026-10-06):** sin incidencia. `git
 status` limpio antes de tocar nada; `git checkout develop && git pull origin develop` resolvió en
 fast-forward limpio hasta `8cbb4e4` (la novena reconfirmación del día de Programador tras R-23), sin
 conflicto ni rama divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este
@@ -1491,7 +1542,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-21 | Validar `concat-ffmpeg.txt` en la ruta real de generación (`scripts/salidas.py`) invocando el validador propio del demuxer `concat` de ffmpeg antes de escribirlo, y sanear `archivo_video` en el origen (recorte de espacios, rechazo de salto de línea) | **COMPLETADA** | 2026-10-02 | `scripts/salidas.py::_generar_concat_ffmpeg` llama a `concat_ffmpeg.validar_lista_concat_ffmpeg` sobre el contenido ya generado antes de `guardar_lista_concat_ffmpeg`; un contenido inválido degrada a `SalidaOmitida` con el motivo exacto (mismo patrón `try`/`except` que ya protege a las demás salidas), nunca una excepción sin capturar ni un archivo corrupto en disco. `scripts/tomas.py` gana `_sanear_archivo_video` (recorta espacios, normaliza a `""` si queda vacío o trae `\n`/`\r`), aplicada en `_toma_desde_dict` al leer un parte de rodaje editado a mano; `assets/reproductor/guion.js` gana la función gemela `sanearArchivoVideo(valor)`, aplicada en los dos puntos donde el dueño teclea el valor (`pedirArchivoVideoToma` durante la grabación y el botón de edición desde el índice). `references/contrato-tomas.md` y `contrato-montaje.md` documentan la regla de saneamiento y la validación antes de escritura. Fuera de alcance, explícito: no se extiende la misma validación-antes-de-escribir a `srt.py`/`capitulos_youtube.py` (misma deuda preexistente, sin las consecuencias reales que le da a `archivo_video` ser texto libre). 6 tests nuevos (613→619): 4 en `test_tomas.py` (recorte, solo espacios, salto de línea, retorno de carro), 1 en `test_salidas.py` (contenido inválido forzado por monkeypatch degrada a omitida sin escribir), 1 nuevo más la actualización de uno existente en `test_reproductor.py` (los dos puntos de entrada saneados en el HTML generado). Cuatro redes en verde, incluidas las dieciséis etapas de `verificar_salidas.py --fixture`. Fase transversal F-J, cierra el hallazgo `#27` de `auditoriacontinua.md`. `DEVELOPERS.md` y `SKILL.md` actualizados |
 | R-22 | Capítulos reales incrustables en el vídeo final: `capitulos-ffmpeg.txt`, formato `FFMETADATA1` nativo de ffmpeg, reutilizando tal cual el emparejamiento título↔escena y los tiempos real/estimado que `capitulos_youtube.calcular_capitulos` ya calcula para `capitulos-youtube.txt` (R-07) | **COMPLETADA** | 2026-10-05 | `ResultadoCapitulos` gana el campo aditivo `duracion_total_segundos` (el cursor final que el bucle de `calcular_capitulos` ya acumulaba y hasta ahora descartaba, `0.0` en los tres casos de `motivo_sin_generar`). `scripts/capitulos_youtube.py` gana `formatear_capitulos_ffmpeg` (hermana de `formatear_capitulos_youtube`: primera línea `;FFMETADATA1`, un bloque `[CHAPTER]` por capítulo con `TIMEBASE=1/1000`/`START`/`END` en milisegundos truncados hacia abajo y `title=<título>` escapado según el propio formato — `\`, `=`, `;`, `#` y salto de línea con `\` por delante, mismo patrón que `concat_ffmpeg._escapar_ruta_ffmpeg` de R-19; `END` de un capítulo es el `START` del siguiente, el del último es `duracion_total_segundos` convertido a ms; nota de transparencia real/estimado como comentario `;` cuando aplica), deliberadamente SIN la marca mínima de YouTube (requisito 4: cada escena emparejada es su propio capítulo, un archivo de metadatos incrustado no compite por espacio de lectura) y `validar_capitulos_ffmpeg` (exige `;FFMETADATA1`, `START`/`END` enteros no negativos, `START` estrictamente creciente, sin solapes). `scripts/salidas.py::_generar_capitulos_youtube` genera `capitulos-ffmpeg.txt` como segunda mitad de la misma opción `CAPITULOS_YOUTUBE` (no una séptima, mismo patrón que `guion.srt`/`guion-alineado.srt` bajo `SRT`, R-18), validándolo antes de escribir desde el primer día (lección del hallazgo `#27`/R-21): un contenido inválido degrada solo esa mitad a `SalidaOmitida`, sin impedir que `capitulos-youtube.txt` se mantenga. `config.NOMBRE_ARCHIVO_CAPITULOS_FFMPEG = "capitulos-ffmpeg.txt"` (constante de módulo, no campo de `Configuracion`). 18 tests nuevos (619→637): `tests/test_capitulos_youtube.py` (formato exacto, contigüidad `END`=`START` siguiente, sin filtrado por marca mínima a diferencia de YouTube, escapado de caracteres especiales, nota de transparencia, criterio de aceptación sobre los tres guiones reales, validador independiente, guardado) y `tests/test_salidas.py` (contenido coincide con la llamada directa; contenido inválido forzado por monkeypatch degrada solo esa mitad sin afectar a `capitulos-youtube.txt`). Cuatro redes en verde, `verificar_salidas.py --fixture` gana dos etapas nuevas (dieciocho en total). `references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados. Oleada v10, `origen: observación de arquitectura del PM (2026-10-02)` |
 | R-23 | Desviaciones de convención visibles donde de verdad hacen falta: `scripts/convencion.py::detectar_desviaciones` (T-10/T-33) calcula correctamente escena sin rótulo, rótulo desconocido, sección auxiliar no reconocida y número de escena duplicado/no creciente, pero no se llama desde `documento_revision.py` (`guion-escenas.md`) ni `pptx.py` (`tarjetas.json`) — solo desde sus propios tests, pese a que `contrato-montaje.md` afirma lo contrario citando esa función | **COMPLETADA** | 2026-10-06 | `documento_revision.generar_documento_revision` llama una vez a `detectar_desviaciones` (misma `clasificacion` ya calculada) y reparte cada desviación por rango de línea: al pie de la escena que corresponda (`### Desviaciones de la convención`, separada de las indicaciones no recitables) o, si no cae en ninguna escena (p. ej. sección auxiliar no reconocida), en una sección propia tras el resumen global (`## Desviaciones de la convención (fuera de escena)`); cabecera gana el recuento "Desviaciones de la convención: N" (siempre presente, `N=0` no añade ninguna sección nueva). `pptx.py::ResultadoTarjetas` gana el campo aditivo `metadatos.desviaciones_convencion` (mismo `resultado`/`clasificacion` reutilizado, sin segunda implementación), vacío con `--para-terceros` igual que `notas_internas`. Cero cambio en `convencion.detectar_desviaciones` en sí (requisito 6). `references/contrato-tarjetas.md` y `contrato-montaje.md:68-73` actualizados — este último deja de afirmar en abstracto que la numeración "ya NO se da por supuesta en silencio" y dice exactamente dónde mirar. 9 tests nuevos (637→646): `tests/test_documento_revision.py` (localización correcta, sección fuera de escena, recuento de cabecera, `N=0` sin sección nueva), `tests/test_pptx.py` (lista vacía, misma descripción que `detectar_desviaciones`, exclusión `--para-terceros`, serialización) y `tests/test_integracion_montaje.py` (mismo texto en `guion-escenas.md` y `tarjetas.json` a la vez — el hallazgo que motivó la tarea). Fixture dorada `guion-ejemplo-esperado.md` regenerada (único cambio: la línea de cabecera en 0, ninguna sección nueva, confirma que los tres guiones reales no tienen desviaciones). Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho etapas (ninguna salida nueva). `DEVELOPERS.md` y `SKILL.md` actualizados. Oleada v11, `origen: observación de arquitectura del PM (2026-10-05)` |
-| R-24 | Diagnóstico real de un fallo al generar una salida: `scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18) captura hoy cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca ningún diagnóstico, en vez de usar la infraestructura de logger/diagnóstico de T-02/T-05 que se construyó el primer día del proyecto anticipando exactamente este consumidor | **PENDIENTE** | 2026-10-06 | Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v12). `origen: observación de arquitectura del PM (2026-10-06)`, tras una primera pasada de un subagente de exploración que propuso tres candidatas (ver `DECISIONES_TECNICAS.md`) |
+| R-24 | Diagnóstico real de un fallo al generar una salida: `scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18) captura hoy cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca ningún diagnóstico, en vez de usar la infraestructura de logger/diagnóstico de T-02/T-05 que se construyó el primer día del proyecto anticipando exactamente este consumidor | **COMPLETADA** | 2026-10-07 | `scripts/monitorizacion.py::volcar_diagnostico` (antes `_volcar_diagnostico`) promovida a pública; `generar_salidas_seleccionadas` la reutiliza junto con `logger.obtener_logger` dentro del `except` ya existente (sin cablear `ejecutar_con_diagnostico`, que aborta el proceso), volcando `diagnostico-<timestamp>.log` y registrando en el logger antes de construir la `SalidaOmitida` con un motivo en español que cita la ruta del diagnóstico. 3 tests nuevos (646→649). Cuatro redes en verde |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

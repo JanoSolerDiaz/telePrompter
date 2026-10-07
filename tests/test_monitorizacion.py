@@ -15,7 +15,12 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
-from monitorizacion import ResumenEjecucion, ejecutar_con_diagnostico, ruta_diagnostico
+from monitorizacion import (
+    ResumenEjecucion,
+    ejecutar_con_diagnostico,
+    ruta_diagnostico,
+    volcar_diagnostico,
+)
 
 
 def test_funcion_sin_errores_propaga_su_codigo_de_salida(tmp_path: Path) -> None:
@@ -74,6 +79,26 @@ def test_diagnostico_no_incluye_el_contenido_integro_del_guion(tmp_path: Path) -
     archivos = list(tmp_path.glob("diagnostico-*.log"))
     contenido = archivos[0].read_text(encoding="utf-8")
     assert texto_guion_secreto not in contenido
+
+
+def test_volcar_diagnostico_es_publica_y_reutilizable_fuera_de_ejecutar_con_diagnostico(
+    tmp_path: Path,
+) -> None:
+    """R-24: `volcar_diagnostico` (antes `_volcar_diagnostico`) se promueve a
+    publica para que otro punto de entrada -- no solo `ejecutar_con_diagnostico`,
+    pensada para abortar un proceso entero -- pueda volcar el mismo diagnostico
+    recuperable sin reimplementar el volcado."""
+    ruta = ruta_diagnostico(tmp_path, instante="20261007T000000000000")
+
+    try:
+        raise RuntimeError("fallo provocado para el test")
+    except RuntimeError as excepcion:
+        volcar_diagnostico(ruta, excepcion)
+
+    assert ruta.exists()
+    contenido = ruta.read_text(encoding="utf-8")
+    assert "RuntimeError" in contenido
+    assert "fallo provocado para el test" in contenido
 
 
 def test_ruta_diagnostico_usa_el_prefijo_configurado(tmp_path: Path) -> None:

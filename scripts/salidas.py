@@ -63,6 +63,18 @@ nueva del selector, son dos archivos de la misma opcion, mismo patron que
 el primer dia (misma leccion que R-21): un contenido invalido degrada solo
 esa mitad a `SalidaOmitida`, sin impedir que `capitulos-youtube.txt` se
 genere igual.
+
+R-24: el `except Exception` generico de `generar_salidas_seleccionadas`
+(requisito 3, una salida rota nunca tumba la pasada) deja de mostrar al
+dueno el `repr` crudo de la excepcion. Antes de construir la
+`SalidaOmitida` vuelca el diagnostico tecnico completo a
+`<carpeta_salida>/diagnostico-<timestamp>.log`
+(`monitorizacion.volcar_diagnostico`, promovida a publica para esta tarea)
+y registra la excepcion en el logger centralizado
+(`logger.obtener_logger`), reutilizando tal cual la infraestructura de
+T-02/T-05 en vez de inventar manejo de errores propio; el `motivo` de la
+salida omitida pasa a ser un mensaje accionable en espanol que remite a ese
+archivo, nunca la traza tecnica.
 """
 
 from __future__ import annotations
@@ -86,6 +98,8 @@ from concat_ffmpeg import (
 )
 from config import Configuracion
 from estado import EstadoProyecto, marca_de_tiempo
+from logger import obtener_logger
+from monitorizacion import ruta_diagnostico, volcar_diagnostico
 from parser import ResultadoParseo
 from pdf import exportar_pdf
 from pptx import exportar_pptx
@@ -497,7 +511,15 @@ def generar_salidas_seleccionadas(
                 generadas.extend(nuevas)
                 omitidas.extend(nuevas_omitidas)
         except Exception as excepcion:  # una salida rota no tumba la pasada
-            omitidas.append(SalidaOmitida(tipo, f"fallo al generar: {excepcion}"))
+            ruta = ruta_diagnostico(carpeta_salida)
+            volcar_diagnostico(ruta, excepcion)
+            obtener_logger().error(
+                "Fallo al generar la salida %s. Diagnostico en %s", tipo.value, ruta,
+                exc_info=excepcion,
+            )
+            omitidas.append(
+                SalidaOmitida(tipo, f"fallo al generar: revisa el diagnóstico técnico en {ruta}")
+            )
 
     return ResumenSalidas(tuple(generadas), tuple(omitidas), tuple(latentes))
 

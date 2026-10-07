@@ -39,12 +39,17 @@ def ruta_diagnostico(carpeta_salida: Path, *, instante: str | None = None) -> Pa
     return carpeta_salida / f"{PREFIJO_ARCHIVO_DIAGNOSTICO}{instante or _marca_de_tiempo()}.log"
 
 
-def _volcar_diagnostico(ruta: Path, excepcion: BaseException) -> None:
+def volcar_diagnostico(ruta: Path, excepcion: BaseException) -> None:
     """Escribe el diagnostico tecnico completo de una excepcion no controlada.
 
     Solo tipo, mensaje y traceback (archivo/linea/funcion): nunca valores de variables
     locales, para no arrastrar el contenido del guion de entrada al archivo aunque
     estuviera en una variable local del marco donde salto la excepcion.
+
+    Publica desde R-24 (antes `_volcar_diagnostico`) para que cualquier punto de
+    entrada que capture una excepcion -- no solo `ejecutar_con_diagnostico`, pensada
+    para abortar un proceso entero -- pueda dejar el mismo diagnostico recuperable sin
+    reimplementar el volcado.
     """
     ruta.parent.mkdir(parents=True, exist_ok=True)
     cuerpo = "".join(
@@ -69,7 +74,7 @@ def ejecutar_con_diagnostico(funcion: Callable[[], int], carpeta_salida: Path) -
         return funcion()
     except Exception as excepcion:
         ruta = ruta_diagnostico(carpeta_salida)
-        _volcar_diagnostico(ruta, excepcion)
+        volcar_diagnostico(ruta, excepcion)
         obtener_logger().error(
             "Excepcion no controlada. Diagnostico en %s", ruta, exc_info=excepcion
         )

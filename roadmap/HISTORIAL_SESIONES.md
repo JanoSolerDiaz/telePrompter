@@ -12,6 +12,48 @@
 
 ---
 
+### Sesión 2026-10-07 (94) — Ciclo de Programador: R-24 implementada y `COMPLETADA`
+
+**Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta `bca7a2d` (la auditoría del 2026-10-07, hallazgo `#28` formalizado tras
+diez repeticiones del mismo síntoma de `pip` pelado, sesión 93 de PM incluida), sin conflicto ni
+rama divergida. `pip install -r requirements-dev.txt` pelado instaló de nuevo contra Python 3.13 en
+vez del 3.11.17 real — exactamente el síntoma que `#28` describe; resuelto con `python3 -m pip
+install -r requirements-dev.txt`.
+
+**Revisión de entrada.** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`, ambos baja
+severidad sin coste real — `#24` (pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y `#28`
+(mismo síntoma de `pip` ya descrito arriba, con recomendación de cierre escrita en el propio
+hallazgo). Ninguno de severidad alta que atender como P-XX urgente. §1 tenía a R-24 como única R-XX
+`PENDIENTE`, especificada por completo en `ROADMAP_PRODUCTO.md` §"Oleada v12".
+
+**R-24 implementada: diagnóstico real de un fallo al generar una salida.**
+`scripts/monitorizacion.py::_volcar_diagnostico` se promueve a pública (`volcar_diagnostico`).
+`scripts/salidas.py::generar_salidas_seleccionadas` reutiliza esa función junto con
+`logger.obtener_logger` dentro del `except Exception` ya existente (requisito 3 de T-30 intacto):
+vuelca `diagnostico-<timestamp>.log` y registra la excepción en el logger centralizado antes de
+construir la `SalidaOmitida`, cuyo `motivo` deja de llevar `str(excepcion)` crudo y pasa a citar la
+ruta del diagnóstico. Deliberadamente sin cablear `ejecutar_con_diagnostico` (aborta el proceso,
+semántica que no encaja con "una salida rota no tumba las demás"). 3 tests nuevos (646→649);
+`test_fallo_de_una_salida_no_impide_las_demas` actualizado al contrato nuevo del `motivo` en el
+mismo commit (no se dejó en rojo). `DEVELOPERS.md` gana la sección "Diagnóstico real de un fallo al
+generar una salida (R-24)" más una nota en "Monitorización de errores (T-05)"; `SKILL.md` sin
+cambios (ningún campo de `Configuracion` nuevo). Verificación pre-push completa: `mypy`/`ruff` en
+verde (70 archivos), 649 tests, dieciocho etapas OK en `verificar_salidas.py --fixture`. Cuatro
+redes en verde.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** 2 filas (una ruta de diagnóstico nueva por cada
+salida fallida, no una sola para toda la pasada; actualización del test existente al contrato nuevo
+en vez de duplicarlo).
+
+**Cambios de estado en `SEGUIMIENTO.md` §1:** R-24 pasa de `PENDIENTE` a `COMPLETADA`.
+
+**Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad** (la pregunta #11 sigue `(pendiente)`);
+**sin nueva desviación en §7.** §1 ya no tiene ninguna R-XX/T-XX `PENDIENTE`: cola vacía hasta el
+siguiente ciclo de Product Manager, que es quien archivará la Oleada v12.
+
+---
+
 ### Sesión 2026-10-06 (93) — Ciclo de Product Manager: archiva Oleada v11 (R-23) y abre R-24 (Oleada v12)
 
 **Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en

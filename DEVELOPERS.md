@@ -93,7 +93,13 @@ también aquí). Dos piezas:
 
 Como con el logger de T-02, todavía no hay un `main()` real que envolver (llega con
 T-07 en adelante): esta tarea deja la mecánica lista y probada para que cada punto de
-entrada futuro la use en vez de inventar su propio manejo de errores.
+entrada futuro la use en vez de inventar su propio manejo de errores. Ese punto de
+entrada real llegó con T-30/R-18 (`salidas.py::generar_salidas_seleccionadas`), que no
+encaja con `ejecutar_con_diagnostico` (pensada para abortar un proceso entero con
+código de salida) porque una salida rota ahí no debe tumbar las demás — **R-24**
+promueve `volcar_diagnostico(ruta, excepcion)` (antes `_volcar_diagnostico`) a función
+pública para que ese consumidor reutilice solo el volcado, sin el abortar: ver "Selector
+de salidas por validación (T-30)" más abajo.
 
 ## Robustez de entrada (T-06)
 
@@ -3251,6 +3257,45 @@ cambio en `convencion.detectar_desviaciones` en sí (requisito 6).
   aparece en los dos consumidores reales a la vez — el hallazgo concreto que motivó la tarea).
   Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho etapas (R-23 no
   añade ninguna salida nueva, solo enriquece dos ya existentes).
+
+## Diagnóstico real de un fallo al generar una salida (R-24)
+
+`scripts/monitorizacion.py` (T-05) y `scripts/logger.py` (T-02) se construyeron el primer día
+del proyecto anticipando explícitamente un futuro "punto de entrada real" que los usara en vez
+de inventar su propio manejo de errores. Ese punto de entrada llegó con T-30/R-18
+(`salidas.py::generar_salidas_seleccionadas`), pero su `except Exception` genérico (requisito 3
+de T-30: una salida rota nunca tumba las demás) reinventaba por su cuenta exactamente lo que
+T-05 quería evitar — `SalidaOmitida(tipo, f"fallo al generar: {excepcion}")`, el `repr` crudo de
+Python en el `motivo`, sin volcar ningún diagnóstico ni pasar por el logger centralizado. R-24
+conecta ese `except` con la infraestructura ya construida, sin diseñar nada nuevo.
+
+- **Requisito 1 (`volcar_diagnostico` pública).** `monitorizacion._volcar_diagnostico` pasa a
+  `monitorizacion.volcar_diagnostico` (mismo patrón de promoción de visibilidad que
+  `tomas.toma_buena`/R-19 y `reproductor.anclar_indicaciones_a_bloques`/R-20: cambio de nombre,
+  cero cambio de firma ni de comportamiento). `ejecutar_con_diagnostico` sigue siendo su único
+  consumidor dentro del propio módulo; R-24 añade un segundo consumidor externo.
+- **Requisito 2 (`salidas.py` reutiliza logger + diagnóstico, no `ejecutar_con_diagnostico`).**
+  Dentro del `except Exception as excepcion` de `generar_salidas_seleccionadas`, antes de
+  construir la `SalidaOmitida`: `ruta_diagnostico(carpeta_salida)` calcula la ruta,
+  `volcar_diagnostico(ruta, excepcion)` escribe el traceback completo (nunca variables locales,
+  regla dura de T-05) y `obtener_logger().error(..., exc_info=excepcion)` deja constancia en
+  `teleprompter.log` si el proceso ya configuró el logger. Deliberadamente NO se usa
+  `ejecutar_con_diagnostico`: está pensada para abortar un proceso entero con código de salida,
+  y aquí una salida rota no debe impedir las demás (requisito 3 de T-30, intacto).
+- **Requisito 3 (motivo accionable, nunca la traza cruda).** `SalidaOmitida.motivo` pasa de
+  `f"fallo al generar: {excepcion}"` a `f"fallo al generar: revisa el diagnóstico técnico en
+  {ruta}"` — el dueño ve dónde mirar, nunca un `KeyError('x')` ni una ruta interna del sistema.
+- **Requisitos 4 y 6 (sin cambios de contrato).** `obtener_logger()` ya no exigía
+  `configurar_logger` previo (T-02); R-24 no cablea ninguna llamada nueva a
+  `configurar_logger`, solo consume el logger que ya exista. Ningún `main()` de CLI nuevo.
+- **Verificación.** 3 tests nuevos (646→649): `tests/test_salidas.py` (el motivo ya no contiene
+  la traza cruda ni el texto de la excepción simulada y cita la ruta real del
+  `diagnostico-<timestamp>.log`; ese archivo existe con el traceback completo sin arrastrar una
+  variable local con contenido de guion; con el logger ya configurado, `teleprompter.log` recoge
+  la misma entrada) y `tests/test_monitorizacion.py` (`volcar_diagnostico` es invocable fuera de
+  `ejecutar_con_diagnostico`). El test ya existente que comprobaba el fallo simulado se actualiza
+  al nuevo contrato del motivo en vez de duplicarse. Cuatro redes en verde; `verificar_salidas.py
+  --fixture` sigue en dieciocho etapas (R-24 no añade ninguna salida nueva).
 
 ## Suite de tests (T-03)
 
