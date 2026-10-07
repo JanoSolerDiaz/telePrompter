@@ -12,6 +12,59 @@
 
 ---
 
+### Sesión 2026-10-07 (104) — Ciclo de Product Manager: archiva Oleada v12 (R-24) y abre R-25 (Oleada v13)
+
+**Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta `c3d4c80` (la novena reconfirmación del día de Programador tras R-24,
+sesión 103), sin conflicto ni rama divergida.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`,
+ambos baja severidad y ya enrutados sin necesitar R-XX — `#24` (proceso, pregunta de gobernanza #11
+de §6 sigue `(pendiente)`, veintiuna pasadas consecutivas) y `#28` (el `pip` pelado de los
+contenedores de nube instala contra el intérprete equivocado; recomendación de cierre ya aplicada por
+`P-06`, el cierre a `RESUELTO` en `auditoriacontinua.md` queda para la siguiente pasada del auditor).
+Ninguno de severidad alta ni de producto/arquitectura que convertir en R-XX nueva este ciclo.
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` — el
+bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse. §1 tenía a R-24 como `COMPLETADA`
+desde el ciclo de Programador de esta misma fecha, con nueve reconfirmaciones posteriores dejando
+`ROADMAP_PRODUCTO.md` describiéndola como `PENDIENTE` en su prosa de "Cola de producto" — el mismo
+patrón de latencia que motivó `#24`, repetido una sexta vez.
+
+**Archiva Oleada v12 (R-24).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo
+se entregó"), con su entrada de índice correspondiente. `ROADMAP_PRODUCTO.md` corrige la prosa de
+"Cola de producto".
+
+**Abre R-25 (Oleada v13): conectar `convencion.py` (T-10) al selector real de salidas (T-30).** Por
+grieta de arquitectura verificada, mismo criterio que abrió R-12 a R-24. Se delegó una primera pasada
+de exploración a un subagente (`Explore`), que comparó sistemáticamente los módulos candidatos
+(`calibracion.py`, `deteccion.py`, y cualquier función pública de `scripts/*.py` sin llamador fuera de
+su propio módulo/tests) y convergió en `scripts/calibracion.py::calcular_calibracion` (R-04) como su
+recomendación principal — sin ningún `import` real fuera de sus propios tests, verificado con
+`grep -rn "import calibracion\|from calibracion" scripts/ tests/`. Verificación propia, en paralelo y
+antes de leer el informe del subagente, había localizado dos candidatas adicionales con el mismo
+patrón (`grep -rn "generar_convencion_guiones\|guardar_convencion_guiones\|revertir_reescrituras"
+scripts/*.py SKILL.md`, sin resultado fuera de sus propios módulos/tests): `convencion.
+generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) y `reescrituras.revertir_reescrituras`
+(T-15). **Elegida `convencion.py` sobre la recomendación del subagente** (`calibracion.py`), por
+menor riesgo de sobrediseño y valor inmediato: conectar `calibracion.calcular_calibracion` de verdad
+exigiría descubrir "guiones hermanos" entre proyectos distintos — pieza de arquitectura nueva que hoy
+no existe (aislamiento por proyecto de guión, §0.2) y que el bloqueo #7 de §3 confirma que no hace
+falta todavía (cero curso grabado); `convencion.generar_convencion_guiones` no depende de ningún dato
+de rodaje, es pura exposición de una función ya construida y probada (T-10) a un consumidor real
+(T-30), y complementa de forma directa a R-23 (desviaciones ya visibles → documento que las evita en
+el futuro). `reescrituras.revertir_reescrituras` queda descartada por menor valor (revierte decisiones
+ya tomadas del dueño, sin beneficio equivalente). Spec completa de R-25 en `ROADMAP_PRODUCTO.md`
+(Oleada v13), lista para que el siguiente ciclo de Programador la implemente y verifique.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** una (criterio de selección de R-25 entre las tres
+candidatas con grieta de arquitectura verificada). **Cambios de estado en `SEGUIMIENTO.md` §1:**
+ninguno (R-25 no existe todavía como código; su spec vive solo en `ROADMAP_PRODUCTO.md` hasta que el
+Programador la implemente). Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta
+#11 sigue `(pendiente)`); sin nueva desviación en §7. Este ciclo es de PM, no de Programador: no se
+ha ejecutado la verificación de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+---
+
 ### Sesión 2026-10-07 (103) — Ciclo de Programador: novena reconfirmación del día tras R-24
 
 **Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* en `882b341`;
