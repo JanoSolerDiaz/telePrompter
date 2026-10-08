@@ -12,6 +12,60 @@
 
 ---
 
+### Sesión 2026-10-08 (115) — Ciclo de Product Manager: archiva Oleada v13 (R-25) y abre R-26 (Oleada v14)
+
+**Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en
+fast-forward limpio hasta la sesión 114 (novena reconfirmación del día del Programador tras R-25,
+sin ningún commit nuevo entre medias), sin conflicto ni rama divergida.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`,
+ambos baja severidad — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+veintidós pasadas consecutivas) y `#29` (la fila de R-25 faltaba en §1 al abrirse; ya resuelto por el
+propio ciclo de Programador que implementó R-25 el mismo día, añadiendo la fila; el cierre a
+`RESUELTO` en `auditoriacontinua.md` queda para la siguiente pasada de auditoría). Ninguno de
+severidad alta ni de producto/arquitectura que convertir en R-XX nueva este ciclo.
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` — el
+bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse.
+
+**Archiva Oleada v13.** §1 de `SEGUIMIENTO.md` tenía a R-25 como `COMPLETADA` desde el mismo commit
+del ciclo de Programador del 2026-10-08 que la abrió e implementó, sin el patrón de latencia que
+motivó `#24` esta vez. `ROADMAP_PRODUCTO.md` se corrige: Oleada v13 (R-25) se mueve íntegra a
+`roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo se entregó"), con su entrada de índice.
+
+**Abre R-26 (Oleada v14).** Grieta de arquitectura verificada, mismo criterio que abrió R-12 a R-25,
+esta vez de severidad mayor: no una salida sin consumidor, sino una garantía contractual del propio
+`SKILL.md`/T-13 ("el diccionario del dueño manda siempre") que hoy no se cumple en el flujo real.
+Verificado leyendo el código: `scripts/normalizacion.py::cargar_diccionario_locucion` no tiene ningún
+llamador fuera de sus propios tests (`grep -rn "cargar_diccionario_locucion" scripts/*.py`); los
+cuatro puntos reales que deberían aplicar el diccionario (`normalizar_guion`, `recopilar_propuestas`,
+`generar_documento_revision`, `revalidar_guion`) tampoco tienen, fuera de sus tests, ningún llamador
+real que lo construya y propague; los propios tests de T-13 prueban por separado "cargar el archivo"
+y "un diccionario en memoria sobrescribe la regla automática", nunca las dos cosas juntas sobre un
+`diccionario-locucion.json` real en una carpeta de salida real. Candidata alternativa reconsiderada y
+descartada de nuevo: `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer global), sin
+disparador documentado pero sin ninguna superficie nueva por la que dispararlo desde que se descartó
+al abrir R-25. Spec completa de R-26 en `ROADMAP_PRODUCTO.md` (Oleada v14), lista para el siguiente
+ciclo de Programador.
+
+**Decisiones tomadas:** 1 fila nueva en `DECISIONES_TECNICAS.md` (2026-10-08, "PM (apertura de
+R-26)"): elección de conectar el diccionario del dueño frente a reconsiderar el deshacer global de
+reescrituras.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`):** R-26 añadida como `PENDIENTE` (2026-10-08).
+
+**Archivos modificados:** `roadmap/ROADMAP_HISTORICO.md` (Oleada v13/R-25 archivada con su "Cómo se
+entregó", índice de pies actualizado), `roadmap/ROADMAP_PRODUCTO.md` (Oleada v13 → stub "entregada";
+Oleada v14/R-26 nueva, spec completa), `roadmap/SEGUIMIENTO.md` (cabecera, narrativa del ciclo, fila
+R-26 en §1), `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`. Cero cambio en
+`scripts/`, `tests/` o `assets/`: ciclo de PM, no de Programador, no se ha ejecutado la verificación
+de las cuatro redes.
+
+**Próximo paso:** siguiente ciclo de Programador implementa R-26 (conectar `cargar_diccionario_locucion`
+a los puntos reales de generación/revalidación, con visibilidad del recuento aplicado en la cabecera
+de `guion-escenas.md`/`tarjetas.json`) según la spec de `ROADMAP_PRODUCTO.md` (Oleada v14).
+
+---
+
 ### Sesión 2026-10-08 (114) — Ciclo de Programador: novena reconfirmación del día tras R-25
 
 **Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* en `b15f852` (resto de

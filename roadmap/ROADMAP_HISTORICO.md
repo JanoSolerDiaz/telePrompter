@@ -90,6 +90,10 @@ propio pendiente — mismo criterio que los trece movimientos anteriores. Mismo 
 auditor (nueve reconfirmaciones del Programador el 2026-10-07 listando R-24 como pendiente pese a
 `COMPLETADA` en §1 de `SEGUIMIENTO.md`) y corregido por este mismo movimiento.
 
+**Movido a histórico el:** 2026-10-08, ciclo de Product Manager. Se añade la Oleada v13 (R-25),
+COMPLETADA por el Programador el mismo día en que se abrió (2026-10-07) y sin ningún hito de negocio
+propio pendiente — mismo criterio que los catorce movimientos anteriores.
+
 ---
 
 ## Oleada v2 — Rodaje real: cerrar el bucle entre lo estimado y lo grabado
@@ -1458,10 +1462,109 @@ que las demás salidas de la misma pasada se siguen generando con normalidad. Cu
 
 ---
 
+## Oleada v13 — Entregar `convencion-guiones.md` de verdad al dueño
+
+Cierra la grieta de arquitectura entre `scripts/convencion.py::generar_convencion_guiones`/
+`guardar_convencion_guiones` (T-10, 2026-09-01) — un documento de una página pensado explícitamente
+para que el dueño lo "pegue en su plantilla de guiones" y evite así desviaciones futuras de la
+convención contractual — y el selector real de salidas (`scripts/salidas.py::TipoSalida`, T-30):
+hasta esta oleada, la función existía, estaba probada y documentada, pero ningún punto del flujo real
+le decía a Claude cuándo ofrecerla, así que el dueño nunca la veía salvo que supiera que existía y la
+pidiera explícitamente. Complementa a R-23 (desviaciones de convención ya visibles) cerrando el otro
+lado del mismo problema: prevenirlas la próxima vez, no solo señalarlas la vez en que ya ocurrieron.
+Contiene R-25, su única R-XX. **Entregada 2026-10-08** (COMPLETADA el mismo ciclo del Programador en
+que se implementó, tras abrirse el día anterior, 2026-10-07).
+
+### R-25 — Entregar `convencion-guiones.md` de verdad al dueño: conectar `convencion.py` (T-10) al selector real de salidas (T-30)
+
+**Migración:** No (aditiva: una séptima opción en el enum `TipoSalida` ya existente; ningún campo de
+`estado.json` ni de `Configuracion` cambia) · **Depende de:** T-10, T-30 (ambas ya `COMPLETADA`) ·
+**Origen:** observación de arquitectura del PM (2026-10-07) — grieta de arquitectura verificada
+sobre código ya construido (mismo criterio que abrió R-12 a R-24), no hallazgo de auditoría ni
+entrada de `FEEDBACK.md`.
+
+**Objetivo:** `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones`
+(T-10, 2026-09-01) generan un documento de una página — "Convención de guiones" — que, según su
+propio docstring, está pensado explícitamente para que el dueño lo "pegue en su plantilla de guiones"
+y así sus futuros guiones ya nazcan siguiendo la convención contractual (encabezado de escena,
+rótulos de locución/no locución, numeración), en vez de inferirla y avisar de la desviación cada vez.
+Verificado leyendo el código, no solo el docstring: `grep -rn
+"generar_convencion_guiones\|guardar_convencion_guiones" scripts/*.py SKILL.md` no devuelve ningún
+resultado fuera de `scripts/convencion.py` y sus propios tests — ningún script de producción la
+importa, no está entre las seis opciones de `scripts/salidas.py::TipoSalida` (T-30/R-18/R-19) y
+ningún paso del flujo documentado en `SKILL.md` le dice a Claude cuándo ofrecerla. R-23 (2026-10-06)
+acaba de conectar `convencion.detectar_desviaciones` a sus dos consumidores reales (`guion-escenas.md`
+y `tarjetas.json`), así que el dueño ya ve la desviación cuando ocurre; sin esta tarea, no tiene a
+mano, dentro del propio flujo de la skill, el documento que se la evitaría la próxima vez — tendría
+que saber que `convencion.py` existe y pedir explícitamente que se genere. Dos candidatas se
+descartaron tras la misma verificación: `scripts/calibracion.py::calcular_calibracion` (R-04) tiene
+la misma falta de gancho en `SKILL.md`, pero conectarla de verdad exigiría descubrir "guiones
+hermanos" entre proyectos distintos — una pieza de arquitectura nueva (hoy todo opera aislado por
+proyecto de guión, §0.2) para un escenario que el bloqueo #7 de `SEGUIMIENTO.md` §3 confirma que
+todavía no se ha dado (cero curso grabado hasta hoy); se deja para cuando ese bloqueo se resuelva, en
+vez de construir por adelantado. `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer
+global) también carece de disparador documentado, pero revierte decisiones ya tomadas por el dueño y
+su valor es menor que el de prevenir una desviación futura con coste y riesgo mínimos.
+
+**Requisitos:**
+1. `TipoSalida` (`scripts/salidas.py`) gana una séptima opción, `CONVENCION_GUIONES`, al final del
+   orden ya establecido en `construir_pregunta_salidas`/`_DESCRIPCIONES`/`ResumenSalidas` (mismo
+   patrón que añadió `CAPITULOS_YOUTUBE` en R-18 y `CONCAT_FFMPEG` en R-19: nunca se reordenan las
+   seis existentes).
+2. `generar_salidas_seleccionadas` llama a `convencion.guardar_convencion_guiones(carpeta_salida,
+   configuracion)` reutilizada tal cual (cero segunda implementación, cero cambio en
+   `generar_convencion_guiones`/`guardar_convencion_guiones` en sí). A diferencia de las seis salidas
+   actuales, esta no depende del parseo ni de la clasificación del guion de entrada — solo de
+   `Configuracion` —, así que nunca puede quedar `SalidaOmitida` por un problema del guion; el único
+   fallo posible es de escritura a disco, cubierto por el mismo patrón `except`/diagnóstico que ya
+   protege a las demás salidas desde R-24.
+3. A diferencia de las salidas condicionadas a tomas de rodaje (SRT alineado, capítulos, concat),
+   `CONVENCION_GUIONES` se ofrece siempre en `construir_pregunta_salidas`, sin depender de
+   `estado.salidas_generadas` ni de ningún parte de rodaje — no cambia de un guion a otro salvo que
+   el dueño edite `Configuracion`, pero es el propio dueño quien decide cada vez si quiere
+   regenerarla (p. ej. tras cambiar alguna clave de convención).
+4. `references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` documentan la nueva salida
+   seleccionable, aclarando que complementa a R-23 (prevención de desviaciones futuras) en vez de
+   sustituir su detección (desviaciones ya ocurridas en el guion actual).
+5. Fuera de alcance, explícito: no se añade ninguna lógica nueva a
+   `generar_convencion_guiones`/`guardar_convencion_guiones` (T-10 ya las especifica, genera y prueba
+   correctamente); no se auto-genera sin que el dueño la seleccione, igual que las demás salidas.
+
+**Criterio de aceptación:** test que confirma que seleccionar `CONVENCION_GUIONES` en
+`generar_salidas_seleccionadas` escribe `convencion-guiones.md` en `carpeta_salida` con el mismo
+contenido byte a byte que una llamada directa a `generar_convencion_guiones`; test que confirma que
+se sigue ofreciendo en la pregunta de selección incluso sin ningún parte de rodaje ni toma marcada
+(a diferencia de las salidas condicionadas); regresión de las seis salidas existentes sin cambios
+(mismo patrón que R-18/R-19 ya verifican sobre los tres guiones reales). Cuatro redes en verde.
+
+**Cómo se entregó:** `scripts/salidas.py` gana `TipoSalida.CONVENCION_GUIONES` (séptima opción, al
+final del orden ya establecido en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`, mismo patrón que
+`CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal
+cual `convencion.guardar_convencion_guiones` (T-10, cero cambio en `convencion.py`). A diferencia de
+las demás salidas, no recibe `resultado`/`resultado_tiempos`: no depende del parseo ni de la
+clasificación del guion de entrada, solo de `Configuracion`, así que se ofrece siempre en
+`construir_pregunta_salidas` sin ninguna condición (nunca omitida por falta de datos del guion o de
+parte de rodaje, a diferencia de `CAPITULOS_YOUTUBE`/`CONCAT_FFMPEG`) y el único fallo posible es de
+escritura a disco, cubierto por el mismo `try`/`except`/diagnóstico de R-24. 3 tests nuevos
+(649→652) en `tests/test_salidas.py`: coincide byte a byte con la llamada directa a
+`generar_convencion_guiones`, se sigue ofreciendo sin ningún parte de rodaje ni toma marcada, y
+`TODAS_LAS_SALIDAS[-1]`/`len(...) == 7`; dos tests existentes actualizados
+(`test_no_seleccionadas_quedan_omitidas_sin_generar_archivo`/`test_pptx_latente_no_impide_las_demas`)
+para reflejar la séptima opción siempre generada, en vez de dejarlos en rojo o duplicarlos.
+`references/contrato-montaje.md` documenta la salida nueva (no es contrato de montaje, complementa a
+R-23); `SKILL.md` documenta la séptima opción en "Selector de salidas por validación"; `DEVELOPERS.md`
+gana la sección "Entregar `convencion-guiones.md` de verdad al dueño (R-25)". Verificación pre-push
+completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 652 tests (`pytest`, 649→652), dieciocho
+etapas OK en `verificar_salidas.py --fixture` (sin cambio: la etapa "Generación de salidas" ya
+ejercita `TODAS_LAS_SALIDAS` dinámicamente, sin necesitar una etapa dedicada nueva para un documento
+sin validador propio de formato). Cuatro redes en verde.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
 (R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05; la de v11 (R-23),
-2026-10-06; la de v12 (R-24), 2026-10-07.)*
+2026-10-06; la de v12 (R-24), 2026-10-07; la de v13 (R-25), 2026-10-08.)*

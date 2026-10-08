@@ -8,54 +8,49 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-07 (ciclo de PM). **R-24 (Oleada v12) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-07 que la implementó (diagnóstico real de
-un fallo al generar una salida, en vez de la traza cruda de la excepción). Nueve reconfirmaciones del
-Programador el mismo día la dejaron en este documento como `PENDIENTE` en vez de archivarla (mismo
-patrón que el hallazgo `#24` de `auditoriacontinua.md`, pendiente de la respuesta del dueño a la
-pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6 sobre quién puede corregir esa prosa). Movida a
-`roadmap/ROADMAP_HISTORICO.md` (Oleada v12) junto con el resto de oleadas 100 % entregadas.
+**Última actualización:** 2026-10-08 (ciclo de PM). **R-25 (Oleada v13) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-08 que la implementó (séptima salida
+seleccionable, `convencion-guiones.md`, conectada de verdad al selector de T-30). A diferencia de
+R-24, esta vez la fila de §1 se añadió en el mismo commit que abrió la tarea (resolviendo de paso el
+hallazgo `#29` de `auditoriacontinua.md`), así que no hay prosa desactualizada que corregir. Movida a
+`roadmap/ROADMAP_HISTORICO.md` (Oleada v13) junto con el resto de oleadas 100 % entregadas.
 
-**Se abre R-25** (Oleada v13): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
+**Se abre R-26** (Oleada v14): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
 las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
-verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-24. Verificación propia
-más un subagente de exploración independiente, ambos leyendo el código línea a línea (no solo nombres
-ni docstrings) antes de especificar la tarea, coinciden en que `scripts/convencion.py::
-generar_convencion_guiones`/`guardar_convencion_guiones` (T-10, 2026-09-01) no tienen ningún
-consumidor fuera de sus propios tests: `grep -rn "generar_convencion_guiones\|guardar_convencion_guiones"
-scripts/*.py SKILL.md` no devuelve ningún resultado fuera de `scripts/convencion.py` y
-`tests/test_convencion*.py`. La función genera, según su propio docstring, un documento de una
-página pensado explícitamente para que el dueño lo "pegue en su plantilla de guiones" y así sus
-futuros guiones ya nazcan sin desviaciones de la convención contractual — pero nunca se ofrece: no
-está entre las seis salidas seleccionables de `scripts/salidas.py::TipoSalida` (T-30/R-18/R-19) ni
-ningún paso del flujo documentado en `SKILL.md` le dice a Claude cuándo generarla. R-23 (2026-10-06)
-acaba de hacer visibles las desviaciones de convención al pie de cada escena de `guion-escenas.md` y
-en `tarjetas.json`; sin este documento conectado, el dueño ve la desviación pero no tiene a mano,
-dentro del propio flujo de la skill, la herramienta que se la evitaría la próxima vez. Dos candidatas
-alternativas quedaron descartadas tras la misma verificación, ambas documentadas en el detalle de
-R-25: `scripts/calibracion.py::calcular_calibracion` (R-04) tiene la misma falta de gancho en
-`SKILL.md`, pero conectarla de verdad exigiría descubrir "guiones hermanos" entre proyectos
-distintos — pieza de arquitectura nueva que hoy no existe (§0.2: aislamiento por proyecto de guión) y
-que no hace falta construir por adelantado mientras el bloqueo #7 de `SEGUIMIENTO.md` §3 (cero curso
-grabado todavía) siga abierto; `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer
-global) también carece de disparador documentado, pero su valor es menor y revierte decisiones ya
-tomadas del dueño, frente al beneficio inmediato y de bajo riesgo de entregar la convención. Detalle
-completo en "Oleada v13" más abajo.
+verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-25, esta vez de
+severidad mayor que las anteriores: no es una salida huérfana sin consumidor, es una **garantía
+contractual que hoy no se cumple en el flujo real**. Verificación propia, leyendo el código línea a
+línea, no solo nombres ni docstrings: `scripts/normalizacion.py::cargar_diccionario_locucion` (T-13,
+requisito 3 — "Diccionario de excepciones editable por el dueño... con prioridad sobre las reglas
+automáticas", repetido en `SKILL.md`: "el diccionario del dueño manda siempre sobre cualquiera de
+ellas") no tiene **ningún** llamador fuera de sus propios tests — confirmado con `grep -rn
+"cargar_diccionario_locucion" scripts/*.py`, único resultado la propia definición. Peor aún: los
+cuatro puntos reales donde se aplicaría (`normalizar_guion`, `reescrituras.recopilar_propuestas`,
+`documento_revision.generar_documento_revision`, `revalidacion.revalidar_guion`) tampoco tienen,
+fuera de sus tests, ningún llamador que construya y pase un `diccionario` cargado de disco — todos
+reciben `diccionario=None` por omisión en cualquier uso real, confirmado con el mismo `grep` sobre
+`normalizar_guion\(\|recopilar_propuestas\(\|generar_documento_revision\(\|revalidar_guion\(` en
+`scripts/*.py`. Los tests de T-13 prueban por separado que "cargar el archivo" funciona y que "un
+diccionario ya cargado en memoria sobrescribe la regla automática" — nunca las dos cosas juntas sobre
+un `diccionario-locucion.json` real en la carpeta de salida de un guion real, que es exactamente el
+uso que promete el requisito 3. Candidata alternativa descartada tras la misma verificación:
+`scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer global) sigue siendo un orfanato de
+consumidor documentado — ya se consideró y descartó al abrir R-25 por menor valor y mayor riesgo de
+diseño (no existe hoy ninguna superficie por la que el dueño dispare un "deshacer global"), y nada ha
+cambiado ese análisis esta pasada. Detalle completo en "Oleada v14" más abajo.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
 curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` no trae ningún
-`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan dos `ABIERTO`, ambos de proceso/entorno y
-ya enrutados sin necesitar una R-XX — `#24` (baja, prosa de "Cola de producto" desactualizada entre
-ciclos de PM) sigue pendiente de la respuesta del dueño a la pregunta de gobernanza #11 de
-`SEGUIMIENTO.md` §6 (es la misma corrección de prosa que este propio ciclo acaba de aplicar de nuevo,
-esta vez sobre R-24); `#28` (baja, el `pip` pelado de los contenedores de nube instala contra el
-intérprete equivocado) ya tiene su recomendación de cierre aplicada por `P-06` (§5 de
-`SEGUIMIENTO.md`, completada el mismo día que se abrió el hallazgo) — el cierre a `RESUELTO` en
-`auditoriacontinua.md` queda para la siguiente pasada del auditor, que es quien escribe ese registro.
+`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan dos `ABIERTO`, ambos de proceso y de
+severidad baja, ninguno de los cuales necesita una R-XX — `#24` (prosa de "Cola de producto"
+desactualizada entre ciclos de PM, sin repetirse esta vez: ver arriba) sigue pendiente de la
+respuesta del dueño a la pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6; `#29` (la fila de R-25
+faltaba en §1 al abrirse) ya quedó resuelto por el propio ciclo de Programador que implementó R-25, el
+cierre a `RESUELTO` en `auditoriacontinua.md` queda para la siguiente pasada del auditor.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-25 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-26 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -198,69 +193,88 @@ de T-02/T-05 a su consumidor real de `scripts/salidas.py`, R-24) tiene su única
 `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-07). Su spec completa y cómo se entregó viven
 ahí.
 
-### Oleada v13 — EN CURSO
+### Oleada v13 — entregada
 
-#### R-25 — Entregar `convencion-guiones.md` de verdad al dueño: conectar `convencion.py` (T-10) al selector real de salidas (T-30)
+La oleada v13 (entregar `convencion-guiones.md` de verdad al dueño, conectando `convencion.py` al
+selector real de salidas de T-30, R-25) tiene su única R-XX en **COMPLETADA** en §1 de
+`SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en
+este ciclo de PM (2026-10-08). Su spec completa y cómo se entregó viven ahí.
 
-**Migración:** No (aditiva: una séptima opción en el enum `TipoSalida` ya existente; ningún campo de
-`estado.json` ni de `Configuracion` cambia) · **Depende de:** T-10, T-30 (ambas ya `COMPLETADA`) ·
-**Origen:** observación de arquitectura del PM (2026-10-07) — grieta de arquitectura verificada
-sobre código ya construido (mismo criterio que abrió R-12 a R-24), no hallazgo de auditoría ni
-entrada de `FEEDBACK.md`.
+### Oleada v14 — EN CURSO
 
-**Objetivo:** `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones`
-(T-10, 2026-09-01) generan un documento de una página — "Convención de guiones" — que, según su
-propio docstring, está pensado explícitamente para que el dueño lo "pegue en su plantilla de guiones"
-y así sus futuros guiones ya nazcan siguiendo la convención contractual (encabezado de escena,
-rótulos de locución/no locución, numeración), en vez de inferirla y avisar de la desviación cada vez.
-Verificado leyendo el código, no solo el docstring: `grep -rn
-"generar_convencion_guiones\|guardar_convencion_guiones" scripts/*.py SKILL.md` no devuelve ningún
-resultado fuera de `scripts/convencion.py` y sus propios tests — ningún script de producción la
-importa, no está entre las seis opciones de `scripts/salidas.py::TipoSalida` (T-30/R-18/R-19) y
-ningún paso del flujo documentado en `SKILL.md` le dice a Claude cuándo ofrecerla. R-23 (2026-10-06)
-acaba de conectar `convencion.detectar_desviaciones` a sus dos consumidores reales (`guion-escenas.md`
-y `tarjetas.json`), así que el dueño ya ve la desviación cuando ocurre; sin esta tarea, no tiene a
-mano, dentro del propio flujo de la skill, el documento que se la evitaría la próxima vez — tendría
-que saber que `convencion.py` existe y pedir explícitamente que se genere. Dos candidatas se
-descartaron tras la misma verificación: `scripts/calibracion.py::calcular_calibracion` (R-04) tiene
-la misma falta de gancho en `SKILL.md`, pero conectarla de verdad exigiría descubrir "guiones
-hermanos" entre proyectos distintos — una pieza de arquitectura nueva (hoy todo opera aislado por
-proyecto de guión, §0.2) para un escenario que el bloqueo #7 de `SEGUIMIENTO.md` §3 confirma que
-todavía no se ha dado (cero curso grabado hasta hoy); se deja para cuando ese bloqueo se resuelva, en
-vez de construir por adelantado. `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer
-global) también carece de disparador documentado, pero revierte decisiones ya tomadas por el dueño y
-su valor es menor que el de prevenir una desviación futura con coste y riesgo mínimos.
+#### R-26 — El diccionario del dueño (`diccionario-locucion.json`, T-13) no está conectado al flujo real: su garantía contractual ("manda siempre") no se cumple salvo que la sesión recuerde cargarlo a mano
+
+**Migración:** No (ningún campo de `estado.json` cambia; cambio de visibilidad/composición dentro de
+módulos ya existentes) · **Depende de:** T-13, T-16, T-17 (todas ya `COMPLETADA`) · **Origen:**
+observación de arquitectura del PM (2026-10-08) — grieta de arquitectura verificada sobre código ya
+construido (mismo criterio que abrió R-12 a R-25).
+
+**Objetivo:** T-13 (2026-09-01) especifica, como requisito 3, que el dueño puede corregir cualquier
+normalización automática con una entrada literal en `diccionario-locucion.json`, dentro de la carpeta
+de salida del guion, y que esa entrada **"siempre gana"** sobre cualquier regla automática —
+repetido palabra por palabra en `SKILL.md` ("el diccionario del dueño manda siempre sobre cualquiera
+de ellas") y en `references/convencion-guion.md`. Verificado leyendo el código, no solo la
+documentación: `scripts/normalizacion.py::cargar_diccionario_locucion` (la función que lee ese
+archivo de disco) no tiene **ningún** llamador fuera de sus propios tests —
+`grep -rn "cargar_diccionario_locucion" scripts/*.py` solo devuelve su propia definición. El fallo no
+se queda ahí: los cuatro puntos reales donde el diccionario debería aplicarse —
+`normalizacion.normalizar_guion`, `reescrituras.recopilar_propuestas` (que ni siquiera tiene un
+parámetro `diccionario`), `documento_revision.generar_documento_revision` (la generación del primer
+`guion-escenas.md`) y `revalidacion.revalidar_guion` (el único punto de entrada de la revalidación,
+documentado así en `DEVELOPERS.md`) — tampoco tienen, fuera de sus tests, ningún llamador real que
+construya un diccionario cargado de disco y lo pase: todos reciben `diccionario=None` por omisión en
+cualquier uso sobre un guion real, confirmado con el mismo `grep` sobre las cuatro funciones en
+`scripts/*.py`. La prueba más clara de la grieta: `tests/test_normalizacion.py` solo verifica (a) que
+`cargar_diccionario_locucion` lee bien el JSON del disco, por separado, y (b) que un diccionario ya
+construido a mano en memoria (`diccionario={"2026": "el año que viene"}`) sobrescribe la regla
+automática — nunca las dos cosas juntas, que es exactamente el camino real: el dueño escribe
+`diccionario-locucion.json` en la carpeta de salida esperando que la siguiente generación o
+revalidación lo respete sin tener que pedirlo explícitamente cada vez. A diferencia de las grietas que
+abrieron R-12 a R-25 (una salida o un cálculo sin consumidor, valor perdido pero sin promesa
+incumplida), esta es una **garantía contractual del propio documento de especificación que hoy no se
+sostiene en el flujo real** — el dueño podría escribir una corrección en el diccionario, no verla
+aplicada, y no tener ninguna señal de que algo falló: el requisito 3 no se cumple en silencio, sin
+ningún aviso, justo lo que el principio de producto nº 1 ("nada se descarta en silencio") prohíbe.
+Candidata alternativa descartada tras la misma verificación: `scripts/reescrituras.py::
+revertir_reescrituras` (T-15, deshacer global) sigue sin disparador documentado, pero ya se consideró
+y descartó al abrir R-25 por menor valor y mayor riesgo de diseño (no existe hoy ninguna superficie
+por la que el dueño dispare un "deshacer global"); nada ha cambiado ese análisis esta pasada.
 
 **Requisitos:**
-1. `TipoSalida` (`scripts/salidas.py`) gana una séptima opción, `CONVENCION_GUIONES`, al final del
-   orden ya establecido en `construir_pregunta_salidas`/`_DESCRIPCIONES`/`ResumenSalidas` (mismo
-   patrón que añadió `CAPITULOS_YOUTUBE` en R-18 y `CONCAT_FFMPEG` en R-19: nunca se reordenan las
-   seis existentes).
-2. `generar_salidas_seleccionadas` llama a `convencion.guardar_convencion_guiones(carpeta_salida,
-   configuracion)` reutilizada tal cual (cero segunda implementación, cero cambio en
-   `generar_convencion_guiones`/`guardar_convencion_guiones` en sí). A diferencia de las seis salidas
-   actuales, esta no depende del parseo ni de la clasificación del guion de entrada — solo de
-   `Configuracion` —, así que nunca puede quedar `SalidaOmitida` por un problema del guion; el único
-   fallo posible es de escritura a disco, cubierto por el mismo patrón `except`/diagnóstico que ya
-   protege a las demás salidas desde R-24.
-3. A diferencia de las salidas condicionadas a tomas de rodaje (SRT alineado, capítulos, concat),
-   `CONVENCION_GUIONES` se ofrece siempre en `construir_pregunta_salidas`, sin depender de
-   `estado.salidas_generadas` ni de ningún parte de rodaje — no cambia de un guion a otro salvo que
-   el dueño edite `Configuracion`, pero es el propio dueño quien decide cada vez si quiere
-   regenerarla (p. ej. tras cambiar alguna clave de convención).
-4. `references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` documentan la nueva salida
-   seleccionable, aclarando que complementa a R-23 (prevención de desviaciones futuras) en vez de
-   sustituir su detección (desviaciones ya ocurridas en el guion actual).
-5. Fuera de alcance, explícito: no se añade ninguna lógica nueva a
-   `generar_convencion_guiones`/`guardar_convencion_guiones` (T-10 ya las especifica, genera y prueba
-   correctamente); no se auto-genera sin que el dueño la seleccione, igual que las demás salidas.
+1. El recuento de entradas del diccionario efectivamente aplicado (0 si no hay archivo o si no se
+   cargó) se hace **visible** en la cabecera del resumen global de `guion-escenas.md` (T-16) y en
+   `tarjetas.json.metadatos` (T-29/pptx), mismo criterio de transparencia que T-12 ya aplica al ppm
+   ("de dónde sale y cuál sería el otro valor"): nunca más una omisión silenciosa de un archivo que el
+   dueño sí escribió.
+2. `documento_revision.generar_documento_revision` y `revalidacion.revalidar_guion` — los dos puntos
+   reales de generación/revalidación — ganan la responsabilidad de cargar el diccionario del dueño
+   cuando se les indica la carpeta de salida, reutilizando tal cual `normalizacion.
+   cargar_diccionario_locucion` (cero segunda implementación, cero cambio en su propia lectura de
+   disco ni en `normalizar_guion`/`normalizar_texto`, que siguen aceptando un `diccionario` explícito
+   para sus propios tests unitarios sin tocar disco). El diseño exacto de la firma (parámetro nuevo,
+   valor por defecto, orden de prioridad frente a un `diccionario` ya explícito) lo decide quien
+   implemente, documentado en `DECISIONES_TECNICAS.md`.
+3. `SKILL.md` dedica una instrucción explícita, con el fragmento de código exacto a invocar (mismo
+   patrón ya usado para `tropiezos_por_escena` en la sección de R-03: "la siguiente vez que se
+   regenere `guion-escenas.md` ..."), para que generar o revalidar sobre un guion real **siempre**
+   pase por la carga del diccionario — no una mención en una tabla de valores por defecto, sino un
+   paso nombrado del flujo que Claude no pueda pasar por alto.
+4. `reescrituras.recopilar_propuestas` gana un parámetro `resultados_normalizacion` ya calculado con
+   el diccionario correspondiente (no cambia su propia lógica de unión de propuestas) — se limita a
+   dejar de ser, sin saberlo, el punto donde el diccionario se pierde si quien llama no lo propaga.
+5. Fuera de alcance, explícito: no se cambia el formato de `diccionario-locucion.json` ni las reglas
+   de prioridad ya fijadas por T-13 (diccionario > familias automáticas); no se añade ningún campo
+   nuevo a `Configuracion` ni a `estado.json`; no se construye ningún `main()` de CLI nuevo que
+   orqueste todo el ciclo de punta a punta (sigue siendo responsabilidad de la sesión que usa la
+   skill, como documenta T-16/T-17) — esta tarea cierra la grieta del diccionario específicamente,
+   no diseña la orquestación general que todavía falta.
 
-**Criterio de aceptación:** test que confirma que seleccionar `CONVENCION_GUIONES` en
-`generar_salidas_seleccionadas` escribe `convencion-guiones.md` en `carpeta_salida` con el mismo
-contenido byte a byte que una llamada directa a `generar_convencion_guiones`; test que confirma que
-se sigue ofreciendo en la pregunta de selección incluso sin ningún parte de rodaje ni toma marcada
-(a diferencia de las salidas condicionadas); regresión de las seis salidas existentes sin cambios
-(mismo patrón que R-18/R-19 ya verifican sobre los tres guiones reales). Cuatro redes en verde.
+**Criterio de aceptación:** test de integración que escribe un `diccionario-locucion.json` real en
+una carpeta de salida y comprueba que generar `guion-escenas.md`/revalidar sobre un guion real aplica
+la entrada sin que el test construya el diccionario a mano en memoria (a diferencia de los tests
+actuales de T-13); test que confirma que la cabecera de `guion-escenas.md` y `tarjetas.json.metadatos`
+muestran el recuento correcto (0 sin archivo, N con N entradas); regresión de los tests existentes de
+T-13/T-16/T-17 sin cambios de comportamiento cuando no hay diccionario. Cuatro redes en verde.
 
 ---
 

@@ -10,8 +10,50 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-08 — **Ciclo de Programador: novena reconfirmación del día tras
-R-25**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-08 — **Ciclo de Product Manager: archiva Oleada v13 (R-25) y abre
+R-26 (Oleada v14)**, sin tocar código (detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Product Manager: archiva Oleada v13 (R-25) y abre R-26 (Oleada v14).** Revisión de
+entrada (protocolo): registro de hallazgos de `auditoriacontinua.md` reconfirma dos `ABIERTO`, ambos
+baja severidad y ya enrutados sin necesitar R-XX — `#24` (proceso, la pregunta de gobernanza #11 de
+§6 sigue `(pendiente)`, veintidós pasadas consecutivas de auditoría) y `#29` (la fila de R-25 faltaba
+en §1 al abrirse la tarea; ya resuelto por el propio ciclo de Programador que implementó R-25 el
+mismo día en que se detectó, añadiendo la fila al §1 vigente — el cierre a `RESUELTO` en
+`auditoriacontinua.md` queda para la siguiente pasada de auditoría). Ninguno de severidad alta ni de
+producto/arquitectura que convertir en R-XX nueva este ciclo. `roadmap/FEEDBACK.md` sigue con su
+única fila de plantilla vacía, sin ninguna entrada `nuevo` que incorporar — el bloqueo #7 de §3
+(grabar un curso completo) sigue sin resolverse. §1 (fuente autoritativa) tenía a R-25 como
+`COMPLETADA` desde el mismo commit del ciclo de Programador del 2026-10-08 que la abrió e implementó,
+sin el patrón de latencia que motivó `#24` esta vez. Este ciclo corrige la cabecera y la prosa de
+`ROADMAP_PRODUCTO.md`: Oleada v13 (R-25) se mueve íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec
+completa + "Cómo se entregó"), con su entrada de índice correspondiente.
+
+**Se abre R-26** (Oleada v14) por grieta de arquitectura verificada, mismo criterio que abrió R-12 a
+R-25, esta vez de severidad mayor: no una salida sin consumidor, sino una garantía contractual del
+propio `SKILL.md`/T-13 ("el diccionario del dueño manda siempre") que hoy no se cumple en el flujo
+real. Verificación propia, leyendo el código línea a línea: `scripts/normalizacion.py::
+cargar_diccionario_locucion` (lee `diccionario-locucion.json` de disco) no tiene ningún llamador fuera
+de sus propios tests (`grep -rn "cargar_diccionario_locucion" scripts/*.py`, único resultado la propia
+definición); los cuatro puntos reales que deberían aplicar el diccionario
+(`normalizacion.normalizar_guion`, `reescrituras.recopilar_propuestas`,
+`documento_revision.generar_documento_revision`, `revalidacion.revalidar_guion`) tampoco tienen,
+fuera de sus tests, ningún llamador que construya un diccionario cargado de disco y lo propague —
+todos reciben `diccionario=None` por omisión en cualquier uso real sobre un guion real. Los propios
+tests de T-13 prueban por separado "cargar el archivo" y "un diccionario en memoria sobrescribe la
+regla automática", nunca las dos cosas juntas sobre un archivo real en la carpeta de salida de un
+guion real — el camino que el dueño de verdad usaría. Candidata alternativa descartada tras la misma
+verificación: `scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer global) sigue sin
+disparador documentado, pero ya se consideró y descartó al abrir R-25 por menor valor y mayor riesgo
+de diseño (ninguna superficie hoy por la que el dueño dispare un "deshacer global"); nada cambia ese
+análisis esta pasada. Spec completa de R-26 en `ROADMAP_PRODUCTO.md` (Oleada v14), lista para que el
+siguiente ciclo de Programador la implemente y verifique. Este ciclo es de PM, no de Programador: no
+se ha ejecutado la verificación de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin
+nueva desviación en §7.
+
+**Última actualización anterior (2026-10-08, ciclo de Programador): novena reconfirmación del día tras
+R-25**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Nota de arranque de esta sesión (ciclo de Programador, novena reconfirmación del día tras R-25,
 2026-10-08):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
@@ -2094,6 +2136,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-23 | Desviaciones de convención visibles donde de verdad hacen falta: `scripts/convencion.py::detectar_desviaciones` (T-10/T-33) calcula correctamente escena sin rótulo, rótulo desconocido, sección auxiliar no reconocida y número de escena duplicado/no creciente, pero no se llama desde `documento_revision.py` (`guion-escenas.md`) ni `pptx.py` (`tarjetas.json`) — solo desde sus propios tests, pese a que `contrato-montaje.md` afirma lo contrario citando esa función | **COMPLETADA** | 2026-10-06 | `documento_revision.generar_documento_revision` llama una vez a `detectar_desviaciones` (misma `clasificacion` ya calculada) y reparte cada desviación por rango de línea: al pie de la escena que corresponda (`### Desviaciones de la convención`, separada de las indicaciones no recitables) o, si no cae en ninguna escena (p. ej. sección auxiliar no reconocida), en una sección propia tras el resumen global (`## Desviaciones de la convención (fuera de escena)`); cabecera gana el recuento "Desviaciones de la convención: N" (siempre presente, `N=0` no añade ninguna sección nueva). `pptx.py::ResultadoTarjetas` gana el campo aditivo `metadatos.desviaciones_convencion` (mismo `resultado`/`clasificacion` reutilizado, sin segunda implementación), vacío con `--para-terceros` igual que `notas_internas`. Cero cambio en `convencion.detectar_desviaciones` en sí (requisito 6). `references/contrato-tarjetas.md` y `contrato-montaje.md:68-73` actualizados — este último deja de afirmar en abstracto que la numeración "ya NO se da por supuesta en silencio" y dice exactamente dónde mirar. 9 tests nuevos (637→646): `tests/test_documento_revision.py` (localización correcta, sección fuera de escena, recuento de cabecera, `N=0` sin sección nueva), `tests/test_pptx.py` (lista vacía, misma descripción que `detectar_desviaciones`, exclusión `--para-terceros`, serialización) y `tests/test_integracion_montaje.py` (mismo texto en `guion-escenas.md` y `tarjetas.json` a la vez — el hallazgo que motivó la tarea). Fixture dorada `guion-ejemplo-esperado.md` regenerada (único cambio: la línea de cabecera en 0, ninguna sección nueva, confirma que los tres guiones reales no tienen desviaciones). Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho etapas (ninguna salida nueva). `DEVELOPERS.md` y `SKILL.md` actualizados. Oleada v11, `origen: observación de arquitectura del PM (2026-10-05)` |
 | R-24 | Diagnóstico real de un fallo al generar una salida: `scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18) captura hoy cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca ningún diagnóstico, en vez de usar la infraestructura de logger/diagnóstico de T-02/T-05 que se construyó el primer día del proyecto anticipando exactamente este consumidor | **COMPLETADA** | 2026-10-07 | `scripts/monitorizacion.py::volcar_diagnostico` (antes `_volcar_diagnostico`) promovida a pública; `generar_salidas_seleccionadas` la reutiliza junto con `logger.obtener_logger` dentro del `except` ya existente (sin cablear `ejecutar_con_diagnostico`, que aborta el proceso), volcando `diagnostico-<timestamp>.log` y registrando en el logger antes de construir la `SalidaOmitida` con un motivo en español que cita la ruta del diagnóstico. 3 tests nuevos (646→649). Cuatro redes en verde |
 | R-25 | Entregar `convencion-guiones.md` de verdad al dueño: conectar `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) — sin ningún consumidor fuera de sus propios tests — al selector real de salidas (T-30) | **COMPLETADA** | 2026-10-08 | `scripts/salidas.py` gana `TipoSalida.CONVENCION_GUIONES` (séptima opción, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual `convencion.guardar_convencion_guiones` (cero cambio en `convencion.py`). A diferencia de las demás salidas, no depende del parseo ni de la clasificación del guion de entrada, solo de `Configuracion`: se ofrece siempre en `construir_pregunta_salidas`, nunca omitida por falta de datos del guion o de parte de rodaje; el único fallo posible es de escritura a disco, cubierto por el mismo patrón `try`/`except`/diagnóstico de R-24. 3 tests nuevos (649→652), dos tests existentes actualizados al nuevo recuento de salidas siempre generadas. `references/contrato-montaje.md`, `SKILL.md` y `DEVELOPERS.md` actualizados. Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio |
+| R-26 | El diccionario del dueño (`diccionario-locucion.json`, T-13 requisito 3, "manda siempre") no tiene ningún llamador real fuera de sus propios tests, ni `cargar_diccionario_locucion` ni los cuatro puntos reales donde se aplicaría (`normalizar_guion`, `recopilar_propuestas`, `generar_documento_revision`, `revalidar_guion`): la garantía contractual del propio `SKILL.md` no se cumple hoy en el flujo real salvo que la sesión recuerde cargarlo a mano, sin ningún aviso si no lo hace | PENDIENTE | 2026-10-08 | Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v14), lista para el siguiente ciclo de Programador |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
