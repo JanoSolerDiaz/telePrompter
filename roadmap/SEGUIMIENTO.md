@@ -10,33 +10,39 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-08 — **Ciclo de Programador: R-25 implementada y `COMPLETADA`.**
-Séptima opción del selector de salidas (T-30): `convencion-guiones.md` (T-10) ya es una salida real
-seleccionable, no solo una función sin consumidor (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-08 — **Ciclo de Programador: primera reconfirmación del día tras
+R-25**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, 2026-10-08):** sin incidencia. `git status`
-limpio antes de tocar nada; el contenedor arrancó con `HEAD` *detached* en `5b71097` (resto de un
-contenedor anterior, descartable: ya fusionado en `develop`); `git checkout develop` dejó la rama
-local en `cc0ac86`; `git pull origin develop` resolvió en fast-forward limpio hasta `5b71097` (la
-auditoría del 2026-10-08, hallazgos `#24` reconfirmado y `#29` nuevo), sin conflicto ni rama
-divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este contenedor instaló de
-nuevo contra Python 3.13 en vez del 3.11.17 real del proyecto — mismo síntoma del hallazgo `#28`,
-reproducido una vez más; resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí
-resuelve al intérprete correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`,
-`pytest==8.4.2`).
+**Nota de arranque de esta sesión (ciclo de Programador, primera reconfirmación del día tras R-25,
+2026-10-08):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
+`HEAD` *detached* en `897c0ea` (resto de un contenedor anterior, descartable: ya fusionado en
+`develop`); `git checkout develop` dejó la rama local en `cc0ac86`; `git pull origin develop`
+resolvió en fast-forward limpio hasta `897c0ea` (R-25 implementada y `COMPLETADA`), sin conflicto
+ni rama divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este contenedor
+instaló de nuevo contra Python 3.13 en vez del 3.11.17 real del proyecto — mismo síntoma del
+hallazgo `#28`, reproducido una vez más; resuelto con `python3 -m pip install -r
+requirements-dev.txt`, que sí resuelve al intérprete correcto (mismas versiones pineadas:
+`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Revisión de entrada (protocolo):** registro de hallazgos de `auditoriacontinua.md` reconfirma dos
-`ABIERTO`, ambos de severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue
-`(pendiente)`) y `#29` (proceso, el ciclo de PM que abrió R-25 no añadió su fila a §1 de este
-documento, con recomendación de cierre ya escrita: "añadir la fila `R-25 | ... | PENDIENTE | ...`
-en el próximo ciclo que lo toque"). Ninguno de severidad alta que atender como P-XX urgente antes
-de esta tarea; `#29` se resuelve de forma natural con esta misma sesión, que añade la fila de R-25
-a §1 directamente como `COMPLETADA` (implementada y verificada en la misma sesión que la toca por
-primera vez, mismo patrón que R-17/R-19/R-24: nunca pasó por `PENDIENTE` en este documento). §1
-(fuente autoritativa) no tenía ninguna fila para R-25 (el hallazgo `#29` lo señala); su spec
-completa ya estaba lista en `ROADMAP_PRODUCTO.md` (Oleada v13) desde el ciclo de PM del 2026-10-07.
+**Ciclo de Programador de esta sesión: primera reconfirmación del día tras R-25**, sin novedad de
+código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`,
+ambos de severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y
+`#29` (proceso, la fila de R-25 ya añadida a §1 por la sesión que la implementó, con la
+recomendación de cierre de ese mismo hallazgo ya ejecutada; el cierre a `RESUELTO` en
+`auditoriacontinua.md` queda para la siguiente pasada del auditor, que es quien modifica ese
+archivo). Ninguno de severidad alta que atender como P-XX urgente antes de esta tarea.
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo`;
+`mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero issues y
+cero PR abiertos. §1 (fuente autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE` (R-25 es la
+última, `COMPLETADA`): cola de la columna vertebral vacía, sin tarea de código que ejecutar ni
+hallazgo nuevo que convertir en P-XX. Verificación propia completa: `mypy`/`ruff` en verde sin
+hallazgos (70 archivos), 652 tests (`pytest`, sin cambio) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos) ni §5
+(P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva desviación en §7. Nota sin
+acción: cola vacía hasta el siguiente ciclo de Product Manager.
 
-**Ciclo de Programador: R-25 implementada y `COMPLETADA`.** `scripts/salidas.py` gana
+**Última actualización anterior (2026-10-08, ciclo de Programador): R-25 implementada y
+`COMPLETADA`.** `scripts/salidas.py` gana
 `TipoSalida.CONVENCION_GUIONES` (séptima opción, al final del orden ya establecido en
 `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y
 `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual
