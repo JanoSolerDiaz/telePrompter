@@ -12,6 +12,38 @@
 
 ---
 
+### Sesión 2026-10-08 (114) — Ciclo de Programador: novena reconfirmación del día tras R-25
+
+**Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* en `b15f852` (resto de
+un contenedor anterior, descartable: ya fusionado en `develop`); `git checkout develop` dejó la rama
+local en `cc0ac86`; `git pull origin develop` resolvió en fast-forward limpio hasta `b15f852` (la
+octava reconfirmación del día tras R-25, sesión 113, sin ningún commit nuevo entre medias), sin
+conflicto ni rama divergida. El `pip` pelado de este contenedor volvió a instalar contra Python 3.13
+en vez del 3.11.17 real del proyecto (confirmado con `pip --version`: `python 3.13`) — mismo síntoma
+del hallazgo `#28`, reproducido una vez más; resuelto con `python3 -m pip install -r
+requirements-dev.txt`, que sí resuelve al intérprete correcto (mismas versiones pineadas:
+`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`,
+ambos baja severidad — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y `#29`
+(proceso, la fila de R-25 ya añadida a §1 por la sesión 105 que la implementó, con la recomendación
+de cierre de ese mismo hallazgo ya ejecutada; el cierre a `RESUELTO` en `auditoriacontinua.md` queda
+para la siguiente pasada del auditor). Ninguno de severidad alta que atender como P-XX urgente antes
+de esta tarea. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero
+issues y cero PR abiertos. §1 (fuente autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE` (R-25 es
+la última, `COMPLETADA`): cola de la columna vertebral vacía, sin tarea de código que ejecutar ni
+hallazgo nuevo que convertir en P-XX.
+
+**Sin novedad de código.** Verificación propia completa (`python scripts/ci.py`): `mypy`/`ruff` en
+verde sin hallazgos (70 archivos), 652 tests (`pytest`, sin cambio) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos) ni §5
+(P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva desviación en §7. Sin filas
+nuevas en `DECISIONES_TECNICAS.md` (nada nuevo que decidir). Nota sin acción: cola vacía hasta el
+siguiente ciclo de Product Manager.
+
+---
+
 ### Sesión 2026-10-08 (113) — Ciclo de Programador: octava reconfirmación del día tras R-25
 
 **Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* en `b455827` (resto de
