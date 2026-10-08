@@ -10,8 +10,61 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-07 — **Ciclo de Product Manager: archiva Oleada v12 (R-24) y abre
-R-25 (Oleada v13)**, sin tocar código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-08 — **Ciclo de Programador: R-25 implementada y `COMPLETADA`.**
+Séptima opción del selector de salidas (T-30): `convencion-guiones.md` (T-10) ya es una salida real
+seleccionable, no solo una función sin consumidor (detalle en la nota de esta sesión, más abajo).
+
+**Nota de arranque de esta sesión (ciclo de Programador, 2026-10-08):** sin incidencia. `git status`
+limpio antes de tocar nada; el contenedor arrancó con `HEAD` *detached* en `5b71097` (resto de un
+contenedor anterior, descartable: ya fusionado en `develop`); `git checkout develop` dejó la rama
+local en `cc0ac86`; `git pull origin develop` resolvió en fast-forward limpio hasta `5b71097` (la
+auditoría del 2026-10-08, hallazgos `#24` reconfirmado y `#29` nuevo), sin conflicto ni rama
+divergida. `pip install -r requirements-dev.txt` con el `pip` pelado de este contenedor instaló de
+nuevo contra Python 3.13 en vez del 3.11.17 real del proyecto — mismo síntoma del hallazgo `#28`,
+reproducido una vez más; resuelto con `python3 -m pip install -r requirements-dev.txt`, que sí
+resuelve al intérprete correcto (mismas versiones pineadas: `mypy==1.18.2`, `ruff==0.14.0`,
+`pytest==8.4.2`).
+
+**Revisión de entrada (protocolo):** registro de hallazgos de `auditoriacontinua.md` reconfirma dos
+`ABIERTO`, ambos de severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue
+`(pendiente)`) y `#29` (proceso, el ciclo de PM que abrió R-25 no añadió su fila a §1 de este
+documento, con recomendación de cierre ya escrita: "añadir la fila `R-25 | ... | PENDIENTE | ...`
+en el próximo ciclo que lo toque"). Ninguno de severidad alta que atender como P-XX urgente antes
+de esta tarea; `#29` se resuelve de forma natural con esta misma sesión, que añade la fila de R-25
+a §1 directamente como `COMPLETADA` (implementada y verificada en la misma sesión que la toca por
+primera vez, mismo patrón que R-17/R-19/R-24: nunca pasó por `PENDIENTE` en este documento). §1
+(fuente autoritativa) no tenía ninguna fila para R-25 (el hallazgo `#29` lo señala); su spec
+completa ya estaba lista en `ROADMAP_PRODUCTO.md` (Oleada v13) desde el ciclo de PM del 2026-10-07.
+
+**Ciclo de Programador: R-25 implementada y `COMPLETADA`.** `scripts/salidas.py` gana
+`TipoSalida.CONVENCION_GUIONES` (séptima opción, al final del orden ya establecido en
+`TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y
+`CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual
+`convencion.guardar_convencion_guiones` (T-10, cero cambio en `convencion.py`). A diferencia de las
+demás salidas, no recibe `resultado`/`resultado_tiempos`: no depende del parseo ni de la
+clasificación del guion de entrada, solo de `Configuracion`, así que se ofrece siempre en
+`construir_pregunta_salidas` sin ninguna condición (nunca omitida por falta de datos del guion o de
+parte de rodaje, a diferencia de `CAPITULOS_YOUTUBE`/`CONCAT_FFMPEG`) y el único fallo posible es de
+escritura a disco, cubierto por el mismo `try`/`except`/diagnóstico de R-24. 3 tests nuevos
+(649→652) en `tests/test_salidas.py`: coincide byte a byte con la llamada directa a
+`generar_convencion_guiones`, se sigue ofreciendo sin ningún parte de rodaje ni toma marcada, y
+`TODAS_LAS_SALIDAS[-1]`/`len(...) == 7`; dos tests existentes actualizados
+(`test_no_seleccionadas_quedan_omitidas_sin_generar_archivo`/`test_pptx_latente_no_impide_las_demas`)
+para reflejar la séptima opción siempre generada, en vez de dejarlos en rojo o duplicarlos (detalle
+en `DECISIONES_TECNICAS.md`). `references/contrato-montaje.md` documenta la salida nueva (no es
+contrato de montaje, complementa a R-23); `SKILL.md` documenta la séptima opción en "Selector de
+salidas por validación"; `DEVELOPERS.md` gana la sección "Entregar `convencion-guiones.md` de verdad
+al dueño (R-25)". Verificación pre-push completa: `mypy`/`ruff` en verde sin hallazgos (70
+archivos), 652 tests (`pytest`, 649→652), dieciocho etapas OK en `verificar_salidas.py --fixture`
+(sin cambio: "Generación de salidas" ya ejercita `TODAS_LAS_SALIDAS` dinámicamente, sin necesitar
+una etapa dedicada nueva para un documento sin validador propio de formato). Las cuatro redes en
+verde. Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue
+`(pendiente)`); sin nueva desviación en §7. §1 gana la fila `R-25 | ... | COMPLETADA | 2026-10-08`
+(resuelve de paso el hallazgo `#29`, que el auditor cerrará en su siguiente pasada) y ya no tiene
+ninguna R-XX/T-XX `PENDIENTE`: cola vacía hasta el siguiente ciclo de Product Manager.
+
+**Última actualización anterior (2026-10-07, ciclo de Product Manager): archiva Oleada v12 (R-24) y
+abre R-25 (Oleada v13)**, sin tocar código (detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Product Manager: archiva Oleada v12 (R-24) y abre R-25 (Oleada v13).** Revisión de
 entrada (protocolo): registro de hallazgos de `auditoriacontinua.md` reconfirma dos `ABIERTO`, ambos
@@ -1852,6 +1905,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-22 | Capítulos reales incrustables en el vídeo final: `capitulos-ffmpeg.txt`, formato `FFMETADATA1` nativo de ffmpeg, reutilizando tal cual el emparejamiento título↔escena y los tiempos real/estimado que `capitulos_youtube.calcular_capitulos` ya calcula para `capitulos-youtube.txt` (R-07) | **COMPLETADA** | 2026-10-05 | `ResultadoCapitulos` gana el campo aditivo `duracion_total_segundos` (el cursor final que el bucle de `calcular_capitulos` ya acumulaba y hasta ahora descartaba, `0.0` en los tres casos de `motivo_sin_generar`). `scripts/capitulos_youtube.py` gana `formatear_capitulos_ffmpeg` (hermana de `formatear_capitulos_youtube`: primera línea `;FFMETADATA1`, un bloque `[CHAPTER]` por capítulo con `TIMEBASE=1/1000`/`START`/`END` en milisegundos truncados hacia abajo y `title=<título>` escapado según el propio formato — `\`, `=`, `;`, `#` y salto de línea con `\` por delante, mismo patrón que `concat_ffmpeg._escapar_ruta_ffmpeg` de R-19; `END` de un capítulo es el `START` del siguiente, el del último es `duracion_total_segundos` convertido a ms; nota de transparencia real/estimado como comentario `;` cuando aplica), deliberadamente SIN la marca mínima de YouTube (requisito 4: cada escena emparejada es su propio capítulo, un archivo de metadatos incrustado no compite por espacio de lectura) y `validar_capitulos_ffmpeg` (exige `;FFMETADATA1`, `START`/`END` enteros no negativos, `START` estrictamente creciente, sin solapes). `scripts/salidas.py::_generar_capitulos_youtube` genera `capitulos-ffmpeg.txt` como segunda mitad de la misma opción `CAPITULOS_YOUTUBE` (no una séptima, mismo patrón que `guion.srt`/`guion-alineado.srt` bajo `SRT`, R-18), validándolo antes de escribir desde el primer día (lección del hallazgo `#27`/R-21): un contenido inválido degrada solo esa mitad a `SalidaOmitida`, sin impedir que `capitulos-youtube.txt` se mantenga. `config.NOMBRE_ARCHIVO_CAPITULOS_FFMPEG = "capitulos-ffmpeg.txt"` (constante de módulo, no campo de `Configuracion`). 18 tests nuevos (619→637): `tests/test_capitulos_youtube.py` (formato exacto, contigüidad `END`=`START` siguiente, sin filtrado por marca mínima a diferencia de YouTube, escapado de caracteres especiales, nota de transparencia, criterio de aceptación sobre los tres guiones reales, validador independiente, guardado) y `tests/test_salidas.py` (contenido coincide con la llamada directa; contenido inválido forzado por monkeypatch degrada solo esa mitad sin afectar a `capitulos-youtube.txt`). Cuatro redes en verde, `verificar_salidas.py --fixture` gana dos etapas nuevas (dieciocho en total). `references/contrato-montaje.md`, `DEVELOPERS.md` y `SKILL.md` actualizados. Oleada v10, `origen: observación de arquitectura del PM (2026-10-02)` |
 | R-23 | Desviaciones de convención visibles donde de verdad hacen falta: `scripts/convencion.py::detectar_desviaciones` (T-10/T-33) calcula correctamente escena sin rótulo, rótulo desconocido, sección auxiliar no reconocida y número de escena duplicado/no creciente, pero no se llama desde `documento_revision.py` (`guion-escenas.md`) ni `pptx.py` (`tarjetas.json`) — solo desde sus propios tests, pese a que `contrato-montaje.md` afirma lo contrario citando esa función | **COMPLETADA** | 2026-10-06 | `documento_revision.generar_documento_revision` llama una vez a `detectar_desviaciones` (misma `clasificacion` ya calculada) y reparte cada desviación por rango de línea: al pie de la escena que corresponda (`### Desviaciones de la convención`, separada de las indicaciones no recitables) o, si no cae en ninguna escena (p. ej. sección auxiliar no reconocida), en una sección propia tras el resumen global (`## Desviaciones de la convención (fuera de escena)`); cabecera gana el recuento "Desviaciones de la convención: N" (siempre presente, `N=0` no añade ninguna sección nueva). `pptx.py::ResultadoTarjetas` gana el campo aditivo `metadatos.desviaciones_convencion` (mismo `resultado`/`clasificacion` reutilizado, sin segunda implementación), vacío con `--para-terceros` igual que `notas_internas`. Cero cambio en `convencion.detectar_desviaciones` en sí (requisito 6). `references/contrato-tarjetas.md` y `contrato-montaje.md:68-73` actualizados — este último deja de afirmar en abstracto que la numeración "ya NO se da por supuesta en silencio" y dice exactamente dónde mirar. 9 tests nuevos (637→646): `tests/test_documento_revision.py` (localización correcta, sección fuera de escena, recuento de cabecera, `N=0` sin sección nueva), `tests/test_pptx.py` (lista vacía, misma descripción que `detectar_desviaciones`, exclusión `--para-terceros`, serialización) y `tests/test_integracion_montaje.py` (mismo texto en `guion-escenas.md` y `tarjetas.json` a la vez — el hallazgo que motivó la tarea). Fixture dorada `guion-ejemplo-esperado.md` regenerada (único cambio: la línea de cabecera en 0, ninguna sección nueva, confirma que los tres guiones reales no tienen desviaciones). Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho etapas (ninguna salida nueva). `DEVELOPERS.md` y `SKILL.md` actualizados. Oleada v11, `origen: observación de arquitectura del PM (2026-10-05)` |
 | R-24 | Diagnóstico real de un fallo al generar una salida: `scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18) captura hoy cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca ningún diagnóstico, en vez de usar la infraestructura de logger/diagnóstico de T-02/T-05 que se construyó el primer día del proyecto anticipando exactamente este consumidor | **COMPLETADA** | 2026-10-07 | `scripts/monitorizacion.py::volcar_diagnostico` (antes `_volcar_diagnostico`) promovida a pública; `generar_salidas_seleccionadas` la reutiliza junto con `logger.obtener_logger` dentro del `except` ya existente (sin cablear `ejecutar_con_diagnostico`, que aborta el proceso), volcando `diagnostico-<timestamp>.log` y registrando en el logger antes de construir la `SalidaOmitida` con un motivo en español que cita la ruta del diagnóstico. 3 tests nuevos (646→649). Cuatro redes en verde |
+| R-25 | Entregar `convencion-guiones.md` de verdad al dueño: conectar `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) — sin ningún consumidor fuera de sus propios tests — al selector real de salidas (T-30) | **COMPLETADA** | 2026-10-08 | `scripts/salidas.py` gana `TipoSalida.CONVENCION_GUIONES` (séptima opción, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual `convencion.guardar_convencion_guiones` (cero cambio en `convencion.py`). A diferencia de las demás salidas, no depende del parseo ni de la clasificación del guion de entrada, solo de `Configuracion`: se ofrece siempre en `construir_pregunta_salidas`, nunca omitida por falta de datos del guion o de parte de rodaje; el único fallo posible es de escritura a disco, cubierto por el mismo patrón `try`/`except`/diagnóstico de R-24. 3 tests nuevos (649→652), dos tests existentes actualizados al nuevo recuento de salidas siempre generadas. `references/contrato-montaje.md`, `SKILL.md` y `DEVELOPERS.md` actualizados. Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

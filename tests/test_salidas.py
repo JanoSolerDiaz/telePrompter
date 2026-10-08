@@ -166,6 +166,7 @@ def test_no_seleccionadas_quedan_omitidas_sin_generar_archivo(tmp_path: Path) ->
         TipoSalida.PPTX,
         TipoSalida.CAPITULOS_YOUTUBE,
         TipoSalida.CONCAT_FFMPEG,
+        TipoSalida.CONVENCION_GUIONES,
     }
     for omitida in resumen.omitidas:
         assert "no seleccionada" in omitida.motivo
@@ -268,7 +269,13 @@ def test_pptx_latente_no_impide_las_demas(tmp_path: Path) -> None:
     )
 
     tipos_generados = {a.tipo for a in resumen.generadas}
-    assert tipos_generados == {TipoSalida.HTML, TipoSalida.SRT, TipoSalida.PDF, TipoSalida.PPTX}
+    assert tipos_generados == {
+        TipoSalida.HTML,
+        TipoSalida.SRT,
+        TipoSalida.PDF,
+        TipoSalida.PPTX,
+        TipoSalida.CONVENCION_GUIONES,
+    }
     assert any(latente.tipo is TipoSalida.PPTX for latente in resumen.latentes)
     # CAPITULOS_YOUTUBE (sin seccion `Capítulos`, R-18) y CONCAT_FFMPEG (sin
     # ningun parte de rodaje registrado, R-19) quedan omitidas por el mismo
@@ -379,15 +386,22 @@ def test_capitulos_youtube_es_la_quinta_opcion_de_la_pregunta() -> None:
     """Requisito 4 de R-18: `TipoSalida` gana una quinta opcion,
     `CAPITULOS_YOUTUBE`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
     junto a las cuatro ya existentes."""
-    assert TODAS_LAS_SALIDAS[-2] is TipoSalida.CAPITULOS_YOUTUBE
+    assert TODAS_LAS_SALIDAS[-3] is TipoSalida.CAPITULOS_YOUTUBE
 
 
 def test_concat_ffmpeg_es_la_sexta_opcion_de_la_pregunta() -> None:
     """Requisito 4 de R-19: `TipoSalida` gana una sexta opcion,
     `CONCAT_FFMPEG`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
     junto a las cinco ya existentes."""
-    assert TODAS_LAS_SALIDAS[-1] is TipoSalida.CONCAT_FFMPEG
-    assert len(TODAS_LAS_SALIDAS) == 6
+    assert TODAS_LAS_SALIDAS[-2] is TipoSalida.CONCAT_FFMPEG
+
+
+def test_convencion_guiones_es_la_septima_opcion_de_la_pregunta() -> None:
+    """Requisito 1 de R-25: `TipoSalida` gana una septima opcion,
+    `CONVENCION_GUIONES`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
+    junto a las seis ya existentes, al final del orden establecido."""
+    assert TODAS_LAS_SALIDAS[-1] is TipoSalida.CONVENCION_GUIONES
+    assert len(TODAS_LAS_SALIDAS) == 7
 
 
 def test_capitulos_youtube_generado_coincide_con_la_llamada_directa(tmp_path: Path) -> None:
@@ -591,6 +605,57 @@ def test_concat_ffmpeg_con_contenido_invalido_degrada_a_omitida_en_vez_de_escrib
     assert "problema simulado" in omitida.motivo
     assert not omitida.motivo.startswith("fallo al generar")
     assert not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()
+
+
+# --- R-25: CONVENCION_GUIONES, septima opcion del selector ---------------------------
+
+
+def test_convencion_guiones_generada_coincide_con_la_llamada_directa(tmp_path: Path) -> None:
+    """Requisito 2 de R-25: seleccionar `CONVENCION_GUIONES` escribe
+    `convencion-guiones.md` con el mismo contenido byte a byte que una
+    llamada directa a `convencion.generar_convencion_guiones`."""
+    from convencion import generar_convencion_guiones
+
+    configuracion = Configuracion()
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS, configuracion)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CONVENCION_GUIONES,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        configuracion=configuracion,
+    )
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.CONVENCION_GUIONES)
+    assert archivo.ruta.read_text(encoding="utf-8") == generar_convencion_guiones(configuracion)
+    omitida_convencion = [
+        o for o in resumen.omitidas if o.tipo is TipoSalida.CONVENCION_GUIONES
+    ]
+    assert omitida_convencion == []
+
+
+def test_convencion_guiones_se_ofrece_siempre_sin_ningun_parte_de_rodaje(
+    tmp_path: Path,
+) -> None:
+    """Requisito 3 de R-25: a diferencia de las salidas condicionadas a
+    tomas de rodaje, `CONVENCION_GUIONES` nunca queda omitida por falta de
+    datos del guion o de parte de rodaje -- no depende de ninguno de los
+    dos, solo de `Configuracion`."""
+    estado = estado_inicial(_guion_temporal(tmp_path), Configuracion())
+    pregunta = construir_pregunta_salidas(estado)
+    assert TipoSalida.CONVENCION_GUIONES in pregunta.sugerencia
+
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CONVENCION_GUIONES,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena={},
+    )
+    assert {a.tipo for a in resumen.generadas} == {TipoSalida.CONVENCION_GUIONES}
+    assert not any(o.tipo is TipoSalida.CONVENCION_GUIONES for o in resumen.omitidas)
 
 
 def test_regresion_guiones_reales_sin_tomas_identica_a_antes_de_r18(

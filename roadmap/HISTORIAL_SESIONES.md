@@ -12,6 +12,50 @@
 
 ---
 
+### Sesión 2026-10-08 (105) — Ciclo de Programador: R-25 implementada y `COMPLETADA`
+
+**Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* en `5b71097` (resto
+de un contenedor anterior, descartable: ya fusionado en `develop`); `git checkout develop` dejó la
+rama local en `cc0ac86`; `git pull origin develop` resolvió en fast-forward limpio hasta `5b71097`
+(la auditoría del 2026-10-08, sesión 104, hallazgo `#29` nuevo), sin conflicto ni rama divergida.
+`pip install -r requirements-dev.txt` con el `pip` pelado de este contenedor instaló de nuevo contra
+Python 3.13 en vez del 3.11.17 real del proyecto — mismo síntoma del hallazgo `#28`, reproducido una
+vez más; resuelto con `python3 -m pip install -r requirements-dev.txt`.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`,
+ambos baja severidad — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y `#29`
+(proceso, nuevo en la auditoría del 2026-10-08: el ciclo de PM que abrió R-25, sesión 104, no añadió
+su fila a §1 de `SEGUIMIENTO.md`, con recomendación de cierre ya escrita). Ninguno de severidad alta
+que atender como P-XX urgente antes de esta tarea. §1 no tenía ninguna fila para R-25 (exactamente lo
+que señala `#29`); su spec completa ya estaba lista en `ROADMAP_PRODUCTO.md` (Oleada v13) desde la
+sesión 104. Única R-XX pendiente de código: R-25.
+
+**Implementa R-25: entregar `convencion-guiones.md` de verdad al dueño.** `scripts/salidas.py` gana
+`TipoSalida.CONVENCION_GUIONES` (séptima opción, al final del orden ya establecido) y
+`_generar_convencion_guiones`, que reutiliza tal cual `convencion.guardar_convencion_guiones` (T-10,
+cero cambio en `convencion.py`). A diferencia de las demás salidas, no depende del parseo ni de la
+clasificación del guion de entrada — solo de `Configuracion` — así que se ofrece siempre en
+`construir_pregunta_salidas` sin ninguna condición; el único fallo posible es de escritura a disco,
+cubierto por el mismo patrón `try`/`except`/diagnóstico de R-24. 3 tests nuevos (649→652) en
+`tests/test_salidas.py` (coincide byte a byte con la llamada directa; se sigue ofreciendo sin ningún
+parte de rodaje ni toma marcada; `TODAS_LAS_SALIDAS[-1]`/`len(...) == 7`), más dos tests existentes
+actualizados al nuevo recuento de salidas siempre generadas (decisiones en
+`DECISIONES_TECNICAS.md`, filas 2026-10-08). `references/contrato-montaje.md`, `SKILL.md` y
+`DEVELOPERS.md` actualizados.
+
+**Verificación pre-push completa.** `mypy`/`ruff` en verde sin hallazgos (70 archivos), 652 tests
+(`pytest`, 649→652), dieciocho etapas OK en `verificar_salidas.py --fixture` (sin cambio: decisión
+registrada de no añadir una etapa dedicada, ver `DECISIONES_TECNICAS.md`). Cuatro redes en verde.
+
+**Cambios de estado.** §1 de `SEGUIMIENTO.md` gana la fila `R-25 | ... | COMPLETADA | 2026-10-08`
+(resuelve de paso el hallazgo `#29`, que el auditor cerrará en su siguiente pasada) y ya no tiene
+ninguna R-XX/T-XX `PENDIENTE`: cola vacía hasta el siguiente ciclo de Product Manager. Sin cambios en
+§3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva desviación
+en §7. Dos filas nuevas en `DECISIONES_TECNICAS.md` (2026-10-08: sin etapa dedicada en la cuarta red;
+tests existentes actualizados).
+
+---
+
 ### Sesión 2026-10-07 (104) — Ciclo de Product Manager: archiva Oleada v12 (R-24) y abre R-25 (Oleada v13)
 
 **Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en

@@ -75,6 +75,17 @@ y registra la excepcion en el logger centralizado
 T-02/T-05 en vez de inventar manejo de errores propio; el `motivo` de la
 salida omitida pasa a ser un mensaje accionable en espanol que remite a ese
 archivo, nunca la traza tecnica.
+
+R-25 anade una septima opcion, `CONVENCION_GUIONES`: reutiliza tal cual
+`convencion.guardar_convencion_guiones` (T-10) para entregar
+`convencion-guiones.md` como salida seleccionable de verdad -- hasta ahora
+la funcion no tenia ningun consumidor fuera de sus propios tests. A
+diferencia de las demas salidas, no depende del parseo ni de la
+clasificacion del guion de entrada (solo de `Configuracion`), asi que se
+ofrece siempre en `construir_pregunta_salidas` sin condicion ninguna
+(nunca omitida por falta de datos del guion) y el unico fallo posible es
+de escritura a disco, cubierto por el mismo patron `except`/diagnostico
+de R-24.
 """
 
 from __future__ import annotations
@@ -97,6 +108,7 @@ from concat_ffmpeg import (
     validar_lista_concat_ffmpeg,
 )
 from config import Configuracion
+from convencion import guardar_convencion_guiones
 from estado import EstadoProyecto, marca_de_tiempo
 from logger import obtener_logger
 from monitorizacion import ruta_diagnostico, volcar_diagnostico
@@ -111,8 +123,8 @@ from tiempos import ResultadoTiempos
 
 
 class TipoSalida(str, Enum):
-    """Las seis salidas de la skill (requisito 1 de T-30, sexta opcion
-    de R-19), en el orden en que se ofrecen siempre en la pregunta y en el
+    """Las siete salidas de la skill (requisito 1 de T-30, septima opcion
+    de R-25), en el orden en que se ofrecen siempre en la pregunta y en el
     resumen."""
 
     HTML = "html"
@@ -121,6 +133,7 @@ class TipoSalida(str, Enum):
     SRT = "srt"
     CAPITULOS_YOUTUBE = "capitulos_youtube"
     CONCAT_FFMPEG = "concat_ffmpeg"
+    CONVENCION_GUIONES = "convencion_guiones"
 
 
 DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
@@ -130,6 +143,7 @@ DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
     TipoSalida.SRT: "Subtítulos .srt borrador",
     TipoSalida.CAPITULOS_YOUTUBE: "Capítulos de YouTube con marcas de tiempo (.txt)",
     TipoSalida.CONCAT_FFMPEG: "Lista de concatenación de ffmpeg (.txt)",
+    TipoSalida.CONVENCION_GUIONES: "Convención de guiones para pegar en tu plantilla (.md)",
 }
 
 TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
@@ -139,6 +153,7 @@ TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
     TipoSalida.SRT,
     TipoSalida.CAPITULOS_YOUTUBE,
     TipoSalida.CONCAT_FFMPEG,
+    TipoSalida.CONVENCION_GUIONES,
 )
 
 
@@ -424,6 +439,18 @@ def _generar_concat_ffmpeg(
     return [ArchivoGenerado(TipoSalida.CONCAT_FFMPEG, ruta, ruta.stat().st_size)], []
 
 
+def _generar_convencion_guiones(
+    carpeta_salida: Path,
+    configuracion: Configuracion,
+) -> list[ArchivoGenerado]:
+    """R-25: entrega `convencion-guiones.md` reutilizando tal cual
+    `convencion.guardar_convencion_guiones` (T-10, requisito 2) -- a
+    diferencia de las demas salidas, no depende del parseo ni de la
+    clasificacion del guion de entrada, solo de `Configuracion`."""
+    ruta = guardar_convencion_guiones(carpeta_salida, configuracion)
+    return [ArchivoGenerado(TipoSalida.CONVENCION_GUIONES, ruta, ruta.stat().st_size)]
+
+
 def generar_salidas_seleccionadas(
     seleccion: SeleccionSalidas,
     resultado: ResultadoParseo,
@@ -510,6 +537,8 @@ def generar_salidas_seleccionadas(
                 )
                 generadas.extend(nuevas)
                 omitidas.extend(nuevas_omitidas)
+            elif tipo is TipoSalida.CONVENCION_GUIONES:
+                generadas.extend(_generar_convencion_guiones(carpeta_salida, configuracion))
         except Exception as excepcion:  # una salida rota no tumba la pasada
             ruta = ruta_diagnostico(carpeta_salida)
             volcar_diagnostico(ruta, excepcion)

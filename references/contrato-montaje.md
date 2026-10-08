@@ -25,6 +25,7 @@ aislamiento, §0.2 de `HOJA_DE_RUTA.md`):
 ├── capitulos-youtube.txt    # capítulos con marcas de tiempo reales (R-07), si el guion trae la sección
 ├── capitulos-ffmpeg.txt     # capítulos FFMETADATA1 incrustables (R-22), misma condición que el anterior
 ├── concat-ffmpeg.txt        # lista de concatenación de ffmpeg (R-19), si existe parte de rodaje
+├── convencion-guiones.md    # convención de guiones para pegar en la plantilla (R-25); no lo consume el montaje
 ├── diccionario-locucion.json  # opcional, del dueño (T-13)
 └── teleprompter.log         # diagnóstico técnico (T-02); no lo consume el montaje
 ```
@@ -249,6 +250,25 @@ excepción sin capturar. `archivo_video` llega ya saneado desde su origen
 (recortado, sin saltos de línea; `references/contrato-tomas.md`), así que este
 caso solo se da si esa garantía se rompe — nunca por una toma anotada con
 normalidad.
+
+## `convencion-guiones.md` — prevenir desviaciones futuras, no detectar las de hoy (R-25)
+
+Séptima opción del selector de salidas (T-30), `scripts/convencion.py::generar_convencion_guiones`
+(T-10) reutilizada tal cual: un documento de una página, listo para que el
+dueño lo pegue en su propia plantilla de guiones, con el patrón de
+encabezado de escena, rótulos de locución/no locución y numeración que
+espera la convención contractual. **No es contrato de montaje** — la cadena
+de montaje no lo lee ni lo necesita, igual que `guion-escenas.md`.
+
+A diferencia de las demás salidas, no depende del parseo ni de la
+clasificación del guion de entrada — solo de `Configuracion` — así que se
+ofrece siempre en la pregunta de selección, nunca condicionada a que exista
+parte de rodaje ni a ningún dato del guion actual. Complementa a R-23
+(desviaciones de convención visibles al pie de `guion-escenas.md` y en
+`tarjetas.json.metadatos.desviaciones_convencion`): R-23 señala las
+desviaciones que **ya ocurrieron** en el guion actual; `convencion-guiones.md`
+es la herramienta para que los **futuros** guiones del dueño ya nazcan sin
+ellas.
 
 ## Qué quedaba fuera de esta tarea (T-33), ya completado por sesiones posteriores
 

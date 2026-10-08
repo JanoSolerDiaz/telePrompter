@@ -3309,6 +3309,49 @@ conecta ese `except` con la infraestructura ya construida, sin diseñar nada nue
   al nuevo contrato del motivo en vez de duplicarse. Cuatro redes en verde; `verificar_salidas.py
   --fixture` sigue en dieciocho etapas (R-24 no añade ninguna salida nueva).
 
+## Entregar `convencion-guiones.md` de verdad al dueño (R-25)
+
+`scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones` (T-10,
+2026-09-01) generan un documento de una página pensado explícitamente, según su propio
+docstring, para que el dueño lo "pegue en su plantilla de guiones" — pero hasta R-25 no tenían
+ningún consumidor fuera de sus propios tests: `grep -rn
+"generar_convencion_guiones\|guardar_convencion_guiones" scripts/*.py SKILL.md` no devolvía
+ningún resultado fuera de `scripts/convencion.py`. No estaba entre las seis opciones de
+`scripts/salidas.py::TipoSalida` (T-30/R-18/R-19) ni ningún paso de `SKILL.md` le decía a
+Claude cuándo ofrecerla. R-25 la conecta al selector real, mismo patrón de bajo riesgo que ya
+usaron R-18/R-19/R-22 para sus respectivas salidas nuevas.
+
+- **Requisito 1 (`CONVENCION_GUIONES`, séptima opción de `TipoSalida`).** Añadida al final del
+  orden ya establecido en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA` (mismo patrón que
+  `CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19: nunca se reordenan las seis existentes).
+- **Requisito 2 (reutiliza `guardar_convencion_guiones` tal cual).** `_generar_convencion_guiones`
+  (`scripts/salidas.py`) llama a `convencion.guardar_convencion_guiones(carpeta_salida,
+  configuracion)` sin ninguna segunda implementación ni cambio en `convencion.py`. A diferencia
+  de las demás salidas, no recibe `resultado`/`resultado_tiempos`: no depende del parseo ni de la
+  clasificación del guion de entrada, solo de `Configuracion`, así que el único fallo posible es
+  de escritura a disco — cubierto por el mismo `try`/`except`/diagnóstico que ya protege a las
+  demás salidas desde R-24.
+- **Requisito 3 (se ofrece siempre, sin condición).** A diferencia de `CAPITULOS_YOUTUBE`/
+  `CONCAT_FFMPEG` (condicionadas a la sección `Capítulos`/a un parte de rodaje),
+  `CONVENCION_GUIONES` nunca queda omitida por falta de datos del guion o de tomas — se ofrece
+  siempre en `construir_pregunta_salidas`, igual que `HTML`/`SRT`/`PDF`/`PPTX`.
+- **Requisito 4 (documentación).** `references/contrato-montaje.md` documenta la salida nueva,
+  aclarando que no es contrato de montaje (la cadena de montaje no la lee) y que complementa a
+  R-23: R-23 señala las desviaciones que ya ocurrieron en el guion actual, `convencion-guiones.md`
+  es la herramienta para que los futuros guiones ya nazcan sin ellas. `SKILL.md` documenta la
+  séptima opción en la tabla de salidas seleccionables.
+- **Requisito 5 (fuera de alcance).** Cero cambio en `generar_convencion_guiones`/
+  `guardar_convencion_guiones` en sí (T-10 ya las especifica, genera y prueba correctamente); no
+  se auto-genera sin que el dueño la seleccione, igual que las demás salidas.
+- **Verificación.** 3 tests nuevos en `tests/test_salidas.py` (coincide byte a byte con la llamada
+  directa a `generar_convencion_guiones`; se sigue ofreciendo en la pregunta de selección incluso
+  sin ningún parte de rodaje ni toma marcada; `TODAS_LAS_SALIDAS[-1]`/`len(...) == 7`), más dos
+  tests existentes actualizados (`test_no_seleccionadas_queda_omitidas_sin_generar_archivo`/
+  `test_pptx_latente_no_impide_las_demas`) para reflejar la séptima opción siempre generada.
+  Cuatro redes en verde; `verificar_salidas.py --fixture` sigue en dieciocho etapas ("Generación de
+  salidas" ya ejercita `TODAS_LAS_SALIDAS` dinámicamente, sin necesitar una etapa dedicada nueva
+  para un documento sin validador propio).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
