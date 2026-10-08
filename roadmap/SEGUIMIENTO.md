@@ -10,21 +10,21 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-08 — **Ciclo de Programador: séptima reconfirmación del día tras
+**Última actualización:** 2026-10-08 — **Ciclo de Programador: octava reconfirmación del día tras
 R-25**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, séptima reconfirmación del día tras R-25,
+**Nota de arranque de esta sesión (ciclo de Programador, octava reconfirmación del día tras R-25,
 2026-10-08):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
-`HEAD` *detached* en `46631b7` (resto de un contenedor anterior, descartable: ya fusionado en
+`HEAD` *detached* en `b455827` (resto de un contenedor anterior, descartable: ya fusionado en
 `develop`); `git checkout develop` dejó la rama local en `cc0ac86`; `git pull origin develop`
-resolvió en fast-forward limpio hasta `46631b7` (la sexta reconfirmación del día tras R-25, sin
+resolvió en fast-forward limpio hasta `b455827` (la séptima reconfirmación del día tras R-25, sin
 ningún commit nuevo entre medias), sin conflicto ni rama divergida. El `pip` pelado de este
 contenedor volvió a instalar contra Python 3.13 en vez del 3.11.17 real del proyecto — mismo
 síntoma del hallazgo `#28`, reproducido una vez más; resuelto con `python3 -m pip install -r
 requirements-dev.txt`, que sí resuelve al intérprete correcto (mismas versiones pineadas:
 `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador de esta sesión: séptima reconfirmación del día tras R-25**, sin novedad de
+**Ciclo de Programador de esta sesión: octava reconfirmación del día tras R-25**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`,
 ambos de severidad baja — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y
 `#29` (proceso, la fila de R-25 ya añadida a §1 por la sesión que la implementó, con la
@@ -41,7 +41,7 @@ dieciocho etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en ver
 §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva
 desviación en §7. Nota sin acción: cola vacía hasta el siguiente ciclo de Product Manager.
 
-**Última actualización anterior (2026-10-08, ciclo de Programador): sexta reconfirmación del día
+**Última actualización anterior (2026-10-08, ciclo de Programador): séptima reconfirmación del día
 tras R-25**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Nota de arranque de esa sesión (ciclo de Programador, sexta reconfirmación del día tras R-25,
