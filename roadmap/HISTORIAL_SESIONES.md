@@ -12,6 +12,37 @@
 
 ---
 
+### Sesión 2026-10-08 (107) — Ciclo de Programador: segunda reconfirmación del día tras R-25
+
+**Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* (resto de un
+contenedor anterior, descartable: ya fusionado en `develop`); `git checkout develop` dejó la rama
+local en `cc0ac86`; `git pull origin develop` resolvió en fast-forward limpio hasta `b6443f0` (la
+primera reconfirmación del día tras R-25, sesión 106), sin conflicto ni rama divergida. `pip install
+-r requirements-dev.txt` con el `pip` pelado de este contenedor instaló de nuevo contra Python 3.13
+en vez del 3.11.17 real del proyecto — mismo síntoma del hallazgo `#28`, reproducido una vez más;
+resuelto con `python3 -m pip install -r requirements-dev.txt`.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`,
+ambos baja severidad — `#24` (proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`) y `#29`
+(proceso, la fila de R-25 ya añadida a §1 por la sesión 105 que la implementó, con la recomendación
+de cierre de ese mismo hallazgo ya ejecutada; el cierre a `RESUELTO` en `auditoriacontinua.md` queda
+para la siguiente pasada del auditor). Ninguno de severidad alta que atender como P-XX urgente antes
+de esta tarea. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero
+issues y cero PR abiertos. §1 (fuente autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE` (R-25 es
+la última, `COMPLETADA`): cola de la columna vertebral vacía, sin tarea de código que ejecutar.
+
+**Sin novedad de código.** Verificación propia completa: `mypy`/`ruff` en verde sin hallazgos (70
+archivos), 652 tests (`pytest`, sin cambio) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos) ni §5
+(P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva desviación en §7. Sin filas
+nuevas en `DECISIONES_TECNICAS.md` (nada que decidir en una reconfirmación sin cambio de código).
+
+**Cambios de estado.** Ninguno: §1 de `SEGUIMIENTO.md` sigue con R-25 como última fila,
+`COMPLETADA`, cola vacía hasta el siguiente ciclo de Product Manager.
+
+---
+
 ### Sesión 2026-10-08 (106) — Ciclo de Programador: primera reconfirmación del día tras R-25
 
 **Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* en `897c0ea` (resto
