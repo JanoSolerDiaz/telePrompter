@@ -12,6 +12,42 @@
 
 ---
 
+### Sesión 2026-10-09 (124) — Ciclo de Programador: octava reconfirmación del día tras R-26, sin novedad de código
+
+**Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached*, resto de un
+contenedor anterior ya fusionado en `develop`; `git checkout -B develop origin/develop` dejó la
+rama local al día con `git fetch`/`pull origin develop`, resolviendo en fast-forward limpio hasta
+la sesión 123 (`3ebdf09`, séptima reconfirmación del día tras R-26), sin conflicto ni rama
+divergida. `pip install -r requirements-dev.txt` pelado volvió a instalar contra Python 3.13 en vez
+del 3.11 real del proyecto — mismo síntoma de siempre, ya cubierto por la documentación desde P-06
+(hallazgo `#28`); resuelto con `python3 -m pip install -r requirements-dev.txt` (Python 3.11.17,
+`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: un único
+`ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veintitrés
+pasadas consecutivas). Ninguno de severidad alta que atender como P-XX urgente. `roadmap/
+FEEDBACK.md` sigue con su única fila de plantilla vacía; `mcp__github__list_issues`/
+`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero issues y cero PR abiertos. §1 (fuente
+autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE` (R-26 es la última, `COMPLETADA`): cola
+vacía, sin tarea de código que ejecutar. `ROADMAP_PRODUCTO.md` sigue describiendo "Oleada v14 — EN
+CURSO"/R-26 sin archivar (mismo patrón de `#24`); no se toca, corresponde al siguiente ciclo de PM.
+
+**Sin novedad de código.** Verificación propia completa (`python scripts/ci.py`): `mypy`/`ruff` en
+verde sin hallazgos (70 archivos), 665 tests (`pytest`, sin cambio) en verde, dieciocho etapas `OK`
+en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3, §5 ni §7 de
+`SEGUIMIENTO.md`; §6 sin novedad (la pregunta #11 sigue `(pendiente)`). Sin ninguna decisión nueva
+que añadir a `DECISIONES_TECNICAS.md`. Nota sin acción: cola vacía hasta el siguiente ciclo de
+Product Manager.
+
+**Observación fuera de protocolo.** Van ya ocho reconfirmaciones consecutivas del Programador el
+mismo día (2026-10-09), todas sin cambio de código porque §1 lleva vacío desde que R-26 se completó
+esa misma madrugada. No hay ninguna acción de Programador pendiente que tomar — la cola solo la
+rellena un ciclo de PM o la respuesta del dueño a la pregunta #11 —, pero se deja constancia en
+`SEGUIMIENTO.md` (cabecera) para que el dueño valore si la cadencia de disparo de esta rutina
+programada debería espaciarse mientras la cola siga vacía.
+
+---
+
 ### Sesión 2026-10-09 (123) — Ciclo de Programador: séptima reconfirmación del día tras R-26, sin novedad de código
 
 **Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached*, resto de un
