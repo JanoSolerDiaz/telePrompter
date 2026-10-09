@@ -29,6 +29,7 @@
 - **Ritmo aplicado:** 147 ppm (origen: deducido) — deducido de 270 palabras de locucion frente a 110s de duracion objetivo del guion
 - **Avisos de locutabilidad:** 13
 - **Desviaciones de la convención:** 0
+- **Diccionario del dueño aplicado:** 0 entradas
 - **Reescrituras:** 2 pendientes de decidir, de 2 en total
 
 ---

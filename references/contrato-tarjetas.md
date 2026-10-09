@@ -8,8 +8,8 @@
 >
 > `version_contrato` sube solo si el JSON cambia de forma incompatible con este
 > documento; nunca decrece (mismo criterio que `VERSION_ESQUEMA_ESTADO` de
-> `estado.json`, T-07). Version actual: **1** (R-13, R-16, R-20 y R-23 añadieron
-> campos de forma aditiva y retrocompatible, sin subir la version).
+> `estado.json`, T-07). Version actual: **1** (R-13, R-16, R-20, R-23 y R-26
+> añadieron campos de forma aditiva y retrocompatible, sin subir la version).
 
 ## Forma completa
 
@@ -25,10 +25,13 @@
     "duracion_objetivo_total_segundos": [180, 210],  // o null si el guion no trae objetivo
     "mezcla_duracion_real_y_estimada": false,         // true (R-13) si alguna escena tiene
                                                        // duracion real y otra no
-    "desviaciones_convencion": []                     // (R-23) descripciones de
+    "desviaciones_convencion": [],                    // (R-23) descripciones de
                                                        // convencion.detectar_desviaciones;
                                                        // [] si no hay ninguna o si
                                                        // para_terceros es true
+    "entradas_diccionario_aplicadas": 0                // (R-26) cuantas entradas de
+                                                       // diccionario-locucion.json se
+                                                       // aplicaron de verdad; 0 por defecto
   },
   "escenas": [
     {
@@ -76,6 +79,7 @@
 | `duracion_objetivo_total_segundos` | `[number, number]` \| `null` | Horquilla objetivo del metadato de cabecera del guion, si lo trae. |
 | `mezcla_duracion_real_y_estimada` | `bool` | **(R-13)** `true` si el conjunto de escenas mezcla duración real (con toma buena) y estimada (sin ella todavía) — mismo aviso que ya resuelve R-07 para los capítulos de YouTube. `false` si todas las escenas están en el mismo caso (todas con toma buena, o ninguna). |
 | `desviaciones_convencion` | `string[]` | **(R-23)** Las descripciones de `convencion.detectar_desviaciones` (T-10/T-33: escena sin rótulo de locución, rótulo desconocido, sección auxiliar no reconocida, número de escena duplicado o no creciente) tal cual, sin reformatear. A nivel de metadatos, no por escena, porque una desviación como el número de escena duplicado implica a más de una a la vez. `[]` si no hay ninguna, o si `metadatos.para_terceros` es `true` (se excluye del contrato exportado a terceros, mismo criterio que `notas_internas`). |
+| `entradas_diccionario_aplicadas` | `int` | **(R-26)** Cuántas entradas de `diccionario-locucion.json` (T-13) llegaron a aplicarse de verdad sobre este guion — mismo recuento que ya muestra la cabecera de `guion-escenas.md`. `0` por defecto: `generar_tarjetas` no recalcula nada, solo expone el número que le pasa quien ya lo calculó para el documento de revisión. |
 
 ## Claves de cada elemento de `escenas` (requisito 1)
 

@@ -157,6 +157,27 @@ def test_generar_tarjetas_modo_para_terceros_omite_desviaciones_convencion() -> 
     assert tarjetas.desviaciones_convencion == ()
 
 
+# --- diccionario del dueño aplicado (R-26) -------------------------------------------
+
+
+def test_generar_tarjetas_entradas_diccionario_aplicadas_por_defecto_cero() -> None:
+    """Sin pasar nada nuevo (R-26), el comportamiento es identico al de antes
+    de la tarea: `0`, ningun cambio para el selector automatico de T-30, que
+    no conoce ninguna `Reescritura`."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos)
+    assert tarjetas.entradas_diccionario_aplicadas == 0
+
+
+def test_generar_tarjetas_entradas_diccionario_aplicadas_se_pasa_tal_cual() -> None:
+    """R-26, requisito 1: el recuento que ya calcula quien genera
+    `guion-escenas.md` se expone tal cual en `tarjetas.json`, sin que
+    `generar_tarjetas` lo recalcule ni conozca las `Reescritura`."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos, entradas_diccionario_aplicadas=3)
+    assert tarjetas.entradas_diccionario_aplicadas == 3
+
+
 # --- duracion real por escena (R-13) --------------------------------------------------
 
 
@@ -412,6 +433,14 @@ def test_tarjetas_a_diccionario_incluye_desviaciones_convencion() -> None:
     assert datos["metadatos"]["desviaciones_convencion"] != []
 
 
+def test_tarjetas_a_diccionario_incluye_entradas_diccionario_aplicadas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    tarjetas = generar_tarjetas(resultado, tiempos, entradas_diccionario_aplicadas=2)
+    datos = tarjetas_a_diccionario(tarjetas)
+    assert validar_tarjetas(datos) == []
+    assert datos["metadatos"]["entradas_diccionario_aplicadas"] == 2
+
+
 def test_tarjetas_a_diccionario_incluye_indicaciones_ancladas() -> None:
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     tarjetas = generar_tarjetas(resultado, tiempos)
@@ -636,6 +665,23 @@ def test_exportar_pptx_mensaje_positivo_con_skill_disponible(tmp_path: Path) -> 
     )
     assert resultado_pptx.skill_disponible is True
     assert "LATENTE" not in resultado_pptx.mensaje
+
+
+def test_exportar_pptx_entradas_diccionario_aplicadas_llega_a_tarjetas_json(
+    tmp_path: Path,
+) -> None:
+    """R-26: el mismo recuento que ya ve `guion-escenas.md` llega hasta
+    `tarjetas.json.metadatos` a traves de `exportar_pptx`, sin recalcularse."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resultado_pptx = exportar_pptx(
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        entradas_diccionario_aplicadas=4,
+    )
+    datos = json.loads(resultado_pptx.ruta_tarjetas_json.read_text(encoding="utf-8"))
+    assert datos["metadatos"]["entradas_diccionario_aplicadas"] == 4
 
 
 # --- sobre los tres guiones reales -----------------------------------------------------

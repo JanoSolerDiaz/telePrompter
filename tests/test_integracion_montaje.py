@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from itertools import pairwise
+from pathlib import Path
 
 import pytest
 
@@ -18,12 +19,16 @@ from capitulos_youtube import calcular_capitulos
 from clasificador import clasificar_guion
 from config import Configuracion
 from convencion import detectar_desviaciones
+from deteccion import detectar_problemas_guion
 from documento_revision import generar_documento_revision
+from normalizacion import FAMILIA_DICCIONARIO, cargar_diccionario_locucion, normalizar_guion
 from parser import parsear_guion
 from pptx import generar_tarjetas, tarjetas_a_diccionario, validar_tarjetas
+from reescrituras import recopilar_propuestas
 from srt import exportar_srt, formatear_srt, generar_entradas_srt, validar_srt
 from srt_alineado import reescalar_a_toma_buena
 from tiempos import calcular_tiempos
+from troceo import trocear_guion
 
 
 def test_srt_y_tarjetas_json_son_consistentes_sobre_los_guiones_reales(
@@ -378,3 +383,59 @@ def test_desviaciones_de_convencion_coinciden_en_guion_escenas_y_tarjetas_json()
         assert desviacion.descripcion in datos_tarjetas["metadatos"]["desviaciones_convencion"], (
             f"falta en tarjetas.json: {desviacion.descripcion!r}"
         )
+
+
+_GUION_CON_SIGLA = """# Guion de prueba
+
+## BLOQUE 0 — Arranque (0:00 — 0:10)
+
+**LOCUCIÓN**
+
+> La IA ayuda a escribir guiones.
+"""
+
+
+def test_diccionario_del_dueno_coincide_en_guion_escenas_y_tarjetas_json(
+    tmp_path: Path,
+) -> None:
+    """Criterio de aceptacion de R-26: un `diccionario-locucion.json` real,
+    escrito en disco (nunca construido a mano en memoria, a diferencia de los
+    tests unitarios de T-13), se aplica sobre un guion real y el MISMO
+    recuento de entradas aplicadas aparece tanto en la cabecera de
+    `guion-escenas.md` como en `tarjetas.json.metadatos` -- los dos
+    consumidores reales que la ficha de R-26 señala."""
+    (tmp_path / "diccionario-locucion.json").write_text(
+        '{"IA": "inteligencia artificial"}', encoding="utf-8"
+    )
+    configuracion = Configuracion()
+    resultado = parsear_guion(_GUION_CON_SIGLA, configuracion=configuracion)
+    resultado_tiempos = calcular_tiempos(resultado, configuracion)
+
+    # Flujo real de primera generacion (sin revalidar_guion todavia): cargar
+    # el diccionario del dueño ANTES de normalizar, como debe documentar
+    # SKILL.md (R-26, requisito 3).
+    diccionario = cargar_diccionario_locucion(tmp_path)
+    bloques = trocear_guion(resultado, configuracion)
+    detecciones = detectar_problemas_guion(bloques, configuracion)
+    normalizaciones = normalizar_guion(bloques, configuracion, diccionario)
+    reescrituras = recopilar_propuestas(normalizaciones, detecciones)
+    entradas_aplicadas = sum(1 for r in reescrituras if r.familia == FAMILIA_DICCIONARIO)
+    assert entradas_aplicadas == 1
+
+    documento = generar_documento_revision(
+        resultado, resultado_tiempos, detecciones, reescrituras, configuracion,
+        carpeta_salida=tmp_path,
+    )
+    resultado_tarjetas = generar_tarjetas(
+        resultado,
+        resultado_tiempos,
+        "guion",
+        configuracion,
+        entradas_diccionario_aplicadas=entradas_aplicadas,
+    )
+    datos_tarjetas = tarjetas_a_diccionario(resultado_tarjetas)
+    assert validar_tarjetas(datos_tarjetas) == []
+
+    assert "**Diccionario del dueño aplicado:** 1 entradas" in documento
+    assert "diccionario-locucion.json" not in documento  # sin aviso: si se aplico
+    assert datos_tarjetas["metadatos"]["entradas_diccionario_aplicadas"] == 1

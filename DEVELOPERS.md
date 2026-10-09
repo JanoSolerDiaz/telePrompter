@@ -3352,6 +3352,69 @@ usaron R-18/R-19/R-22 para sus respectivas salidas nuevas.
   salidas" ya ejercita `TODAS_LAS_SALIDAS` dinámicamente, sin necesitar una etapa dedicada nueva
   para un documento sin validador propio).
 
+## Cargar el diccionario del dueño de verdad, en vez de que el llamador lo recuerde (R-26)
+
+T-13 (2026-09-01) especifica, como requisito 3, que una entrada de `diccionario-locucion.json`
+(en la carpeta de salida) "siempre gana" sobre cualquier regla automática de normalización —
+repetido en `SKILL.md`/`references/convencion-guion.md`. Hasta R-26, esa garantía no se
+sostenía en ningún flujo real: `normalizacion.cargar_diccionario_locucion` (la función que lee
+el archivo) no tenía ningún llamador fuera de sus propios tests, y los cuatro puntos reales
+donde el diccionario debería aplicarse (`normalizar_guion`, `recopilar_propuestas`,
+`generar_documento_revision`, `revalidar_guion`) recibían siempre `diccionario=None` en
+cualquier uso sobre un guion real — confirmado con `grep -rn "cargar_diccionario_locucion"
+scripts/*.py`, único resultado su propia definición. El dueño podía escribir una corrección en
+el diccionario, no verla aplicada, y no tener ninguna señal de que algo falló.
+
+- **Requisito 1 (recuento visible, nunca en silencio).** `documento_revision.
+  _entradas_diccionario_aplicadas` cuenta, sobre las `reescrituras` ya calculadas, cuántas
+  vienen de la familia `normalizacion.FAMILIA_DICCIONARIO` — sin recalcular nada, sin tocar
+  disco. La cabecera de `guion-escenas.md` (`_formatear_resumen_global`) siempre muestra
+  "Diccionario del dueño aplicado: N entradas". `tarjetas.json.metadatos.
+  entradas_diccionario_aplicadas` (`pptx.generar_tarjetas`, nuevo parámetro con valor por
+  defecto `0`) repite el mismo número, pasado tal cual por quien llama — `pptx.py` no conoce
+  las `Reescritura`, solo el entero ya contado.
+- **Requisito 2 (las dos funciones de generación/revalidación cargan el diccionario por su
+  cuenta).** `documento_revision.generar_documento_revision` y `revalidacion.revalidar_guion`
+  ganan un parámetro opcional `carpeta_salida: Path | None = None`.
+  - `revalidar_guion`: si no se pasa un `diccionario` explícito (uso típico de un test unitario,
+    sin tocar disco) y sí `carpeta_salida`, carga `cargar_diccionario_locucion(carpeta_salida)`
+    antes de llamar a `normalizar_guion` — exactamente el paso que antes recaía en quien
+    orquestaba la skill y podía olvidarse. Un `diccionario` explícito siempre gana: prioridad
+    documentada en el propio docstring.
+  - `generar_documento_revision`: como no recalcula las `reescrituras` (eso sigue siendo
+    responsabilidad de quien compone el documento, invariante de T-16), `carpeta_salida` aquí
+    solo sirve para una comprobación de diagnóstico: si el archivo existe con entradas pero
+    ninguna `Reescritura` de la familia `diccionario` llegó a aplicarse, añade un aviso
+    explícito en la cabecera (`_aviso_diccionario_sin_aplicar`) — la señal exacta de que quien
+    generó el documento olvidó cargar el diccionario antes de normalizar. Sin `carpeta_salida`
+    (comportamiento por defecto, compatible con todas las llamadas anteriores a R-26), solo se
+    cuenta, nunca se avisa ni se toca disco.
+- **Requisito 3 (`SKILL.md` documenta el paso, con el fragmento exacto).** Sección "Normalizacion
+  a forma dicha (T-13)": mismo patrón que la instrucción de `tropiezos_por_escena` de R-03, con
+  el código exacto para la primera generación y para la revalidación.
+- **Requisito 4 (`recopilar_propuestas` deja de perder el diccionario sin saberlo).** Cero cambio
+  de código en `reescrituras.recopilar_propuestas`: ya aceptaba `resultados_normalizacion`
+  calculado de antemano. El cierre real está en que, gracias al requisito 2, ese parámetro ahora
+  SÍ llega calculado con el diccionario cuando `revalidar_guion` recibe `carpeta_salida` — antes
+  de R-26 llegaba siempre vacío en cualquier uso real.
+- **Requisito 5 (fuera de alcance).** Cero cambio en el formato de `diccionario-locucion.json`
+  ni en las reglas de prioridad de T-13; ningún campo nuevo en `Configuracion` ni en
+  `estado.json`; ningún `main()` de CLI nuevo — la orquestación de punta a punta sigue siendo
+  responsabilidad de la sesión que usa la skill.
+- **Verificación.** Tests nuevos en `tests/test_documento_revision.py` (cabecera cuenta 0 sin
+  diccionario, cuenta las entradas realmente aplicadas, sin `carpeta_salida` nunca hay aviso,
+  con `carpeta_salida` y diccionario no aplicado SÍ avisa, con `carpeta_salida` y diccionario
+  aplicado no avisa), `tests/test_revalidacion.py` (carga real desde disco sin construir el
+  diccionario a mano, un `diccionario` explícito gana sobre `carpeta_salida`, comportamiento
+  sin cambios si no se usa ninguno de los dos), `tests/test_pptx.py` (el nuevo campo se pasa tal
+  cual a `generar_tarjetas`/`exportar_pptx`/`tarjetas_a_diccionario`) y un test de integración en
+  `tests/test_integracion_montaje.py` que escribe el archivo real en disco y comprueba que el
+  mismo recuento coincide en `guion-escenas.md` y `tarjetas.json` a la vez — el criterio de
+  aceptación literal de la ficha, sin construir el diccionario a mano en memoria como sí hacían
+  los tests de T-13. Fixture dorada `fixtures/guion-ejemplo-esperado.md` regenerada (único
+  cambio: la línea nueva de cabecera, en 0 porque el guion de ejemplo no trae diccionario).
+  Cuatro redes en verde.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

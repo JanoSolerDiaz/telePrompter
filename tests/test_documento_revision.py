@@ -23,7 +23,7 @@ from documento_revision import (
     generar_documento_revision,
     guardar_documento_revision,
 )
-from normalizacion import normalizar_bloque
+from normalizacion import FAMILIA_DICCIONARIO, normalizar_bloque
 from parser import ResultadoParseo, parsear_guion
 from reescrituras import Reescritura, recopilar_propuestas
 from tiempos import BloqueConTiempo, ResultadoTiempos, calcular_tiempos
@@ -52,7 +52,9 @@ Un aparte sin cita de bloque, que debería marcarse revisar.
 
 
 def _pipeline(
-    texto: str, configuracion: Configuracion | None = None
+    texto: str,
+    configuracion: Configuracion | None = None,
+    diccionario: dict[str, str] | None = None,
 ) -> tuple[ResultadoParseo, ResultadoTiempos, list, list[Reescritura]]:  # type: ignore[type-arg]
     """Misma canalizacion que ya usa `test_reescrituras.py` para sus tests
     sobre guiones reales: parsear -> trocear -> tiempos/deteccion/normalizacion
@@ -63,7 +65,7 @@ def _pipeline(
     bloques = trocear_guion(resultado, configuracion)
     tiempos = calcular_tiempos(resultado, configuracion)
     detecciones = [detectar_problemas_bloque(b, configuracion) for b in bloques]
-    normalizaciones = [normalizar_bloque(b, configuracion) for b in bloques]
+    normalizaciones = [normalizar_bloque(b, configuracion, diccionario) for b in bloques]
     reescrituras = recopilar_propuestas(normalizaciones, detecciones)
     return resultado, tiempos, detecciones, reescrituras
 
@@ -510,3 +512,81 @@ def test_guardar_documento_revision_hace_copia_de_seguridad_si_ya_existia(
     copias = list(tmp_path.glob("guion-escenas.md.bak-*"))
     assert len(copias) == 1
     assert copias[0].read_text(encoding="utf-8") == "version original"
+
+
+# --- Diccionario del dueño aplicado, visible en la cabecera (R-26) ------------------
+
+_GUION_CON_SIGLA = """# Guion de prueba
+
+## BLOQUE 0 — Arranque (0:00 – 0:10)
+
+**LOCUCIÓN**
+
+> La IA ayuda a escribir guiones.
+"""
+
+
+def test_cabecera_cuenta_cero_entradas_de_diccionario_sin_diccionario() -> None:
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_CON_SIGLA)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+    assert "**Diccionario del dueño aplicado:** 0 entradas" in documento
+
+
+def test_cabecera_cuenta_entradas_de_diccionario_efectivamente_aplicadas() -> None:
+    resultado, tiempos, detecciones, reescrituras = _pipeline(
+        _GUION_CON_SIGLA, diccionario={"IA": "inteligencia artificial"}
+    )
+    assert sum(1 for r in reescrituras if r.familia == FAMILIA_DICCIONARIO) == 1
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+    assert "**Diccionario del dueño aplicado:** 1 entradas" in documento
+
+
+def test_sin_carpeta_salida_nunca_hay_aviso_aunque_cero_entradas_aplicadas() -> None:
+    """Comportamiento por defecto (sin `carpeta_salida`): solo se cuenta lo
+    que ya traen las `reescrituras`, nunca se toca disco ni se avisa de nada
+    -- regresion explicita de compatibilidad con las llamadas anteriores a
+    R-26, que no conocian este parametro."""
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_CON_SIGLA)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+    assert "diccionario-locucion.json" not in documento
+
+
+def test_carpeta_salida_con_diccionario_no_aplicado_muestra_aviso_explicito(
+    tmp_path: Path,
+) -> None:
+    """R-26, objetivo literal: si `diccionario-locucion.json` existe con
+    entradas pero `reescrituras` no trae ninguna de esa familia (la grieta
+    que motivo la tarea -- quien genero el documento olvido cargarlo antes
+    de normalizar), `generar_documento_revision` lo advierte en la cabecera
+    en vez de quedarse en silencio con el recuento en cero."""
+    (tmp_path / "diccionario-locucion.json").write_text(
+        '{"IA": "inteligencia artificial"}', encoding="utf-8"
+    )
+    # Reescrituras calculadas SIN el diccionario -- el escenario del hallazgo.
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_CON_SIGLA)
+    documento = generar_documento_revision(
+        resultado, tiempos, detecciones, reescrituras, carpeta_salida=tmp_path
+    )
+    assert "**Diccionario del dueño aplicado:** 0 entradas" in documento
+    assert "⚠ diccionario-locucion.json tiene 1 entrada(s)" in documento
+
+
+def test_carpeta_salida_con_diccionario_aplicado_no_muestra_aviso(tmp_path: Path) -> None:
+    """Integracion real (a diferencia de los tests de T-13, que construyen el
+    diccionario a mano en memoria): el archivo se escribe en disco, se carga
+    con `cargar_diccionario_locucion` (no a mano) y se propaga a
+    `normalizar_bloque` antes de generar -- el camino correcto, sin aviso."""
+    from normalizacion import cargar_diccionario_locucion
+
+    (tmp_path / "diccionario-locucion.json").write_text(
+        '{"IA": "inteligencia artificial"}', encoding="utf-8"
+    )
+    diccionario = cargar_diccionario_locucion(tmp_path)
+    resultado, tiempos, detecciones, reescrituras = _pipeline(
+        _GUION_CON_SIGLA, diccionario=diccionario
+    )
+    documento = generar_documento_revision(
+        resultado, tiempos, detecciones, reescrituras, carpeta_salida=tmp_path
+    )
+    assert "**Diccionario del dueño aplicado:** 1 entradas" in documento
+    assert "diccionario-locucion.json" not in documento

@@ -43,9 +43,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from clasificador import TIPO_LOCUCION, BloqueClasificado, clasificar_guion
-from config import NOMBRE_ARCHIVO_GUION_ESCENAS, Configuracion
+from config import NOMBRE_ARCHIVO_DICCIONARIO_LOCUCION, NOMBRE_ARCHIVO_GUION_ESCENAS, Configuracion
 from convencion import Desviacion, detectar_desviaciones
 from deteccion import Aviso, ResultadoDeteccionBloque
+from normalizacion import FAMILIA_DICCIONARIO, cargar_diccionario_locucion
 from parser import Escena, ResultadoParseo
 from reescrituras import Reescritura, formatear_reescritura, pendientes
 from tiempos import BloqueConTiempo, ResultadoTiempos
@@ -317,6 +318,39 @@ def formatear_desviaciones(desviaciones: list[Desviacion]) -> str:
     )
 
 
+def _entradas_diccionario_aplicadas(reescrituras: list[Reescritura]) -> int:
+    """Cuenta cuantas `Reescritura` de la lista ya calculada vienen del
+    diccionario del dueno (requisito 1 de R-26: visibilidad del recuento
+    efectivamente aplicado). No recalcula nada -- se limita a contar la
+    familia `FAMILIA_DICCIONARIO` que `normalizacion.normalizar_texto` ya
+    etiqueta en origen cuando una entrada del diccionario sustituye un
+    tramo de texto."""
+    return sum(1 for r in reescrituras if r.familia == FAMILIA_DICCIONARIO)
+
+
+def _aviso_diccionario_sin_aplicar(
+    carpeta_salida: Path | None, entradas_aplicadas: int
+) -> str | None:
+    """Si se indica la carpeta de salida (R-26, requisito 2), carga
+    `diccionario-locucion.json` solo para esta comprobacion -- nunca para
+    recalcular reescrituras, que siguen siendo responsabilidad exclusiva de
+    quien llamo a `normalizar_guion`/`normalizar_bloque` antes de esta
+    funcion. Si el archivo existe con entradas pero ninguna llego a
+    aplicarse, es la senal exacta de la grieta que motivo R-26 (quien genero
+    el documento olvido cargar el diccionario): nunca en silencio, un aviso
+    explicito en la cabecera."""
+    if carpeta_salida is None or entradas_aplicadas > 0:
+        return None
+    diccionario_en_disco = cargar_diccionario_locucion(carpeta_salida)
+    if not diccionario_en_disco:
+        return None
+    return (
+        f"{NOMBRE_ARCHIVO_DICCIONARIO_LOCUCION} tiene {len(diccionario_en_disco)} entrada(s) "
+        "pero ninguna se aplico: revisa que la generacion/revalidacion haya cargado el "
+        "diccionario antes de normalizar"
+    )
+
+
 def _formatear_resumen_global(
     resultado: ResultadoParseo,
     resultado_tiempos: ResultadoTiempos,
@@ -325,12 +359,14 @@ def _formatear_resumen_global(
     total_avisos: int,
     reescrituras: list[Reescritura],
     total_desviaciones: int,
+    carpeta_salida: Path | None,
 ) -> str:
     """Cabecera con el resumen global del guion completo (requisito 5): total
     de escenas, palabras, duracion estimada, avisos, desviaciones de la
-    convencion (R-23) y reescrituras pendientes, ritmo aplicado -- todo
-    tomado de `calcular_tiempos` (T-12), la unica fuente de tiempos del
-    proyecto, nunca recalculado aqui."""
+    convencion (R-23), entradas del diccionario del dueno aplicadas (R-26) y
+    reescrituras pendientes, ritmo aplicado -- todo tomado de
+    `calcular_tiempos` (T-12), la unica fuente de tiempos del proyecto,
+    nunca recalculado aqui."""
     objetivo = resultado_tiempos.duracion_objetivo_total_segundos
     objetivo_texto = (
         f" (objetivo: {_mmss(objetivo[0])} — {_mmss(objetivo[1])})" if objetivo is not None else ""
@@ -338,6 +374,9 @@ def _formatear_resumen_global(
     aviso_total = f"\n- ⚠ {resultado_tiempos.aviso_total}" if resultado_tiempos.aviso_total else ""
     ritmo = resultado_tiempos.ritmo
     total_pendientes = len(pendientes(reescrituras))
+    entradas_diccionario = _entradas_diccionario_aplicadas(reescrituras)
+    aviso_diccionario = _aviso_diccionario_sin_aplicar(carpeta_salida, entradas_diccionario)
+    aviso_diccionario_texto = f"\n- ⚠ {aviso_diccionario}" if aviso_diccionario else ""
     return (
         "## Resumen global\n\n"
         f"- **Escenas:** {len(resultado.escenas)}\n"
@@ -348,6 +387,8 @@ def _formatear_resumen_global(
         f"{ritmo.motivo}\n"
         f"- **Avisos de locutabilidad:** {total_avisos}\n"
         f"- **Desviaciones de la convención:** {total_desviaciones}\n"
+        f"- **Diccionario del dueño aplicado:** {entradas_diccionario} entradas"
+        f"{aviso_diccionario_texto}\n"
         f"- **Reescrituras:** {total_pendientes} pendientes de decidir, de "
         f"{len(reescrituras)} en total"
     )
@@ -419,6 +460,7 @@ def generar_documento_revision(
     configuracion: Configuracion | None = None,
     nombre_guion: str = "guion",
     tropiezos_por_escena: dict[int, frozenset[str]] | None = None,
+    carpeta_salida: Path | None = None,
 ) -> str:
     """Genera el `.md` de revision completo de una sola pasada (T-16): todas
     las escenas del guion, en orden, con cobertura total de sus bloques de
@@ -429,7 +471,18 @@ def generar_documento_revision(
     destaca nada -- quien llama lo obtiene con
     `feedback.tropiezos_marcados_por_escena(carpeta_salida)` antes de esta
     llamada, mismo patron que ya documenta `revalidacion.ResultadoRevalidacion`
-    para encadenar con esta funcion."""
+    para encadenar con esta funcion.
+
+    `carpeta_salida` (R-26, requisito 1 y 2) es opcional: sin ella, la
+    cabecera solo cuenta cuantas `reescrituras` ya vienen del diccionario del
+    dueno (sin tocar disco). Con ella, ademas se carga
+    `diccionario-locucion.json` (reutilizando tal cual
+    `normalizacion.cargar_diccionario_locucion`, cero segunda lectura) solo
+    para avisar si el archivo tiene entradas que no llegaron a aplicarse --
+    la senal de que quien compuso `reescrituras` olvido cargarlo antes de
+    `normalizar_guion`/`normalizar_bloque`. Nunca recalcula la locucion por su
+    cuenta: sigue siendo responsabilidad de quien llama, como documenta
+    `SKILL.md`."""
     configuracion = configuracion or Configuracion()
     clasificacion = clasificar_guion(resultado, configuracion)
     desviaciones = detectar_desviaciones(resultado, clasificacion, configuracion)
@@ -446,6 +499,7 @@ def generar_documento_revision(
         total_avisos,
         reescrituras,
         len(desviaciones),
+        carpeta_salida,
     )
 
     escenas_formateadas = []

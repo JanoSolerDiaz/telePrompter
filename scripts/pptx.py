@@ -140,7 +140,13 @@ class ResultadoTarjetas:
     `convencion.detectar_desviaciones` (T-10/T-33) tal cual, a nivel de
     metadatos porque una desviacion como el numero de escena duplicado
     implica a mas de una escena a la vez. Vacia si no hay ninguna desviacion
-    o si `para_terceros` es verdadero (requisito 4 de R-23)."""
+    o si `para_terceros` es verdadero (requisito 4 de R-23).
+
+    `entradas_diccionario_aplicadas` (R-26, requisito 1): cuantas entradas
+    del diccionario del dueno llegaron a aplicarse de verdad sobre este
+    guion -- mismo recuento que ya muestra la cabecera de `guion-escenas.md`,
+    pasado tal cual por quien llama a `generar_tarjetas` (esta funcion no
+    conoce las `Reescritura` que lo calculan, solo el numero ya contado)."""
 
     titulo: str
     para_terceros: bool
@@ -149,6 +155,7 @@ class ResultadoTarjetas:
     palabras_locucion_total: int
     mezcla_duracion_real_y_estimada: bool
     desviaciones_convencion: tuple[str, ...]
+    entradas_diccionario_aplicadas: int
     tarjetas: tuple[Tarjeta, ...]
 
 
@@ -328,6 +335,7 @@ def generar_tarjetas(
     nombre_guion: str = "guion",
     configuracion: Configuracion | None = None,
     tomas_por_escena: dict[str, Any] | None = None,
+    entradas_diccionario_aplicadas: int = 0,
 ) -> ResultadoTarjetas:
     """Construye el contrato completo (requisito 1) a partir de un guion ya
     parseado y con tiempos calculados -- mismo patron que `pdf.py`/`srt.py`:
@@ -339,7 +347,12 @@ def generar_tarjetas(
     mismo contenedor que ya consumen `srt_alineado.py`/`capitulos_youtube.py`;
     ausente u omitido (el caso del selector automatico de T-30, que no conoce
     el parte de rodaje) equivale a que ninguna escena tiene toma buena
-    todavia -- mismo comportamiento que antes de R-13."""
+    todavia -- mismo comportamiento que antes de R-13.
+
+    `entradas_diccionario_aplicadas` (R-26, requisito 1) es el mismo recuento
+    que `documento_revision.generar_documento_revision` ya muestra en la
+    cabecera de `guion-escenas.md` -- se pasa tal cual, `0` por defecto (sin
+    diccionario, mismo comportamiento que antes de R-26)."""
     configuracion = configuracion or Configuracion()
     tomas_por_escena = tomas_por_escena or {}
     clasificacion = clasificar_guion(resultado, configuracion)
@@ -372,6 +385,7 @@ def generar_tarjetas(
         palabras_locucion_total=palabras_totales,
         mezcla_duracion_real_y_estimada=tiene_real and tiene_estimada,
         desviaciones_convencion=desviaciones_convencion,
+        entradas_diccionario_aplicadas=entradas_diccionario_aplicadas,
         tarjetas=tarjetas,
     )
 
@@ -395,6 +409,7 @@ def tarjetas_a_diccionario(resultado_tarjetas: ResultadoTarjetas) -> dict[str, A
             ),
             "mezcla_duracion_real_y_estimada": resultado_tarjetas.mezcla_duracion_real_y_estimada,
             "desviaciones_convencion": list(resultado_tarjetas.desviaciones_convencion),
+            "entradas_diccionario_aplicadas": resultado_tarjetas.entradas_diccionario_aplicadas,
         },
         "escenas": [
             {
@@ -448,6 +463,7 @@ _CLAVES_METADATOS: dict[str, type | tuple[type, ...]] = {
     "duracion_total_segundos": (int, float),
     "mezcla_duracion_real_y_estimada": bool,
     "desviaciones_convencion": list,
+    "entradas_diccionario_aplicadas": int,
 }
 _CLAVES_ESCENA: dict[str, type | tuple[type, ...]] = {
     "numero": int,
@@ -748,6 +764,7 @@ def exportar_pptx(
     nombre_guion: str = "guion",
     configuracion: Configuracion | None = None,
     tomas_por_escena: dict[str, Any] | None = None,
+    entradas_diccionario_aplicadas: int = 0,
 ) -> ResultadoPptx:
     """Punto de entrada normal del modulo: genera y guarda `tarjetas.json` y
     el brief SIEMPRE (requisito 4), sea cual sea la disponibilidad de la
@@ -760,10 +777,20 @@ def exportar_pptx(
     el selector automatico de T-30 (`salidas.py`) no lo conoce y lo omite,
     igual que ya hace con `srt_alineado.py`/`capitulos_youtube.py` -- quien
     quiera `duracion_real_segundos` en `tarjetas.json` llama a este punto de
-    entrada aparte con `EstadoProyecto.tomas`, cuando existe parte de rodaje."""
+    entrada aparte con `EstadoProyecto.tomas`, cuando existe parte de rodaje.
+
+    `entradas_diccionario_aplicadas` (R-26) sigue el mismo criterio: `0` por
+    defecto (el selector automatico de T-30 no conoce las `Reescritura` de
+    la ultima generacion/revalidacion), y quien si las conoce se lo pasa tal
+    cual, mismo recuento que ya muestra `guion-escenas.md`."""
     configuracion = configuracion or Configuracion()
     resultado_tarjetas = generar_tarjetas(
-        resultado, resultado_tiempos, nombre_guion, configuracion, tomas_por_escena
+        resultado,
+        resultado_tiempos,
+        nombre_guion,
+        configuracion,
+        tomas_por_escena,
+        entradas_diccionario_aplicadas,
     )
     ruta_json = guardar_tarjetas_json(formatear_tarjetas_json(resultado_tarjetas), carpeta_salida)
     ruta_brief = guardar_brief(generar_brief(resultado_tarjetas, configuracion), carpeta_salida)

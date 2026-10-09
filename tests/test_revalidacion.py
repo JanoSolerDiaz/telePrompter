@@ -36,7 +36,7 @@ from documento_revision import (
     guardar_documento_revision,
 )
 from estado import EstadoProyecto, estado_inicial
-from normalizacion import normalizar_guion
+from normalizacion import FAMILIA_DICCIONARIO, normalizar_guion
 from parser import ResultadoParseo, parsear_guion
 from reescrituras import (
     DECISION_ACEPTADA,
@@ -808,3 +808,93 @@ def test_incidencia_es_dataclass_congelada() -> None:
     incidencia = Incidencia(numero_escena=1, mensaje="algo")
     with pytest.raises(dataclasses.FrozenInstanceError):
         incidencia.mensaje = "otro"  # type: ignore[misc]
+
+
+# --- Diccionario del dueño cargado desde disco (R-26) --------------------------------
+
+_GUION_CON_SIGLA = """# Guion de prueba
+
+## BLOQUE 1 — Escena uno (0:00 – 0:10)
+
+**LOCUCIÓN**
+
+> La IA ayuda a escribir guiones.
+"""
+
+
+def test_revalidar_guion_carga_diccionario_de_carpeta_salida_sin_construirlo_a_mano(
+    tmp_path: Path,
+) -> None:
+    """R-26, criterio de aceptación: a diferencia de los tests de T-13 (que
+    construyen el diccionario a mano en memoria), este escribe
+    `diccionario-locucion.json` de verdad en la carpeta de salida y pasa solo
+    `carpeta_salida` -- `revalidar_guion` debe cargarlo por su cuenta y
+    aplicarlo, sin que el test repita `cargar_diccionario_locucion`."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path, _GUION_CON_SIGLA)
+    resultado = parsear_guion(_GUION_CON_SIGLA, configuracion=configuracion)
+    # Generación inicial SIN diccionario en disco: "IA" no se normaliza todavía.
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+    assert not any(
+        r.familia == FAMILIA_DICCIONARIO for r in estado_reescrituras(estado)
+    )
+
+    (tmp_path / "diccionario-locucion.json").write_text(
+        '{"IA": "inteligencia artificial"}', encoding="utf-8"
+    )
+    resultado_revalidacion = revalidar_guion(
+        resultado, doc1, estado, configuracion, carpeta_salida=tmp_path
+    )
+
+    reescrituras_diccionario = [
+        r for r in resultado_revalidacion.reescrituras if r.familia == FAMILIA_DICCIONARIO
+    ]
+    assert len(reescrituras_diccionario) == 1
+    assert reescrituras_diccionario[0].propuesta == "inteligencia artificial"
+
+
+def test_revalidar_guion_diccionario_explicito_gana_sobre_carpeta_salida(
+    tmp_path: Path,
+) -> None:
+    """R-26, requisito 2 (orden de prioridad): un `diccionario` explícito
+    (uso típico de un test unitario, sin tocar disco) gana siempre sobre el
+    que cargaría `carpeta_salida`, aunque las dos se pasen a la vez."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path, _GUION_CON_SIGLA)
+    resultado = parsear_guion(_GUION_CON_SIGLA, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+
+    (tmp_path / "diccionario-locucion.json").write_text(
+        '{"IA": "inteligencia artificial"}', encoding="utf-8"
+    )
+    resultado_revalidacion = revalidar_guion(
+        resultado,
+        doc1,
+        estado,
+        configuracion,
+        diccionario={"IA": "ingeniería avanzada"},
+        carpeta_salida=tmp_path,
+    )
+
+    reescrituras_diccionario = [
+        r for r in resultado_revalidacion.reescrituras if r.familia == FAMILIA_DICCIONARIO
+    ]
+    assert len(reescrituras_diccionario) == 1
+    assert reescrituras_diccionario[0].propuesta == "ingeniería avanzada"
+
+
+def test_revalidar_guion_sin_diccionario_ni_carpeta_salida_se_comporta_igual_que_antes(
+    tmp_path: Path,
+) -> None:
+    """Regresión: ningún argumento nuevo (R-26) cambia el comportamiento por
+    defecto cuando no se usan -- mismo resultado que antes de la tarea."""
+    configuracion = _configuracion()
+    estado = _estado(tmp_path, _GUION_CON_SIGLA)
+    resultado = parsear_guion(_GUION_CON_SIGLA, configuracion=configuracion)
+    doc1 = _generar_inicial(resultado, estado, configuracion)
+
+    resultado_revalidacion = revalidar_guion(resultado, doc1, estado, configuracion)
+
+    assert not any(
+        r.familia == FAMILIA_DICCIONARIO for r in resultado_revalidacion.reescrituras
+    )

@@ -12,6 +12,61 @@
 
 ---
 
+### Sesión 2026-10-09 (116) — Ciclo de Programador: R-26 implementada y `COMPLETADA`
+
+**Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached* (resto de un
+contenedor anterior, ya fusionado en `develop`); `git checkout develop && git pull origin develop`
+resolvió en fast-forward limpio hasta la sesión 115 (38 commits por detrás), sin conflicto ni rama
+divergida. `pip install -r requirements-dev.txt` pelado volvió a instalar contra Python 3.13 en vez
+del 3.11 real — mismo síntoma de siempre, cubierto desde P-06 (`#28`); resuelto con `python3 -m pip
+install -r requirements-dev.txt`.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: un único
+`ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veintitrés
+pasadas consecutivas). Ninguno de severidad alta que atender como P-XX urgente. §1 (fuente
+autoritativa) traía a R-26 como única fila `PENDIENTE`: siguiente tarea de la cola.
+
+**Implementa R-26.** Cierra la grieta verificada por el PM el 2026-10-08: el diccionario del dueño
+(`diccionario-locucion.json`, T-13) no tenía ningún llamador real fuera de sus propios tests.
+`scripts/revalidacion.py::revalidar_guion` gana `carpeta_salida: Path | None = None`: sin
+`diccionario` explícito, lo carga por su cuenta con `normalizacion.cargar_diccionario_locucion`
+antes de normalizar (un `diccionario` explícito siempre gana). `scripts/documento_revision.py::
+generar_documento_revision` gana el mismo parámetro opcional, pero sin recalcular nada (invariante
+del módulo desde T-16): cuenta cuántas `reescrituras` ya recibidas vienen de la familia
+`diccionario` y lo muestra siempre en la cabecera; con `carpeta_salida`, además avisa
+explícitamente si el archivo existe con entradas pero ninguna se aplicó — la señal exacta de la
+grieta original. `scripts/pptx.py::generar_tarjetas`/`exportar_pptx` ganan
+`entradas_diccionario_aplicadas: int = 0`, pasado tal cual hasta `tarjetas.json.metadatos`.
+`SKILL.md` documenta el paso obligatorio con el fragmento de código exacto (mismo patrón que la
+instrucción de `tropiezos_por_escena` de R-03). `references/contrato-tarjetas.md` documenta la
+clave nueva. 13 tests nuevos (652→665) repartidos en `tests/test_documento_revision.py` (5),
+`tests/test_revalidacion.py` (3), `tests/test_pptx.py` (4) y un test de integración en
+`tests/test_integracion_montaje.py` que escribe el diccionario real en disco (nunca a mano en
+memoria) y comprueba el mismo recuento en `guion-escenas.md` y `tarjetas.json` a la vez — el
+criterio de aceptación literal de la ficha. Fixture dorada `fixtures/guion-ejemplo-esperado.md`
+regenerada (línea nueva de cabecera, en 0).
+
+**Decisiones tomadas:** 4 filas nuevas en `DECISIONES_TECNICAS.md` (2026-10-09): prioridad de
+`diccionario` explícito sobre `carpeta_salida` en `revalidar_guion`; `generar_documento_revision` no
+recalcula, solo diagnostica; el recuento de entradas aplicadas cuenta la familia `diccionario` de
+`reescrituras`, no relee el archivo; `entradas_diccionario_aplicadas` en `tarjetas.json` es un
+parámetro plano ya calculado, no recalculado por `pptx.py`.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`):** R-26 pasa de `PENDIENTE` a `COMPLETADA`
+(2026-10-09). Cola de la columna vertebral vacía hasta el siguiente ciclo de Product Manager.
+
+**Verificación pre-push completa (`python scripts/ci.py`):** `mypy`/`ruff` en verde sin hallazgos
+(70 archivos), 665 tests (`pytest`, 652→665) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture` (sin cambio: ninguna salida nueva). Las cuatro redes en verde.
+
+**Archivos modificados:** `scripts/documento_revision.py`, `scripts/revalidacion.py`,
+`scripts/pptx.py`, `tests/test_documento_revision.py`, `tests/test_revalidacion.py`,
+`tests/test_pptx.py`, `tests/test_integracion_montaje.py`, `fixtures/guion-ejemplo-esperado.md`,
+`SKILL.md`, `references/contrato-tarjetas.md`, `DEVELOPERS.md`, `roadmap/SEGUIMIENTO.md`,
+`roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`.
+
+---
+
 ### Sesión 2026-10-08 (115) — Ciclo de Product Manager: archiva Oleada v13 (R-25) y abre R-26 (Oleada v14)
 
 **Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` resolvió en

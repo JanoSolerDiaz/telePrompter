@@ -40,6 +40,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from config import Configuracion
@@ -50,7 +51,7 @@ from documento_revision import (
     extraer_texto_bloques,
 )
 from estado import EstadoProyecto
-from normalizacion import normalizar_guion
+from normalizacion import cargar_diccionario_locucion, normalizar_guion
 from parser import ResultadoParseo
 from reescrituras import (
     DECISION_ACEPTADA,
@@ -435,6 +436,7 @@ def revalidar_guion(
     estado: EstadoProyecto,
     configuracion: Configuracion | None = None,
     diccionario: dict[str, str] | None = None,
+    carpeta_salida: Path | None = None,
 ) -> ResultadoRevalidacion:
     """Revalida un guion ya parseado (T-08) contra su `guion-escenas.md`
     editado a mano (T-16). No relee el guion de origen del disco -- eso sigue
@@ -442,8 +444,18 @@ def revalidar_guion(
     `estado.reescrituras`/`estado.validacion` listos en memoria y devuelve el
     resultado completo para que quien llame haga
     `estado.guardar_estado(estado, carpeta_salida)` y, si quiere, regenere
-    `guion-escenas.md` con `documento_revision.generar_documento_revision`."""
+    `guion-escenas.md` con `documento_revision.generar_documento_revision`.
+
+    `diccionario`/`carpeta_salida` (R-26, requisito 2): si se pasa un
+    `diccionario` explicito (uso tipico de los tests unitarios, sin tocar
+    disco), ese gana siempre. Si no, y se indica `carpeta_salida`, esta
+    funcion carga `diccionario-locucion.json` por su cuenta (reutilizando tal
+    cual `normalizacion.cargar_diccionario_locucion`) antes de normalizar --
+    la responsabilidad que antes recaia por completo en quien llamaba, y que
+    podia perderse en silencio si se olvidaba de propagarla."""
     configuracion = configuracion or Configuracion()
+    if diccionario is None and carpeta_salida is not None:
+        diccionario = cargar_diccionario_locucion(carpeta_salida)
 
     marcados_originales_por_escena: dict[int, list[_Marcado]] = {
         escena.numero: bloques_respiracion_marcados(escena, configuracion)
