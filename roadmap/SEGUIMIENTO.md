@@ -10,19 +10,19 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-09 — **Ciclo de Programador: cuarta reconfirmación del día tras
+**Última actualización:** 2026-10-09 — **Ciclo de Programador: quinta reconfirmación del día tras
 R-26**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, cuarta reconfirmación del día tras R-26,
+**Nota de arranque de esta sesión (ciclo de Programador, quinta reconfirmación del día tras R-26,
 2026-10-09):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
 `HEAD` *detached* (resto de un contenedor anterior, descartable: ya fusionado en `develop`); `git
 checkout develop` dejó la rama local atrás; `git pull origin develop` resolvió en fast-forward
-limpio hasta `62be571` (tercera reconfirmación del día tras R-26), sin conflicto ni rama
-divergida. `python3 -m pip install -r requirements-dev.txt` resolvió directamente al intérprete
-correcto (Python 3.11.17, `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`), sin reproducir esta
-vez el síntoma del `pip` pelado del hallazgo `#28`.
+limpio hasta `5f017fb` (cuarta reconfirmación del día tras R-26), sin conflicto ni rama divergida.
+`pip install -r requirements-dev.txt` pelado volvió a instalar contra Python 3.13 en vez del 3.11
+real del proyecto — mismo síntoma de siempre, ya cubierto por la documentación desde P-06 (hallazgo
+`#28`); resuelto con `python3 -m pip install -r requirements-dev.txt`.
 
-**Ciclo de Programador de esta sesión: cuarta reconfirmación del día tras R-26**, sin novedad de
+**Ciclo de Programador de esta sesión: quinta reconfirmación del día tras R-26**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: un único
 `ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veintitrés
 pasadas consecutivas). Ninguno de severidad alta que atender como P-XX urgente antes de esta
@@ -39,7 +39,7 @@ archivos), 665 tests (`pytest`, sin cambio) en verde, dieciocho etapas OK en
 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva desviación en §7. Nota sin
 acción: cola vacía hasta el siguiente ciclo de Product Manager.
 
-**Última actualización anterior (2026-10-09, ciclo de Programador): tercera reconfirmación del día
+**Última actualización anterior (2026-10-09, ciclo de Programador): cuarta reconfirmación del día
 tras R-26**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Nota de arranque de esa sesión (ciclo de Programador, segunda reconfirmación del día tras R-26,
