@@ -10,10 +10,36 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-09 — **Ciclo de Programador: R-26 implementada y `COMPLETADA`**
-(detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-09 — **Ciclo de Programador: primera reconfirmación del día tras
+R-26**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, implementación de R-26, 2026-10-09):**
+**Nota de arranque de esta sesión (ciclo de Programador, primera reconfirmación del día tras R-26,
+2026-10-09):** sin incidencia. `git status` limpio antes de tocar nada; `git checkout develop`
+dejó la rama local atrás (el contenedor arrancó en `develop`, sin *detached HEAD*); `git pull
+origin develop` resolvió en fast-forward limpio hasta `cdafa5b` (R-26 implementada y
+`COMPLETADA`), sin conflicto ni rama divergida. `pip install -r requirements-dev.txt` pelado
+volvió a instalar contra Python 3.13 en vez del 3.11 real del proyecto — mismo síntoma de siempre,
+ya cubierto por la documentación desde P-06 (hallazgo `#28`); resuelto con `python3 -m pip install
+-r requirements-dev.txt`.
+
+**Ciclo de Programador de esta sesión: primera reconfirmación del día tras R-26**, sin novedad de
+código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: un único
+`ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veintitrés
+pasadas consecutivas). Ninguno de severidad alta que atender como P-XX urgente antes de esta
+tarea. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero
+issues y cero PR abiertos. §1 (fuente autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE` (R-26
+es la última, `COMPLETADA`): cola de la columna vertebral vacía, sin tarea de código que ejecutar
+ni hallazgo nuevo que convertir en P-XX. Verificación propia completa (`python scripts/ci.py`):
+`mypy`/`ruff` en verde sin hallazgos (70 archivos), 665 tests (`pytest`, sin cambio) en verde,
+dieciocho etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en
+§3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva
+desviación en §7. Nota sin acción: cola vacía hasta el siguiente ciclo de Product Manager.
+
+**Última actualización anterior (2026-10-09, ciclo de Programador): R-26 implementada y
+`COMPLETADA`**, sin más novedad (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Programador, implementación de R-26, 2026-10-09):**
 sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con `HEAD`
 *detached*, resto de un contenedor anterior ya fusionado en `develop`; `git checkout develop`
 dejó la rama local atrás; `git pull origin develop` resolvió en fast-forward limpio hasta
@@ -24,9 +50,9 @@ cubierto por la documentación desde P-06 (hallazgo `#28`); resuelto con `python
 requirements-dev.txt`. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder:
 un único `ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`),
 ninguno de severidad alta que atender como P-XX urgente. §1 (fuente autoritativa) traía a R-26 como
-única fila `PENDIENTE`: siguiente tarea de la cola, implementada esta sesión.
+única fila `PENDIENTE`: siguiente tarea de la cola, implementada esa sesión.
 
-**Ciclo de Programador de esta sesión: R-26 implementada y `COMPLETADA`.** Cierra la grieta
+**Ciclo de Programador de esa sesión: R-26 implementada y `COMPLETADA`.** Cierra la grieta
 verificada por el PM el 2026-10-08: el diccionario del dueño (`diccionario-locucion.json`, T-13)
 no tenía ningún llamador real fuera de sus propios tests. `scripts/revalidacion.py::revalidar_guion`
 gana `carpeta_salida: Path | None = None`: si no se pasa un `diccionario` explícito (uso típico de
