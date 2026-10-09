@@ -8,49 +8,46 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-08 (ciclo de PM). **R-25 (Oleada v13) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-08 que la implementó (séptima salida
-seleccionable, `convencion-guiones.md`, conectada de verdad al selector de T-30). A diferencia de
-R-24, esta vez la fila de §1 se añadió en el mismo commit que abrió la tarea (resolviendo de paso el
-hallazgo `#29` de `auditoriacontinua.md`), así que no hay prosa desactualizada que corregir. Movida a
-`roadmap/ROADMAP_HISTORICO.md` (Oleada v13) junto con el resto de oleadas 100 % entregadas.
+**Última actualización:** 2026-10-09 (ciclo de PM). **R-26 (Oleada v14) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-09 que la implementó (el diccionario del
+dueño, `diccionario-locucion.json`, queda conectado de verdad a la generación y a la revalidación).
+Igual que R-25, la fila de §1 se añadió en el mismo commit que la implementó, así que no hay prosa
+desactualizada que corregir. Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v14) junto con el resto
+de oleadas 100 % entregadas.
 
-**Se abre R-26** (Oleada v14): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
+**Se abre R-27** (Oleada v15): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
 las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
-verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-25, esta vez de
-severidad mayor que las anteriores: no es una salida huérfana sin consumidor, es una **garantía
-contractual que hoy no se cumple en el flujo real**. Verificación propia, leyendo el código línea a
-línea, no solo nombres ni docstrings: `scripts/normalizacion.py::cargar_diccionario_locucion` (T-13,
-requisito 3 — "Diccionario de excepciones editable por el dueño... con prioridad sobre las reglas
-automáticas", repetido en `SKILL.md`: "el diccionario del dueño manda siempre sobre cualquiera de
-ellas") no tiene **ningún** llamador fuera de sus propios tests — confirmado con `grep -rn
-"cargar_diccionario_locucion" scripts/*.py`, único resultado la propia definición. Peor aún: los
-cuatro puntos reales donde se aplicaría (`normalizar_guion`, `reescrituras.recopilar_propuestas`,
-`documento_revision.generar_documento_revision`, `revalidacion.revalidar_guion`) tampoco tienen,
-fuera de sus tests, ningún llamador que construya y pase un `diccionario` cargado de disco — todos
-reciben `diccionario=None` por omisión en cualquier uso real, confirmado con el mismo `grep` sobre
-`normalizar_guion\(\|recopilar_propuestas\(\|generar_documento_revision\(\|revalidar_guion\(` en
-`scripts/*.py`. Los tests de T-13 prueban por separado que "cargar el archivo" funciona y que "un
-diccionario ya cargado en memoria sobrescribe la regla automática" — nunca las dos cosas juntas sobre
-un `diccionario-locucion.json` real en la carpeta de salida de un guion real, que es exactamente el
-uso que promete el requisito 3. Candidata alternativa descartada tras la misma verificación:
-`scripts/reescrituras.py::revertir_reescrituras` (T-15, deshacer global) sigue siendo un orfanato de
-consumidor documentado — ya se consideró y descartó al abrir R-25 por menor valor y mayor riesgo de
-diseño (no existe hoy ninguna superficie por la que el dueño dispare un "deshacer global"), y nada ha
-cambiado ese análisis esta pasada. Detalle completo en "Oleada v14" más abajo.
+verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-26. Verificación propia,
+leyendo el código línea a línea: `scripts/estado.py::avisar_si_guion_modificado` (T-07, 2026-09-01)
+existe exactamente para avisar al dueño cuando el guion de origen cambió desde la última pasada
+("se recalcularán escenas, clasificación y tiempos en la próxima pasada", en vez de dejarlo
+descubrirlo por sorpresa) — pero no tiene **ningún** llamador fuera de sus propios tests, confirmado
+con `grep -rn "guion_modificado" scripts/*.py`: solo aparece en su propia definición y en su propia
+llamada interna a `guion_modificado(...)`. `SKILL.md` no menciona esta función en ningún punto del
+flujo documentado (confirmado con `grep -n "guion_modificado" SKILL.md`, sin resultado), así que ni
+siquiera está como paso de la receta que sigue la sesión que orquesta la skill — el mismo tipo de hueco
+de instrucción, no solo de código, que ya cerró R-26. Peor aún: aunque se llamara hoy mismo, el aviso
+quedaría roto por un segundo defecto — `estado.guion.hash_sha256`/`tamano_bytes` (`InfoGuion`) solo se
+escriben una vez, en `estado_inicial` (`scripts/estado.py:121-135`), y ningún punto del código los
+vuelve a actualizar después (confirmado con `grep -rn "InfoGuion(" scripts/*.py`: un único resultado
+fuera de `desde_dict`, el de `estado_inicial`). El resultado práctico: en cuanto el guion cambia una
+vez, el aviso —si se wireara tal cual, sin más— se repetiría en TODAS las pasadas futuras para
+siempre, incluso después de que el dueño ya lo haya visto y vuelto a generar/revalidar, porque nada
+refresca el hash guardado contra el que se compara. No es una salida huérfana sin consumidor (patrón
+de R-18 a R-25): es, igual que R-26, una garantía de transparencia explícita en el propio docstring de
+la función y en `DEVELOPERS.md` que hoy no se sostiene en el flujo real, y que de conectarse mal
+degradaría en ruido permanente en vez de señal. Detalle completo en "Oleada v15" más abajo.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
 curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` no trae ningún
-`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan dos `ABIERTO`, ambos de proceso y de
-severidad baja, ninguno de los cuales necesita una R-XX — `#24` (prosa de "Cola de producto"
-desactualizada entre ciclos de PM, sin repetirse esta vez: ver arriba) sigue pendiente de la
-respuesta del dueño a la pregunta de gobernanza #11 de `SEGUIMIENTO.md` §6; `#29` (la fila de R-25
-faltaba en §1 al abrirse) ya quedó resuelto por el propio ciclo de Programador que implementó R-25, el
-cierre a `RESUELTO` en `auditoriacontinua.md` queda para la siguiente pasada del auditor.
+`ABIERTO` nuevo de producto/arquitectura esta pasada: queda un único `ABIERTO` (`#24`, prosa de "Cola
+de producto" desactualizada entre ciclos de PM, de proceso y severidad baja), que no necesita una
+R-XX — sigue pendiente solo de la respuesta del dueño a la pregunta de gobernanza #11 de
+`SEGUIMIENTO.md` §6.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-26 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-27 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -200,81 +197,102 @@ selector real de salidas de T-30, R-25) tiene su única R-XX en **COMPLETADA** e
 `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en
 este ciclo de PM (2026-10-08). Su spec completa y cómo se entregó viven ahí.
 
-### Oleada v14 — EN CURSO
+### Oleada v14 — entregada
 
-#### R-26 — El diccionario del dueño (`diccionario-locucion.json`, T-13) no está conectado al flujo real: su garantía contractual ("manda siempre") no se cumple salvo que la sesión recuerde cargarlo a mano
+La oleada v14 (conectar el diccionario del dueño, `diccionario-locucion.json`, al flujo real de
+generación y revalidación, R-26) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin
+ningún hito de negocio propio pendiente. Se movió a `roadmap/ROADMAP_HISTORICO.md` en este ciclo de
+PM (2026-10-09). Su spec completa y cómo se entregó viven ahí.
 
-**Migración:** No (ningún campo de `estado.json` cambia; cambio de visibilidad/composición dentro de
-módulos ya existentes) · **Depende de:** T-13, T-16, T-17 (todas ya `COMPLETADA`) · **Origen:**
-observación de arquitectura del PM (2026-10-08) — grieta de arquitectura verificada sobre código ya
-construido (mismo criterio que abrió R-12 a R-25).
+### Oleada v15 — EN CURSO
 
-**Objetivo:** T-13 (2026-09-01) especifica, como requisito 3, que el dueño puede corregir cualquier
-normalización automática con una entrada literal en `diccionario-locucion.json`, dentro de la carpeta
-de salida del guion, y que esa entrada **"siempre gana"** sobre cualquier regla automática —
-repetido palabra por palabra en `SKILL.md` ("el diccionario del dueño manda siempre sobre cualquiera
-de ellas") y en `references/convencion-guion.md`. Verificado leyendo el código, no solo la
-documentación: `scripts/normalizacion.py::cargar_diccionario_locucion` (la función que lee ese
-archivo de disco) no tiene **ningún** llamador fuera de sus propios tests —
-`grep -rn "cargar_diccionario_locucion" scripts/*.py` solo devuelve su propia definición. El fallo no
-se queda ahí: los cuatro puntos reales donde el diccionario debería aplicarse —
-`normalizacion.normalizar_guion`, `reescrituras.recopilar_propuestas` (que ni siquiera tiene un
-parámetro `diccionario`), `documento_revision.generar_documento_revision` (la generación del primer
-`guion-escenas.md`) y `revalidacion.revalidar_guion` (el único punto de entrada de la revalidación,
-documentado así en `DEVELOPERS.md`) — tampoco tienen, fuera de sus tests, ningún llamador real que
-construya un diccionario cargado de disco y lo pase: todos reciben `diccionario=None` por omisión en
-cualquier uso sobre un guion real, confirmado con el mismo `grep` sobre las cuatro funciones en
-`scripts/*.py`. La prueba más clara de la grieta: `tests/test_normalizacion.py` solo verifica (a) que
-`cargar_diccionario_locucion` lee bien el JSON del disco, por separado, y (b) que un diccionario ya
-construido a mano en memoria (`diccionario={"2026": "el año que viene"}`) sobrescribe la regla
-automática — nunca las dos cosas juntas, que es exactamente el camino real: el dueño escribe
-`diccionario-locucion.json` en la carpeta de salida esperando que la siguiente generación o
-revalidación lo respete sin tener que pedirlo explícitamente cada vez. A diferencia de las grietas que
-abrieron R-12 a R-25 (una salida o un cálculo sin consumidor, valor perdido pero sin promesa
-incumplida), esta es una **garantía contractual del propio documento de especificación que hoy no se
-sostiene en el flujo real** — el dueño podría escribir una corrección en el diccionario, no verla
-aplicada, y no tener ninguna señal de que algo falló: el requisito 3 no se cumple en silencio, sin
-ningún aviso, justo lo que el principio de producto nº 1 ("nada se descarta en silencio") prohíbe.
-Candidata alternativa descartada tras la misma verificación: `scripts/reescrituras.py::
-revertir_reescrituras` (T-15, deshacer global) sigue sin disparador documentado, pero ya se consideró
-y descartó al abrir R-25 por menor valor y mayor riesgo de diseño (no existe hoy ninguna superficie
-por la que el dueño dispare un "deshacer global"); nada ha cambiado ese análisis esta pasada.
+#### R-27 — El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real, y el hash guardado en `estado.json` nunca se refresca para que el aviso no se repita sin motivo
+
+**Migración:** No (ningún campo nuevo en `estado.json`; refresca valores ya existentes de `InfoGuion`
+tras cada pasada, mismo esquema) · **Depende de:** T-07, T-16 (ambas ya `COMPLETADA`) · **Origen:**
+observación de arquitectura del PM (2026-10-09) — grieta de arquitectura verificada sobre código ya
+construido (mismo criterio que abrió R-12 a R-26).
+
+**Objetivo:** T-07 (2026-09-01) construyó `scripts/estado.py::guion_modificado`/
+`avisar_si_guion_modificado` con un propósito explícito, documentado en su propio docstring y en
+`DEVELOPERS.md`: comparar el hash del guion de origen contra el que quedó guardado en `estado.json` la
+última vez, y avisar al dueño por `presentacion.py` cuando difieren — "en vez de fallar en silencio con
+datos desactualizados", eco literal del principio de producto nº 1 ("nada se descarta en silencio").
+Verificado leyendo el código, no solo el docstring: `grep -rn "guion_modificado" scripts/*.py` solo
+devuelve la propia definición de las dos funciones y la llamada interna de
+`avisar_si_guion_modificado` a `guion_modificado` — ningún otro módulo de `scripts/` las importa ni las
+invoca. `grep -n "guion_modificado" SKILL.md` no devuelve ningún resultado: el paso no está ni siquiera
+mencionado en la receta que sigue la sesión que orquesta la skill, a diferencia de otros pasos
+explícitos ya documentados (el diccionario del dueño, R-26; `tropiezos_por_escena`, R-03). El dueño
+puede editar el guion de origen entre una pasada y la siguiente (corregir una frase, añadir una
+escena) y hoy no recibe ninguna señal de que eso ocurrió, pese a que la función que se la daría ya
+existe, está probada (`tests/test_estado.py`) y documentada.
+
+El hueco tiene una segunda capa que agrava el wiring ingenuo: `InfoGuion.hash_sha256`/`tamano_bytes`
+(el valor contra el que se compara) solo se escriben una vez, en `estado_inicial`
+(`scripts/estado.py:121-135`) — confirmado con `grep -rn "InfoGuion(" scripts/*.py`, que solo
+devuelve esa construcción y la de `desde_dict` (reconstrucción desde el JSON ya guardado, no una
+escritura nueva). Ningún punto del código actualiza esos dos campos después de la primera vez. Si
+`avisar_si_guion_modificado` se llamara tal cual, sin más, en cada generación/revalidación: la primera
+vez que el guion cambiara el aviso sería correcto, pero **todas las pasadas futuras volverían a avisar
+igual**, aunque el dueño ya lo haya visto y haya vuelto a generar o revalidar sobre el guion ya
+cambiado — el hash guardado nunca se pone al día, así que la comparación sigue siendo contra el
+original de hace semanas. Eso convertiría una señal útil en ruido permanente, el mismo tipo de defecto
+de diseño que esta tarea debe prevenir, no solo el wiring que falta. A diferencia de las grietas de
+R-18 a R-25 (una salida o un cálculo sin consumidor, valor perdido pero sin promesa incumplida), esta
+es, igual que R-26, una garantía de transparencia explícita del propio código y de `DEVELOPERS.md` que
+hoy no se sostiene en el flujo real.
+
+Candidata alternativa descartada tras la misma pasada de verificación:
+`scripts/entrada.py::ejecutar_con_limite_de_tiempo` (T-06, tope de tiempo de proceso) tampoco tiene
+llamador real fuera de sus propios tests ni mención en `SKILL.md`. Se descarta por menor severidad y
+menor evidencia de riesgo real: a diferencia del aviso de guion modificado (que el dueño notaría
+directamente al no ver la señal prometida la próxima vez que edite su guion), el límite de tiempo es
+una defensa en profundidad contra un escenario que las guardas ya activas de T-06
+(`TAMANO_GUION_MAX_BYTES`, `ESCENAS_MAX`, aplicadas ANTES de parsear) hacen poco probable en la
+práctica, y `roadmap/SEGUIMIENTO.md` §4 (incidentes de deploy) no registra ningún episodio de proceso
+descontrolado en las más de cien sesiones que lleva el proyecto. Queda anotado aquí por si una futura
+pasada encuentra evidencia que cambie esta valoración.
 
 **Requisitos:**
-1. El recuento de entradas del diccionario efectivamente aplicado (0 si no hay archivo o si no se
-   cargó) se hace **visible** en la cabecera del resumen global de `guion-escenas.md` (T-16) y en
-   `tarjetas.json.metadatos` (T-29/pptx), mismo criterio de transparencia que T-12 ya aplica al ppm
-   ("de dónde sale y cuál sería el otro valor"): nunca más una omisión silenciosa de un archivo que el
-   dueño sí escribió.
-2. `documento_revision.generar_documento_revision` y `revalidacion.revalidar_guion` — los dos puntos
-   reales de generación/revalidación — ganan la responsabilidad de cargar el diccionario del dueño
-   cuando se les indica la carpeta de salida, reutilizando tal cual `normalizacion.
-   cargar_diccionario_locucion` (cero segunda implementación, cero cambio en su propia lectura de
-   disco ni en `normalizar_guion`/`normalizar_texto`, que siguen aceptando un `diccionario` explícito
-   para sus propios tests unitarios sin tocar disco). El diseño exacto de la firma (parámetro nuevo,
-   valor por defecto, orden de prioridad frente a un `diccionario` ya explícito) lo decide quien
-   implemente, documentado en `DECISIONES_TECNICAS.md`.
+1. `scripts/estado.py` gana una función nueva (el nombre exacto lo decide quien implemente, p. ej.
+   `actualizar_info_guion(estado, ruta_guion)`) que refresca `estado.guion.hash_sha256`/`tamano_bytes`
+   al contenido actual del archivo. Se llama justo antes de `guardar_estado`, en cualquier pasada que
+   regenere o revalide sobre un guion con `estado.json` ya existente — así el aviso compara siempre
+   contra el estado real de la última vez que se procesó, no contra el de la primera vez que se creó
+   `estado.json`.
+2. `documento_revision.generar_documento_revision` gana un parámetro opcional
+   `guion_modificado: bool = False` (mismo patrón que `tropiezos_por_escena` de R-03): cuando es
+   `True`, la cabecera del resumen global añade una línea visible avisando de que el guion de origen
+   cambió desde la última pasada y que escenas, clasificación y tiempos se recalcularon desde cero —
+   mismo criterio de transparencia que ya aplican el ppm (T-12), el diccionario del dueño (R-26) y las
+   desviaciones de convención (R-23). El dueño revisa `guion-escenas.md` "de una sola pasada"
+   (principio de producto nº 2); un aviso que solo aparece en la consola de la sesión y no en el
+   documento que de verdad revisa se pierde con facilidad.
 3. `SKILL.md` dedica una instrucción explícita, con el fragmento de código exacto a invocar (mismo
-   patrón ya usado para `tropiezos_por_escena` en la sección de R-03: "la siguiente vez que se
-   regenere `guion-escenas.md` ..."), para que generar o revalidar sobre un guion real **siempre**
-   pase por la carga del diccionario — no una mención en una tabla de valores por defecto, sino un
-   paso nombrado del flujo que Claude no pueda pasar por alto.
-4. `reescrituras.recopilar_propuestas` gana un parámetro `resultados_normalizacion` ya calculado con
-   el diccionario correspondiente (no cambia su propia lógica de unión de propuestas) — se limita a
-   dejar de ser, sin saberlo, el punto donde el diccionario se pierde si quien llama no lo propaga.
-5. Fuera de alcance, explícito: no se cambia el formato de `diccionario-locucion.json` ni las reglas
-   de prioridad ya fijadas por T-13 (diccionario > familias automáticas); no se añade ningún campo
-   nuevo a `Configuracion` ni a `estado.json`; no se construye ningún `main()` de CLI nuevo que
-   orqueste todo el ciclo de punta a punta (sigue siendo responsabilidad de la sesión que usa la
-   skill, como documenta T-16/T-17) — esta tarea cierra la grieta del diccionario específicamente,
-   no diseña la orquestación general que todavía falta.
+   patrón ya usado para el diccionario del dueño en R-26): tras cargar `estado.json` y ANTES de
+   re-parsear/regenerar, llamar a `estado.avisar_si_guion_modificado(estado, ruta_guion)` — su valor de
+   retorno se pasa tal cual a `generar_documento_revision(..., guion_modificado=...)` — y llamar a la
+   función del requisito 1 justo antes de `guardar_estado`. No una mención en una tabla de valores por
+   defecto: un paso nombrado del flujo que Claude no pueda pasar por alto, igual que exige R-26
+   (requisito 3) para el diccionario.
+4. Fuera de alcance, explícito: no se construye recálculo incremental (T-07 ya documenta que no existe
+   todavía, y esta tarea no es quien debe construirlo); no cambia el formato ni el esquema de
+   `estado.json` (solo refresca valores ya existentes de `InfoGuion`, sin migración); `revalidar_guion`
+   no gana ningún parámetro nuevo ni lee el guion de origen por su cuenta — sigue intacto el invariante
+   explícito de su propio docstring ("no relee el guion de origen del disco"); `tarjetas.json.metadatos`
+   no gana ningún campo nuevo por esta tarea (a diferencia del recuento del diccionario en R-26, que sí
+   afecta al contenido locutado de las tarjetas, este aviso es sobre el propio `guion-escenas.md` que el
+   dueño ya revisa antes de llegar a generar salidas); no se toca `ejecutar_con_limite_de_tiempo` ni
+   ninguna pieza de T-06.
 
-**Criterio de aceptación:** test de integración que escribe un `diccionario-locucion.json` real en
-una carpeta de salida y comprueba que generar `guion-escenas.md`/revalidar sobre un guion real aplica
-la entrada sin que el test construya el diccionario a mano en memoria (a diferencia de los tests
-actuales de T-13); test que confirma que la cabecera de `guion-escenas.md` y `tarjetas.json.metadatos`
-muestran el recuento correcto (0 sin archivo, N con N entradas); regresión de los tests existentes de
-T-13/T-16/T-17 sin cambios de comportamiento cuando no hay diccionario. Cuatro redes en verde.
+**Criterio de aceptación:** test que confirma que la función del requisito 1 deja
+`estado.guion.hash_sha256`/`tamano_bytes` iguales al hash/tamaño actuales del archivo tras llamarla;
+test que confirma que, tras esa actualización y sin que el guion vuelva a cambiar,
+`avisar_si_guion_modificado` devuelve `False` (cierra el bucle: el aviso aparece una vez, no en todas
+las pasadas siguientes); test que confirma que la cabecera de `guion-escenas.md` incluye la línea de
+aviso cuando `guion_modificado=True` y ninguna línea nueva cuando es `False` (el valor por defecto);
+regresión de los tests existentes de T-07/T-16 sin cambios de comportamiento. Cuatro redes en verde.
 
 ---
 

@@ -12,6 +12,62 @@
 
 ---
 
+### Sesión 2026-10-09 (126) — Ciclo de Product Manager: archiva Oleada v14 (R-26) y abre R-27 (Oleada v15)
+
+**Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` trajo el
+repositorio hasta `56501ea` en fast-forward limpio (la novena reconfirmación del día del
+Programador tras R-26). `python3 -m pip install -r requirements-dev.txt` instaló sin incidencia
+contra el intérprete correcto (Python 3.11, mismo síntoma de `#28`/P-06 no reproducido esta vez).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: un único
+`ABIERTO` (`#24`, baja, puramente de proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`,
+veintitrés pasadas consecutivas); la propia auditoría del 2026-10-09 confirma "cero hallazgos
+nuevos" de producto/arquitectura. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía,
+sin ninguna entrada `nuevo` que incorporar — el bloqueo #7 de §3 (grabar un curso completo) sigue
+abierto, sin acción posible desde una sesión de nube. §1 (fuente autoritativa) tenía a R-26 como
+`COMPLETADA` desde el mismo commit del ciclo de Programador que la implementó (`cdafa5b`,
+2026-10-09), sin ningún patrón de latencia que corregir.
+
+**Archiva Oleada v14 (R-26).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa +
+"Cómo se entregó": `documento_revision.generar_documento_revision`/`revalidacion.revalidar_guion`
+ganan `carpeta_salida` opcional, `pptx.generar_tarjetas`/`exportar_pptx` ganan
+`entradas_diccionario_aplicadas`, `SKILL.md` documenta el paso obligatorio; 13 tests nuevos
+652→665, commit `cdafa5b`). Cabecera y prosa de `ROADMAP_PRODUCTO.md` corregidas en el mismo ciclo
+que archiva (sin patrón de latencia de `#24` esta vez).
+
+**Abre R-27 (Oleada v15).** Grieta de arquitectura verificada por lectura de código, mismo criterio
+que abrió R-12 a R-26: `scripts/estado.py::avisar_si_guion_modificado` (T-07) existe para avisar al
+dueño cuando el guion de origen cambió desde la última pasada ("se recalcularán escenas,
+clasificación y tiempos..., en vez de fallar en silencio con datos desactualizados"), pero no tiene
+ningún llamador real fuera de sus propios tests (`grep -rn "guion_modificado" scripts/*.py`) ni
+mención en `SKILL.md` (`grep -n "guion_modificado" SKILL.md`, sin resultado). Un segundo defecto
+agrava el hueco: `InfoGuion.hash_sha256`/`tamano_bytes` solo se escriben una vez, en
+`estado_inicial` (`grep -rn "InfoGuion(" scripts/*.py`) — un wiring ingenuo haría que el aviso se
+repitiera para siempre tras el primer cambio real, en vez de aparecer una sola vez. Localizado con
+un barrido propio (script de Python) sobre los ~33 módulos de `scripts/*.py` en busca de funciones
+públicas sin llamador fuera de su propio módulo/tests: cinco candidatas (`avisar_si_guion_modificado`/
+`guion_modificado`, `cargar_estado`, `contraste_relativo`, `deshacer_normalizaciones`,
+`ejecutar_con_limite_de_tiempo`); `cargar_estado` descartada por falso positivo (primitiva de
+orquestación que la propia sesión invoca directamente, no una pieza interna huérfana);
+`contraste_relativo`/`deshacer_normalizaciones` descartadas por ser utilidades de verificación sin
+producto perdido; `ejecutar_con_limite_de_tiempo` (T-06, tope de tiempo de proceso) reconfirmada como
+candidata real pero descartada por menor severidad (defensa en profundidad sin incidente registrado
+en §4, frente a una señal de transparencia que el dueño notaría directamente). Spec completa de R-27
+en `ROADMAP_PRODUCTO.md` (Oleada v15), lista para el siguiente ciclo de Programador. Fila `R-27 |
+... | PENDIENTE | 2026-10-09 | ...` añadida a §1 en este mismo ciclo (lección de `#29`: nunca dejar
+la apertura de una R-XX sin su fila).
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** una fila, "PM (apertura de R-27)" (2026-10-09),
+con el razonamiento completo de por qué se elige el candidato del aviso de guion modificado sobre el
+tope de tiempo de proceso.
+
+**Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`);
+sin nueva desviación en §7.** Este ciclo es de PM, no de Programador: no se ha ejecutado la
+verificación de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`. Push a
+`origin/develop` pendiente al cerrar esta sesión.
+
+---
+
 ### Sesión 2026-10-09 (125) — Ciclo de Programador: novena reconfirmación del día tras R-26, sin novedad de código
 
 **Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached*, resto de un

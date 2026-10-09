@@ -1559,6 +1559,120 @@ etapas OK en `verificar_salidas.py --fixture` (sin cambio: la etapa "Generación
 ejercita `TODAS_LAS_SALIDAS` dinámicamente, sin necesitar una etapa dedicada nueva para un documento
 sin validador propio de formato). Cuatro redes en verde.
 
+## Oleada v14 — Conectar el diccionario del dueño al flujo real de generación y revalidación
+
+Cierra la última grieta de arquitectura de severidad "garantía contractual incumplida" detectada en
+esta serie (mismo criterio que abrió R-12 a R-25, aquí de severidad mayor): `scripts/normalizacion.py::
+cargar_diccionario_locucion` (T-13, requisito 3 — "el diccionario del dueño manda siempre sobre
+cualquiera de ellas", repetido palabra por palabra en `SKILL.md`) no tenía ningún llamador real fuera
+de sus propios tests, y los cuatro puntos reales donde debería aplicarse tampoco construían ni
+propagaban un diccionario cargado de disco sobre un guion real. Contiene R-26, su única R-XX.
+**Entregada 2026-10-09** (COMPLETADA el mismo ciclo del Programador en que se implementó, tras abrirse
+el día anterior, 2026-10-08).
+
+### R-26 — El diccionario del dueño (`diccionario-locucion.json`, T-13) no está conectado al flujo real: su garantía contractual ("manda siempre") no se cumple salvo que la sesión recuerde cargarlo a mano
+
+**Migración:** No (ningún campo de `estado.json` cambia; cambio de visibilidad/composición dentro de
+módulos ya existentes) · **Depende de:** T-13, T-16, T-17 (todas ya `COMPLETADA`) · **Origen:**
+observación de arquitectura del PM (2026-10-08) — grieta de arquitectura verificada sobre código ya
+construido (mismo criterio que abrió R-12 a R-25).
+
+**Objetivo:** T-13 (2026-09-01) especifica, como requisito 3, que el dueño puede corregir cualquier
+normalización automática con una entrada literal en `diccionario-locucion.json`, dentro de la carpeta
+de salida del guion, y que esa entrada **"siempre gana"** sobre cualquier regla automática —
+repetido palabra por palabra en `SKILL.md` ("el diccionario del dueño manda siempre sobre cualquiera
+de ellas") y en `references/convencion-guion.md`. Verificado leyendo el código, no solo la
+documentación: `scripts/normalizacion.py::cargar_diccionario_locucion` (la función que lee ese
+archivo de disco) no tiene **ningún** llamador fuera de sus propios tests —
+`grep -rn "cargar_diccionario_locucion" scripts/*.py` solo devuelve su propia definición. El fallo no
+se queda ahí: los cuatro puntos reales donde el diccionario debería aplicarse —
+`normalizacion.normalizar_guion`, `reescrituras.recopilar_propuestas` (que ni siquiera tiene un
+parámetro `diccionario`), `documento_revision.generar_documento_revision` (la generación del primer
+`guion-escenas.md`) y `revalidacion.revalidar_guion` (el único punto de entrada de la revalidación,
+documentado así en `DEVELOPERS.md`) — tampoco tienen, fuera de sus tests, ningún llamador real que
+construya un diccionario cargado de disco y lo pase: todos reciben `diccionario=None` por omisión en
+cualquier uso sobre un guion real, confirmado con el mismo `grep` sobre las cuatro funciones en
+`scripts/*.py`. La prueba más clara de la grieta: `tests/test_normalizacion.py` solo verifica (a) que
+`cargar_diccionario_locucion` lee bien el JSON del disco, por separado, y (b) que un diccionario ya
+construido a mano en memoria (`diccionario={"2026": "el año que viene"}`) sobrescribe la regla
+automática — nunca las dos cosas juntas, que es exactamente el camino real: el dueño escribe
+`diccionario-locucion.json` en la carpeta de salida esperando que la siguiente generación o
+revalidación lo respete sin tener que pedirlo explícitamente cada vez. A diferencia de las grietas que
+abrieron R-12 a R-25 (una salida o un cálculo sin consumidor, valor perdido pero sin promesa
+incumplida), esta es una **garantía contractual del propio documento de especificación que hoy no se
+sostiene en el flujo real** — el dueño podría escribir una corrección en el diccionario, no verla
+aplicada, y no tener ninguna señal de que algo falló: el requisito 3 no se cumple en silencio, sin
+ningún aviso, justo lo que el principio de producto nº 1 ("nada se descarta en silencio") prohíbe.
+Candidata alternativa descartada tras la misma verificación: `scripts/reescrituras.py::
+revertir_reescrituras` (T-15, deshacer global) sigue sin disparador documentado, pero ya se consideró
+y descartó al abrir R-25 por menor valor y mayor riesgo de diseño (no existe hoy ninguna superficie
+por la que el dueño dispare un "deshacer global"); nada ha cambiado ese análisis esta pasada.
+
+**Requisitos:**
+1. El recuento de entradas del diccionario efectivamente aplicado (0 si no hay archivo o si no se
+   cargó) se hace **visible** en la cabecera del resumen global de `guion-escenas.md` (T-16) y en
+   `tarjetas.json.metadatos` (T-29/pptx), mismo criterio de transparencia que T-12 ya aplica al ppm
+   ("de dónde sale y cuál sería el otro valor"): nunca más una omisión silenciosa de un archivo que el
+   dueño sí escribió.
+2. `documento_revision.generar_documento_revision` y `revalidacion.revalidar_guion` — los dos puntos
+   reales de generación/revalidación — ganan la responsabilidad de cargar el diccionario del dueño
+   cuando se les indica la carpeta de salida, reutilizando tal cual `normalizacion.
+   cargar_diccionario_locucion` (cero segunda implementación, cero cambio en su propia lectura de
+   disco ni en `normalizar_guion`/`normalizar_texto`, que siguen aceptando un `diccionario` explícito
+   para sus propios tests unitarios sin tocar disco). El diseño exacto de la firma (parámetro nuevo,
+   valor por defecto, orden de prioridad frente a un `diccionario` ya explícito) lo decide quien
+   implemente, documentado en `DECISIONES_TECNICAS.md`.
+3. `SKILL.md` dedica una instrucción explícita, con el fragmento de código exacto a invocar (mismo
+   patrón ya usado para `tropiezos_por_escena` en la sección de R-03: "la siguiente vez que se
+   regenere `guion-escenas.md` ..."), para que generar o revalidar sobre un guion real **siempre**
+   pase por la carga del diccionario — no una mención en una tabla de valores por defecto, sino un
+   paso nombrado del flujo que Claude no pueda pasar por alto.
+4. `reescrituras.recopilar_propuestas` gana un parámetro `resultados_normalizacion` ya calculado con
+   el diccionario correspondiente (no cambia su propia lógica de unión de propuestas) — se limita a
+   dejar de ser, sin saberlo, el punto donde el diccionario se pierde si quien llama no lo propaga.
+5. Fuera de alcance, explícito: no se cambia el formato de `diccionario-locucion.json` ni las reglas
+   de prioridad ya fijadas por T-13 (diccionario > familias automáticas); no se añade ningún campo
+   nuevo a `Configuracion` ni a `estado.json`; no se construye ningún `main()` de CLI nuevo que
+   orqueste todo el ciclo de punta a punta (sigue siendo responsabilidad de la sesión que usa la
+   skill, como documenta T-16/T-17) — esta tarea cierra la grieta del diccionario específicamente,
+   no diseña la orquestación general que todavía falta.
+
+**Criterio de aceptación:** test de integración que escribe un `diccionario-locucion.json` real en
+una carpeta de salida y comprueba que generar `guion-escenas.md`/revalidar sobre un guion real aplica
+la entrada sin que el test construya el diccionario a mano en memoria (a diferencia de los tests
+actuales de T-13); test que confirma que la cabecera de `guion-escenas.md` y `tarjetas.json.metadatos`
+muestran el recuento correcto (0 sin archivo, N con N entradas); regresión de los tests existentes de
+T-13/T-16/T-17 sin cambios de comportamiento cuando no hay diccionario. Cuatro redes en verde.
+
+**Cómo se entregó:** `documento_revision.generar_documento_revision` y `revalidacion.revalidar_guion`
+ganan `carpeta_salida: Path | None = None` opcional. `revalidar_guion` carga
+`diccionario-locucion.json` por su cuenta con `normalizacion.cargar_diccionario_locucion(carpeta_salida)`
+cuando no se le pasa ya un `diccionario` explícito (un `diccionario` explícito, uso típico de los
+tests unitarios, siempre gana sobre `carpeta_salida`, documentado en el propio docstring).
+`generar_documento_revision` no recalcula nada por su cuenta (invariante explícito del módulo desde
+T-16): cuenta, dentro de las `reescrituras` ya recibidas, cuántas tienen
+`familia == normalizacion.FAMILIA_DICCIONARIO` (`_entradas_diccionario_aplicadas`, funciona siempre,
+con o sin `carpeta_salida`) y, solo si se le indica `carpeta_salida`, añade un aviso explícito en la
+cabecera cuando el archivo en disco tiene entradas pero la cuenta es cero — la señal de que quien
+compuso `reescrituras` olvidó cargar el diccionario antes de `normalizar_guion`
+(`_aviso_diccionario_sin_aplicar`). `pptx.generar_tarjetas`/`exportar_pptx` ganan
+`entradas_diccionario_aplicadas: int = 0`, un entero ya calculado que viaja tal cual a
+`ResultadoTarjetas`/`tarjetas_a_diccionario`, sin que `pptx.py` conozca `Reescritura`. `SKILL.md`
+documenta el paso obligatorio con el fragmento de código exacto a invocar en cada generación/
+revalidación. 13 tests nuevos (652→665): 5 en `tests/test_documento_revision.py` (cabecera cuenta
+0/N, sin `carpeta_salida` nunca hay aviso, con diccionario sin aplicar sí avisa, con diccionario
+aplicado no avisa), 3 en `tests/test_revalidacion.py` (carga real desde disco sin construirlo a mano,
+un `diccionario` explícito gana sobre `carpeta_salida`, sin cambio de comportamiento si no se usa
+ninguno de los dos), 4 en `tests/test_pptx.py` (el campo se pasa tal cual, por defecto en `0`) y 1
+test de integración en `tests/test_integracion_montaje.py` que escribe el diccionario real en disco y
+comprueba el mismo recuento en `guion-escenas.md` y `tarjetas.json` a la vez — el criterio de
+aceptación literal de la ficha. Fixture dorada `fixtures/guion-ejemplo-esperado.md` regenerada (único
+cambio: la línea nueva de cabecera, en 0 porque el guion de ejemplo no trae diccionario).
+Verificación pre-push completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 665 tests
+(`pytest`, 652→665), dieciocho etapas OK en `verificar_salidas.py --fixture` (sin cambio: ninguna
+salida nueva, solo un campo más en una ya existente). Cuatro redes en verde. Commit `cdafa5b`,
+2026-10-09.
+
 ---
 
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
@@ -1567,4 +1681,5 @@ sin validador propio de formato). Cuatro redes en verde.
 2026-09-10; la de v5 (R-13) y F-G (R-14), 2026-09-11; la de F-H (R-15) y v6 (R-16), 2026-09-14; la
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
 (R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05; la de v11 (R-23),
-2026-10-06; la de v12 (R-24), 2026-10-07; la de v13 (R-25), 2026-10-08.)*
+2026-10-06; la de v12 (R-24), 2026-10-07; la de v13 (R-25), 2026-10-08; la de v14 (R-26),
+2026-10-09.)*

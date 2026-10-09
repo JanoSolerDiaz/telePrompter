@@ -10,10 +10,46 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-09 — **Ciclo de Programador: novena reconfirmación del día tras
-R-26**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-09 — **Ciclo de Product Manager: archiva Oleada v14 (R-26) y abre
+R-27 (Oleada v15)**, sin tocar código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, novena reconfirmación del día tras R-26,
+**Ciclo de Product Manager: archiva Oleada v14 (R-26) y abre R-27 (Oleada v15).** Revisión de
+entrada (protocolo): `git checkout develop && git pull origin develop` trajo el repositorio hasta
+`56501ea` en fast-forward limpio. Registro de hallazgos de `auditoriacontinua.md`: un único
+`ABIERTO` (`#24`, baja severidad, puramente de proceso — la pregunta de gobernanza #11 de §6 sigue
+`(pendiente)`, veintitrés pasadas consecutivas de auditoría) y ninguno de severidad alta ni de
+producto/arquitectura que convertir en R-XX nueva este ciclo (la propia auditoría del 2026-10-09 lo
+confirma: "cero hallazgos nuevos"). `roadmap/FEEDBACK.md` sigue con su única fila de plantilla
+vacía, sin ninguna entrada `nuevo` que incorporar — el bloqueo #7 de §3 (grabar un curso completo)
+sigue sin resolverse, sin acción posible desde una sesión de nube. §1 (fuente autoritativa) tenía a
+R-26 como `COMPLETADA` desde el mismo commit del ciclo de Programador del 2026-10-09 que la abrió e
+implementó (`cdafa5b`), sin ningún patrón de latencia que corregir. Este ciclo mueve Oleada v14
+(R-26) íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo se entregó", commit
+`cdafa5b`, 13 tests nuevos 652→665) y corrige la cabecera y la prosa de `ROADMAP_PRODUCTO.md`.
+
+**Se abre R-27** (Oleada v15) por grieta de arquitectura verificada, mismo criterio que abrió R-12 a
+R-26: `scripts/estado.py::avisar_si_guion_modificado` (T-07) existe para avisar al dueño cuando el
+guion de origen cambió desde la última pasada, pero no tiene ningún llamador real fuera de sus
+propios tests (`grep -rn "guion_modificado" scripts/*.py`) ni mención en `SKILL.md` (`grep -n
+"guion_modificado" SKILL.md`, sin resultado). Agrava el hueco un segundo defecto verificado en la
+misma pasada: `InfoGuion.hash_sha256`/`tamano_bytes` solo se escriben una vez, en `estado_inicial`
+(`grep -rn "InfoGuion(" scripts/*.py`), así que un wiring ingenuo haría que el aviso se repitiera en
+todas las pasadas futuras tras el primer cambio real, en vez de aparecer una sola vez — ruido, no
+señal. Candidata alternativa descartada tras la misma verificación:
+`scripts/entrada.py::ejecutar_con_limite_de_tiempo` (T-06) tiene el mismo patrón de ausencia de
+llamador real, pero de menor severidad (defensa en profundidad sin incidente registrado en §4, frente
+a una señal de transparencia que el dueño notaría directamente). Spec completa de R-27 en
+`ROADMAP_PRODUCTO.md` (Oleada v15), lista para que el siguiente ciclo de Programador la implemente y
+verifique. Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro
+redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin
+nueva desviación en §7.
+
+**Última actualización anterior (2026-10-09, ciclo de Programador): novena reconfirmación del día tras
+R-26**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Programador, novena reconfirmación del día tras R-26,
 2026-10-09):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
 `HEAD` *detached*, resto de un contenedor anterior ya fusionado en `develop`; `git checkout develop`
 dejó la rama local atrás; `git fetch`/`git pull origin develop` resolvió en fast-forward limpio
@@ -23,7 +59,7 @@ del proyecto — mismo síntoma de siempre, ya cubierto por la documentación de
 `#28`); resuelto con `python3 -m pip install -r requirements-dev.txt` (Python 3.11.17,
 `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador de esta sesión: novena reconfirmación del día tras R-26**, sin novedad de
+**Ciclo de Programador de esa sesión: novena reconfirmación del día tras R-26**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: un único
 `ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veintitrés
 pasadas consecutivas). Ninguno de severidad alta que atender como P-XX urgente antes de esta
@@ -2373,6 +2409,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-24 | Diagnóstico real de un fallo al generar una salida: `scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18) captura hoy cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca ningún diagnóstico, en vez de usar la infraestructura de logger/diagnóstico de T-02/T-05 que se construyó el primer día del proyecto anticipando exactamente este consumidor | **COMPLETADA** | 2026-10-07 | `scripts/monitorizacion.py::volcar_diagnostico` (antes `_volcar_diagnostico`) promovida a pública; `generar_salidas_seleccionadas` la reutiliza junto con `logger.obtener_logger` dentro del `except` ya existente (sin cablear `ejecutar_con_diagnostico`, que aborta el proceso), volcando `diagnostico-<timestamp>.log` y registrando en el logger antes de construir la `SalidaOmitida` con un motivo en español que cita la ruta del diagnóstico. 3 tests nuevos (646→649). Cuatro redes en verde |
 | R-25 | Entregar `convencion-guiones.md` de verdad al dueño: conectar `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) — sin ningún consumidor fuera de sus propios tests — al selector real de salidas (T-30) | **COMPLETADA** | 2026-10-08 | `scripts/salidas.py` gana `TipoSalida.CONVENCION_GUIONES` (séptima opción, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual `convencion.guardar_convencion_guiones` (cero cambio en `convencion.py`). A diferencia de las demás salidas, no depende del parseo ni de la clasificación del guion de entrada, solo de `Configuracion`: se ofrece siempre en `construir_pregunta_salidas`, nunca omitida por falta de datos del guion o de parte de rodaje; el único fallo posible es de escritura a disco, cubierto por el mismo patrón `try`/`except`/diagnóstico de R-24. 3 tests nuevos (649→652), dos tests existentes actualizados al nuevo recuento de salidas siempre generadas. `references/contrato-montaje.md`, `SKILL.md` y `DEVELOPERS.md` actualizados. Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio |
 | R-26 | El diccionario del dueño (`diccionario-locucion.json`, T-13 requisito 3, "manda siempre") no tiene ningún llamador real fuera de sus propios tests, ni `cargar_diccionario_locucion` ni los cuatro puntos reales donde se aplicaría (`normalizar_guion`, `recopilar_propuestas`, `generar_documento_revision`, `revalidar_guion`): la garantía contractual del propio `SKILL.md` no se cumple hoy en el flujo real salvo que la sesión recuerde cargarlo a mano, sin ningún aviso si no lo hace | **COMPLETADA** | 2026-10-09 | `generar_documento_revision`/`revalidar_guion` ganan `carpeta_salida` opcional: `revalidar_guion` carga el diccionario por su cuenta (si no hay uno explícito); `generar_documento_revision` cuenta las entradas realmente aplicadas en la cabecera y avisa si el archivo tiene entradas sin aplicar. Mismo recuento expuesto en `tarjetas.json.metadatos.entradas_diccionario_aplicadas`. `SKILL.md` documenta el paso explícito con el fragmento de código exacto |
+| R-27 | El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real ni mención en `SKILL.md`, y aunque se wireara tal cual, `estado.guion.hash_sha256`/`tamano_bytes` nunca se actualizan tras `estado_inicial`, así que el aviso se repetiría para siempre en vez de aparecer una sola vez | **PENDIENTE** | 2026-10-09 | Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v15). `origen:` observación de arquitectura del PM, mismo criterio que abrió R-12 a R-26 |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
