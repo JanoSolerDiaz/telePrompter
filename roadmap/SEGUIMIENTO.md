@@ -10,10 +10,46 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-09 — **Ciclo de Programador: octava reconfirmación del día tras
+**Última actualización:** 2026-10-09 — **Ciclo de Programador: novena reconfirmación del día tras
 R-26**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Nota de arranque de esta sesión (ciclo de Programador, octava reconfirmación del día tras R-26,
+**Nota de arranque de esta sesión (ciclo de Programador, novena reconfirmación del día tras R-26,
+2026-10-09):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
+`HEAD` *detached*, resto de un contenedor anterior ya fusionado en `develop`; `git checkout develop`
+dejó la rama local atrás; `git fetch`/`git pull origin develop` resolvió en fast-forward limpio
+hasta `29d377b` (octava reconfirmación del día tras R-26), sin conflicto ni rama divergida. `pip
+install -r requirements-dev.txt` pelado volvió a instalar contra Python 3.13 en vez del 3.11 real
+del proyecto — mismo síntoma de siempre, ya cubierto por la documentación desde P-06 (hallazgo
+`#28`); resuelto con `python3 -m pip install -r requirements-dev.txt` (Python 3.11.17,
+`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Ciclo de Programador de esta sesión: novena reconfirmación del día tras R-26**, sin novedad de
+código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: un único
+`ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veintitrés
+pasadas consecutivas). Ninguno de severidad alta que atender como P-XX urgente antes de esta
+tarea. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`; `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero
+issues y cero PR abiertos. §1 (fuente autoritativa) sigue sin ninguna R-XX/T-XX `PENDIENTE` (R-26
+es la última, `COMPLETADA`): cola de la columna vertebral vacía, sin tarea de código que ejecutar
+ni hallazgo nuevo que convertir en P-XX. `ROADMAP_PRODUCTO.md` sigue describiendo "Oleada v14 — EN
+CURSO"/R-26 como prosa aún sin archivar — mismo patrón de `#24`, sin tocarlo (corresponde al
+siguiente ciclo de PM, no al de Programador; la pregunta de gobernanza #11 sigue sin respuesta).
+Verificación propia completa (`python scripts/ci.py`): `mypy`/`ruff` en verde sin hallazgos (70
+archivos), 665 tests (`pytest`, sin cambio) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos) ni §5
+(P-XX); §6 sin novedad (la pregunta #11 sigue `(pendiente)`); sin nueva desviación en §7. Nota sin
+acción: cola vacía hasta el siguiente ciclo de Product Manager. **Observación de esta sesión, fuera
+del protocolo de estado:** van ya nueve reconfirmaciones consecutivas del Programador en el mismo
+día (2026-10-09) sin ningún cambio de código, porque §1 lleva vacío desde que R-26 se completó esta
+misma madrugada; no hay ninguna acción nueva que tomar por protocolo (la cola solo la rellena un
+ciclo de PM o una respuesta del dueño a la pregunta #11), pero la cadencia de disparo de esta rutina
+programada frente al ritmo real de trabajo pendiente sigue mereciendo una revisión del dueño —
+misma observación ya registrada en la sesión anterior, aún sin respuesta.
+
+**Última actualización anterior (2026-10-09, ciclo de Programador): octava reconfirmación del día
+tras R-26**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
+
+**Nota de arranque de esa sesión (ciclo de Programador, octava reconfirmación del día tras R-26,
 2026-10-09):** sin incidencia. `git status` limpio antes de tocar nada; el contenedor arrancó con
 `HEAD` *detached*, resto de un contenedor anterior ya fusionado en `develop`; `git checkout develop`
 dejó la rama local atrás (`-B develop origin/develop`); `git fetch`/`git pull origin develop`
@@ -23,7 +59,7 @@ Python 3.13 en vez del 3.11 real del proyecto — mismo síntoma de siempre, ya 
 documentación desde P-06 (hallazgo `#28`); resuelto con `python3 -m pip install -r
 requirements-dev.txt` (Python 3.11.17, `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
-**Ciclo de Programador de esta sesión: octava reconfirmación del día tras R-26**, sin novedad de
+**Ciclo de Programador de esa sesión: octava reconfirmación del día tras R-26**, sin novedad de
 código. Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: un único
 `ABIERTO` (`#24`, baja, proceso, pregunta de gobernanza #11 de §6 sigue `(pendiente)`, veintitrés
 pasadas consecutivas). Ninguno de severidad alta que atender como P-XX urgente antes de esta
