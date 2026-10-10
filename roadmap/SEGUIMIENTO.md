@@ -10,8 +10,47 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-09 — **Ciclo de Product Manager: archiva Oleada v14 (R-26) y abre
-R-27 (Oleada v15)**, sin tocar código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-10 — **Ciclo de Product Manager: sin apertura de R-XX nueva**
+(R-27 sigue `PENDIENTE`, única tarea en cola, sin ningún ciclo de Programador que la haya tocado
+todavía); se incorpora el hallazgo nuevo `#30` del auditor como pregunta de gobernanza `#12` de §6
+(detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Product Manager (2026-10-10): sin apertura de R-XX nueva.** Revisión de entrada
+(protocolo): `git checkout develop && git pull origin develop` trajo el repositorio hasta `fd34455`
+en fast-forward limpio (la auditoría del 2026-10-10, posterior al ciclo de PM del 2026-10-09 que
+abrió R-27). §1 (fuente autoritativa) tiene a **R-27 como única fila `PENDIENTE`**: no se abre
+ninguna R-XX nueva este ciclo porque ya hay trabajo de código en cola sin empezar — mismo criterio
+que los ciclos de PM "sin apertura" anteriores (p. ej. 2026-10-04 con R-22 `PENDIENTE`), nunca más
+de una R-XX pendiente de código a la vez sin evidencia real que lo justifique.
+
+Registro de hallazgos de `auditoriacontinua.md` (commit `fd34455`, pasada 2026-10-10): dos
+`ABIERTO`. `#24` (baja, proceso, prosa de "Cola de producto" desactualizada entre ciclos de PM) se
+reconfirma una vez más sin acción nueva — sigue enrutado a la pregunta `#11` de §6, todavía
+`(pendiente)` de respuesta del dueño, y no aplica esta vez porque `ROADMAP_PRODUCTO.md` ya describe
+correctamente "Oleada v15 — EN CURSO"/R-27 `PENDIENTE` desde su propio commit de apertura.
+**`#30` (media, nuevo esta pasada) sí requiere acción del PM:** la rutina "Programador" dispara en
+cron horario durante toda la jornada y repite el protocolo completo de verificación (clon,
+`pip install`, las cuatro redes) en cada reconfirmación aunque no haya tarea pendiente en §1 —
+patrón que el propio ciclo de Programador señaló dos veces seguidas (notas de la octava y novena
+reconfirmación del 2026-10-09) sin que nadie le diera curso hasta esta pasada del auditor. No es un
+hallazgo de código ni de arquitectura de producto: el propio auditor cita dos posibles remedios
+(espaciar el cron, o añadir al protocolo una comprobación barata de "cola vacía" antes de ejecutar
+las cuatro redes), y ambos son decisión de configuración de la rutina y de protocolo
+(`HOJA_DE_RUTA.md` §0.1), reservada al dueño — ni el PM ni el Programador pueden concedérsela por su
+cuenta. Se enruta como pregunta de gobernanza nueva, `#12` de §6 (ver abajo), mismo tratamiento que
+ya recibió `#24` con la `#11`. Razonamiento completo en `DECISIONES_TECNICAS.md` (entrada de esta
+fecha).
+
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` que
+incorporar — el bloqueo #7 de §3 (grabar un curso completo) sigue sin resolverse, sin acción posible
+desde una sesión de nube.
+
+Sin cambios en §3 (bloqueos) ni §5 (P-XX); §7 sin nueva desviación. Este ciclo es de PM, no de
+Programador: no se ha ejecutado la verificación de las cuatro redes ni se ha tocado `scripts/`,
+`tests/` ni `assets/`.
+
+**Última actualización anterior (2026-10-09, ciclo de Product Manager): archiva Oleada v14 (R-26) y
+abre R-27 (Oleada v15)**, sin tocar código (detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Product Manager: archiva Oleada v14 (R-26) y abre R-27 (Oleada v15).** Revisión de
 entrada (protocolo): `git checkout develop && git pull origin develop` trajo el repositorio hasta
@@ -2476,6 +2515,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | 9 | **T-24 depende del clicker Bluetooth, que el dueño no tiene.** ¿Se bloquea la tarea entera (y con ella T-25 y T-26, que dependen de ella en cascada) o se parte? | T-24, T-25, T-26 | **Partirla** (2026-09-02). El clicker se identifica como un teclado corriente, así que el mapa completo, el antirrebote y la ayuda `?` son implementables y testeables sin hardware; lo único que exige el mando físico es saber qué botón manda qué tecla. **T-24 se implementa con alcance reducido** (requisitos 1, 3, 4 y la mitad software del 2) y **la calibración sale a T-24b, BLOQUEADA hasta nuevo aviso del dueño**. FASE B4 continúa: T-25 y T-26 no se bloquean. **Nota del mismo día:** la sesión de nube de T-24 corrió en paralelo sin conocer esta decisión y entregó exactamente ese alcance, así que T-24 quedó COMPLETADA y la decisión no revierte nada — solo formaliza T-24b. → §1, §3.5 y §7. |
 | 10 | **El paquete de `480-branded-pptx` sigue sin estar disponible.** ¿Se bloquea T-29 (y con ella T-30, T-31, T-32 y T-33 en cascada)? | T-29, T-30 | **No se bloquea** (2026-09-02). T-29 ya está especificada para funcionar con la skill de marca ausente: su requisito 4 y su criterio de aceptación exigen que se generen `tarjetas.json` y el brief, que la salida se marque latente y que no falle. Se implementa entera; **solo la generación real del `.pptx` queda latente** hasta que el dueño aporte el paquete (bloqueo §3.2). → §1, §3.2 y §7. |
 | 11 | El auditor (`auditoriacontinua.md` #24, 2026-09-16) señala que la prosa de "Cola de producto" de `ROADMAP_PRODUCTO.md` lleva reconfirmaciones enteras desactualizada tras completarse una R-XX, y sugiere que el propio ciclo de reconfirmación del Programador quede autorizado a corregirla por sí solo cuando se limite a reflejar un estado que este §1 ya registra como `COMPLETADA` (sin ninguna decisión de producto nueva de por medio), en vez de esperar al siguiente ciclo de PM completo. Es un cambio de quién escribe en qué documento (§0.4 de `HOJA_DE_RUTA.md`), protocolo que solo cambia el dueño — el PM no puede concedérselo por su cuenta. ¿Autorizas esa excepción puntual (solo prosa de estado ya reflejado en §1, nunca una decisión de producto), o prefieres que la prosa siga esperando al siguiente ciclo de PM? | §0.4, `ROADMAP_PRODUCTO.md` | *(pendiente)* |
+| 12 | El auditor (`auditoriacontinua.md` #30, 2026-10-10) señala que la rutina programada "Programador" dispara en cron horario durante toda la jornada (nueve disparos, `07:15` a `15:15`) y repite el protocolo completo de verificación (clon, `pip install`, las cuatro redes: `mypy`/`ruff`/`pytest`/`verificar_salidas.py --fixture`) en cada reconfirmación aunque §1 esté vacío de tareas `PENDIENTE`, con un coste de cómputo que se acumula mientras el ritmo de apertura de R-XX (aprox. una por jornada) sea mucho más lento que el cron horario. Propone dos remedios alternativos, ninguno ejecutable por el propio Programador ni por el PM sin autorización: (a) espaciar el cron de la rutina "Programador" a un ritmo más cercano al de apertura real de trabajo (cambio de configuración de la rutina, fuera del repositorio); o (b) añadir al protocolo (`HOJA_DE_RUTA.md` §0.1, que solo cambia el dueño) una comprobación barata de "cola vacía" — leer solo §1 de `SEGUIMIENTO.md` — que permita terminar la sesión sin ejecutar `scripts/ci.py`/`verificar_salidas.py --fixture` cuando no hay ninguna R-XX/T-XX `PENDIENTE` ni hallazgo de severidad alta que atender. ¿Cuál de las dos prefieres, alguna combinación de ambas, o ninguna (aceptar el coste actual como el precio de la cadencia horaria)? | §0.1, cadencia de la rutina "Programador" | *(pendiente)* |
 
 ---
 

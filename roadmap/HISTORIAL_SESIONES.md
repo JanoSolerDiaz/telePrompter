@@ -12,6 +12,42 @@
 
 ---
 
+### Sesión 2026-10-10 (127) — Ciclo de Product Manager: sin apertura de R-XX nueva, enruta hallazgo `#30` como pregunta `#12`
+
+**Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached*; `git checkout
+develop` dejó la rama local atrás; `git pull origin develop` llegó con el historial de `origin`
+reescrito respecto al ref local cacheado (actualización forzada `cc0ac86...fd34455`, mismo número
+de commits a cada lado: 50/50) — se resolvió con `git reset --hard origin/develop` tras confirmar
+`git status` limpio (nada propio que perder) y que `origin/develop` es la fuente autoritativa; sin
+indicio de pérdida de trabajo, solo de una reescritura de historia aguas arriba que esta sesión no
+investiga más (no toca `scripts/`/`tests/`, ciclo de PM). Quedó en `fd34455` (auditoría 2026-10-10).
+No se instaló `requirements-dev.txt` ni se ejecutó ninguna de las cuatro redes: ciclo de PM, no toca
+código.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (commit
+`fd34455`): dos `ABIERTO`. `#24` (baja, proceso) se reconfirma sin acción nueva — sigue enrutado a
+la pregunta `#11` de §6, todavía `(pendiente)`. `#30` (media, nuevo esta pasada: coste de cómputo
+de la cadencia horaria de la rutina "Programador" repitiendo el protocolo completo sin tarea
+pendiente) se incorpora como pregunta de gobernanza nueva, `#12` de §6 — ninguno de los dos remedios
+que propone el propio auditor (espaciar el cron; añadir al protocolo una comprobación barata de
+"cola vacía") es ejecutable por el PM o el Programador sin autorización del dueño. `roadmap/
+FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7
+de §3 (grabar un curso completo) sigue sin resolverse. §1 (fuente autoritativa) tiene a **R-27 como
+única fila `PENDIENTE`**, sin ningún ciclo de Programador que la haya tocado desde su apertura
+(2026-10-09): no se abre ninguna R-XX nueva este ciclo, mismo criterio que los ciclos de PM "sin
+apertura" anteriores (nunca más de una R-XX pendiente de código a la vez).
+
+**Decisiones:** 1 fila nueva en `DECISIONES_TECNICAS.md` (2026-10-10, "PM (ciclo sin apertura;
+enrutado del hallazgo `#30`)").
+
+**Cambios de estado:** ninguno en §1 (R-27 sigue `PENDIENTE`); 1 pregunta nueva en §6 (`#12`, sigue
+`(pendiente)` de respuesta del dueño). Sin cambios en §3, §5 ni §7. `ROADMAP_PRODUCTO.md` no se toca
+(su prosa de "Oleada v15 — EN CURSO"/R-27 `PENDIENTE` ya es correcta).
+
+**Push:** `git push -u origin develop`.
+
+---
+
 ### Sesión 2026-10-09 (126) — Ciclo de Product Manager: archiva Oleada v14 (R-26) y abre R-27 (Oleada v15)
 
 **Arranque.** `git status` limpio; `git checkout develop && git pull origin develop` trajo el
