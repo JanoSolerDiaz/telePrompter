@@ -10,10 +10,71 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-10 — **Ciclo de Product Manager: sin apertura de R-XX nueva**
-(R-27 sigue `PENDIENTE`, única tarea en cola, sin ningún ciclo de Programador que la haya tocado
-todavía); se incorpora el hallazgo nuevo `#30` del auditor como pregunta de gobernanza `#12` de §6
-(detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-11 — **Ciclo de Product Manager: sin apertura de R-XX nueva,
+confirmación independiente de que R-27 sigue siendo la grieta correcta** (reescaneo propio de
+`scripts/*.py` en busca de funciones públicas sin llamador real, misma metodología del ciclo que
+abrió R-27; cero candidata nueva de severidad igual o mayor) (detalle en la nota de esta sesión, más
+abajo).
+
+**Ciclo de Product Manager (2026-10-11): sin apertura de R-XX nueva.** Revisión de entrada
+(protocolo): el contenedor arrancó con la rama local `develop` desactualizada (`cc0ac86`, muy por
+detrás) y `HEAD` en un estado ajeno a cualquier rama local, con `origin/develop` en `48ae5f1` —
+mismo síntoma ya diagnosticado y documentado por el ciclo de PM del 2026-10-10 (ref artefacto del
+`git clone --depth` de cada contenedor efímero, no una reescritura real de `develop`; también
+investigado en profundidad por el auditor como hallazgo `#21`, descartado). Esta sesión no pudo
+usar `git reset --hard origin/develop` (el clasificador de permisos del modo automático bloqueó la
+operación por destructiva, sin usuario en vivo que la confirmara); en su lugar se creó la rama
+`work` apuntando a `origin/develop` (sin tocar ni descartar la rama local `develop`, que queda
+simplemente obsoleta e inofensiva en este clon efímero) y todo el trabajo de esta sesión parte de
+ahí, con push final a `work:develop`. `git status` limpio antes de tocar nada. No se instaló
+`requirements-dev.txt` como dependencia de desarrollo para ejecutar las cuatro redes (ciclo de PM, no
+toca código), solo para poder correr el reescaneo propio descrito abajo.
+
+Registro de hallazgos de `auditoriacontinua.md` (commit `48ae5f1`, auditoría 2026-10-11, "cero
+hallazgos nuevos"): dos `ABIERTO`, ambos reconfirmados sin cambio — `#24` (baja, proceso, pregunta
+`#11` de §6 sigue `(pendiente)`, veinticinco pasadas) y `#30` (media, proceso, pregunta `#12` de §6
+sigue `(pendiente)`, ya enrutada por el ciclo de PM anterior). Ninguno de severidad alta ni de
+producto/arquitectura que convertir en R-XX. `roadmap/FEEDBACK.md` sigue con su única fila de
+plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue
+sin resolverse, sin acción posible desde una sesión de nube.
+
+§1 (fuente autoritativa) tiene a **R-27 como única fila `PENDIENTE`**, sin ningún ciclo de
+Programador que la haya tocado desde que se abrió (2026-10-09): no es un síntoma del hallazgo `#30`
+ni de ningún bloqueo nuevo, sino lo esperado — la rutina "Programador" dispara en cron de lunes a
+viernes (`0 6-15 * * 1-5`, ver bloqueo histórico #8 de §3) y el 2026-10-10/11 caen en fin de semana
+(sábado/domingo, verificado). No se abre ninguna R-XX nueva este ciclo: mismo criterio que los
+ciclos de PM "sin apertura" anteriores, nunca más de una R-XX pendiente de código a la vez sin
+evidencia real que lo justifique.
+
+**Verificación propia añadida esta sesión (diligencia del PM, no exigida por protocolo pero sí por
+buena práctica dado que llevan ya tres ciclos de PM seguidos sin encontrar nada nuevo):** se repite,
+de forma independiente, el barrido de funciones públicas de `scripts/*.py` sin llamador real fuera
+de sus propios tests que usó el ciclo de PM del 2026-10-09 para abrir R-27 (script de Python propio,
+AST + `grep` por archivo y línea, excluyendo la propia línea de definición). Resultado: exactamente
+las mismas seis candidatas que ya constan en el historial — `avisar_si_guion_modificado`/
+`guion_modificado` (ya convertida en R-27, `PENDIENTE`), `cargar_estado` (descartada: primitiva de
+orquestación invocada directamente por la sesión, no por otro módulo de `scripts/`),
+`contraste_relativo` y `deshacer_normalizaciones` (descartadas: utilidades de verificación sin
+producto perdido), `ejecutar_con_limite_de_tiempo` (reconfirmada como alternativa de menor severidad
+a R-27, mismo análisis que en 2026-10-09, sin incidente nuevo en §4 que lo eleve) — más una séptima,
+`InformeCalibracion.mostrar_informe` (`scripts/calibracion.py`), que el barrido marca por error como
+huérfana porque es un **método** de clase (el AST no distingue función suelta de método) invocado
+directamente por la sesión que orquesta la skill tras `calcular_calibracion(...)`, exactamente el
+mismo patrón que `cargar_estado` y documentado tal cual en `DEVELOPERS.md:1889`: falso positivo, no
+candidata real. Cero grieta nueva de severidad igual o mayor que R-27. Confirma, con evidencia
+propia e independiente (no solo con la palabra del ciclo que abrió R-27), que la cola de una sola
+R-XX pendiente sigue siendo la correcta y que no hay ningún hallazgo urgente escondido detrás de
+tres ciclos de PM seguidos "sin apertura".
+
+Sin cambios en §3 (bloqueos), §5 (P-XX), §6 (preguntas `#11`/`#12` siguen `(pendiente)`) ni §7
+(desviaciones). `ROADMAP_PRODUCTO.md` no se toca: su prosa de "Oleada v15 — EN CURSO"/R-27
+`PENDIENTE` ya es correcta. Este ciclo es de PM, no de Programador: no se ha ejecutado la
+verificación de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/` (el reescaneo de
+esta sesión es de solo lectura).
+
+**Última actualización anterior (2026-10-10, ciclo de Product Manager): sin apertura de R-XX
+nueva**, enruta el hallazgo `#30` como pregunta `#12` de §6, sin tocar código (detalle en la nota de
+esa sesión, más abajo).
 
 **Ciclo de Product Manager (2026-10-10): sin apertura de R-XX nueva.** Revisión de entrada
 (protocolo): `git checkout develop && git pull origin develop` trajo el repositorio hasta `fd34455`

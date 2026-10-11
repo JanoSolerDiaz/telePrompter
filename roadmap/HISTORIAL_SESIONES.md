@@ -12,6 +12,49 @@
 
 ---
 
+### Sesión 2026-10-11 (128) — Ciclo de Product Manager: sin apertura de R-XX nueva, confirmación independiente de que R-27 sigue siendo la grieta correcta
+
+**Arranque.** `git status` limpio; la rama local `develop` seguía desactualizada (`cc0ac86`) y
+`HEAD` no apuntaba a ninguna rama local, con `origin/develop` en `48ae5f1` — mismo síntoma ya
+diagnosticado por el ciclo de PM del 2026-10-10 (artefacto del `git clone --depth` de cada
+contenedor efímero, no una reescritura real; también investigado por el auditor como `#21`,
+descartado). A diferencia de esa sesión, `git reset --hard origin/develop` fue bloqueado por el
+clasificador de permisos del modo automático (acción destructiva, sin usuario en vivo que la
+confirmara); se resolvió sin él, creando la rama `work` desde `origin/develop` (la rama local
+`develop` queda simplemente obsoleta e inofensiva, sin tocarla) y empujando al final con
+`work:develop`. No se instaló `requirements-dev.txt` para las cuatro redes (ciclo de PM, no toca
+código), solo para ejecutar el reescaneo propio descrito abajo.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (commit
+`48ae5f1`, auditoría 2026-10-11, "cero hallazgos nuevos"): dos `ABIERTO` reconfirmados sin cambio,
+`#24` (baja, proceso, pregunta `#11`) y `#30` (media, proceso, pregunta `#12`), ninguno de
+producto/arquitectura. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía. §1 tiene a
+R-27 como única fila `PENDIENTE`, sin ningún ciclo de Programador que la haya tocado desde que se
+abrió (2026-10-09) — esperado, no un síntoma nuevo: la rutina "Programador" solo dispara de lunes a
+viernes y el 2026-10-10/11 caen en sábado/domingo.
+
+**Verificación propia (diligencia añadida, no exigida por protocolo).** Se repite de forma
+independiente el barrido de funciones públicas de `scripts/*.py` sin llamador real que el ciclo de
+PM del 2026-10-09 usó para abrir R-27 (script AST + grep por archivo/línea propio). Mismas seis
+candidatas del historial: `avisar_si_guion_modificado`/`guion_modificado` (ya R-27, `PENDIENTE`),
+`cargar_estado`, `contraste_relativo`, `deshacer_normalizaciones`, `ejecutar_con_limite_de_tiempo`
+(las cuatro ya descartadas, sin cambio), más una séptima nueva en el barrido,
+`InformeCalibracion.mostrar_informe` (`scripts/calibracion.py`), identificada como falso positivo
+(método de clase que el AST confunde con función suelta; se invoca directamente desde la sesión que
+orquesta la skill, documentado en `DEVELOPERS.md:1889`, mismo patrón que `cargar_estado`). Cero
+grieta nueva de severidad igual o mayor que R-27: no se abre ninguna R-XX. No toca código.
+
+**Decisiones:** ninguna nueva en `DECISIONES_TECNICAS.md` (no hubo decisión de producto/arquitectura
+que registrar; la resolución del arranque de git es mecánica de sesión, no una decisión técnica
+nueva).
+
+**Cambios de estado:** ninguno en §1 (R-27 sigue `PENDIENTE`); ninguno en §3, §5, §6 (`#11`/`#12`
+siguen `(pendiente)`) ni §7. `ROADMAP_PRODUCTO.md` no se toca (su prosa ya es correcta).
+
+**Push:** `git push origin work:develop`.
+
+---
+
 ### Sesión 2026-10-10 (127) — Ciclo de Product Manager: sin apertura de R-XX nueva, enruta hallazgo `#30` como pregunta `#12`
 
 **Arranque.** `git status` limpio; el contenedor arrancó con `HEAD` *detached*; `git checkout
