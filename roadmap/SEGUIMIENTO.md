@@ -10,9 +10,48 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-12 — **Ciclo de Programador: novena reconfirmación del día tras
-R-27**, sin novedad de código (§1 sin ninguna fila `PENDIENTE`, cuatro redes en verde, 669 tests)
-(detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-12 — **Ciclo de Product Manager: archiva Oleada v15 (R-27) y abre
+R-28 (Oleada v16)** (detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Product Manager (2026-10-12).** Revisión de entrada (protocolo): el contenedor arrancó con
+la rama local `develop` desactualizada en `cc0ac86` (cincuenta commits por detrás) y divergente de
+`origin/develop` sin ancestro común visible bajo el historial superficial por defecto — mismo
+artefacto del `git clone --depth` de cada contenedor efímero ya diagnosticado por el hallazgo `#21` y
+por todos los ciclos anteriores, confirmado comparando `git merge-base --is-ancestor`: la punta local
+no era ancestro ni descendiente real de `origin/develop`, y `git status` estaba limpio (cero contenido
+propio que perder). Resuelto con `git reset --hard origin/develop`, dejando `develop` apuntando a la
+punta real (`842255a`, la novena reconfirmación del Programador tras R-27, ya empujada). Dependencias
+de desarrollo instaladas con `pip install -r requirements-dev.txt`.
+
+Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`, ambos de
+proceso puro y sin relación con el código (`#24`, baja; `#30`, media), ninguno de severidad alta que
+atender antes de la cola normal — ambos pendientes solo de la respuesta del dueño a las preguntas de
+gobernanza #11/#12 de §6. §1 (fuente autoritativa): R-27 `COMPLETADA` desde el ciclo de Programador de
+esta misma jornada (commit `9324938`), sin ningún hito de negocio propio pendiente. `roadmap/FEEDBACK.md`
+revisado de nuevo: sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+
+**Archiva Oleada v15 (R-27)** a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo se entregó").
+`ROADMAP_PRODUCTO.md` corregido en el mismo ciclo que archiva. Commit intermedio `75b318b` empujado a
+mitad de sesión (solo el archivo) mientras un agente Explore investigaba candidatos a la siguiente
+R-XX en paralelo, para no dejar trabajo sin respaldo en el clon efímero.
+
+**Abre R-28 (Oleada v16).** Grieta de arquitectura verificada, mismo criterio que abrió R-12 a R-27:
+tres validadores de contrato ya construidos y probados (`pptx.validar_tarjetas`, `srt.validar_srt`,
+`capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de
+`scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — la misma
+forma de grieta que el propio proyecto ya cerró dos veces (R-21, R-22) sin corregir aquí sus tres
+gemelos. Localización delegada a un agente Explore, verificada después con `grep` dirigido de forma
+independiente antes de escribir la spec. Detalle completo, decisiones y candidatas descartadas en
+`ROADMAP_PRODUCTO.md` (Oleada v16) y `DECISIONES_TECNICAS.md` ("PM (apertura de R-28)"). Fila añadida
+a §1 en este mismo ciclo.
+
+Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (`#11`/`#12` siguen `(pendiente)`); sin
+nueva desviación en §7. Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de
+las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+**Última actualización anterior (2026-10-12, ciclo de Programador): novena reconfirmación del día
+tras R-27**, sin novedad de código (§1 sin ninguna fila `PENDIENTE`, cuatro redes en verde, 669 tests)
+(detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-12), novena reconfirmación del día tras R-27.** Revisión de entrada
 (protocolo): el contenedor arrancó con la rama local `develop` desactualizada en `cc0ac86`
@@ -2877,6 +2916,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-25 | Entregar `convencion-guiones.md` de verdad al dueño: conectar `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) — sin ningún consumidor fuera de sus propios tests — al selector real de salidas (T-30) | **COMPLETADA** | 2026-10-08 | `scripts/salidas.py` gana `TipoSalida.CONVENCION_GUIONES` (séptima opción, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual `convencion.guardar_convencion_guiones` (cero cambio en `convencion.py`). A diferencia de las demás salidas, no depende del parseo ni de la clasificación del guion de entrada, solo de `Configuracion`: se ofrece siempre en `construir_pregunta_salidas`, nunca omitida por falta de datos del guion o de parte de rodaje; el único fallo posible es de escritura a disco, cubierto por el mismo patrón `try`/`except`/diagnóstico de R-24. 3 tests nuevos (649→652), dos tests existentes actualizados al nuevo recuento de salidas siempre generadas. `references/contrato-montaje.md`, `SKILL.md` y `DEVELOPERS.md` actualizados. Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio |
 | R-26 | El diccionario del dueño (`diccionario-locucion.json`, T-13 requisito 3, "manda siempre") no tiene ningún llamador real fuera de sus propios tests, ni `cargar_diccionario_locucion` ni los cuatro puntos reales donde se aplicaría (`normalizar_guion`, `recopilar_propuestas`, `generar_documento_revision`, `revalidar_guion`): la garantía contractual del propio `SKILL.md` no se cumple hoy en el flujo real salvo que la sesión recuerde cargarlo a mano, sin ningún aviso si no lo hace | **COMPLETADA** | 2026-10-09 | `generar_documento_revision`/`revalidar_guion` ganan `carpeta_salida` opcional: `revalidar_guion` carga el diccionario por su cuenta (si no hay uno explícito); `generar_documento_revision` cuenta las entradas realmente aplicadas en la cabecera y avisa si el archivo tiene entradas sin aplicar. Mismo recuento expuesto en `tarjetas.json.metadatos.entradas_diccionario_aplicadas`. `SKILL.md` documenta el paso explícito con el fragmento de código exacto |
 | R-27 | El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real ni mención en `SKILL.md`, y aunque se wireara tal cual, `estado.guion.hash_sha256`/`tamano_bytes` nunca se actualizan tras `estado_inicial`, así que el aviso se repetiría para siempre en vez de aparecer una sola vez | **COMPLETADA** | 2026-10-12 | `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion)` (refresca `hash_sha256`/`tamano_bytes` al contenido actual, mutando `estado` en el sitio, llamada justo antes de `guardar_estado`). `documento_revision.generar_documento_revision` gana `guion_modificado: bool = False`: con `True`, la cabecera del resumen global añade la línea de aviso visible (mismo criterio de transparencia que ppm/T-12, diccionario/R-26, desviaciones/R-23). `SKILL.md` documenta el paso explícito con el fragmento de código exacto (tras cargar `estado.json` y antes de re-parsear/regenerar, `avisar_si_guion_modificado` → `generar_documento_revision(..., guion_modificado=...)`; `actualizar_info_guion` justo antes de `guardar_estado`), mismo patrón que R-26. Sin migración (solo refresca valores ya existentes de `InfoGuion`); `revalidar_guion` intacto, sin releer el guion de origen. 4 tests nuevos (665→669): 2 en `tests/test_estado.py` (refresco exacto al hash/tamaño actuales; cierra el bucle — tras actualizar, `avisar_si_guion_modificado` vuelve a `False` sin que el guion cambie de nuevo) y 2 en `tests/test_documento_revision.py` (línea de aviso con `True`; ninguna línea nueva con `False`, el valor por defecto). Cuatro redes en verde. `DEVELOPERS.md` actualizado con sección propia. Oleada v15, `origen: observación de arquitectura del PM (2026-10-09)` |
+| R-28 | Tres validadores de contrato ya construidos (`pptx.validar_tarjetas`, `srt.validar_srt`, `capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de `scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — mismo patrón de grieta ya cerrado por R-21 (`concat-ffmpeg.txt`) y R-22 (`capitulos-ffmpeg.txt`), sin corregir aquí para sus tres gemelos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) | **PENDIENTE** | — | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v16. `origen: observación de arquitectura del PM (2026-10-12)`, candidatos localizados con ayuda de un agente Explore y verificados de forma independiente |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

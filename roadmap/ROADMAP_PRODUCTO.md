@@ -8,46 +8,36 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-09 (ciclo de PM). **R-26 (Oleada v14) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-09 que la implementó (el diccionario del
-dueño, `diccionario-locucion.json`, queda conectado de verdad a la generación y a la revalidación).
-Igual que R-25, la fila de §1 se añadió en el mismo commit que la implementó, así que no hay prosa
-desactualizada que corregir. Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v14) junto con el resto
-de oleadas 100 % entregadas.
+**Última actualización:** 2026-10-12 (ciclo de PM). **R-27 (Oleada v15) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-12 que la implementó (el aviso de guion
+modificado, `avisar_si_guion_modificado`, queda conectado de verdad y el hash guardado se refresca
+para que no se repita sin motivo). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v15) junto con el
+resto de oleadas 100 % entregadas.
 
-**Se abre R-27** (Oleada v15): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
+**Se abre R-28** (Oleada v16): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
 las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
-verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-26. Verificación propia,
-leyendo el código línea a línea: `scripts/estado.py::avisar_si_guion_modificado` (T-07, 2026-09-01)
-existe exactamente para avisar al dueño cuando el guion de origen cambió desde la última pasada
-("se recalcularán escenas, clasificación y tiempos en la próxima pasada", en vez de dejarlo
-descubrirlo por sorpresa) — pero no tiene **ningún** llamador fuera de sus propios tests, confirmado
-con `grep -rn "guion_modificado" scripts/*.py`: solo aparece en su propia definición y en su propia
-llamada interna a `guion_modificado(...)`. `SKILL.md` no menciona esta función en ningún punto del
-flujo documentado (confirmado con `grep -n "guion_modificado" SKILL.md`, sin resultado), así que ni
-siquiera está como paso de la receta que sigue la sesión que orquesta la skill — el mismo tipo de hueco
-de instrucción, no solo de código, que ya cerró R-26. Peor aún: aunque se llamara hoy mismo, el aviso
-quedaría roto por un segundo defecto — `estado.guion.hash_sha256`/`tamano_bytes` (`InfoGuion`) solo se
-escriben una vez, en `estado_inicial` (`scripts/estado.py:121-135`), y ningún punto del código los
-vuelve a actualizar después (confirmado con `grep -rn "InfoGuion(" scripts/*.py`: un único resultado
-fuera de `desde_dict`, el de `estado_inicial`). El resultado práctico: en cuanto el guion cambia una
-vez, el aviso —si se wireara tal cual, sin más— se repetiría en TODAS las pasadas futuras para
-siempre, incluso después de que el dueño ya lo haya visto y vuelto a generar/revalidar, porque nada
-refresca el hash guardado contra el que se compara. No es una salida huérfana sin consumidor (patrón
-de R-18 a R-25): es, igual que R-26, una garantía de transparencia explícita en el propio docstring de
-la función y en `DEVELOPERS.md` que hoy no se sostiene en el flujo real, y que de conectarse mal
-degradaría en ruido permanente en vez de señal. Detalle completo en "Oleada v15" más abajo.
+verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-27, esta vez localizada
+con ayuda de un agente Explore y verificada después `grep` por `grep` de forma independiente antes de
+escribir la ficha. Tres validadores de contrato ya construidos y probados —
+`pptx.py::validar_tarjetas` (`tarjetas.json`, el contrato directo con el montaje ffmpeg),
+`srt.py::validar_srt` (`guion.srt`/`guion-alineado.srt`, cuyo propio docstring dice que imita "un
+lector estricto tipo ffmpeg") y `capitulos_youtube.py::validar_capitulos_youtube`
+(`capitulos-youtube.txt`) — nunca se invocan en la ruta real de generación de `scripts/salidas.py`,
+solo desde `verificar_salidas.py --fixture` (la red de desarrollo, nunca sobre el guion real del
+dueño). Es exactamente la misma forma de grieta que el propio proyecto ya reconoció y cerró dos veces
+(R-21 para `concat-ffmpeg.txt`, R-22 para `capitulos-ffmpeg.txt`) — aquí quedaron sin corregir sus
+tres gemelos. Detalle completo, con cada cita de archivo:línea verificada, en "Oleada v16" más abajo.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
 curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` no trae ningún
-`ABIERTO` nuevo de producto/arquitectura esta pasada: queda un único `ABIERTO` (`#24`, prosa de "Cola
-de producto" desactualizada entre ciclos de PM, de proceso y severidad baja), que no necesita una
-R-XX — sigue pendiente solo de la respuesta del dueño a la pregunta de gobernanza #11 de
-`SEGUIMIENTO.md` §6.
+`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan dos `ABIERTO` (`#24`, prosa de "Cola de
+producto" desactualizada entre ciclos de PM; `#30`, cadencia de la rutina "Programador"), ambos de
+proceso puro y severidad baja/media, sin relación con el código, pendientes solo de la respuesta del
+dueño a las preguntas de gobernanza #11/#12 de `SEGUIMIENTO.md` §6.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-27 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-28 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -211,6 +201,111 @@ La oleada v15 (cerrar el bucle del aviso de guion modificado, conectando
 el aviso no se repita sin motivo, R-27) tiene su única R-XX en **COMPLETADA** en §1 de
 `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en
 este ciclo de PM (2026-10-12). Su spec completa y cómo se entregó viven ahí.
+
+### Oleada v16 — EN CURSO
+
+#### R-28 — Tres validadores de contrato ya construidos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) nunca se invocan en la ruta real de generación, solo desde `verificar_salidas.py --fixture`
+
+**Migración:** No (ningún campo nuevo en `estado.json` ni en ningún contrato; mismo patrón mecánico
+que R-21/R-22, invocar un validador que ya existe antes de escribir a disco) · **Depende de:** T-27,
+T-29, R-05, R-07, R-19, R-21, R-22 (todas ya `COMPLETADA`) · **Origen:** observación de arquitectura
+del PM (2026-10-12) — grieta de arquitectura verificada sobre código ya construido (mismo criterio
+que abrió R-12 a R-27), con una primera pasada de localización de candidatos delegada a un agente
+Explore y verificada de forma independiente, `grep` por `grep`, antes de escribir esta ficha.
+
+**Objetivo:** El propio proyecto ya reconoció y cerró esta forma exacta de grieta dos veces
+(`DECISIONES_TECNICAS.md`, apertura de R-21: «`concat_ffmpeg.py` traía su propio validador...
+pero `salidas.py::_generar_concat_ffmpeg` nunca lo invocaba antes de escribir... solo lo ejercitaba
+`verificar_salidas.py --fixture`, un chequeo de salud aparte de la generación real» — y R-22 repitió
+el patrón correctamente para `capitulos-ffmpeg.txt`, con el comentario explícito en el propio código,
+`capitulos_youtube.py`, "validado antes de escribir desde el primer día... misma lección que el
+hallazgo #27/R-21"). Verificado con `grep` dirigido que la misma frase es cierta **hoy** para otros
+tres validadores que nadie corrigió cuando se corrigió el de `concat-ffmpeg.txt`:
+
+1. **`pptx.py:482::validar_tarjetas`** (contrato de `tarjetas.json`, el que alimenta el montaje:
+   `SKILL.md:610` — "la fase de montaje lee `inicio_segundos`/`fin_segundos` directamente, sin sumar
+   nada por su cuenta"). `pptx.py:760-795::exportar_pptx` construye `resultado_tarjetas` y llama
+   `guardar_tarjetas_json(formatear_tarjetas_json(resultado_tarjetas), carpeta_salida)` **sin
+   invocar `validar_tarjetas` en ningún punto intermedio**. `grep -rn "validar_tarjetas"
+   scripts/*.py` solo devuelve su propia definición, sus tres menciones en comentarios/docstrings de
+   `pptx.py` y el único invocador real: `verificar_salidas.py:105,631` — la red de desarrollo, sobre
+   el guion de fixture, nunca sobre el guion real del dueño. `scripts/salidas.py:117` importa
+   `exportar_pptx` sin importar `validar_tarjetas`, a diferencia de `concat_ffmpeg`/
+   `capitulos_youtube`, cuyos validadores sí entraron en el `import` real (`salidas.py:98-109`).
+2. **`srt.py:218::validar_srt`** (contrato de `guion.srt`/`guion-alineado.srt` — su propio docstring,
+   `srt.py:27`, dice literalmente que aplica "las mismas reglas que un lector estricto tipo ffmpeg").
+   `salidas.py:295-317::_generar_srt` genera y guarda tanto el `.srt` estimado
+   (`exportar_srt`/`guardar_srt`) como el alineado (`generar_srt_alineado`/`guardar_srt_alineado`,
+   R-05) **sin pasar ninguno de los dos por `validar_srt`** (ni por su alias
+   `srt_alineado.py:70::validar_srt_alineado`). Único invocador real: `verificar_salidas.py:109,645,660`.
+3. **`capitulos_youtube.py:355::validar_capitulos_youtube`** (contrato de `capitulos-youtube.txt`,
+   reglas literales de YouTube: primera marca `0:00`, orden estrictamente creciente, separación
+   mínima). `salidas.py:371-397::_generar_capitulos_youtube` valida la mitad hermana
+   `capitulos-ffmpeg.txt` con `validar_capitulos_ffmpeg` desde R-22 (comentario explícito en el propio
+   código citando el hallazgo `#27`/R-21) **pero nunca valida `capitulos-youtube.txt`, la salida
+   principal, antes de escribirla** — `salidas.py:98-104` importa `validar_capitulos_ffmpeg` pero no
+   `validar_capitulos_youtube`. Evidencia de que es un descuido y no una decisión:
+   `SEGUIMIENTO.md:2144-2147` registra que, al abrir R-22, se releyó línea a línea
+   `capitulos_youtube.py` —incluida `validar_capitulos_youtube`— "antes de especificar la tarea": el
+   propio ciclo de PM tuvo esta función delante y solo corrigió el formato ffmpeg, sin notar que el
+   validador de YouTube seguía sin enganchar.
+
+El riesgo real para el formador: si una pasada futura (un parte de rodaje corrupto, un borde no
+cubierto por los tests actuales) produce un `tarjetas.json`, un `.srt` o un `capitulos-youtube.txt`
+estructuralmente inválido, hoy se escribe igual a disco sin ningún aviso — el error solo se
+descubriría durante el montaje con ffmpeg o al subir el vídeo a YouTube, el peor momento posible para
+un formador en solitario sin red de producción detrás. Es exactamente el mismo riesgo que R-21 ya
+cerró para `concat-ffmpeg.txt` y R-22 para `capitulos-ffmpeg.txt`; esta tarea cierra los tres huecos
+gemelos que quedaron sin tocar.
+
+Candidatas descartadas en la misma pasada (falsos positivos ya resueltos por el propio proyecto, no
+se repiten): `verificar_salidas.py::verificar_autocontencion` (es la propia herramienta de
+verificación, mismo descarte que `contraste_relativo`/`deshacer_normalizaciones` en R-27);
+`calibracion.py::calcular_calibracion` (ya evaluado y descartado como falso positivo al abrir R-25:
+la invoca directamente la sesión que usa la skill, no un consumidor interno de `scripts/`);
+`convencion.py::medir_consistencia_senales`/`proponer_convenciones` (mecanismo latente a propósito
+por el propio docstring del módulo, condicionado a una señal de inferencia nueva que los tres guiones
+reales de calibración todavía no presentan — infraestructura declarada condicional, no una garantía
+incumplida).
+
+**Requisitos:**
+1. `scripts/pptx.py::exportar_pptx` invoca `validar_tarjetas` sobre los datos ya construidos (p. ej.
+   reutilizando `tarjetas_a_diccionario(resultado_tarjetas)`, que `formatear_tarjetas_json` ya calcula
+   por dentro) antes de `guardar_tarjetas_json`. Si devuelve problemas, `tarjetas.json` **no se
+   escribe** con contenido inválido.
+2. `scripts/salidas.py::_generar_srt` invoca `validar_srt` sobre el contenido de `exportar_srt` antes
+   de `guardar_srt`, y sobre el contenido de `generar_srt_alineado` antes de `guardar_srt_alineado`
+   (mismo validador, `srt_alineado.validar_srt_alineado` es su alias) — ambos subtítulos protegidos,
+   no solo uno.
+3. `scripts/salidas.py::_generar_capitulos_youtube` invoca `validar_capitulos_youtube` sobre el
+   contenido de `generar_capitulos_youtube` antes de `guardar_capitulos_youtube`, exactamente el
+   mismo punto donde ya se valida `capitulos-ffmpeg.txt` desde R-22, unas líneas más abajo en la misma
+   función.
+4. Propagación del fallo: mismo criterio ya establecido por R-24 para cualquier fallo real de
+   generación — el bucle de `generar_salidas_seleccionadas` ya envuelve cada tipo de salida en su
+   propio `try`/`except` que vuelca diagnóstico y degrada a `SalidaOmitida` con un motivo accionable
+   en español (nunca una traza cruda, nunca un archivo escrito a medias). Un validador que señala
+   problemas debe entrar por esa misma puerta — el diseño exacto (una excepción que la propagación ya
+   captura, o una `SalidaOmitida` construida a mano con el motivo exacto, mismo patrón literal de
+   `_generar_concat_ffmpeg`/R-21) lo decide quien implemente, documentado en `DECISIONES_TECNICAS.md`.
+   En cualquier caso: nunca se escribe a disco un archivo que su propio validador ya conocido rechaza.
+5. Fuera de alcance, explícito: no se endurece ni se cambia ninguna regla de los tres validadores en
+   sí (siguen exactamente las mismas reglas de `references/contrato-tarjetas.md` y el formato `.srt`/
+   YouTube ya documentados); no se añade ningún validador nuevo; no se toca `concat_ffmpeg.py` ni
+   `capitulos_youtube.py::validar_capitulos_ffmpeg` (ya conectados desde R-21/R-22); no se cambia el
+   comportamiento de ninguna salida cuando el contenido generado es válido (que es el caso de los tres
+   guiones reales de fixture/calibración hoy, confirmado por las dieciocho etapas en verde de
+   `verificar_salidas.py --fixture`) — esta tarea es una red de seguridad para el caso borde, no un
+   cambio de comportamiento del caso normal.
+
+**Criterio de aceptación:** tres tests de integración (uno por salida) que fuerzan, por
+`monkeypatch` o construcción directa, un contenido estructuralmente inválido para cada contrato
+(`tarjetas.json` con `numero_escenas` inconsistente; `.srt` con índice no secuencial; `capitulos-
+youtube.txt` con una marca fuera de orden) y comprueban que (a) el archivo correspondiente **no se
+escribe** a disco con ese contenido y (b) el dueño recibe un motivo accionable en español, nunca una
+traza cruda sin capturar; regresión completa de los tests existentes de T-27/T-29/R-05/R-07/R-19
+sin cambio de comportamiento sobre contenido válido; las dieciocho etapas de
+`verificar_salidas.py --fixture` siguen en `OK` sobre los tres guiones reales. Cuatro redes en verde.
 
 ---
 

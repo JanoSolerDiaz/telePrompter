@@ -12,6 +12,67 @@
 
 ---
 
+### Sesión 2026-10-12 (139) — Ciclo de Product Manager: archiva Oleada v15 (R-27) y abre R-28 (Oleada v16)
+
+**Arranque.** El contenedor arrancó con la rama local `develop` desactualizada en `cc0ac86` (50
+commits por detrás) y divergente de `origin/develop` sin ancestro común bajo el historial superficial
+por defecto — mismo artefacto del `git clone --depth` de cada contenedor efímero ya diagnosticado por
+el hallazgo `#21` y por todas las sesiones anteriores, confirmado comparando `git merge-base
+--is-ancestor`/`git rev-parse --tree`: la punta local era tree-idéntica a `cc0ac86`, cero contenido
+propio que perder. Resuelto con `git reset --hard origin/develop`, dejando `develop` apuntando a la
+punta real de `origin/develop` (`842255a`, la novena reconfirmación del Programador tras R-27, ya
+empujada). `git status` limpio antes y después. `requirements-dev.txt` instalado con
+`pip install -r requirements-dev.txt`.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`
+(`#24`, `#30`), ambos de proceso puro y severidad baja/media, pendientes solo de la respuesta del
+dueño a las preguntas de gobernanza #11/#12 de §6 — sin relación con el código, ninguno exige P-XX
+urgente. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`. §1 (fuente autoritativa): R-27 `COMPLETADA` desde el ciclo de Programador de esta misma
+jornada (commit `9324938`), sin ningún patrón de latencia que corregir.
+
+**Archiva Oleada v15 (R-27).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo
+se entregó": `estado.actualizar_info_guion`, `documento_revision` gana `guion_modificado`, `SKILL.md`
+documenta el paso explícito; 4 tests nuevos 665→669, commit `9324938`). `ROADMAP_PRODUCTO.md`
+corregido en el mismo ciclo que archiva: cabecera reescrita, sección "Oleada v15" sustituida por la
+nota de archivo. Commit intermedio `75b318b` empujado a mitad de sesión (solo el archivo, antes de
+completar la apertura de R-28) para no dejar trabajo sin respaldo en el clon efímero mientras un
+agente Explore investigaba en paralelo.
+
+**Abre R-28 (Oleada v16).** Grieta de arquitectura verificada, mismo criterio que abrió R-12 a R-27:
+tres validadores de contrato ya construidos y probados —`pptx.py:482::validar_tarjetas` (contrato de
+`tarjetas.json`), `srt.py:218::validar_srt` (contrato de `guion.srt`/`guion-alineado.srt`, que su
+propio docstring dice que imita "un lector estricto tipo ffmpeg") y
+`capitulos_youtube.py:355::validar_capitulos_youtube` (contrato de `capitulos-youtube.txt`)— nunca se
+invocan en la ruta real de generación (`scripts/salidas.py`/`pptx.exportar_pptx`), solo desde
+`verificar_salidas.py --fixture`. Es la misma forma exacta de grieta que el propio proyecto ya
+reconoció y cerró dos veces (R-21 para `concat-ffmpeg.txt`, R-22 para `capitulos-ffmpeg.txt`, con cita
+textual de `DECISIONES_TECNICAS.md` como precedente) — aquí quedaron sin corregir sus tres gemelos.
+Localización delegada a un agente Explore (instruido para no repetir los candidatos ya descartados en
+R-27 y para citar archivo:línea verificable); verificación independiente propia con `grep` dirigido
+sobre los tres `grep -rn` que cita el informe y sobre el bloque de `import` real de
+`scripts/salidas.py:98-122` (trae `validar_capitulos_ffmpeg`/`validar_lista_concat_ffmpeg`, ya
+conectados desde R-21/R-22, pero no los tres de esta ficha) — confirmados letra por letra antes de
+escribir la spec. Candidatas descartadas: `verificar_autocontencion` (la propia herramienta de
+verificación), `calibracion.calcular_calibracion` (ya descartado al abrir R-25) y
+`convencion.medir_consistencia_senales`/`proponer_convenciones` (mecanismo latente a propósito, según
+su propio docstring). Spec completa de R-28 en `ROADMAP_PRODUCTO.md` (Oleada v16), con los tres
+validadores agrupados bajo una sola R-XX (mismo precedente de agrupación que R-18) y la alternativa de
+trocear en tres anotada por si el Programador prefiere varios commits atómicos. Fila `R-28 | ... |
+PENDIENTE | — | ...` añadida a §1 en este mismo ciclo (lección de `#29`: nunca dejar la apertura de
+una R-XX sin su fila).
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** una fila, "PM (apertura de R-28)" (2026-10-12),
+con el razonamiento completo de por qué se agrupan los tres validadores bajo una sola R-XX y por qué
+se descartan las otras tres candidatas.
+
+**Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (las preguntas #11/#12 siguen
+`(pendiente)`); sin nueva desviación en §7.** Este ciclo es de PM, no de Programador: no se ha
+ejecutado la verificación de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`. Push
+a `origin/develop` al cerrar esta sesión.
+
+---
+
 ### Sesión 2026-10-12 (138) — Ciclo de Programador: novena reconfirmación del día tras R-27, sin novedad de código
 
 **Arranque.** `git status` limpio. El contenedor arrancó con la rama local `develop` desactualizada
