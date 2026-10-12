@@ -1675,6 +1675,86 @@ salida nueva, solo un campo más en una ya existente). Cuatro redes en verde. Co
 
 ---
 
+## Oleada v15 — Cerrar el bucle del aviso de guion modificado
+
+Cierra la última grieta de arquitectura de severidad "garantía contractual incumplida" detectada en
+esta serie (mismo criterio que abrió R-12 a R-26): `scripts/estado.py::avisar_si_guion_modificado`
+(T-07 — "avisa... en vez de fallar en silencio con datos desactualizados") no tenía ningún llamador
+real fuera de sus propios tests ni mención en `SKILL.md`, y aunque se hubiera cableado tal cual, el
+hash guardado en `estado.json` nunca se refrescaba tras `estado_inicial`, así que el aviso se habría
+repetido en todas las pasadas futuras en vez de aparecer una sola vez. Contiene R-27, su única R-XX.
+**Entregada 2026-10-12** (COMPLETADA el mismo ciclo del Programador en que se implementó, tras
+abrirse tres días antes, 2026-10-09).
+
+### R-27 — El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real, y el hash guardado en `estado.json` nunca se refresca para que el aviso no se repita sin motivo
+
+**Migración:** No (ningún campo nuevo en `estado.json`; refresca valores ya existentes de `InfoGuion`
+tras cada pasada, mismo esquema) · **Depende de:** T-07, T-16 (ambas ya `COMPLETADA`) · **Origen:**
+observación de arquitectura del PM (2026-10-09) — grieta de arquitectura verificada sobre código ya
+construido (mismo criterio que abrió R-12 a R-26).
+
+**Objetivo:** T-07 (2026-09-01) construyó `scripts/estado.py::guion_modificado`/
+`avisar_si_guion_modificado` con un propósito explícito, documentado en su propio docstring y en
+`DEVELOPERS.md`: comparar el hash del guion de origen contra el que quedó guardado en `estado.json` la
+última vez, y avisar al dueño por `presentacion.py` cuando difieren — "en vez de fallar en silencio con
+datos desactualizados", eco literal del principio de producto nº 1 ("nada se descarta en silencio").
+Verificado leyendo el código, no solo el docstring: `grep -rn "guion_modificado" scripts/*.py` solo
+devuelve la propia definición de las dos funciones y la llamada interna de
+`avisar_si_guion_modificado` a `guion_modificado` — ningún otro módulo de `scripts/` las importa ni las
+invoca; `grep -n "guion_modificado" SKILL.md` no devuelve ningún resultado. El hueco tenía una segunda
+capa que agravaba el wiring ingenuo: `InfoGuion.hash_sha256`/`tamano_bytes` solo se escribían una vez,
+en `estado_inicial` (`scripts/estado.py:121-135`) — confirmado con
+`grep -rn "InfoGuion(" scripts/*.py`, que solo devolvía esa construcción y la de `desde_dict`. Si
+`avisar_si_guion_modificado` se hubiera llamado tal cual, sin más: la primera vez que el guion
+cambiara el aviso habría sido correcto, pero todas las pasadas futuras habrían vuelto a avisar igual,
+convirtiendo una señal útil en ruido permanente. Candidata alternativa descartada tras la misma pasada
+de verificación: `scripts/entrada.py::ejecutar_con_limite_de_tiempo` (T-06) tampoco tiene llamador real;
+se descartó por menor severidad y menor evidencia de riesgo real (las guardas de tamaño/escenas de T-06
+ya hacen poco probable el escenario, sin ningún incidente registrado en §4 de `SEGUIMIENTO.md`).
+
+**Requisitos:**
+1. `scripts/estado.py` gana una función nueva que refresca `estado.guion.hash_sha256`/`tamano_bytes`
+   al contenido actual del archivo, llamada justo antes de `guardar_estado` en cualquier pasada que
+   regenere o revalide sobre un guion con `estado.json` ya existente.
+2. `documento_revision.generar_documento_revision` gana un parámetro opcional
+   `guion_modificado: bool = False` (mismo patrón que `tropiezos_por_escena` de R-03): con `True`, la
+   cabecera del resumen global añade una línea visible avisando de que el guion de origen cambió desde
+   la última pasada — mismo criterio de transparencia que ya aplican el ppm (T-12), el diccionario del
+   dueño (R-26) y las desviaciones de convención (R-23).
+3. `SKILL.md` dedica una instrucción explícita, con el fragmento de código exacto a invocar (mismo
+   patrón ya usado para el diccionario del dueño en R-26): tras cargar `estado.json` y ANTES de
+   re-parsear/regenerar, llamar a `estado.avisar_si_guion_modificado(estado, ruta_guion)` y pasar su
+   valor de retorno a `generar_documento_revision(..., guion_modificado=...)`; llamar a la función del
+   requisito 1 justo antes de `guardar_estado`.
+4. Fuera de alcance, explícito: sin recálculo incremental; sin cambio de esquema de `estado.json`;
+   `revalidar_guion` no gana ningún parámetro nuevo ni relee el guion de origen; `tarjetas.json.
+   metadatos` no gana ningún campo nuevo por esta tarea; no se toca `ejecutar_con_limite_de_tiempo`.
+
+**Criterio de aceptación:** test que confirma que la función del requisito 1 deja
+`estado.guion.hash_sha256`/`tamano_bytes` iguales al hash/tamaño actuales del archivo tras llamarla;
+test que confirma que, tras esa actualización y sin que el guion vuelva a cambiar,
+`avisar_si_guion_modificado` devuelve `False` (cierra el bucle); test que confirma que la cabecera de
+`guion-escenas.md` incluye la línea de aviso cuando `guion_modificado=True` y ninguna línea nueva
+cuando es `False`; regresión de los tests existentes de T-07/T-16 sin cambios de comportamiento.
+Cuatro redes en verde.
+
+**Cómo se entregó:** `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion) -> None`, que
+muta `estado.guion` en el sitio (coherente con `guardar_estado`, que ya muta `actualizado_en` sin
+devolver una copia) en vez de construir y devolver un `EstadoProyecto` nuevo.
+`documento_revision._formatear_resumen_global` añade la línea de aviso `⚠` como último elemento de la
+cabecera, junto al resto de avisos ya existentes (duración, diccionario sin aplicar), en vez de
+anteponerla como primera línea — consistencia visual con R-26, sin reordenar las métricas fijas que
+preceden. `SKILL.md` documenta el paso explícito con el fragmento de código exacto, mismo patrón que
+R-26. 4 tests nuevos (665→669): 2 en `tests/test_estado.py` (refresco exacto al hash/tamaño actuales;
+cierra el bucle — tras actualizar, `avisar_si_guion_modificado` vuelve a `False` sin que el guion
+cambie de nuevo) y 2 en `tests/test_documento_revision.py` (línea de aviso con `True`; ninguna línea
+nueva con `False`, el valor por defecto). `DEVELOPERS.md` gana sección propia. Verificación pre-push
+completa: `mypy`/`ruff` en verde sin hallazgos (70 archivos), 669 tests (`pytest`, 665→669), dieciocho
+etapas OK en `verificar_salidas.py --fixture` (sin cambio: ninguna salida nueva). Cuatro redes en
+verde. Commit `9324938`, 2026-10-12.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -1682,4 +1762,4 @@ salida nueva, solo un campo más en una ya existente). Cuatro redes en verde. Co
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
 (R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05; la de v11 (R-23),
 2026-10-06; la de v12 (R-24), 2026-10-07; la de v13 (R-25), 2026-10-08; la de v14 (R-26),
-2026-10-09.)*
+2026-10-09; la de v15 (R-27), 2026-10-12.)*

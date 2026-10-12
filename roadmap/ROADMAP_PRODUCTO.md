@@ -204,95 +204,13 @@ generación y revalidación, R-26) tiene su única R-XX en **COMPLETADA** en §1
 ningún hito de negocio propio pendiente. Se movió a `roadmap/ROADMAP_HISTORICO.md` en este ciclo de
 PM (2026-10-09). Su spec completa y cómo se entregó viven ahí.
 
-### Oleada v15 — EN CURSO
+### Oleada v15 — entregada
 
-#### R-27 — El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real, y el hash guardado en `estado.json` nunca se refresca para que el aviso no se repita sin motivo
-
-**Migración:** No (ningún campo nuevo en `estado.json`; refresca valores ya existentes de `InfoGuion`
-tras cada pasada, mismo esquema) · **Depende de:** T-07, T-16 (ambas ya `COMPLETADA`) · **Origen:**
-observación de arquitectura del PM (2026-10-09) — grieta de arquitectura verificada sobre código ya
-construido (mismo criterio que abrió R-12 a R-26).
-
-**Objetivo:** T-07 (2026-09-01) construyó `scripts/estado.py::guion_modificado`/
-`avisar_si_guion_modificado` con un propósito explícito, documentado en su propio docstring y en
-`DEVELOPERS.md`: comparar el hash del guion de origen contra el que quedó guardado en `estado.json` la
-última vez, y avisar al dueño por `presentacion.py` cuando difieren — "en vez de fallar en silencio con
-datos desactualizados", eco literal del principio de producto nº 1 ("nada se descarta en silencio").
-Verificado leyendo el código, no solo el docstring: `grep -rn "guion_modificado" scripts/*.py` solo
-devuelve la propia definición de las dos funciones y la llamada interna de
-`avisar_si_guion_modificado` a `guion_modificado` — ningún otro módulo de `scripts/` las importa ni las
-invoca. `grep -n "guion_modificado" SKILL.md` no devuelve ningún resultado: el paso no está ni siquiera
-mencionado en la receta que sigue la sesión que orquesta la skill, a diferencia de otros pasos
-explícitos ya documentados (el diccionario del dueño, R-26; `tropiezos_por_escena`, R-03). El dueño
-puede editar el guion de origen entre una pasada y la siguiente (corregir una frase, añadir una
-escena) y hoy no recibe ninguna señal de que eso ocurrió, pese a que la función que se la daría ya
-existe, está probada (`tests/test_estado.py`) y documentada.
-
-El hueco tiene una segunda capa que agrava el wiring ingenuo: `InfoGuion.hash_sha256`/`tamano_bytes`
-(el valor contra el que se compara) solo se escriben una vez, en `estado_inicial`
-(`scripts/estado.py:121-135`) — confirmado con `grep -rn "InfoGuion(" scripts/*.py`, que solo
-devuelve esa construcción y la de `desde_dict` (reconstrucción desde el JSON ya guardado, no una
-escritura nueva). Ningún punto del código actualiza esos dos campos después de la primera vez. Si
-`avisar_si_guion_modificado` se llamara tal cual, sin más, en cada generación/revalidación: la primera
-vez que el guion cambiara el aviso sería correcto, pero **todas las pasadas futuras volverían a avisar
-igual**, aunque el dueño ya lo haya visto y haya vuelto a generar o revalidar sobre el guion ya
-cambiado — el hash guardado nunca se pone al día, así que la comparación sigue siendo contra el
-original de hace semanas. Eso convertiría una señal útil en ruido permanente, el mismo tipo de defecto
-de diseño que esta tarea debe prevenir, no solo el wiring que falta. A diferencia de las grietas de
-R-18 a R-25 (una salida o un cálculo sin consumidor, valor perdido pero sin promesa incumplida), esta
-es, igual que R-26, una garantía de transparencia explícita del propio código y de `DEVELOPERS.md` que
-hoy no se sostiene en el flujo real.
-
-Candidata alternativa descartada tras la misma pasada de verificación:
-`scripts/entrada.py::ejecutar_con_limite_de_tiempo` (T-06, tope de tiempo de proceso) tampoco tiene
-llamador real fuera de sus propios tests ni mención en `SKILL.md`. Se descarta por menor severidad y
-menor evidencia de riesgo real: a diferencia del aviso de guion modificado (que el dueño notaría
-directamente al no ver la señal prometida la próxima vez que edite su guion), el límite de tiempo es
-una defensa en profundidad contra un escenario que las guardas ya activas de T-06
-(`TAMANO_GUION_MAX_BYTES`, `ESCENAS_MAX`, aplicadas ANTES de parsear) hacen poco probable en la
-práctica, y `roadmap/SEGUIMIENTO.md` §4 (incidentes de deploy) no registra ningún episodio de proceso
-descontrolado en las más de cien sesiones que lleva el proyecto. Queda anotado aquí por si una futura
-pasada encuentra evidencia que cambie esta valoración.
-
-**Requisitos:**
-1. `scripts/estado.py` gana una función nueva (el nombre exacto lo decide quien implemente, p. ej.
-   `actualizar_info_guion(estado, ruta_guion)`) que refresca `estado.guion.hash_sha256`/`tamano_bytes`
-   al contenido actual del archivo. Se llama justo antes de `guardar_estado`, en cualquier pasada que
-   regenere o revalide sobre un guion con `estado.json` ya existente — así el aviso compara siempre
-   contra el estado real de la última vez que se procesó, no contra el de la primera vez que se creó
-   `estado.json`.
-2. `documento_revision.generar_documento_revision` gana un parámetro opcional
-   `guion_modificado: bool = False` (mismo patrón que `tropiezos_por_escena` de R-03): cuando es
-   `True`, la cabecera del resumen global añade una línea visible avisando de que el guion de origen
-   cambió desde la última pasada y que escenas, clasificación y tiempos se recalcularon desde cero —
-   mismo criterio de transparencia que ya aplican el ppm (T-12), el diccionario del dueño (R-26) y las
-   desviaciones de convención (R-23). El dueño revisa `guion-escenas.md` "de una sola pasada"
-   (principio de producto nº 2); un aviso que solo aparece en la consola de la sesión y no en el
-   documento que de verdad revisa se pierde con facilidad.
-3. `SKILL.md` dedica una instrucción explícita, con el fragmento de código exacto a invocar (mismo
-   patrón ya usado para el diccionario del dueño en R-26): tras cargar `estado.json` y ANTES de
-   re-parsear/regenerar, llamar a `estado.avisar_si_guion_modificado(estado, ruta_guion)` — su valor de
-   retorno se pasa tal cual a `generar_documento_revision(..., guion_modificado=...)` — y llamar a la
-   función del requisito 1 justo antes de `guardar_estado`. No una mención en una tabla de valores por
-   defecto: un paso nombrado del flujo que Claude no pueda pasar por alto, igual que exige R-26
-   (requisito 3) para el diccionario.
-4. Fuera de alcance, explícito: no se construye recálculo incremental (T-07 ya documenta que no existe
-   todavía, y esta tarea no es quien debe construirlo); no cambia el formato ni el esquema de
-   `estado.json` (solo refresca valores ya existentes de `InfoGuion`, sin migración); `revalidar_guion`
-   no gana ningún parámetro nuevo ni lee el guion de origen por su cuenta — sigue intacto el invariante
-   explícito de su propio docstring ("no relee el guion de origen del disco"); `tarjetas.json.metadatos`
-   no gana ningún campo nuevo por esta tarea (a diferencia del recuento del diccionario en R-26, que sí
-   afecta al contenido locutado de las tarjetas, este aviso es sobre el propio `guion-escenas.md` que el
-   dueño ya revisa antes de llegar a generar salidas); no se toca `ejecutar_con_limite_de_tiempo` ni
-   ninguna pieza de T-06.
-
-**Criterio de aceptación:** test que confirma que la función del requisito 1 deja
-`estado.guion.hash_sha256`/`tamano_bytes` iguales al hash/tamaño actuales del archivo tras llamarla;
-test que confirma que, tras esa actualización y sin que el guion vuelva a cambiar,
-`avisar_si_guion_modificado` devuelve `False` (cierra el bucle: el aviso aparece una vez, no en todas
-las pasadas siguientes); test que confirma que la cabecera de `guion-escenas.md` incluye la línea de
-aviso cuando `guion_modificado=True` y ninguna línea nueva cuando es `False` (el valor por defecto);
-regresión de los tests existentes de T-07/T-16 sin cambios de comportamiento. Cuatro redes en verde.
+La oleada v15 (cerrar el bucle del aviso de guion modificado, conectando
+`estado.py::avisar_si_guion_modificado`, T-07, al flujo real y refrescando el hash guardado para que
+el aviso no se repita sin motivo, R-27) tiene su única R-XX en **COMPLETADA** en §1 de
+`SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en
+este ciclo de PM (2026-10-12). Su spec completa y cómo se entregó viven ahí.
 
 ---
 
