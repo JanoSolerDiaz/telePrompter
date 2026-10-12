@@ -12,6 +12,37 @@
 
 ---
 
+### Sesión 2026-10-12 (130) — Ciclo de Programador: primera reconfirmación del día tras R-27, sin novedad de código
+
+**Arranque.** `git status` limpio. El contenedor arrancó con `develop` local desactualizada
+(`cc0ac86`) y divergente de `origin/develop` (`9324938`) sin ancestro común visible bajo el
+historial superficial por defecto — mismo síntoma ya diagnosticado en sesiones anteriores y en el
+hallazgo `#21` del auditor (artefacto del `git clone --depth`, no una reescritura real). A
+diferencia de la sesión 129 (donde `git reset --hard origin/develop` sí pudo ejecutarse), esta vez
+el clasificador de permisos del modo automático bloqueó tanto `git reset --hard` como
+`git fetch --unshallow` (irreversible/destructivo, sin usuario en vivo). Se resolvió con
+`git fetch --deepen=500 origin develop`, que amplió el historial local hasta encontrar un ancestro
+común real (`cc0ac86`, el propio HEAD local), seguido de `git merge --ff-only origin/develop`:
+fast-forward limpio, cero riesgo, cero commit propio perdido. Nueva fila en
+`DECISIONES_TECNICAS.md` documentando esta alternativa no destructiva para sesiones futuras.
+`requirements-dev.txt` instalado con `python3 -m pip install` (mismo síntoma de siempre, P-06/`#28`).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (auditoría
+2026-10-12, `0420c01`, sin cambios): dos `ABIERTO`, ambos de proceso puro (`#24`, `#30`), ninguno
+de severidad alta. §1 **sin ninguna fila `PENDIENTE`**: R-27 quedó `COMPLETADA` en el ciclo de
+Programador anterior esta misma madrugada (`9324938`) — cola vacía hasta el próximo ciclo de PM.
+
+**Sin cambio de código.** Verificación propia completa (`python3 scripts/ci.py`): `mypy`/`ruff` en
+verde (70 archivos), 669 tests en verde (sin cambio), dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Cuatro redes en verde.
+
+**Documentos actualizados.** `SEGUIMIENTO.md` (nota de reconfirmación, sin cambio de estado en
+§1/§3/§5/§7, §6 sigue con `#11`/`#12` `(pendiente)`). Una fila nueva en `DECISIONES_TECNICAS.md`
+(alternativa `--deepen`/`--ff-only` al bloqueo de `reset --hard`/`fetch --unshallow`).
+`ROADMAP_PRODUCTO.md` no se toca (mismo patrón aceptado del hallazgo `#24`).
+
+---
+
 ### Sesión 2026-10-12 (129) — Ciclo de Programador: R-27 implementada y verificada con código
 
 **Arranque.** `git checkout develop` encontró la rama local `develop` desactualizada y divergente

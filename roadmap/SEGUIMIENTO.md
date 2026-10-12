@@ -10,11 +10,50 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-12 — **Ciclo de Programador: R-27 implementada y verificada con
-código** (cierra el bucle del aviso de guion modificado — `actualizar_info_guion` nuevo en
+**Última actualización:** 2026-10-12 — **Ciclo de Programador: primera reconfirmación del día tras
+R-27**, sin novedad de código (§1 sin ninguna fila `PENDIENTE`, cuatro redes en verde, 669 tests)
+(detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Programador (2026-10-12), primera reconfirmación del día tras R-27.** Revisión de
+entrada (protocolo): el contenedor arrancó con la rama local `develop` desactualizada (`cc0ac86`,
+la misma rama local obsoleta ya diagnosticada por los ciclos anteriores y por el hallazgo `#21`
+del auditor — artefacto del `git clone --depth` de cada contenedor efímero, no una reescritura
+real) y divergente de `origin/develop` (`9324938`) **sin ancestro común visible** bajo el
+historial superficial por defecto. A diferencia de sesiones anteriores, esta vez no hizo falta
+ninguna operación destructiva: `git fetch --deepen=500 origin develop` amplió el historial local
+lo suficiente para que `git merge-base develop origin/develop` encontrara un ancestro común real
+(`cc0ac86`, el propio HEAD local — fast-forward limpio, cero commits propios perdidos), y
+`git merge --ff-only origin/develop` completó la actualización sin tocar `master` ni tomar ninguna
+decisión irreversible. `git fetch --unshallow` y `git reset --hard origin/develop` fueron
+bloqueados por el clasificador de permisos del modo automático (irreversible/destructivo, sin
+usuario en vivo que lo confirmara) antes de llegar a `--deepen`; queda documentado en
+`DECISIONES_TECNICAS.md` como alternativa no destructiva para la próxima sesión que tropiece con
+el mismo bloqueo. `git status` limpio antes y después. `requirements-dev.txt` instalado con
+`python3 -m pip install` (no con el `pip` desnudo del `PATH`, mismo síntoma de siempre cubierto por
+P-06/`#28`: resolvía contra un intérprete distinto del 3.11.17 real).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-12, `0420c01`, sin cambios desde
+la última sesión): dos `ABIERTO`, ambos de proceso puro y sin relación con el código (`#24`, prosa
+desactualizada entre ciclos; `#30`, cadencia del Programador) — ninguno de severidad alta que
+atender como P-XX urgente antes de la cola normal. §1 (fuente autoritativa) **no tiene ninguna fila
+`PENDIENTE`**: R-27 quedó `COMPLETADA` en el ciclo de Programador anterior (esta misma madrugada,
+`9324938`), así que no hay ninguna tarea de código que ejecutar hasta el próximo ciclo de Product
+Manager que abra la siguiente R-XX.
+
+**Verificación propia completa (`python3 scripts/ci.py`):** `mypy`/`ruff` en verde sin hallazgos
+(70 archivos), 669 tests (`pytest`, sin cambio) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos), §5
+(P-XX) ni §7 (desviaciones). §6: preguntas `#11`/`#12` siguen `(pendiente)` de respuesta del dueño,
+sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca en esta sesión (su prosa de "Oleada
+v15 — EN CURSO"/R-27 `PENDIENTE` sigue desactualizada hasta el próximo ciclo de PM que la archive —
+mismo patrón ya descrito y aceptado como de bajo riesgo en el hallazgo `#24`). Nota sin acción: cola
+vacía hasta el siguiente ciclo de Product Manager.
+
+**Última actualización anterior (2026-10-12, ciclo de Programador): R-27 implementada y verificada
+con código** (cierra el bucle del aviso de guion modificado — `actualizar_info_guion` nuevo en
 `scripts/estado.py`, `guion_modificado` propagado a la cabecera de `guion-escenas.md`, paso
-explícito en `SKILL.md`; 4 tests nuevos, 665→669, cuatro redes en verde) (detalle en la nota de
-esta sesión, más abajo).
+explícito en `SKILL.md`; 4 tests nuevos, 665→669, cuatro redes en verde) (detalle en la nota de esa
+sesión, más abajo).
 
 **Ciclo de Programador (2026-10-12): R-27 implementada.** Revisión de entrada (protocolo):
 `git checkout develop` encontró la rama local `develop` desactualizada y divergente de
