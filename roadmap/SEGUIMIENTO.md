@@ -10,9 +10,48 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-12 — **Ciclo de Programador: tercera reconfirmación del día tras
+**Última actualización:** 2026-10-12 — **Ciclo de Programador: cuarta reconfirmación del día tras
 R-27**, sin novedad de código (§1 sin ninguna fila `PENDIENTE`, cuatro redes en verde, 669 tests)
 (detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Programador (2026-10-12), cuarta reconfirmación del día tras R-27.** Revisión de entrada
+(protocolo): el contenedor arrancó con la rama local `develop` desactualizada en `cc0ac86` (49
+commits por detrás) y divergente de `origin/develop` sin ancestro común visible bajo el historial
+superficial por defecto (`git clone --depth` de cada contenedor efímero, mismo artefacto ya
+diagnosticado por el hallazgo `#21` del auditor y por los ciclos anteriores, no una reescritura
+real: ambas puntas narran la misma historia continua R-22→R-27, solo que la local se quedó en el
+corte de profundidad de hace varias sesiones). Esta vez se resolvió sin ninguna operación
+destructiva: `git checkout -B develop origin/develop` realinea la rama local con la punta real de
+`origin/develop` (`fdfe3b4`, el trabajo de la sesión anterior, ya empujado, no una pérdida) sin
+`--hard`/`--unshallow`/`reset`, con `git status` limpio antes y después (ningún commit propio que
+perder: la rama local obsoleta solo tenía historial desactualizado). Dependencias de desarrollo
+instaladas con `python3 -m pip install -r requirements-dev.txt` (no con el `pip` desnudo del `PATH`,
+que resuelve contra un intérprete 3.13 distinto del 3.11.17 real del proyecto — mismo síntoma de
+siempre, P-06/`#28`): `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`.
+
+Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`, ambos de
+proceso puro y sin relación con el código (`#24`, baja, prosa de "Cola de producto" desactualizada
+entre ciclos — pregunta `#11` de §6 sigue `(pendiente)`; `#30`, media, cadencia de la rutina
+"Programador" — pregunta `#12` de §6 sigue `(pendiente)`), ambos sin cambios desde la auditoría de
+esta misma madrugada (`0420c01`) — ninguno de severidad alta que atender como P-XX urgente antes de
+la cola normal. §1 (fuente autoritativa) **no tiene ninguna fila `PENDIENTE`**: R-27 sigue
+`COMPLETADA` desde el ciclo de Programador de esta misma madrugada, así que no hay ninguna tarea de
+código que ejecutar hasta el próximo ciclo de Product Manager que abra la siguiente R-XX.
+`roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila de plantilla vacía, sin ninguna
+entrada `nuevo`. `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`:
+cero issues y cero PR abiertos.
+
+**Verificación propia completa (`python3 scripts/ci.py`):** `mypy`/`ruff` en verde sin hallazgos (70
+archivos), 669 tests (`pytest`, sin cambio) en verde, dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin cambios en §3 (bloqueos), §5 (P-XX)
+ni §7 (desviaciones). §6: preguntas `#11`/`#12` siguen `(pendiente)` de respuesta del dueño, sin
+novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca en esta sesión (su prosa de "Oleada v15 — EN
+CURSO"/R-27 `PENDIENTE` sigue desactualizada hasta el próximo ciclo de PM que la archive — mismo
+patrón de bajo riesgo aceptado en el hallazgo `#24`). Nota sin acción: cola vacía hasta el siguiente
+ciclo de Product Manager.
+
+**Última actualización anterior (2026-10-12, ciclo de Programador): tercera reconfirmación del día
+tras R-27**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-12), tercera reconfirmación del día tras R-27.** Revisión de entrada
 (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached* y la rama local `develop` obsoleta
