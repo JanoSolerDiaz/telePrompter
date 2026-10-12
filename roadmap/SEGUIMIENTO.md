@@ -10,24 +10,25 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-12 — **Ciclo de Programador: octava reconfirmación del día tras
+**Última actualización:** 2026-10-12 — **Ciclo de Programador: novena reconfirmación del día tras
 R-27**, sin novedad de código (§1 sin ninguna fila `PENDIENTE`, cuatro redes en verde, 669 tests)
 (detalle en la nota de esta sesión, más abajo).
 
-**Ciclo de Programador (2026-10-12), octava reconfirmación del día tras R-27.** Revisión de entrada
+**Ciclo de Programador (2026-10-12), novena reconfirmación del día tras R-27.** Revisión de entrada
 (protocolo): el contenedor arrancó con la rama local `develop` desactualizada en `cc0ac86`
 (cincuenta commits por detrás) y divergente de `origin/develop` sin ancestro común visible bajo el
 historial superficial por defecto — mismo artefacto del `git clone --depth` de cada contenedor
 efímero ya diagnosticado por el hallazgo `#21` del auditor y por todos los ciclos anteriores, no una
 reescritura real (ambas puntas narran la misma historia continua R-22→R-27, solo que la local se
-quedó en el corte de profundidad de hace varias sesiones). Resuelto con `git reset --hard
-origin/develop` (sin bloqueo del clasificador de permisos esta vez), dejando `develop` apuntando
-exactamente a la punta real de `origin/develop` (`0a849d4`, el trabajo de la séptima reconfirmación
-de esta misma jornada, ya empujado, no una pérdida) con `git status` limpio antes y después (ningún
-commit propio que perder: la rama local obsoleta solo tenía historial desactualizado). Dependencias
-de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` (no con el `pip`
-desnudo del `PATH`, que resuelve contra un intérprete 3.13 distinto del 3.11.17 real del proyecto —
-mismo síntoma de siempre, P-06/`#28`): `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`.
+quedó en el corte de profundidad de hace varias sesiones; confirmado esta vez comparando
+`git rev-parse --tree` de `cc0ac86`/`develop`/`origin/develop`: la punta local era tree-idéntica a
+`cc0ac86`, cero contenido propio que perder). Resuelto con `git reset --hard origin/develop` (sin
+bloqueo del clasificador de permisos esta vez), dejando `develop` apuntando exactamente a la punta
+real de `origin/develop` (`406b7f6`, el trabajo de la octava reconfirmación de esta misma jornada,
+ya empujado, no una pérdida) con `git status` limpio antes y después. Dependencias de desarrollo
+instaladas con `python3 -m pip install -r requirements-dev.txt` (no con el `pip` desnudo del `PATH`,
+que resuelve contra un intérprete 3.13 distinto del 3.11.17 real del proyecto — mismo síntoma de
+siempre, P-06/`#28`): `mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`.
 
 Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`, ambos de
 proceso puro y sin relación con el código (`#24`, baja, prosa de "Cola de producto" desactualizada
@@ -38,11 +39,11 @@ normal. §1 (fuente autoritativa) **no tiene ninguna fila `PENDIENTE`**: R-27 si
 desde el ciclo de Programador de esta misma madrugada, así que no hay ninguna tarea de código que
 ejecutar hasta el próximo ciclo de Product Manager que abra la siguiente R-XX. `roadmap/FEEDBACK.md`
 revisado de nuevo: sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo`.
-`mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero issues y
+`mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y
 cero PR abiertos.
 
 **Verificación propia completa (`mypy`/`ruff`/`pytest`/`verificar_salidas.py --fixture`):**
-`mypy`/`ruff` en verde sin hallazgos (34 archivos de `scripts/`), 669 tests (`pytest`, sin cambio) en
+`mypy`/`ruff` en verde sin hallazgos (70 archivos), 669 tests (`pytest`, sin cambio) en
 verde, dieciocho etapas OK en `verificar_salidas.py --fixture`. Las cuatro redes en verde. Sin
 cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6: preguntas `#11`/`#12` siguen
 `(pendiente)` de respuesta del dueño, sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca
@@ -50,7 +51,7 @@ en esta sesión (su prosa de "Oleada v15 — EN CURSO"/R-27 `PENDIENTE` sigue de
 próximo ciclo de PM que la archive — mismo patrón de bajo riesgo aceptado en el hallazgo `#24`).
 Nota sin acción: cola vacía hasta el siguiente ciclo de Product Manager.
 
-**Última actualización anterior (2026-10-12, ciclo de Programador): séptima reconfirmación del día
+**Última actualización anterior (2026-10-12, ciclo de Programador): octava reconfirmación del día
 tras R-27**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-12), séptima reconfirmación del día tras R-27.** Revisión de entrada
