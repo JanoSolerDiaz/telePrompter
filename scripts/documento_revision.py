@@ -360,13 +360,14 @@ def _formatear_resumen_global(
     reescrituras: list[Reescritura],
     total_desviaciones: int,
     carpeta_salida: Path | None,
+    guion_modificado: bool,
 ) -> str:
     """Cabecera con el resumen global del guion completo (requisito 5): total
     de escenas, palabras, duracion estimada, avisos, desviaciones de la
-    convencion (R-23), entradas del diccionario del dueno aplicadas (R-26) y
-    reescrituras pendientes, ritmo aplicado -- todo tomado de
-    `calcular_tiempos` (T-12), la unica fuente de tiempos del proyecto,
-    nunca recalculado aqui."""
+    convencion (R-23), entradas del diccionario del dueno aplicadas (R-26),
+    aviso de guion modificado (R-27) y reescrituras pendientes, ritmo aplicado
+    -- todo tomado de `calcular_tiempos` (T-12), la unica fuente de tiempos
+    del proyecto, nunca recalculado aqui."""
     objetivo = resultado_tiempos.duracion_objetivo_total_segundos
     objetivo_texto = (
         f" (objetivo: {_mmss(objetivo[0])} — {_mmss(objetivo[1])})" if objetivo is not None else ""
@@ -377,6 +378,12 @@ def _formatear_resumen_global(
     entradas_diccionario = _entradas_diccionario_aplicadas(reescrituras)
     aviso_diccionario = _aviso_diccionario_sin_aplicar(carpeta_salida, entradas_diccionario)
     aviso_diccionario_texto = f"\n- ⚠ {aviso_diccionario}" if aviso_diccionario else ""
+    aviso_guion_modificado_texto = (
+        "\n- ⚠ El guion de origen ha cambiado desde la última pasada: escenas, "
+        "clasificación y tiempos se recalcularon desde cero."
+        if guion_modificado
+        else ""
+    )
     return (
         "## Resumen global\n\n"
         f"- **Escenas:** {len(resultado.escenas)}\n"
@@ -391,6 +398,7 @@ def _formatear_resumen_global(
         f"{aviso_diccionario_texto}\n"
         f"- **Reescrituras:** {total_pendientes} pendientes de decidir, de "
         f"{len(reescrituras)} en total"
+        f"{aviso_guion_modificado_texto}"
     )
 
 
@@ -461,6 +469,7 @@ def generar_documento_revision(
     nombre_guion: str = "guion",
     tropiezos_por_escena: dict[int, frozenset[str]] | None = None,
     carpeta_salida: Path | None = None,
+    guion_modificado: bool = False,
 ) -> str:
     """Genera el `.md` de revision completo de una sola pasada (T-16): todas
     las escenas del guion, en orden, con cobertura total de sus bloques de
@@ -482,7 +491,16 @@ def generar_documento_revision(
     la senal de que quien compuso `reescrituras` olvido cargarlo antes de
     `normalizar_guion`/`normalizar_bloque`. Nunca recalcula la locucion por su
     cuenta: sigue siendo responsabilidad de quien llama, como documenta
-    `SKILL.md`."""
+    `SKILL.md`.
+
+    `guion_modificado` (R-27, requisito 2) es opcional y por defecto `False`:
+    quien llama le pasa tal cual el valor que devolvio
+    `estado.avisar_si_guion_modificado(estado, ruta_guion)` antes de esta
+    llamada. Con `True`, la cabecera del resumen global anade una linea
+    visible avisando de que el guion de origen cambio desde la ultima pasada
+    -- el dueno revisa `guion-escenas.md` de una sola pasada (principio de
+    producto nº 2), y un aviso que solo aparece en la consola se pierde con
+    facilidad."""
     configuracion = configuracion or Configuracion()
     clasificacion = clasificar_guion(resultado, configuracion)
     desviaciones = detectar_desviaciones(resultado, clasificacion, configuracion)
@@ -500,6 +518,7 @@ def generar_documento_revision(
         reescrituras,
         len(desviaciones),
         carpeta_salida,
+        guion_modificado,
     )
 
     escenas_formateadas = []

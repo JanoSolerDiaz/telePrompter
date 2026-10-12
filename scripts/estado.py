@@ -210,3 +210,18 @@ def avisar_si_guion_modificado(estado: EstadoProyecto, ruta_guion: Path) -> bool
         Nivel.AVISO,
     )
     return True
+
+
+def actualizar_info_guion(estado: EstadoProyecto, ruta_guion: Path) -> None:
+    """Refresca `estado.guion.hash_sha256`/`tamano_bytes` al contenido actual (R-27).
+
+    Cierra el bucle que deja abierto `avisar_si_guion_modificado`: sin esta llamada,
+    el hash guardado en `estado.json` nunca se pone al dia despues de `estado_inicial`
+    (`InfoGuion` solo se escribe una vez), asi que el aviso de guion modificado se
+    repetiria en todas las pasadas futuras en vez de aparecer una sola vez. Se llama
+    justo antes de `guardar_estado`, en cualquier pasada que regenere o revalide sobre
+    un guion con `estado.json` ya existente. Muta `estado` en el sitio, mismo
+    tratamiento que `guardar_estado` con `actualizado_en`.
+    """
+    estado.guion.hash_sha256 = calcular_hash_guion(ruta_guion)
+    estado.guion.tamano_bytes = ruta_guion.stat().st_size

@@ -19,6 +19,7 @@ from config import Configuracion
 from estado import (
     EstadoError,
     EstadoProyecto,
+    actualizar_info_guion,
     avisar_si_guion_modificado,
     calcular_hash_guion,
     cargar_estado,
@@ -232,6 +233,30 @@ def test_avisar_si_guion_modificado_avisa_y_menciona_recalculo(
     salida = capsys.readouterr().err
     assert Nivel.AVISO.value in salida or "AVISO" in salida
     assert "recalcular" in salida
+
+
+# --- actualizar_info_guion (R-27) ---------------------------------------------------
+
+
+def test_actualizar_info_guion_refresca_hash_y_tamano_al_contenido_actual(guion: Path) -> None:
+    estado = estado_inicial(guion, Configuracion())
+    guion.write_text(GUION_MINIMO + "\nEscena nueva.\n", encoding="utf-8")
+
+    actualizar_info_guion(estado, guion)
+
+    assert estado.guion.hash_sha256 == calcular_hash_guion(guion)
+    assert estado.guion.tamano_bytes == guion.stat().st_size
+
+
+def test_actualizar_info_guion_cierra_el_aviso_de_guion_modificado(guion: Path) -> None:
+    estado = estado_inicial(guion, Configuracion())
+    guion.write_text(GUION_MINIMO + "\nEscena nueva.\n", encoding="utf-8")
+    assert guion_modificado(estado, guion) is True
+
+    actualizar_info_guion(estado, guion)
+
+    assert guion_modificado(estado, guion) is False
+    assert avisar_si_guion_modificado(estado, guion) is False
 
 
 def test_a_dict_y_desde_dict_son_inversas(guion: Path) -> None:

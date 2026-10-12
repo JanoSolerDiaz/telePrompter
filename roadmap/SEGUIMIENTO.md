@@ -10,11 +10,66 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-11 — **Ciclo de Product Manager: sin apertura de R-XX nueva,
-confirmación independiente de que R-27 sigue siendo la grieta correcta** (reescaneo propio de
-`scripts/*.py` en busca de funciones públicas sin llamador real, misma metodología del ciclo que
-abrió R-27; cero candidata nueva de severidad igual o mayor) (detalle en la nota de esta sesión, más
-abajo).
+**Última actualización:** 2026-10-12 — **Ciclo de Programador: R-27 implementada y verificada con
+código** (cierra el bucle del aviso de guion modificado — `actualizar_info_guion` nuevo en
+`scripts/estado.py`, `guion_modificado` propagado a la cabecera de `guion-escenas.md`, paso
+explícito en `SKILL.md`; 4 tests nuevos, 665→669, cuatro redes en verde) (detalle en la nota de
+esta sesión, más abajo).
+
+**Ciclo de Programador (2026-10-12): R-27 implementada.** Revisión de entrada (protocolo):
+`git checkout develop` encontró la rama local `develop` desactualizada y divergente de
+`origin/develop` sin ancestro común (`cc0ac86`, la misma rama local obsoleta ya diagnosticada por
+los ciclos de PM del 2026-10-10/11 y por el hallazgo `#21` del auditor — artefacto del `git clone`
+de cada contenedor efímero, no una reescritura real); a diferencia de la sesión del 2026-10-11, en
+esta sí fue posible ejecutar `git reset --hard origin/develop` (sin bloqueo del clasificador de
+permisos esta vez), dejando `develop` apuntando exactamente a `origin/develop` (`0420c01`) sin
+perder ningún commit real (la rama local obsoleta no contenía trabajo propio de ninguna sesión, solo
+historial desactualizado). `git status` limpio antes y después. Dependencia de desarrollo instalada
+con `python -m pip install -r requirements-dev.txt` (no con el `pip` desnudo del `PATH`, que resolvía
+a un intérprete Python 3.13 distinto del `python`/`python3.11` que ejecuta el proyecto — las tres
+herramientas quedaban instaladas pero invisibles para `scripts/ci.py`; detalle y decisión en
+`DECISIONES_TECNICAS.md`).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-12, `0420c01`): dos `ABIERTO`,
+ambos de proceso puro y sin relación con el código (`#24`, prosa de "Cola de producto" desactualizada
+entre ciclos; `#30`, cadencia del Programador) — ninguno de severidad alta que atender como P-XX
+urgente antes de la cola normal. §1 (fuente autoritativa) traía **R-27 como única fila
+`PENDIENTE`**: implementada en esta sesión siguiendo al pie de la letra su spec de
+`ROADMAP_PRODUCTO.md` (Oleada v15, verificada contra `DECISIONES_TECNICAS.md` antes de tocar código,
+sin contradecir ninguna decisión previa).
+
+**Implementación.** `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion)`: refresca
+`estado.guion.hash_sha256`/`tamano_bytes` al contenido actual del guion, mutando `estado` en el sitio
+(mismo tratamiento que `actualizado_en` en `guardar_estado`), llamada justo antes de
+`guardar_estado`. `documento_revision.generar_documento_revision` gana `guion_modificado: bool =
+False` (mismo patrón que `tropiezos_por_escena` de R-03): con `True`, `_formatear_resumen_global`
+añade una línea de aviso visible en la cabecera del resumen global, junto al resto de avisos de
+transparencia ya existentes (ppm de T-12, diccionario del dueño de R-26, desviaciones de R-23).
+`SKILL.md` dedica una instrucción explícita con el fragmento de código exacto (sección "Documento de
+revisión de una sola pasada", mismo patrón que la instrucción del diccionario en R-26): tras cargar
+`estado.json` y ANTES de re-parsear/regenerar, llamar a `estado.avisar_si_guion_modificado(estado,
+ruta_guion)` y propagar su valor tal cual a `generar_documento_revision(...,
+guion_modificado=...)`; llamar a `estado.actualizar_info_guion(estado, ruta_guion)` justo antes de
+`guardar_estado`. Sin migración (solo se refrescan valores ya existentes de `InfoGuion`, mismo
+esquema); `revalidar_guion` queda intacto, sin releer el guion de origen por su cuenta, tal como
+exige el requisito 4 de la ficha. `DEVELOPERS.md` gana sección propia ("Cerrar el bucle del aviso de
+guion modificado, R-27") con el mismo nivel de detalle que la de R-26.
+
+**Verificación.** 4 tests nuevos (665→669): `tests/test_estado.py`
+(`test_actualizar_info_guion_refresca_hash_y_tamano_al_contenido_actual`,
+`test_actualizar_info_guion_cierra_el_aviso_de_guion_modificado` — confirma el criterio de
+aceptación literal: tras refrescar, `avisar_si_guion_modificado` vuelve a `False` sin que el guion
+cambie de nuevo, cerrando el bucle que motivó la tarea) y `tests/test_documento_revision.py`
+(`test_guion_modificado_true_anade_linea_de_aviso_en_la_cabecera`,
+`test_guion_modificado_false_por_defecto_no_anade_ninguna_linea`). Regresión de los tests existentes
+de T-07/T-16 sin cambios de comportamiento. Cuatro redes en verde (`mypy`, `ruff`, 669 tests,
+dieciocho etapas de `verificar_salidas.py --fixture`).
+
+Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6: preguntas `#11`/`#12` siguen
+`(pendiente)` de respuesta del dueño, sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca en
+esta sesión (su prosa de "Oleada v15 — EN CURSO"/R-27 `PENDIENTE` queda desactualizada hasta el
+próximo ciclo de PM que la archive — mismo patrón ya descrito y aceptado como de bajo riesgo en el
+hallazgo `#24`, pendiente solo de la respuesta de gobernanza del dueño a la pregunta `#11`).
 
 **Ciclo de Product Manager (2026-10-11): sin apertura de R-XX nueva.** Revisión de entrada
 (protocolo): el contenedor arrancó con la rama local `develop` desactualizada (`cc0ac86`, muy por
@@ -2509,7 +2564,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-24 | Diagnóstico real de un fallo al generar una salida: `scripts/salidas.py::generar_salidas_seleccionadas` (T-30/R-18) captura hoy cualquier excepción con un `except` ad hoc que muestra al dueño el `repr` crudo de Python y no vuelca ningún diagnóstico, en vez de usar la infraestructura de logger/diagnóstico de T-02/T-05 que se construyó el primer día del proyecto anticipando exactamente este consumidor | **COMPLETADA** | 2026-10-07 | `scripts/monitorizacion.py::volcar_diagnostico` (antes `_volcar_diagnostico`) promovida a pública; `generar_salidas_seleccionadas` la reutiliza junto con `logger.obtener_logger` dentro del `except` ya existente (sin cablear `ejecutar_con_diagnostico`, que aborta el proceso), volcando `diagnostico-<timestamp>.log` y registrando en el logger antes de construir la `SalidaOmitida` con un motivo en español que cita la ruta del diagnóstico. 3 tests nuevos (646→649). Cuatro redes en verde |
 | R-25 | Entregar `convencion-guiones.md` de verdad al dueño: conectar `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) — sin ningún consumidor fuera de sus propios tests — al selector real de salidas (T-30) | **COMPLETADA** | 2026-10-08 | `scripts/salidas.py` gana `TipoSalida.CONVENCION_GUIONES` (séptima opción, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual `convencion.guardar_convencion_guiones` (cero cambio en `convencion.py`). A diferencia de las demás salidas, no depende del parseo ni de la clasificación del guion de entrada, solo de `Configuracion`: se ofrece siempre en `construir_pregunta_salidas`, nunca omitida por falta de datos del guion o de parte de rodaje; el único fallo posible es de escritura a disco, cubierto por el mismo patrón `try`/`except`/diagnóstico de R-24. 3 tests nuevos (649→652), dos tests existentes actualizados al nuevo recuento de salidas siempre generadas. `references/contrato-montaje.md`, `SKILL.md` y `DEVELOPERS.md` actualizados. Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio |
 | R-26 | El diccionario del dueño (`diccionario-locucion.json`, T-13 requisito 3, "manda siempre") no tiene ningún llamador real fuera de sus propios tests, ni `cargar_diccionario_locucion` ni los cuatro puntos reales donde se aplicaría (`normalizar_guion`, `recopilar_propuestas`, `generar_documento_revision`, `revalidar_guion`): la garantía contractual del propio `SKILL.md` no se cumple hoy en el flujo real salvo que la sesión recuerde cargarlo a mano, sin ningún aviso si no lo hace | **COMPLETADA** | 2026-10-09 | `generar_documento_revision`/`revalidar_guion` ganan `carpeta_salida` opcional: `revalidar_guion` carga el diccionario por su cuenta (si no hay uno explícito); `generar_documento_revision` cuenta las entradas realmente aplicadas en la cabecera y avisa si el archivo tiene entradas sin aplicar. Mismo recuento expuesto en `tarjetas.json.metadatos.entradas_diccionario_aplicadas`. `SKILL.md` documenta el paso explícito con el fragmento de código exacto |
-| R-27 | El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real ni mención en `SKILL.md`, y aunque se wireara tal cual, `estado.guion.hash_sha256`/`tamano_bytes` nunca se actualizan tras `estado_inicial`, así que el aviso se repetiría para siempre en vez de aparecer una sola vez | **PENDIENTE** | 2026-10-09 | Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v15). `origen:` observación de arquitectura del PM, mismo criterio que abrió R-12 a R-26 |
+| R-27 | El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real ni mención en `SKILL.md`, y aunque se wireara tal cual, `estado.guion.hash_sha256`/`tamano_bytes` nunca se actualizan tras `estado_inicial`, así que el aviso se repetiría para siempre en vez de aparecer una sola vez | **COMPLETADA** | 2026-10-12 | `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion)` (refresca `hash_sha256`/`tamano_bytes` al contenido actual, mutando `estado` en el sitio, llamada justo antes de `guardar_estado`). `documento_revision.generar_documento_revision` gana `guion_modificado: bool = False`: con `True`, la cabecera del resumen global añade la línea de aviso visible (mismo criterio de transparencia que ppm/T-12, diccionario/R-26, desviaciones/R-23). `SKILL.md` documenta el paso explícito con el fragmento de código exacto (tras cargar `estado.json` y antes de re-parsear/regenerar, `avisar_si_guion_modificado` → `generar_documento_revision(..., guion_modificado=...)`; `actualizar_info_guion` justo antes de `guardar_estado`), mismo patrón que R-26. Sin migración (solo refresca valores ya existentes de `InfoGuion`); `revalidar_guion` intacto, sin releer el guion de origen. 4 tests nuevos (665→669): 2 en `tests/test_estado.py` (refresco exacto al hash/tamaño actuales; cierra el bucle — tras actualizar, `avisar_si_guion_modificado` vuelve a `False` sin que el guion cambie de nuevo) y 2 en `tests/test_documento_revision.py` (línea de aviso con `True`; ninguna línea nueva con `False`, el valor por defecto). Cuatro redes en verde. `DEVELOPERS.md` actualizado con sección propia. Oleada v15, `origen: observación de arquitectura del PM (2026-10-09)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

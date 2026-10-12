@@ -12,6 +12,47 @@
 
 ---
 
+### Sesión 2026-10-12 (129) — Ciclo de Programador: R-27 implementada y verificada con código
+
+**Arranque.** `git checkout develop` encontró la rama local `develop` desactualizada y divergente
+de `origin/develop` sin ancestro común (`cc0ac86`), mismo síntoma ya diagnosticado por los ciclos
+de PM del 2026-10-10/11 y por el hallazgo `#21` del auditor (artefacto del `git clone` de cada
+contenedor efímero, no una reescritura real de `develop`). A diferencia de la sesión 128,
+`git reset --hard origin/develop` **sí** pudo ejecutarse en esta sesión (sin bloqueo del
+clasificador de permisos), dejando `develop` apuntando exactamente a `origin/develop` (`0420c01`)
+sin perder ningún commit real. `git status` limpio antes y después. `requirements-dev.txt`
+instalado con `python -m pip install` (no con el `pip` desnudo, que en este contenedor resuelve
+contra un intérprete Python 3.13 distinto del 3.11 que ejecuta `scripts/ci.py` — variante del
+mismo riesgo ya documentado en `DEVELOPERS.md`, auditoría `#28`/R-15; autocorregido dentro de esta
+misma sesión, sin necesidad de una decisión técnica nueva).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (auditoría
+2026-10-12, `0420c01`): dos `ABIERTO`, ambos de proceso puro (`#24`, prosa desactualizada; `#30`,
+cadencia del Programador), ninguno de severidad alta. §1 traía **R-27 como única fila
+`PENDIENTE`** — spec completa en `ROADMAP_PRODUCTO.md` (Oleada v15), consultada junto con
+`DECISIONES_TECNICAS.md` antes de tocar código.
+
+**Implementación de R-27 (el aviso de guion modificado no tenía llamador real, y el hash guardado
+nunca se refrescaba).** `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion)`:
+refresca `hash_sha256`/`tamano_bytes` al contenido actual, mutando `estado` en el sitio, llamada
+justo antes de `guardar_estado`. `documento_revision.generar_documento_revision` gana
+`guion_modificado: bool = False`: con `True`, la cabecera del resumen global añade la línea de
+aviso visible. `SKILL.md` documenta el paso explícito con el fragmento de código exacto (mismo
+patrón que el diccionario del dueño de R-26). Sin migración; `revalidar_guion` intacto.
+`DEVELOPERS.md` gana sección propia.
+
+**Verificación.** 4 tests nuevos (665→669): `tests/test_estado.py` (refresco exacto; cierra el
+bucle — tras actualizar, `avisar_si_guion_modificado` vuelve a `False`) y
+`tests/test_documento_revision.py` (línea de aviso con `True`; ninguna con `False`). Cuatro redes
+en verde (`mypy`, `ruff`, 669 tests, dieciocho etapas de `verificar_salidas.py --fixture`).
+
+**Documentos actualizados.** §1 de `SEGUIMIENTO.md`: R-27 `PENDIENTE` → `COMPLETADA`. Dos filas
+nuevas en `DECISIONES_TECNICAS.md` (mutación en el sitio de `actualizar_info_guion`; posición de
+la línea de aviso en la cabecera). `ROADMAP_PRODUCTO.md` no se toca (prosa de "Oleada v15 — EN
+CURSO" queda para el próximo ciclo de PM, mismo patrón ya aceptado del hallazgo `#24`).
+
+---
+
 ### Sesión 2026-10-11 (128) — Ciclo de Product Manager: sin apertura de R-XX nueva, confirmación independiente de que R-27 sigue siendo la grieta correcta
 
 **Arranque.** `git status` limpio; la rama local `develop` seguía desactualizada (`cc0ac86`) y

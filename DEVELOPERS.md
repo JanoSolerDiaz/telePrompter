@@ -218,6 +218,15 @@ que deriva `entrada.carpeta_salida_para`). Piezas:
   el hash guardado contra el hash actual del guion; si difiere, avisa por
   `presentacion.py` que la próxima pasada recalculará escenas, clasificación y tiempos
   (todavía no hay recálculo incremental).
+- `actualizar_info_guion(estado, ruta_guion)` (R-27) — refresca `estado.guion.hash_sha256`/
+  `tamano_bytes` al contenido actual del guion, mutando `estado` en el sitio (mismo
+  tratamiento que `actualizado_en` en `guardar_estado`). Cierra el bucle que dejaba
+  abierto `avisar_si_guion_modificado`: sin esta llamada, `InfoGuion` solo se escribía
+  una vez (en `estado_inicial`), así que el aviso de guion modificado se repetiría en
+  todas las pasadas futuras en vez de aparecer una sola vez. Se llama justo antes de
+  `guardar_estado`, en cualquier pasada que regenere o revalide sobre un guion con
+  `estado.json` ya existente; ver "Cerrar el bucle del aviso de guion modificado
+  (R-27)" más abajo para el detalle completo del wiring.
 
 **Migraciones (`scripts/migraciones/`).** Cada archivo `NNN_<nombre>.py` define
 `VERSION_DESTINO: int` y `aplicar(datos: dict) -> dict`, debe ser idempotente y debe
@@ -3414,6 +3423,55 @@ el diccionario, no verla aplicada, y no tener ninguna señal de que algo falló.
   los tests de T-13. Fixture dorada `fixtures/guion-ejemplo-esperado.md` regenerada (único
   cambio: la línea nueva de cabecera, en 0 porque el guion de ejemplo no trae diccionario).
   Cuatro redes en verde.
+
+## Cerrar el bucle del aviso de guion modificado (R-27)
+
+T-07 (2026-09-01) construyó `scripts/estado.py::guion_modificado`/`avisar_si_guion_modificado`
+con un propósito explícito, documentado en su propio docstring: avisar al dueño cuando el hash
+del guion de origen difiere del guardado en `estado.json`, en vez de recalcular en silencio con
+datos desactualizados. Hasta R-27 esa garantía no se sostenía en ningún flujo real: `grep -rn
+"guion_modificado" scripts/*.py` solo devolvía la propia definición de las dos funciones y la
+llamada interna de `avisar_si_guion_modificado` a `guion_modificado` — ningún otro módulo las
+invocaba, y `SKILL.md` no las mencionaba en ningún paso de la receta. Peor aún: aunque se
+llamaran tal cual, `InfoGuion.hash_sha256`/`tamano_bytes` solo se escribían una vez, en
+`estado_inicial` — ningún punto del código los volvía a actualizar después, así que el aviso se
+habría repetido en todas las pasadas futuras en vez de aparecer una sola vez.
+
+- **Requisito 1 (refrescar el hash guardado).** `estado.actualizar_info_guion(estado,
+  ruta_guion)`, función nueva: recalcula `hash_sha256`/`tamano_bytes` del guion actual y los
+  escribe en `estado.guion`, mutando `estado` en el sitio (mismo tratamiento que
+  `actualizado_en` en `guardar_estado`). Se llama justo antes de `guardar_estado`, en cualquier
+  pasada que regenere o revalide sobre un `estado.json` ya existente — así la próxima
+  comparación siempre es contra el estado real de la última vez que se procesó, no contra el de
+  la primera vez que se creó `estado.json`.
+- **Requisito 2 (el aviso llega al documento que el dueño revisa, no solo a la consola).**
+  `documento_revision.generar_documento_revision` gana un parámetro opcional
+  `guion_modificado: bool = False` (mismo patrón que `tropiezos_por_escena` de R-03): con
+  `True`, `_formatear_resumen_global` añade una línea de aviso visible en la cabecera del
+  resumen global, junto al resto de avisos de transparencia (ppm de T-12, diccionario de R-26,
+  desviaciones de R-23). El dueño revisa `guion-escenas.md` de una sola pasada (principio de
+  producto nº 2); un aviso que solo aparece en la consola de la sesión se pierde con facilidad.
+- **Requisito 3 (`SKILL.md` documenta el paso, con el fragmento exacto).** Nueva nota en
+  "Documento de revisión de una sola pasada (T-16)": tras cargar `estado.json` y ANTES de
+  re-parsear/regenerar, llamar a `estado.avisar_si_guion_modificado(estado, ruta_guion)` y
+  propagar su valor tal cual a `generar_documento_revision(..., guion_modificado=...)`; llamar a
+  `estado.actualizar_info_guion(estado, ruta_guion)` justo antes de `guardar_estado`. Mismo
+  patrón que exige R-26 (requisito 3) para el diccionario del dueño: un paso nombrado del flujo,
+  no una mención suelta en una tabla de valores por defecto.
+- **Requisito 4 (fuera de alcance).** Cero recálculo incremental (T-07 ya documenta que no
+  existe todavía); cero cambio en el formato o esquema de `estado.json` (solo se refrescan
+  valores ya existentes de `InfoGuion`, sin migración); `revalidar_guion` no gana ningún
+  parámetro nuevo ni relee el guion de origen por su cuenta — sigue intacto el invariante
+  explícito de su propio docstring; `tarjetas.json.metadatos` no gana ningún campo nuevo por
+  esta tarea (el aviso es sobre `guion-escenas.md`, no sobre el contenido locutado de las
+  tarjetas); cero cambio en `entrada.ejecutar_con_limite_de_tiempo` (candidata descartada en la
+  misma pasada de apertura de R-27 por menor severidad, ver `ROADMAP_PRODUCTO.md`).
+- **Verificación.** Tests nuevos en `tests/test_estado.py` (`actualizar_info_guion` deja
+  hash/tamaño iguales a los del archivo actual; tras actualizar, `avisar_si_guion_modificado`
+  vuelve a devolver `False` sin que el guion cambie de nuevo — cierra el bucle) y
+  `tests/test_documento_revision.py` (`guion_modificado=True` añade la línea de aviso en la
+  cabecera; `False`, el valor por defecto, no añade ninguna línea nueva). Regresión de los
+  tests existentes de T-07/T-16 sin cambios de comportamiento. Cuatro redes en verde.
 
 ## Suite de tests (T-03)
 

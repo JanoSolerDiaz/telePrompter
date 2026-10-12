@@ -590,3 +590,20 @@ def test_carpeta_salida_con_diccionario_aplicado_no_muestra_aviso(tmp_path: Path
     )
     assert "**Diccionario del dueño aplicado:** 1 entradas" in documento
     assert "diccionario-locucion.json" not in documento
+
+
+# --- aviso de guion modificado (R-27) ------------------------------------------------
+
+
+def test_guion_modificado_true_anade_linea_de_aviso_en_la_cabecera() -> None:
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_DOS_ESCENAS)
+    documento = generar_documento_revision(
+        resultado, tiempos, detecciones, reescrituras, guion_modificado=True
+    )
+    assert "⚠ El guion de origen ha cambiado desde la última pasada" in documento
+
+
+def test_guion_modificado_false_por_defecto_no_anade_ninguna_linea() -> None:
+    resultado, tiempos, detecciones, reescrituras = _pipeline(_GUION_DOS_ESCENAS)
+    documento = generar_documento_revision(resultado, tiempos, detecciones, reescrituras)
+    assert "ha cambiado desde la última pasada" not in documento

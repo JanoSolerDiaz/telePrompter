@@ -96,7 +96,7 @@ El dueno sobrescribe `PENDIENTE` con `ACEPTAR` o `RECHAZAR` a mano, sin sintaxis
 
 ## Documento de revisión de una sola pasada (T-16)
 
-`guion-escenas.md` es el archivo que revisas: todas las escenas en orden, con instrucciones al principio, un resumen global (escenas, palabras, duración, ritmo, avisos, desviaciones de la convención, entradas del diccionario del dueño aplicadas —R-26—, reescrituras pendientes) y, por escena, sus bloques de respiración numerados con las reescrituras y avisos localizados junto a cada uno, más las indicaciones no recitables al pie con su motivo y, si las hay, las desviaciones de la convención que caen dentro de esa escena (R-23: escena sin rótulo de locución, rótulo desconocido, número de escena duplicado o no creciente). Se edita a mano en cualquier editor de texto plano:
+`guion-escenas.md` es el archivo que revisas: todas las escenas en orden, con instrucciones al principio, un resumen global (escenas, palabras, duración, ritmo, avisos, desviaciones de la convención, entradas del diccionario del dueño aplicadas —R-26—, reescrituras pendientes y, si el guion de origen cambió desde la última pasada, un aviso explícito —R-27—) y, por escena, sus bloques de respiración numerados con las reescrituras y avisos localizados junto a cada uno, más las indicaciones no recitables al pie con su motivo y, si las hay, las desviaciones de la convención que caen dentro de esa escena (R-23: escena sin rótulo de locución, rótulo desconocido, número de escena duplicado o no creciente). Se edita a mano en cualquier editor de texto plano:
 
 - Corrige el texto de un bloque de locución libremente; la revalidación respetará tu edición.
 - Acepta o rechaza una reescritura sobreescribiendo su `PENDIENTE` (ver T-15).
@@ -110,6 +110,21 @@ El dueno sobrescribe `PENDIENTE` con `ACEPTAR` o `RECHAZAR` a mano, sin sintaxis
 Si ya existía una versión previa del archivo, se copia antes a `<nombre>.bak-<marca_de_tiempo>`: nunca se sobrescribe sin dejar rastro de lo que había.
 
 Formato completo del documento (anclas de bloque, sintaxis de reescritura, qué se puede editar a mano): `references/formato-guion-escenas.md`.
+
+**Paso obligatorio (R-27): el aviso de guion modificado se comprueba siempre, nunca se asume.** Cuando ya existe un `estado.json` de una pasada anterior (regeneración o revalidación), antes de re-parsear/regenerar hay que avisar si el guion de origen cambió desde la última vez — la función ya existe (T-07) pero no se llamaba desde ningún sitio:
+
+```python
+# Tras cargar estado.json y ANTES de re-parsear/regenerar:
+hubo_cambio = estado.avisar_si_guion_modificado(estado_proyecto, ruta_guion)
+...
+documento_revision.generar_documento_revision(..., guion_modificado=hubo_cambio)
+
+# Justo antes de guardar_estado, en esta misma pasada:
+estado.actualizar_info_guion(estado_proyecto, ruta_guion)
+estado.guardar_estado(estado_proyecto, carpeta_salida)
+```
+
+`avisar_si_guion_modificado` compara el hash guardado contra el actual y avisa por consola si difieren; su valor se propaga tal cual a `generar_documento_revision(..., guion_modificado=...)` para que el aviso quede también en la cabecera de `guion-escenas.md` — el documento que el dueño revisa de una sola pasada, no solo la consola de la sesión. `actualizar_info_guion` refresca el hash/tamaño guardados al contenido actual: sin esta segunda llamada, el aviso se repetiría en todas las pasadas futuras aunque el dueño ya lo haya visto, porque la comparación seguiría siendo contra el guion de hace semanas. En la primera pasada sobre un guion nuevo (sin `estado.json` previo) no hay nada que comparar: `estado_inicial` ya calcula el hash de partida.
 
 ## Reproductor: esqueleto autocontenido (T-18) e índice con pantalla completa (T-19)
 
