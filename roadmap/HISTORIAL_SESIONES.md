@@ -12,6 +12,36 @@
 
 ---
 
+### Sesión 2026-10-12 (131) — Ciclo de Programador: segunda reconfirmación del día tras R-27, sin novedad de código
+
+**Arranque.** `git status` limpio. El contenedor arrancó con `HEAD` *detached* sobre cincuenta
+commits no alcanzables desde ninguna rama local — mismo artefacto del `git clone --depth` de cada
+contenedor efímero ya diagnosticado por el hallazgo `#21` y por sesiones anteriores, no una
+reescritura real. `git checkout develop` dejó la rama local obsoleta en `cc0ac86`; el `fetch`
+posterior mostró `origin/develop` actualizado por la fuerza hasta `789a343`, exactamente la misma
+punta del `HEAD` *detached* de arranque (el trabajo de la sesión 130, ya empujado, no una pérdida).
+`git reset --hard origin/develop` pudo ejecutarse sin bloqueo del clasificador de permisos esta vez
+(variabilidad ya documentada entre sesiones), dejando `develop` apuntando exactamente a
+`origin/develop` sin perder ningún commit propio. `requirements-dev.txt` instalado con
+`python3 -m pip install` (mismo síntoma de siempre, P-06/`#28`).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (auditoría
+2026-10-12, `0420c01`, sin cambios): dos `ABIERTO`, ambos de proceso puro (`#24`, `#30`), ninguno de
+severidad alta. §1 **sin ninguna fila `PENDIENTE`**: R-27 sigue `COMPLETADA` desde el ciclo de
+Programador de esta misma madrugada — cola vacía hasta el próximo ciclo de PM.
+
+**Sin cambio de código.** Verificación propia completa (`python3 scripts/ci.py`): `mypy`/`ruff` en
+verde (70 archivos), 669 tests en verde (sin cambio), dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Cuatro redes en verde.
+
+**Documentos actualizados.** `SEGUIMIENTO.md` (nota de reconfirmación, sin cambio de estado en
+§1/§3/§5/§7, §6 sigue con `#11`/`#12` `(pendiente)`). Sin fila nueva en `DECISIONES_TECNICAS.md` (la
+variabilidad del clasificador de permisos frente a `git reset --hard` ya está documentada, sin
+información nueva que añadir esta vez). `ROADMAP_PRODUCTO.md` no se toca (mismo patrón aceptado del
+hallazgo `#24`).
+
+---
+
 ### Sesión 2026-10-12 (130) — Ciclo de Programador: primera reconfirmación del día tras R-27, sin novedad de código
 
 **Arranque.** `git status` limpio. El contenedor arrancó con `develop` local desactualizada
