@@ -12,6 +12,73 @@
 
 ---
 
+### Sesión 2026-10-13 (140) — Ciclo de Programador: R-28 implementada y `COMPLETADA`
+
+**Arranque.** `git checkout develop && git pull origin develop` sin sorpresas: rama local ya al día
+con `origin/develop`, sin la divergencia de clon superficial que afectó a varias sesiones anteriores
+(hallazgo `#21`, artefacto del `git clone --depth` de cada contenedor efímero). `git status` limpio.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` (el `pip`
+desnudo del `PATH` de este contenedor sigue resolviendo contra un intérprete distinto del que ejecuta
+el proyecto — síntoma ya documentado por `#28`/P-06, sin necesidad de registrarlo de nuevo).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (auditoría
+2026-10-13): dos `ABIERTO` (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de PM;
+`#30`, cadencia de la rutina Programador), ambos de proceso puro y severidad baja/media, pendientes
+solo de la respuesta del dueño a las preguntas de gobernanza #11/#12 de §6 — ninguno exige
+tratamiento como P-XX urgente antes de la cola normal. §1 (fuente autoritativa) traía **R-28 como
+única fila `PENDIENTE`** — spec completa en `ROADMAP_PRODUCTO.md` (Oleada v16), verificada contra
+`DECISIONES_TECNICAS.md` antes de tocar código, sin contradecir ninguna decisión previa.
+
+**Implementa R-28.** Conecta a su ruta real de generación los tres validadores de contrato que la
+apertura de esta tarea (ciclo de PM del 2026-10-12) localizó sin ningún llamador fuera de
+`verificar_salidas.py --fixture` — mismo patrón de grieta que R-21/R-22 ya cerraron para
+`concat-ffmpeg.txt`/`capitulos-ffmpeg.txt`:
+
+- `pptx.py::exportar_pptx` valida los datos ya construidos con `validar_tarjetas` antes de
+  `guardar_tarjetas_json`; con problemas, lanza `TarjetasInvalidasError` (excepción nueva del
+  módulo) y no escribe ni `tarjetas.json` ni el brief. La excepción la captura el `try`/`except`
+  genérico ya existente en `salidas.py::generar_salidas_seleccionadas` (R-24), sin tocar
+  `salidas.py` para esta salida.
+- `salidas.py::_generar_srt` valida `guion.srt` y `guion-alineado.srt` por separado con
+  `srt.validar_srt`, degradando a `SalidaOmitida` a mano la mitad inválida (mismo patrón literal
+  que `_generar_concat_ffmpeg`/R-21) sin impedir que la otra mitad se genere.
+- `salidas.py::_generar_capitulos_youtube` valida ahora también `capitulos-youtube.txt` con
+  `validar_capitulos_youtube`, en el mismo punto donde ya validaba `capitulos-ffmpeg.txt` desde
+  R-22 — las dos mitades siguen siendo independientes.
+
+Dos convenciones de propagación conviven a propósito (excepción para `tarjetas.json`, `SalidaOmitida`
+a mano para `.srt`/capítulos), razonadas en la fila de `DECISIONES_TECNICAS.md` añadida en esta
+sesión (2026-10-13, "R-28 (propagación del fallo de validación...)"): cada una vive donde la
+validación ya encajaba de forma natural, sin forzar un estilo único a costa de reescribir el
+contrato de alguna de las tres salidas. Cero cambio en las reglas de los tres validadores ni en
+`concat_ffmpeg.py`/`validar_capitulos_ffmpeg` (ya conectados desde R-21/R-22); comportamiento
+idéntico al de antes de R-28 cuando el contenido generado es válido.
+
+**Verificación.** 4 tests nuevos (669→673): `tests/test_pptx.py`
+(`test_exportar_pptx_con_datos_invalidos_no_escribe_nada`) y tres en `tests/test_salidas.py`
+(`test_srt_con_contenido_invalido_degrada_a_omitida_en_vez_de_escribir`,
+`test_srt_alineado_invalido_no_impide_el_srt_estimado`,
+`test_capitulos_youtube_con_contenido_invalido_degrada_a_omitida`). Regresión completa sin cambios
+de comportamiento, incluidos los tests que ya comprobaban los tres guiones reales contra
+`validar_tarjetas`. Cuatro redes en verde: `mypy` y `ruff` sin hallazgos, 673 tests, dieciocho etapas
+de `verificar_salidas.py --fixture` en `OK` (sin ninguna etapa nueva — R-28 no añade ninguna salida).
+
+**Registro.** `DECISIONES_TECNICAS.md`: fila "R-28 (propagación del fallo de validación...)" al
+final del archivo (2026-10-13). `SEGUIMIENTO.md` §1: R-28 pasa de `PENDIENTE` a `COMPLETADA`
+(2026-10-13); nota de ciclo añadida al inicio de la narrativa; "Última actualización" refrescada.
+`DEVELOPERS.md`: sección nueva "Conectar los tres validadores de contrato restantes a su ruta real
+de generación (R-28)". Sin cambios en §3 (bloqueos) ni §7 (desviaciones) de `SEGUIMIENTO.md`; sin
+ningún P-XX nuevo (§5); §6 sin novedad (preguntas `#11`/`#12` siguen `(pendiente)`).
+`ROADMAP_PRODUCTO.md` no se toca en esta sesión (queda con la prosa de "Oleada v16 — EN CURSO"/R-28
+desactualizada hasta el próximo ciclo de PM que la archive — patrón ya descrito y aceptado como de
+bajo riesgo en el hallazgo `#24`).
+
+**Push.** Commit único a `origin/develop` con el diff completo (código + tests + los tres
+documentos de registro). Sesión de nube: sin instalación de la skill ni health check posterior
+(T-32, bloqueo #6 de §3) — entregar es el push.
+
+---
+
 ### Sesión 2026-10-12 (139) — Ciclo de Product Manager: archiva Oleada v15 (R-27) y abre R-28 (Oleada v16)
 
 **Arranque.** El contenedor arrancó con la rama local `develop` desactualizada en `cc0ac86` (50

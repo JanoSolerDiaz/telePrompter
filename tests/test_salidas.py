@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -11,7 +12,9 @@ from capitulos_youtube import formatear_capitulos_ffmpeg, generar_capitulos_yout
 from concat_ffmpeg import generar_lista_concat_ffmpeg
 from config import (
     NOMBRE_ARCHIVO_CAPITULOS_FFMPEG,
+    NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE,
     NOMBRE_ARCHIVO_CONCAT_FFMPEG,
+    NOMBRE_ARCHIVO_SRT,
     NOMBRE_ARCHIVO_SRT_ALINEADO,
     NOMBRE_ARCHIVO_TARJETAS_JSON,
     Configuracion,
@@ -785,3 +788,107 @@ def test_como_dict_incluye_generadas_omitidas_y_latentes() -> None:
     assert datos["generadas"] == [{"tipo": "html", "ruta": "x.html", "tamano_bytes": 10}]
     assert datos["omitidas"][0]["tipo"] == "srt"
     assert datos["latentes"][0]["tipo"] == "pptx"
+
+
+# --- R-28: tres validadores de contrato ya construidos, conectados a la ruta real --
+
+
+def test_srt_con_contenido_invalido_degrada_a_omitida_en_vez_de_escribir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-28 (hallazgo de arquitectura): `_generar_srt` valida `guion.srt` con
+    `srt.validar_srt` antes de escribirlo -- el validador existia desde T-27
+    pero esta ruta real de generacion nunca lo invocaba, solo
+    `verificar_salidas.py --fixture`. Un contenido invalido degrada a
+    `SalidaOmitida` con el motivo exacto, nunca se escribe a disco."""
+    import salidas as modulo_salidas
+
+    monkeypatch.setattr(
+        modulo_salidas, "validar_srt", lambda _contenido, _config: ["problema simulado"]
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.SRT,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+    )
+    assert resumen.generadas == ()
+    omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.SRT)
+    assert "problema simulado" in omitida.motivo
+    assert "guion.srt" in omitida.motivo
+    assert not (tmp_path / NOMBRE_ARCHIVO_SRT).exists()
+
+
+def test_srt_alineado_invalido_no_impide_el_srt_estimado(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-28, requisito 2: `guion.srt` y `guion-alineado.srt` se validan por
+    separado -- un contenido invalido solo en el alineado (segunda llamada a
+    `validar_srt`, tras la del estimado) degrada solo esa mitad, sin impedir
+    que `guion.srt` ya generado se mantenga."""
+    import salidas as modulo_salidas
+    from srt import validar_srt as validar_srt_real
+
+    llamadas = {"n": 0}
+
+    def _validar_falla_solo_la_segunda(contenido: str, configuracion: Any = None) -> list[str]:
+        llamadas["n"] += 1
+        if llamadas["n"] == 2:
+            return ["problema simulado"]
+        return validar_srt_real(contenido, configuracion)
+
+    monkeypatch.setattr(modulo_salidas, "validar_srt", _validar_falla_solo_la_segunda)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.SRT,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA,
+    )
+    archivos_srt = [a for a in resumen.generadas if a.tipo is TipoSalida.SRT]
+    assert len(archivos_srt) == 1
+    assert archivos_srt[0].ruta.name == NOMBRE_ARCHIVO_SRT
+    omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.SRT)
+    assert "guion-alineado.srt" in omitida.motivo
+    assert "problema simulado" in omitida.motivo
+    assert not (tmp_path / NOMBRE_ARCHIVO_SRT_ALINEADO).exists()
+
+
+def test_capitulos_youtube_con_contenido_invalido_degrada_a_omitida(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-28 (hallazgo de arquitectura): `_generar_capitulos_youtube` valida
+    `capitulos-youtube.txt` con `capitulos_youtube.validar_capitulos_youtube`
+    antes de escribirlo -- el validador existia desde R-07 pero esta ruta
+    real de generacion nunca lo invocaba para la salida principal, solo
+    `verificar_salidas.py --fixture`. Un contenido invalido degrada esa
+    mitad a `SalidaOmitida`, sin excepcion sin capturar ni archivo corrupto;
+    `capitulos-ffmpeg.txt` (validacion independiente, R-22) se sigue
+    generando igual."""
+    import salidas as modulo_salidas
+
+    monkeypatch.setattr(
+        modulo_salidas,
+        "validar_capitulos_youtube",
+        lambda _contenido, _config=None: ["problema simulado"],
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.CAPITULOS_YOUTUBE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA,
+    )
+    generados_capitulos = [a for a in resumen.generadas if a.tipo is TipoSalida.CAPITULOS_YOUTUBE]
+    assert len(generados_capitulos) == 1  # solo capitulos-ffmpeg.txt
+    assert generados_capitulos[0].ruta.name == NOMBRE_ARCHIVO_CAPITULOS_FFMPEG
+    assert not (tmp_path / NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE).exists()
+    omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.CAPITULOS_YOUTUBE)
+    assert "capitulos-youtube.txt" in omitida.motivo
+    assert "problema simulado" in omitida.motivo

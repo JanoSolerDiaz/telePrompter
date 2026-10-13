@@ -101,6 +101,7 @@ from capitulos_youtube import (
     guardar_capitulos_ffmpeg,
     guardar_capitulos_youtube,
     validar_capitulos_ffmpeg,
+    validar_capitulos_youtube,
 )
 from concat_ffmpeg import (
     generar_lista_concat_ffmpeg,
@@ -117,7 +118,7 @@ from pdf import exportar_pdf
 from pptx import exportar_pptx
 from presentacion import Nivel, mostrar, titulo
 from reproductor import generar_reproductor_html, guardar_reproductor
-from srt import exportar_srt, guardar_srt
+from srt import exportar_srt, guardar_srt, validar_srt
 from srt_alineado import generar_srt_alineado, guardar_srt_alineado
 from tiempos import ResultadoTiempos
 
@@ -299,22 +300,50 @@ def _generar_srt(
     nombre_guion: str,
     configuracion: Configuracion,
     tomas_por_escena: dict[str, Any],
-) -> list[ArchivoGenerado]:
+) -> tuple[list[ArchivoGenerado], list[SalidaOmitida]]:
     del resultado, nombre_guion  # el .srt no necesita ni el parseo ni el nombre
+    generadas: list[ArchivoGenerado] = []
+    omitidas: list[SalidaOmitida] = []
+
+    # R-28 (hallazgo de arquitectura): `srt.validar_srt` existia desde T-27
+    # ("las mismas reglas que un lector estricto tipo ffmpeg", `srt.py:27`)
+    # pero esta ruta real de generacion nunca lo invocaba, solo
+    # `verificar_salidas.py --fixture`. Se valida aqui cada mitad por
+    # separado -- un contenido invalido degrada solo esa mitad a
+    # `SalidaOmitida`, sin impedir que la otra se genere (requisito 2).
     contenido = exportar_srt(resultado_tiempos, configuracion)
-    ruta = guardar_srt(contenido, carpeta_salida, configuracion)
-    generadas = [ArchivoGenerado(TipoSalida.SRT, ruta, ruta.stat().st_size)]
+    problemas = validar_srt(contenido, configuracion)
+    if problemas:
+        omitidas.append(
+            SalidaOmitida(
+                TipoSalida.SRT, "guion.srt: contenido invalido: " + "; ".join(problemas)
+            )
+        )
+    else:
+        ruta = guardar_srt(contenido, carpeta_salida, configuracion)
+        generadas.append(ArchivoGenerado(TipoSalida.SRT, ruta, ruta.stat().st_size))
 
     if tomas_por_escena:
         contenido_alineado, alineacion = generar_srt_alineado(
             resultado_tiempos, tomas_por_escena, configuracion
         )
         if alineacion.escenas_alineadas:
-            ruta_alineado = guardar_srt_alineado(contenido_alineado, carpeta_salida, configuracion)
-            generadas.append(
-                ArchivoGenerado(TipoSalida.SRT, ruta_alineado, ruta_alineado.stat().st_size)
-            )
-    return generadas
+            problemas_alineado = validar_srt(contenido_alineado, configuracion)
+            if problemas_alineado:
+                omitidas.append(
+                    SalidaOmitida(
+                        TipoSalida.SRT,
+                        "guion-alineado.srt: contenido invalido: " + "; ".join(problemas_alineado),
+                    )
+                )
+            else:
+                ruta_alineado = guardar_srt_alineado(
+                    contenido_alineado, carpeta_salida, configuracion
+                )
+                generadas.append(
+                    ArchivoGenerado(TipoSalida.SRT, ruta_alineado, ruta_alineado.stat().st_size)
+                )
+    return generadas, omitidas
 
 
 def _generar_pdf(
@@ -383,9 +412,27 @@ def _generar_capitulos_youtube(
     if contenido is None:
         motivo = calculo.motivo_sin_generar or "el guion no aporta ningun capitulo que generar."
         return [], [SalidaOmitida(TipoSalida.CAPITULOS_YOUTUBE, motivo)]
-    ruta = guardar_capitulos_youtube(contenido, carpeta_salida)
-    generadas = [ArchivoGenerado(TipoSalida.CAPITULOS_YOUTUBE, ruta, ruta.stat().st_size)]
+
+    generadas: list[ArchivoGenerado] = []
     omitidas: list[SalidaOmitida] = []
+
+    # R-28 (hallazgo de arquitectura): `validar_capitulos_youtube` existia
+    # desde T-27/R-07 pero esta ruta real de generacion nunca lo invocaba
+    # para la salida principal, solo `verificar_salidas.py --fixture` --
+    # mismo punto donde ya se valida la mitad `capitulos-ffmpeg.txt` desde
+    # R-22, unas lineas mas abajo. Un contenido invalido degrada solo esta
+    # mitad, sin impedir que `capitulos-ffmpeg.txt` se intente igual.
+    problemas_youtube = validar_capitulos_youtube(contenido, configuracion)
+    if problemas_youtube:
+        omitidas.append(
+            SalidaOmitida(
+                TipoSalida.CAPITULOS_YOUTUBE,
+                "capitulos-youtube.txt: contenido invalido: " + "; ".join(problemas_youtube),
+            )
+        )
+    else:
+        ruta = guardar_capitulos_youtube(contenido, carpeta_salida)
+        generadas.append(ArchivoGenerado(TipoSalida.CAPITULOS_YOUTUBE, ruta, ruta.stat().st_size))
 
     # R-22: capitulos-ffmpeg.txt (formato FFMETADATA1 nativo de ffmpeg) se
     # genera junto a capitulos-youtube.txt, bajo la misma opcion del selector
@@ -488,16 +535,16 @@ def generar_salidas_seleccionadas(
                     )
                 )
             elif tipo is TipoSalida.SRT:
-                generadas.extend(
-                    _generar_srt(
-                        resultado,
-                        resultado_tiempos,
-                        carpeta_salida,
-                        nombre_guion,
-                        configuracion,
-                        tomas_por_escena,
-                    )
+                nuevas, nuevas_omitidas = _generar_srt(
+                    resultado,
+                    resultado_tiempos,
+                    carpeta_salida,
+                    nombre_guion,
+                    configuracion,
+                    tomas_por_escena,
                 )
+                generadas.extend(nuevas)
+                omitidas.extend(nuevas_omitidas)
             elif tipo is TipoSalida.PDF:
                 nuevas, nuevas_latentes = _generar_pdf(
                     resultado, resultado_tiempos, carpeta_salida, nombre_guion, configuracion

@@ -98,6 +98,14 @@ from tomas import duracion_toma_buena
 RAIZ = Path(__file__).resolve().parent.parent
 
 
+class TarjetasInvalidasError(Exception):
+    """`tarjetas.json` recien construido no pasa su propio `validar_tarjetas`
+    (R-28, hallazgo de arquitectura: el validador existia desde T-29 pero
+    `exportar_pptx` nunca lo invocaba antes de escribir a disco). El mensaje
+    del propio error ya es el texto accionable en espanol (mismo contrato que
+    `entrada.EntradaError`/`estado.EstadoError`)."""
+
+
 @dataclass(frozen=True)
 class IndicacionAnclada:
     """Una indicacion `EN PANTALLA`/`NOTA` con su instante estimado dentro de
@@ -782,7 +790,16 @@ def exportar_pptx(
     `entradas_diccionario_aplicadas` (R-26) sigue el mismo criterio: `0` por
     defecto (el selector automatico de T-30 no conoce las `Reescritura` de
     la ultima generacion/revalidacion), y quien si las conoce se lo pasa tal
-    cual, mismo recuento que ya muestra `guion-escenas.md`."""
+    cual, mismo recuento que ya muestra `guion-escenas.md`.
+
+    R-28: antes de escribir, valida los datos ya construidos con
+    `validar_tarjetas` (el mismo contrato de `references/contrato-tarjetas.md`
+    que hasta ahora solo ejercitaba `verificar_salidas.py --fixture`). Con
+    problemas, no se escribe ni `tarjetas.json` ni el brief -- ambos describen
+    el mismo contenido invalido -- y se lanza `TarjetasInvalidasError` con el
+    detalle, que quien orquesta la skill (T-30) ya captura y convierte en una
+    salida omitida con diagnostico (mismo patron que cualquier otro fallo real
+    de generacion, R-24)."""
     configuracion = configuracion or Configuracion()
     resultado_tarjetas = generar_tarjetas(
         resultado,
@@ -792,6 +809,12 @@ def exportar_pptx(
         tomas_por_escena,
         entradas_diccionario_aplicadas,
     )
+    problemas = validar_tarjetas(tarjetas_a_diccionario(resultado_tarjetas))
+    if problemas:
+        raise TarjetasInvalidasError(
+            "tarjetas.json: contenido invalido para el contrato de tarjetas: "
+            + "; ".join(problemas)
+        )
     ruta_json = guardar_tarjetas_json(formatear_tarjetas_json(resultado_tarjetas), carpeta_salida)
     ruta_brief = guardar_brief(generar_brief(resultado_tarjetas, configuracion), carpeta_salida)
 

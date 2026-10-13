@@ -6,12 +6,15 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 from clasificador import clasificar_guion
 from config import NOMBRE_ARCHIVO_BRIEF_PPTX, NOMBRE_ARCHIVO_TARJETAS_JSON, Configuracion
 from convencion import detectar_desviaciones
 from parser import ResultadoParseo, parsear_guion
 from pptx import (
     ResultadoPptx,
+    TarjetasInvalidasError,
     detectar_skill_pptx_disponible,
     exportar_pptx,
     formatear_tarjetas_json,
@@ -682,6 +685,27 @@ def test_exportar_pptx_entradas_diccionario_aplicadas_llega_a_tarjetas_json(
     )
     datos = json.loads(resultado_pptx.ruta_tarjetas_json.read_text(encoding="utf-8"))
     assert datos["metadatos"]["entradas_diccionario_aplicadas"] == 4
+
+
+def test_exportar_pptx_con_datos_invalidos_no_escribe_nada(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-28 (hallazgo de arquitectura): `exportar_pptx` valida los datos ya
+    construidos con `validar_tarjetas` antes de `guardar_tarjetas_json` --
+    el validador existia desde T-29 pero esta ruta real de generacion nunca
+    lo invocaba, solo `verificar_salidas.py --fixture`. Con problemas, se
+    lanza `TarjetasInvalidasError` y ni `tarjetas.json` ni el brief llegan a
+    escribirse (describen el mismo contenido invalido)."""
+    import pptx as modulo_pptx
+
+    monkeypatch.setattr(
+        modulo_pptx, "validar_tarjetas", lambda _datos: ["problema simulado"]
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    with pytest.raises(TarjetasInvalidasError, match="problema simulado"):
+        exportar_pptx(resultado, tiempos, tmp_path, nombre_guion="prueba")
+    assert not (tmp_path / NOMBRE_ARCHIVO_TARJETAS_JSON).exists()
+    assert not (tmp_path / NOMBRE_ARCHIVO_BRIEF_PPTX).exists()
 
 
 # --- sobre los tres guiones reales -----------------------------------------------------

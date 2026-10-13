@@ -3473,6 +3473,70 @@ habría repetido en todas las pasadas futuras en vez de aparecer una sola vez.
   cabecera; `False`, el valor por defecto, no añade ninguna línea nueva). Regresión de los
   tests existentes de T-07/T-16 sin cambios de comportamiento. Cuatro redes en verde.
 
+## Conectar los tres validadores de contrato restantes a su ruta real de generación (R-28)
+
+Mismo patrón de grieta que R-21 cerró para `concat-ffmpeg.txt` y R-22 para
+`capitulos-ffmpeg.txt`: tres validadores ya construidos y probados —
+`pptx.py::validar_tarjetas`, `srt.py::validar_srt` (también usado como
+`srt_alineado.validar_srt_alineado`, su alias) y
+`capitulos_youtube.py::validar_capitulos_youtube` — existían desde sus tareas
+originales (T-27/T-29/R-07) pero `scripts/salidas.py`/`pptx.py::exportar_pptx`
+nunca los invocaban antes de escribir a disco; solo los ejercitaba
+`verificar_salidas.py --fixture`, sobre el guion de fixture, nunca sobre el
+guion real del dueño.
+
+- **`tarjetas.json` (requisito 1).** `pptx.py::exportar_pptx` construye
+  `datos = tarjetas_a_diccionario(resultado_tarjetas)` y llama
+  `validar_tarjetas(datos)` **antes** de `guardar_tarjetas_json`. Con
+  problemas, lanza `TarjetasInvalidasError` (excepción nueva del módulo,
+  mismo contrato de mensaje accionable que `entrada.EntradaError`) y no
+  escribe ni `tarjetas.json` ni el brief — ambos describen el mismo
+  contenido inválido. La excepción la captura el `try`/`except` genérico ya
+  existente en `salidas.py::generar_salidas_seleccionadas` (el mismo que
+  protege cualquier otra salida, R-24), que la convierte en una
+  `SalidaOmitida` con diagnóstico volcado — no hace falta tocar `salidas.py`
+  para esta salida.
+- **`guion.srt`/`guion-alineado.srt` (requisito 2).** A diferencia de
+  `tarjetas.json`, aquí la validación vive en `salidas.py::_generar_srt`
+  (no en `srt.py`), porque las dos mitades deben protegerse por separado:
+  un contenido inválido en una no debe impedir que la otra se escriba. Cada
+  mitad llama a `validar_srt` sobre su propio contenido justo antes de
+  `guardar_srt`/`guardar_srt_alineado`; con problemas, esa mitad se
+  construye como `SalidaOmitida` a mano (mismo patrón literal que
+  `_generar_concat_ffmpeg`/R-21), sin lanzar excepción ni escribir el
+  archivo.
+- **`capitulos-youtube.txt` (requisito 3).** `salidas.py::_generar_capitulos_youtube`
+  ya validaba `capitulos-ffmpeg.txt` desde R-22 unas líneas más abajo en la
+  misma función; ahora valida también la salida principal con
+  `validar_capitulos_youtube(contenido, configuracion)` en el mismo punto,
+  antes de `guardar_capitulos_youtube`. Las dos mitades son independientes
+  (la de ffmpeg se calcula desde `calculo`, no desde `contenido`), así que
+  un contenido de YouTube inválido no impide que `capitulos-ffmpeg.txt` se
+  intente igual, y viceversa (ya garantizado desde R-22).
+- **Propagación del fallo (requisito 4).** Dos diseños conviven a propósito,
+  documentados en `DECISIONES_TECNICAS.md`: `tarjetas.json` usa una
+  excepción porque `exportar_pptx` ya escribe los dos archivos juntos en una
+  sola pasada sin punto intermedio natural para una `SalidaOmitida` fina
+  (y porque todo otro fallo real de generación de PPTX ya pasaba por esa
+  misma vía); `.srt`/capítulos usan `SalidaOmitida` a mano porque sus
+  propias mitades ya necesitaban ese patrón desde R-19/R-21/R-22. En ningún
+  caso se escribe a disco un archivo que su propio validador ya conocido
+  rechaza.
+- **Fuera de alcance (requisito 5).** Cero cambio en las reglas de los tres
+  validadores; cero validador nuevo; `concat_ffmpeg.py` y
+  `capitulos_youtube.py::validar_capitulos_ffmpeg` intactos (ya conectados
+  desde R-21/R-22); comportamiento idéntico al de antes de R-28 cuando el
+  contenido generado es válido — confirmado por las dieciocho etapas en
+  verde de `verificar_salidas.py --fixture` sobre los tres guiones reales y
+  el guion de fixture, sin ningún cambio.
+- **Verificación.** 4 tests nuevos (669→673):
+  `tests/test_pptx.py::test_exportar_pptx_con_datos_invalidos_no_escribe_nada`
+  (fuerza `validar_tarjetas` por monkeypatch, confirma la excepción y que
+  ningún archivo llega a escribirse) y tres en `tests/test_salidas.py`
+  (`guion.srt` inválido degrada sin escribir; `guion-alineado.srt` inválido
+  no impide que `guion.srt` se mantenga; `capitulos-youtube.txt` inválido
+  no impide que `capitulos-ffmpeg.txt` se genere). Cuatro redes en verde.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

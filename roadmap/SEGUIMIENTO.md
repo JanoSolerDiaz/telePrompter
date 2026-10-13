@@ -10,8 +10,64 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-12 — **Ciclo de Product Manager: archiva Oleada v15 (R-27) y abre
-R-28 (Oleada v16)** (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-13 — **Ciclo de Programador: R-28 implementada y `COMPLETADA`**
+(detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Programador (2026-10-13): R-28 implementada.** Revisión de entrada (protocolo):
+`git checkout develop && git pull origin develop` sin sorpresas (rama local ya al día con
+`origin/develop`, sin divergencia que resolver esta vez). Dependencia de desarrollo instalada con
+`python3 -m pip install -r requirements-dev.txt` (no el `pip` desnudo del `PATH`, que sigue
+resolviendo contra el intérprete equivocado del contenedor — síntoma ya documentado por `#28`/P-06).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-13): dos `ABIERTO`, ambos de
+proceso puro y sin relación con el código (`#24`, prosa de "Cola de producto" desactualizada entre
+ciclos; `#30`, cadencia del Programador) — ninguno de severidad alta que atender como P-XX urgente
+antes de la cola normal. §1 (fuente autoritativa) traía **R-28 como única fila `PENDIENTE`**:
+implementada en esta sesión siguiendo al pie de la letra su spec de `ROADMAP_PRODUCTO.md` (Oleada
+v16, verificada contra `DECISIONES_TECNICAS.md` antes de tocar código, sin contradecir ninguna
+decisión previa).
+
+**Implementación.** Tres validadores de contrato ya construidos y probados, sin ningún llamador real
+fuera de `verificar_salidas.py --fixture`, quedan conectados a su ruta real de generación — mismo
+patrón de grieta que R-21/R-22 ya cerraron para sus gemelos:
+
+- `pptx.py::exportar_pptx` construye `datos = tarjetas_a_diccionario(resultado_tarjetas)` y llama
+  `validar_tarjetas(datos)` antes de `guardar_tarjetas_json`; con problemas, lanza
+  `TarjetasInvalidasError` (excepción nueva del módulo) y no escribe ni `tarjetas.json` ni el brief.
+  La excepción la captura el `try`/`except` genérico ya existente en
+  `salidas.py::generar_salidas_seleccionadas` (R-24), sin tocar `salidas.py` para esta salida.
+- `salidas.py::_generar_srt` valida cada mitad (`guion.srt`, `guion-alineado.srt`) por separado con
+  `srt.validar_srt` antes de `guardar_srt`/`guardar_srt_alineado`; con problemas, esa mitad se
+  construye como `SalidaOmitida` a mano (mismo patrón literal que `_generar_concat_ffmpeg`/R-21),
+  sin impedir que la otra mitad se genere.
+- `salidas.py::_generar_capitulos_youtube` valida ahora también `capitulos-youtube.txt` con
+  `validar_capitulos_youtube`, en el mismo punto donde ya validaba `capitulos-ffmpeg.txt` desde
+  R-22 — las dos mitades siguen siendo independientes entre sí.
+
+Las dos convenciones de propagación (excepción vs. `SalidaOmitida` a mano) conviven a propósito,
+razonadas en `DECISIONES_TECNICAS.md`: cada una vive donde la validación ya encajaba de forma
+natural, sin forzar un estilo único a costa de reescribir el contrato de alguna de las tres salidas.
+Cero cambio en las reglas de los tres validadores ni en `concat_ffmpeg.py`/`validar_capitulos_ffmpeg`
+(ya conectados desde R-21/R-22); comportamiento idéntico al de antes de R-28 cuando el contenido
+generado es válido, confirmado por las dieciocho etapas en verde de `verificar_salidas.py --fixture`
+sin ningún cambio. `DEVELOPERS.md` gana sección propia ("Conectar los tres validadores de contrato
+restantes a su ruta real de generación, R-28").
+
+**Verificación.** 4 tests nuevos (669→673): `tests/test_pptx.py`
+(`test_exportar_pptx_con_datos_invalidos_no_escribe_nada`) y tres en `tests/test_salidas.py`
+(`test_srt_con_contenido_invalido_degrada_a_omitida_en_vez_de_escribir`,
+`test_srt_alineado_invalido_no_impide_el_srt_estimado`,
+`test_capitulos_youtube_con_contenido_invalido_degrada_a_omitida`). Regresión de los tests
+existentes (incluidos los que ya comprobaban los tres guiones reales contra `validar_tarjetas`) sin
+cambios de comportamiento. Cuatro redes en verde (`mypy`, `ruff`, 673 tests, dieciocho etapas de
+`verificar_salidas.py --fixture`).
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5: sin ningún P-XX nuevo (la cola normal cubría
+el trabajo de esta sesión). §6: preguntas `#11`/`#12` siguen `(pendiente)` de respuesta del dueño,
+sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca en esta sesión (su prosa de "Oleada
+v16 — EN CURSO"/R-28 queda desactualizada hasta el próximo ciclo de PM que la archive — mismo patrón
+ya descrito y aceptado como de bajo riesgo en el hallazgo `#24`, pendiente solo de la respuesta de
+gobernanza del dueño a la pregunta `#11`).
 
 **Ciclo de Product Manager (2026-10-12).** Revisión de entrada (protocolo): el contenedor arrancó con
 la rama local `develop` desactualizada en `cc0ac86` (cincuenta commits por detrás) y divergente de
@@ -2916,7 +2972,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-25 | Entregar `convencion-guiones.md` de verdad al dueño: conectar `scripts/convencion.py::generar_convencion_guiones`/`guardar_convencion_guiones` (T-10) — sin ningún consumidor fuera de sus propios tests — al selector real de salidas (T-30) | **COMPLETADA** | 2026-10-08 | `scripts/salidas.py` gana `TipoSalida.CONVENCION_GUIONES` (séptima opción, mismo patrón que `CAPITULOS_YOUTUBE`/R-18 y `CONCAT_FFMPEG`/R-19) y `_generar_convencion_guiones`, que reutiliza tal cual `convencion.guardar_convencion_guiones` (cero cambio en `convencion.py`). A diferencia de las demás salidas, no depende del parseo ni de la clasificación del guion de entrada, solo de `Configuracion`: se ofrece siempre en `construir_pregunta_salidas`, nunca omitida por falta de datos del guion o de parte de rodaje; el único fallo posible es de escritura a disco, cubierto por el mismo patrón `try`/`except`/diagnóstico de R-24. 3 tests nuevos (649→652), dos tests existentes actualizados al nuevo recuento de salidas siempre generadas. `references/contrato-montaje.md`, `SKILL.md` y `DEVELOPERS.md` actualizados. Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio |
 | R-26 | El diccionario del dueño (`diccionario-locucion.json`, T-13 requisito 3, "manda siempre") no tiene ningún llamador real fuera de sus propios tests, ni `cargar_diccionario_locucion` ni los cuatro puntos reales donde se aplicaría (`normalizar_guion`, `recopilar_propuestas`, `generar_documento_revision`, `revalidar_guion`): la garantía contractual del propio `SKILL.md` no se cumple hoy en el flujo real salvo que la sesión recuerde cargarlo a mano, sin ningún aviso si no lo hace | **COMPLETADA** | 2026-10-09 | `generar_documento_revision`/`revalidar_guion` ganan `carpeta_salida` opcional: `revalidar_guion` carga el diccionario por su cuenta (si no hay uno explícito); `generar_documento_revision` cuenta las entradas realmente aplicadas en la cabecera y avisa si el archivo tiene entradas sin aplicar. Mismo recuento expuesto en `tarjetas.json.metadatos.entradas_diccionario_aplicadas`. `SKILL.md` documenta el paso explícito con el fragmento de código exacto |
 | R-27 | El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real ni mención en `SKILL.md`, y aunque se wireara tal cual, `estado.guion.hash_sha256`/`tamano_bytes` nunca se actualizan tras `estado_inicial`, así que el aviso se repetiría para siempre en vez de aparecer una sola vez | **COMPLETADA** | 2026-10-12 | `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion)` (refresca `hash_sha256`/`tamano_bytes` al contenido actual, mutando `estado` en el sitio, llamada justo antes de `guardar_estado`). `documento_revision.generar_documento_revision` gana `guion_modificado: bool = False`: con `True`, la cabecera del resumen global añade la línea de aviso visible (mismo criterio de transparencia que ppm/T-12, diccionario/R-26, desviaciones/R-23). `SKILL.md` documenta el paso explícito con el fragmento de código exacto (tras cargar `estado.json` y antes de re-parsear/regenerar, `avisar_si_guion_modificado` → `generar_documento_revision(..., guion_modificado=...)`; `actualizar_info_guion` justo antes de `guardar_estado`), mismo patrón que R-26. Sin migración (solo refresca valores ya existentes de `InfoGuion`); `revalidar_guion` intacto, sin releer el guion de origen. 4 tests nuevos (665→669): 2 en `tests/test_estado.py` (refresco exacto al hash/tamaño actuales; cierra el bucle — tras actualizar, `avisar_si_guion_modificado` vuelve a `False` sin que el guion cambie de nuevo) y 2 en `tests/test_documento_revision.py` (línea de aviso con `True`; ninguna línea nueva con `False`, el valor por defecto). Cuatro redes en verde. `DEVELOPERS.md` actualizado con sección propia. Oleada v15, `origen: observación de arquitectura del PM (2026-10-09)` |
-| R-28 | Tres validadores de contrato ya construidos (`pptx.validar_tarjetas`, `srt.validar_srt`, `capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de `scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — mismo patrón de grieta ya cerrado por R-21 (`concat-ffmpeg.txt`) y R-22 (`capitulos-ffmpeg.txt`), sin corregir aquí para sus tres gemelos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) | **PENDIENTE** | — | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v16. `origen: observación de arquitectura del PM (2026-10-12)`, candidatos localizados con ayuda de un agente Explore y verificados de forma independiente |
+| R-28 | Tres validadores de contrato ya construidos (`pptx.validar_tarjetas`, `srt.validar_srt`, `capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de `scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — mismo patrón de grieta ya cerrado por R-21 (`concat-ffmpeg.txt`) y R-22 (`capitulos-ffmpeg.txt`), sin corregir aquí para sus tres gemelos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) | **COMPLETADA** | 2026-10-13 | `pptx.py::exportar_pptx` valida con `validar_tarjetas` antes de `guardar_tarjetas_json` (lanza `TarjetasInvalidasError`, capturada por el `try`/`except` genérico de R-24); `salidas.py::_generar_srt`/`_generar_capitulos_youtube` validan cada mitad por separado con `validar_srt`/`validar_capitulos_youtube`, degradando a `SalidaOmitida` a mano (mismo patrón que `_generar_concat_ffmpeg`/R-21) sin impedir que la mitad sana se genere. Cero cambio en las reglas de los tres validadores ni en `concat_ffmpeg.py`/`validar_capitulos_ffmpeg` (ya conectados). 4 tests nuevos (669→673). Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio. `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` actualizados |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
