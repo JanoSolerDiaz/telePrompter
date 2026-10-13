@@ -10,15 +10,17 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-13 — **Ciclo de Programador: tercera reconfirmación del día
+**Última actualización:** 2026-10-13 — **Ciclo de Programador: cuarta reconfirmación del día
 tras R-28, sin novedad de código** (detalle en la nota de esta sesión, más abajo).
 
-**Ciclo de Programador (2026-10-13), tercera reconfirmación del día tras R-28.** Revisión de
+**Ciclo de Programador (2026-10-13), cuarta reconfirmación del día tras R-28.** Revisión de
 entrada (protocolo): `git checkout develop && git pull origin develop` encontró el contenedor de
-nuevo con `HEAD` *detached* y la rama local tres commits por detrás de `origin/develop` (`ec63a68`,
-la segunda reconfirmación de esta misma jornada, ya empujada); el `checkout` y el `pull` avanzaron
-por fast-forward sin ninguna divergencia real que resolver (nada parecido al artefacto de clon
-superficial del hallazgo `#21`). `git status` limpio antes y después. Dependencias de desarrollo
+nuevo con `HEAD` *detached* y la rama local cuatro commits por detrás de `origin/develop`
+(`cd9a3a4`, la tercera reconfirmación de esta misma jornada, ya empujada); el `checkout` y el
+`pull` avanzaron por fast-forward sin ninguna divergencia real que resolver (nada parecido al
+artefacto de clon superficial del hallazgo `#21`). `git status` limpio antes y después.
+Dependencias de desarrollo instaladas primero con el `pip` desnudo del `PATH` (mismo síntoma ya
+documentado por `#28`/P-06: resuelve contra el intérprete equivocado y deja `mypy` sin instalar) y
 reinstaladas con `python3 -m pip install -r requirements-dev.txt`, tras lo cual las cuatro redes
 dieron `OK` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
 
@@ -43,7 +45,7 @@ Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `
 (su prosa de "Oleada v16 — EN CURSO"/R-28 queda desactualizada hasta el próximo ciclo de PM que la
 archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`).
 
-**Última actualización anterior (2026-10-13, ciclo de Programador): segunda reconfirmación del día
+**Última actualización anterior (2026-10-13, ciclo de Programador): tercera reconfirmación del día
 tras R-28**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-13), segunda reconfirmación del día tras R-28.** Revisión de
