@@ -8,25 +8,28 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-12 (ciclo de PM). **R-27 (Oleada v15) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-12 que la implementó (el aviso de guion
-modificado, `avisar_si_guion_modificado`, queda conectado de verdad y el hash guardado se refresca
-para que no se repita sin motivo). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v15) junto con el
-resto de oleadas 100 % entregadas.
+**Última actualización:** 2026-10-13 (ciclo de PM). **R-28 (Oleada v16) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-13 que la implementó (los tres
+validadores de contrato restantes — `tarjetas.json`, `guion.srt`/`guion-alineado.srt`,
+`capitulos-youtube.txt` — quedan conectados de verdad a su ruta real de generación). Movida a
+`roadmap/ROADMAP_HISTORICO.md` (Oleada v16) junto con el resto de oleadas 100 % entregadas.
 
-**Se abre R-28** (Oleada v16): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
+**Se abre R-29** (Oleada v17): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
 las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
-verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-27, esta vez localizada
-con ayuda de un agente Explore y verificada después `grep` por `grep` de forma independiente antes de
-escribir la ficha. Tres validadores de contrato ya construidos y probados —
-`pptx.py::validar_tarjetas` (`tarjetas.json`, el contrato directo con el montaje ffmpeg),
-`srt.py::validar_srt` (`guion.srt`/`guion-alineado.srt`, cuyo propio docstring dice que imita "un
-lector estricto tipo ffmpeg") y `capitulos_youtube.py::validar_capitulos_youtube`
-(`capitulos-youtube.txt`) — nunca se invocan en la ruta real de generación de `scripts/salidas.py`,
-solo desde `verificar_salidas.py --fixture` (la red de desarrollo, nunca sobre el guion real del
-dueño). Es exactamente la misma forma de grieta que el propio proyecto ya reconoció y cerró dos veces
-(R-21 para `concat-ffmpeg.txt`, R-22 para `capitulos-ffmpeg.txt`) — aquí quedaron sin corregir sus
-tres gemelos. Detalle completo, con cada cita de archivo:línea verificada, en "Oleada v16" más abajo.
+verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-28, pero de una forma
+distinta a las diez repeticiones anteriores: no es una pieza sin ningún llamador, sino una pieza
+construida, probada y **documentada explícitamente como la solución a reutilizar** que la ruta real
+ignora, reimplementando en privado el mismo cálculo. `scripts/reescrituras.py:61-63` deja un
+comentario al definir `SEPARADOR_MITADES`: «Público (no `_`) porque T-17 (revalidacion) necesita
+partir `propuesta` en sus dos mitades para materializar particiones con la misma identidad que
+`aplicar_particion_aceptada`, sin duplicar el separador como constante propia». Pero
+`revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` (`revalidacion.py:190-244`) solo
+importan esa constante y reimplementan a mano, con las mismas cuatro condiciones, el emparejamiento
+bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`
+(`reescrituras.py:322-369`) ya calculan — sin invocarlas nunca. Localizada con ayuda de un agente
+Explore (instruido para no repetir candidatas ya descartadas en ciclos anteriores) y verificada
+después línea a línea de forma independiente antes de escribir la ficha. Detalle completo, con cada
+cita de archivo:línea, en "Oleada v17" más abajo.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
@@ -37,7 +40,7 @@ proceso puro y severidad baja/media, sin relación con el código, pendientes so
 dueño a las preguntas de gobernanza #11/#12 de `SEGUIMIENTO.md` §6.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-28 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-29 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -202,110 +205,100 @@ el aviso no se repita sin motivo, R-27) tiene su única R-XX en **COMPLETADA** e
 `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en
 este ciclo de PM (2026-10-12). Su spec completa y cómo se entregó viven ahí.
 
-### Oleada v16 — EN CURSO
+### Oleada v16 — entregada
 
-#### R-28 — Tres validadores de contrato ya construidos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) nunca se invocan en la ruta real de generación, solo desde `verificar_salidas.py --fixture`
+La oleada v16 (conectar a su ruta real de generación los tres validadores de contrato que quedaban
+huérfanos — `pptx.validar_tarjetas`, `srt.validar_srt`/`srt_alineado.validar_srt_alineado`,
+`capitulos_youtube.validar_capitulos_youtube` —, mismo patrón ya cerrado por R-21/R-22, R-28) tiene
+su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio
+pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-13). Su spec completa y
+cómo se entregó viven ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json` ni en ningún contrato; mismo patrón mecánico
-que R-21/R-22, invocar un validador que ya existe antes de escribir a disco) · **Depende de:** T-27,
-T-29, R-05, R-07, R-19, R-21, R-22 (todas ya `COMPLETADA`) · **Origen:** observación de arquitectura
-del PM (2026-10-12) — grieta de arquitectura verificada sobre código ya construido (mismo criterio
-que abrió R-12 a R-27), con una primera pasada de localización de candidatos delegada a un agente
-Explore y verificada de forma independiente, `grep` por `grep`, antes de escribir esta ficha.
+### Oleada v17 — EN CURSO
 
-**Objetivo:** El propio proyecto ya reconoció y cerró esta forma exacta de grieta dos veces
-(`DECISIONES_TECNICAS.md`, apertura de R-21: «`concat_ffmpeg.py` traía su propio validador...
-pero `salidas.py::_generar_concat_ffmpeg` nunca lo invocaba antes de escribir... solo lo ejercitaba
-`verificar_salidas.py --fixture`, un chequeo de salud aparte de la generación real» — y R-22 repitió
-el patrón correctamente para `capitulos-ffmpeg.txt`, con el comentario explícito en el propio código,
-`capitulos_youtube.py`, "validado antes de escribir desde el primer día... misma lección que el
-hallazgo #27/R-21"). Verificado con `grep` dirigido que la misma frase es cierta **hoy** para otros
-tres validadores que nadie corrigió cuando se corrigió el de `concat-ffmpeg.txt`:
+#### R-29 — `revalidacion.py` reimplementa en privado, en vez de reutilizar, la materialización de particiones aceptadas que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó y documentó exactamente para este consumidor
 
-1. **`pptx.py:482::validar_tarjetas`** (contrato de `tarjetas.json`, el que alimenta el montaje:
-   `SKILL.md:610` — "la fase de montaje lee `inicio_segundos`/`fin_segundos` directamente, sin sumar
-   nada por su cuenta"). `pptx.py:760-795::exportar_pptx` construye `resultado_tarjetas` y llama
-   `guardar_tarjetas_json(formatear_tarjetas_json(resultado_tarjetas), carpeta_salida)` **sin
-   invocar `validar_tarjetas` en ningún punto intermedio**. `grep -rn "validar_tarjetas"
-   scripts/*.py` solo devuelve su propia definición, sus tres menciones en comentarios/docstrings de
-   `pptx.py` y el único invocador real: `verificar_salidas.py:105,631` — la red de desarrollo, sobre
-   el guion de fixture, nunca sobre el guion real del dueño. `scripts/salidas.py:117` importa
-   `exportar_pptx` sin importar `validar_tarjetas`, a diferencia de `concat_ffmpeg`/
-   `capitulos_youtube`, cuyos validadores sí entraron en el `import` real (`salidas.py:98-109`).
-2. **`srt.py:218::validar_srt`** (contrato de `guion.srt`/`guion-alineado.srt` — su propio docstring,
-   `srt.py:27`, dice literalmente que aplica "las mismas reglas que un lector estricto tipo ffmpeg").
-   `salidas.py:295-317::_generar_srt` genera y guarda tanto el `.srt` estimado
-   (`exportar_srt`/`guardar_srt`) como el alineado (`generar_srt_alineado`/`guardar_srt_alineado`,
-   R-05) **sin pasar ninguno de los dos por `validar_srt`** (ni por su alias
-   `srt_alineado.py:70::validar_srt_alineado`). Único invocador real: `verificar_salidas.py:109,645,660`.
-3. **`capitulos_youtube.py:355::validar_capitulos_youtube`** (contrato de `capitulos-youtube.txt`,
-   reglas literales de YouTube: primera marca `0:00`, orden estrictamente creciente, separación
-   mínima). `salidas.py:371-397::_generar_capitulos_youtube` valida la mitad hermana
-   `capitulos-ffmpeg.txt` con `validar_capitulos_ffmpeg` desde R-22 (comentario explícito en el propio
-   código citando el hallazgo `#27`/R-21) **pero nunca valida `capitulos-youtube.txt`, la salida
-   principal, antes de escribirla** — `salidas.py:98-104` importa `validar_capitulos_ffmpeg` pero no
-   `validar_capitulos_youtube`. Evidencia de que es un descuido y no una decisión:
-   `SEGUIMIENTO.md:2144-2147` registra que, al abrir R-22, se releyó línea a línea
-   `capitulos_youtube.py` —incluida `validar_capitulos_youtube`— "antes de especificar la tarea": el
-   propio ciclo de PM tuvo esta función delante y solo corrigió el formato ffmpeg, sin notar que el
-   validador de YouTube seguía sin enganchar.
+**Migración:** No (ningún campo nuevo en `estado.json` ni en ningún contrato; cambio interno de qué
+función calcula una materialización que el flujo real ya hace hoy, sin tocar su resultado para
+ningún guion real) · **Depende de:** T-14, T-15, T-17, P-02, P-04 (todas ya `COMPLETADA`) ·
+**Origen:** observación de arquitectura del PM (2026-10-13) — grieta de arquitectura verificada sobre
+código ya construido (mismo criterio que abrió R-12 a R-28), con una primera pasada de localización
+delegada a un agente Explore y verificada de forma independiente, leyendo el código citado línea a
+línea, antes de escribir esta ficha.
 
-El riesgo real para el formador: si una pasada futura (un parte de rodaje corrupto, un borde no
-cubierto por los tests actuales) produce un `tarjetas.json`, un `.srt` o un `capitulos-youtube.txt`
-estructuralmente inválido, hoy se escribe igual a disco sin ningún aviso — el error solo se
-descubriría durante el montaje con ffmpeg o al subir el vídeo a YouTube, el peor momento posible para
-un formador en solitario sin red de producción detrás. Es exactamente el mismo riesgo que R-21 ya
-cerró para `concat-ffmpeg.txt` y R-22 para `capitulos-ffmpeg.txt`; esta tarea cierra los tres huecos
-gemelos que quedaron sin tocar.
+**Objetivo:** `scripts/reescrituras.py:61-63` deja un comentario explícito, escrito al definir
+`SEPARADOR_MITADES`: «Público (no `_`) porque T-17 (revalidacion) necesita partir `propuesta` en sus
+dos mitades para materializar particiones con la misma identidad que `aplicar_particion_aceptada`,
+sin duplicar el separador como constante propia». La intención de diseño, por tanto, es que
+`revalidacion.py` REUTILICE `aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`
+(`reescrituras.py:322,358`, públicas, con sus propios tests en `tests/test_reescrituras.py`). En la
+práctica, `revalidacion.py` solo importa la constante `SEPARADOR_MITADES` (`revalidacion.py:59`) y
+reimplementa por su cuenta, en `_particion_aceptada_de` (`revalidacion.py:190-205`) y
+`_materializar_marcados` (`revalidacion.py:210-244`), el mismo criterio de emparejamiento bloque↔
+reescritura — las cuatro condiciones exactas (`numero_escena`, `linea_inicio`, `linea_fin`, texto
+igual al `original`) que ya calcula `aplicar_particion_aceptada` (`reescrituras.py:342-347`) — en vez
+de llamarla. `grep -rn "aplicar_particion" scripts/` confirma que ninguna de las dos funciones
+públicas tiene hoy ningún invocador real fuera de `tests/test_reescrituras.py`.
 
-Candidatas descartadas en la misma pasada (falsos positivos ya resueltos por el propio proyecto, no
-se repiten): `verificar_salidas.py::verificar_autocontencion` (es la propia herramienta de
-verificación, mismo descarte que `contraste_relativo`/`deshacer_normalizaciones` en R-27);
-`calibracion.py::calcular_calibracion` (ya evaluado y descartado como falso positivo al abrir R-25:
-la invoca directamente la sesión que usa la skill, no un consumidor interno de `scripts/`);
-`convencion.py::medir_consistencia_senales`/`proponer_convenciones` (mecanismo latente a propósito
-por el propio docstring del módulo, condicionado a una señal de inferencia nueva que los tres guiones
-reales de calibración todavía no presentan — infraestructura declarada condicional, no una garantía
-incumplida).
+El riesgo real: hoy las dos implementaciones coinciden (mismas cuatro condiciones, verificado línea a
+línea), pero nada lo garantiza hacia delante — son dos copias de la misma regla de negocio
+mantenidas a mano en dos archivos, sin ningún test que las compare entre sí. Es precisamente el área
+de código que ya produjo dos incidencias de severidad alta en este proyecto (P-02 y P-04, el cruce
+edición-manual/partición-aceptada, invariante (c) — «la edición manual manda»): una futura corrección
+de la regla de emparejamiento en un solo sitio (el más visible, probablemente
+`aplicar_particion_aceptada`, que es la función pública y documentada) dejaría al otro sitio
+(`revalidacion.py`, la ruta REAL que usa el dueño) con el criterio antiguo, sin que ningún test lo
+detectara — el mismo patrón de "la ruta real queda huérfana", pero en vez de faltar una llamada,
+sobra una reimplementación que puede divergir en silencio.
+
+Candidatas descartadas en la misma pasada del agente Explore (no son grietas nuevas):
+`monitorizacion.py::ejecutar_con_diagnostico` — ya evaluada y descartada explícitamente al abrir
+R-24 (`DECISIONES_TECNICAS.md`, 2026-10-06: «pensada para abortar un proceso entero con código de
+salida... exactamente lo contrario del requisito 3 de T-30»), no es una conexión olvidada sino una
+decisión de diseño ya tomada y documentada. `monitorizacion.py::ResumenEjecucion` — infraestructura
+genérica de T-05 (recuento de escenas/bloques/avisos/reescrituras/salidas de toda la ejecución),
+funcionalmente sustituida para el consumidor real por `salidas.py::ResumenSalidas` (T-30, con su
+propio `mostrar_resumen`, categorías `generadas`/`omitidas`/`latentes` más precisas que exige T-30
+requisito 4); candidata más débil, queda para una futura pasada si el dueño confirma que echa en
+falta el recuento genérico de `ResumenEjecucion` en algún punto del flujo real.
+`normalizacion.py::deshacer_normalizaciones` — inversa exacta de `aplicar_normalizaciones`, usada hoy
+solo como prueba de propiedad en sus propios tests; la ruta real nunca reconstruye el original por
+cálculo (lo guarda directamente en `Reescritura.original`), así que no tiene hueco real de consumidor
+que llenar.
 
 **Requisitos:**
-1. `scripts/pptx.py::exportar_pptx` invoca `validar_tarjetas` sobre los datos ya construidos (p. ej.
-   reutilizando `tarjetas_a_diccionario(resultado_tarjetas)`, que `formatear_tarjetas_json` ya calcula
-   por dentro) antes de `guardar_tarjetas_json`. Si devuelve problemas, `tarjetas.json` **no se
-   escribe** con contenido inválido.
-2. `scripts/salidas.py::_generar_srt` invoca `validar_srt` sobre el contenido de `exportar_srt` antes
-   de `guardar_srt`, y sobre el contenido de `generar_srt_alineado` antes de `guardar_srt_alineado`
-   (mismo validador, `srt_alineado.validar_srt_alineado` es su alias) — ambos subtítulos protegidos,
-   no solo uno.
-3. `scripts/salidas.py::_generar_capitulos_youtube` invoca `validar_capitulos_youtube` sobre el
-   contenido de `generar_capitulos_youtube` antes de `guardar_capitulos_youtube`, exactamente el
-   mismo punto donde ya se valida `capitulos-ffmpeg.txt` desde R-22, unas líneas más abajo en la misma
-   función.
-4. Propagación del fallo: mismo criterio ya establecido por R-24 para cualquier fallo real de
-   generación — el bucle de `generar_salidas_seleccionadas` ya envuelve cada tipo de salida en su
-   propio `try`/`except` que vuelca diagnóstico y degrada a `SalidaOmitida` con un motivo accionable
-   en español (nunca una traza cruda, nunca un archivo escrito a medias). Un validador que señala
-   problemas debe entrar por esa misma puerta — el diseño exacto (una excepción que la propagación ya
-   captura, o una `SalidaOmitida` construida a mano con el motivo exacto, mismo patrón literal de
-   `_generar_concat_ffmpeg`/R-21) lo decide quien implemente, documentado en `DECISIONES_TECNICAS.md`.
-   En cualquier caso: nunca se escribe a disco un archivo que su propio validador ya conocido rechaza.
-5. Fuera de alcance, explícito: no se endurece ni se cambia ninguna regla de los tres validadores en
-   sí (siguen exactamente las mismas reglas de `references/contrato-tarjetas.md` y el formato `.srt`/
-   YouTube ya documentados); no se añade ningún validador nuevo; no se toca `concat_ffmpeg.py` ni
-   `capitulos_youtube.py::validar_capitulos_ffmpeg` (ya conectados desde R-21/R-22); no se cambia el
-   comportamiento de ninguna salida cuando el contenido generado es válido (que es el caso de los tres
-   guiones reales de fixture/calibración hoy, confirmado por las dieciocho etapas en verde de
-   `verificar_salidas.py --fixture`) — esta tarea es una red de seguridad para el caso borde, no un
-   cambio de comportamiento del caso normal.
+1. Investigar primero, con evidencia (tests nuevos si hace falta), si `_materializar_marcados`/
+   `_particion_aceptada_de` (`revalidacion.py`) y `aplicar_particiones_aceptadas`
+   (`reescrituras.py`) producen HOY el mismo resultado en todo escenario sin conflicto
+   edición/partición (es decir, en todo caso donde `indices_con_edicion_previa_a_particion` está
+   vacío) — un test que, para los bloques y reescrituras aceptadas de los tres guiones reales (y los
+   casos ya cubiertos por `tests/test_revalidacion.py`), compare ambas rutas bloque a bloque.
+2. Si son equivalentes (caso esperado, dada la lectura línea a línea de esta ficha): eliminar la
+   duplicación haciendo que `revalidacion.py` llame a `aplicar_particion_aceptada`/
+   `aplicar_particiones_aceptadas` como único cálculo de la materialización, conservando intacta la
+   salvaguarda de `indices_con_edicion_previa_a_particion` (P-02/P-04, hallazgo #9) — que la función
+   pública no contempla hoy — filtrando antes de llamarla la lista de reescrituras a aplicar (excluir
+   las que correspondan a un índice con edición previa), o extendiendo la función pública con ese
+   mismo parámetro opcional, lo que resulte más limpio a quien implemente; decisión documentada en
+   `DECISIONES_TECNICAS.md`. En cualquier caso, al terminar debe quedar UNA sola implementación de la
+   regla de emparejamiento bloque↔reescritura, no dos.
+3. Si la investigación del requisito 1 revela una divergencia real (un escenario donde las dos
+   implementaciones no coinciden hoy): tratarlo como lo que sería, un hallazgo de severidad alta sobre
+   el invariante (c), corregir la ruta real (`revalidacion.py`, la que usa el dueño) a la regla
+   correcta y dejarlo documentado como tal en `DECISIONES_TECNICAS.md` y en el registro de
+   `auditoriacontinua.md` si procede, antes de unificar.
+4. Fuera de alcance, explícito: no se cambia ninguna regla de negocio del emparejamiento en sí (ambas
+   implementaciones de hoy codifican la misma regla, verificado); no se toca la salvaguarda de
+   P-02/P-04 en su comportamiento, solo en dónde vive; no se amplía a otras reimplementaciones
+   paralelas que no sean esta (p. ej. `ejecutar_con_diagnostico`, ya evaluada y descartada como no
+   conectable por R-24 con razón documentada, no se repite aquí).
 
-**Criterio de aceptación:** tres tests de integración (uno por salida) que fuerzan, por
-`monkeypatch` o construcción directa, un contenido estructuralmente inválido para cada contrato
-(`tarjetas.json` con `numero_escenas` inconsistente; `.srt` con índice no secuencial; `capitulos-
-youtube.txt` con una marca fuera de orden) y comprueban que (a) el archivo correspondiente **no se
-escribe** a disco con ese contenido y (b) el dueño recibe un motivo accionable en español, nunca una
-traza cruda sin capturar; regresión completa de los tests existentes de T-27/T-29/R-05/R-07/R-19
-sin cambio de comportamiento sobre contenido válido; las dieciocho etapas de
-`verificar_salidas.py --fixture` siguen en `OK` sobre los tres guiones reales. Cuatro redes en verde.
+**Criterio de aceptación:** test nuevo que demuestra, sobre los tres guiones reales y sobre los casos
+ya cubiertos de `tests/test_revalidacion.py`, que la materialización de `revalidacion.py` coincide
+bloque a bloque con `aplicar_particiones_aceptadas` siempre que no haya conflicto edición/partición
+pendiente; tras el requisito 2, una única función calcula el emparejamiento (no dos copias
+mantenidas a mano); los tests existentes de T-15/T-17/P-02/P-04 (incluido el que fija el
+comportamiento del hallazgo #9) pasan sin cambio de comportamiento. Cuatro redes en verde.
 
 ---
 

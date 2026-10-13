@@ -10,8 +10,55 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-13 — **Ciclo de Programador: novena reconfirmación del día
-tras R-28, sin novedad de código** (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-13 — **Ciclo de Product Manager: archiva Oleada v16 (R-28) y
+abre R-29 (Oleada v17)** (detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Product Manager (2026-10-13).** Revisión de entrada (protocolo): `git checkout develop
+&& git pull origin develop` sin ninguna divergencia que resolver (fast-forward limpio hasta
+`371e523`, la novena reconfirmación del Programador tras R-28, ya empujada); `git status` limpio.
+Dependencias de desarrollo instaladas con `pip install -r requirements-dev.txt`.
+
+Registro de hallazgos de `auditoriacontinua.md` revisado antes de proceder: dos `ABIERTO`, ambos de
+proceso puro y sin relación con el código (`#24`, baja; `#30`, media), ninguno de severidad alta que
+atender antes de la cola normal — ambos siguen pendientes solo de la respuesta del dueño a las
+preguntas de gobernanza `#11`/`#12` de §6, sin novedad. §1 (fuente autoritativa): R-28
+`COMPLETADA` desde el ciclo de Programador de esta misma jornada (commit `b990a1c`), sin ningún
+hito de negocio propio pendiente. `roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila
+de plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 (grabar un curso completo) sigue
+abierto, así que no hay historia de rodaje real que incorporar este ciclo.
+
+**Archiva Oleada v16 (R-28)** a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo se
+entregó"). `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo que archiva.
+
+**Abre R-29 (Oleada v17).** Grieta de arquitectura verificada, mismo criterio que abrió R-12 a
+R-28, pero de una forma distinta a las diez repeticiones anteriores: no es una pieza huérfana sin
+ningún llamador, sino una pieza construida y documentada exactamente para ser reutilizada por la
+ruta real (`scripts/reescrituras.py:61-63`, comentario explícito: "Público... porque T-17
+(revalidacion) necesita partir `propuesta`... con la misma identidad que `aplicar_particion_
+aceptada`") que la ruta real **reimplementa en privado** en vez de invocar —
+`revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` calculan a mano, con las mismas
+cuatro condiciones, el mismo emparejamiento bloque↔reescritura que ya ofrecen las funciones públicas
+`reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`, sin llamarlas nunca.
+Riesgo real: es el área exacta de dos incidencias de severidad alta ya cerradas en este proyecto
+(P-02, P-04, invariante (c) — "la edición manual manda") y hoy dos copias de la misma regla se
+mantienen a mano en dos archivos sin ningún test que las compare entre sí. Localización delegada a
+un agente Explore (instruido para no repetir candidatas ya descartadas en ciclos anteriores),
+verificada después línea a línea de forma independiente (`grep -rn "aplicar_particion"
+scripts/ tests/`, lectura directa de `reescrituras.py:322-369` y `revalidacion.py:190-244`) antes de
+escribir la spec. Tres candidatas más del mismo agente descartadas en la misma pasada —
+`monitorizacion.ejecutar_con_diagnostico` (ya evaluada y descartada explícitamente al abrir R-24,
+2026-10-06: semántica de abortar el proceso que no encaja), `monitorizacion.ResumenEjecucion`
+(sustituida para el consumidor real por `salidas.ResumenSalidas`, T-30) y
+`normalizacion.deshacer_normalizaciones` (prueba de propiedad sin hueco real de consumidor) —. Detalle
+completo, decisiones y candidatas descartadas en `ROADMAP_PRODUCTO.md` (Oleada v17) y
+`DECISIONES_TECNICAS.md` ("PM (apertura de R-29)"). Fila añadida a §1 en este mismo ciclo.
+
+Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (`#11`/`#12` siguen `(pendiente)`); sin
+nueva desviación en §7. Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación
+de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`.
+
+**Última actualización anterior (2026-10-13, ciclo de Programador): novena reconfirmación del día
+tras R-28**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-13), novena reconfirmación del día tras R-28.** Revisión de
 entrada (protocolo): `git checkout develop && git pull origin develop` encontró el contenedor de
@@ -3249,6 +3296,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-26 | El diccionario del dueño (`diccionario-locucion.json`, T-13 requisito 3, "manda siempre") no tiene ningún llamador real fuera de sus propios tests, ni `cargar_diccionario_locucion` ni los cuatro puntos reales donde se aplicaría (`normalizar_guion`, `recopilar_propuestas`, `generar_documento_revision`, `revalidar_guion`): la garantía contractual del propio `SKILL.md` no se cumple hoy en el flujo real salvo que la sesión recuerde cargarlo a mano, sin ningún aviso si no lo hace | **COMPLETADA** | 2026-10-09 | `generar_documento_revision`/`revalidar_guion` ganan `carpeta_salida` opcional: `revalidar_guion` carga el diccionario por su cuenta (si no hay uno explícito); `generar_documento_revision` cuenta las entradas realmente aplicadas en la cabecera y avisa si el archivo tiene entradas sin aplicar. Mismo recuento expuesto en `tarjetas.json.metadatos.entradas_diccionario_aplicadas`. `SKILL.md` documenta el paso explícito con el fragmento de código exacto |
 | R-27 | El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real ni mención en `SKILL.md`, y aunque se wireara tal cual, `estado.guion.hash_sha256`/`tamano_bytes` nunca se actualizan tras `estado_inicial`, así que el aviso se repetiría para siempre en vez de aparecer una sola vez | **COMPLETADA** | 2026-10-12 | `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion)` (refresca `hash_sha256`/`tamano_bytes` al contenido actual, mutando `estado` en el sitio, llamada justo antes de `guardar_estado`). `documento_revision.generar_documento_revision` gana `guion_modificado: bool = False`: con `True`, la cabecera del resumen global añade la línea de aviso visible (mismo criterio de transparencia que ppm/T-12, diccionario/R-26, desviaciones/R-23). `SKILL.md` documenta el paso explícito con el fragmento de código exacto (tras cargar `estado.json` y antes de re-parsear/regenerar, `avisar_si_guion_modificado` → `generar_documento_revision(..., guion_modificado=...)`; `actualizar_info_guion` justo antes de `guardar_estado`), mismo patrón que R-26. Sin migración (solo refresca valores ya existentes de `InfoGuion`); `revalidar_guion` intacto, sin releer el guion de origen. 4 tests nuevos (665→669): 2 en `tests/test_estado.py` (refresco exacto al hash/tamaño actuales; cierra el bucle — tras actualizar, `avisar_si_guion_modificado` vuelve a `False` sin que el guion cambie de nuevo) y 2 en `tests/test_documento_revision.py` (línea de aviso con `True`; ninguna línea nueva con `False`, el valor por defecto). Cuatro redes en verde. `DEVELOPERS.md` actualizado con sección propia. Oleada v15, `origen: observación de arquitectura del PM (2026-10-09)` |
 | R-28 | Tres validadores de contrato ya construidos (`pptx.validar_tarjetas`, `srt.validar_srt`, `capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de `scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — mismo patrón de grieta ya cerrado por R-21 (`concat-ffmpeg.txt`) y R-22 (`capitulos-ffmpeg.txt`), sin corregir aquí para sus tres gemelos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) | **COMPLETADA** | 2026-10-13 | `pptx.py::exportar_pptx` valida con `validar_tarjetas` antes de `guardar_tarjetas_json` (lanza `TarjetasInvalidasError`, capturada por el `try`/`except` genérico de R-24); `salidas.py::_generar_srt`/`_generar_capitulos_youtube` validan cada mitad por separado con `validar_srt`/`validar_capitulos_youtube`, degradando a `SalidaOmitida` a mano (mismo patrón que `_generar_concat_ffmpeg`/R-21) sin impedir que la mitad sana se genere. Cero cambio en las reglas de los tres validadores ni en `concat_ffmpeg.py`/`validar_capitulos_ffmpeg` (ya conectados). 4 tests nuevos (669→673). Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio. `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` actualizados |
+| R-29 | `revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` reimplementan en privado, con las mismas cuatro condiciones a mano, el emparejamiento bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó, probó y documentó explícitamente como la pieza a reutilizar por T-17 — nunca llamadas desde la ruta real, en el área exacta de dos incidencias de severidad alta ya cerradas (P-02, P-04) | **PENDIENTE** | — | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v17. `origen: observación de arquitectura del PM (2026-10-13)`, candidatos localizados con ayuda de un agente Explore y verificados de forma independiente, línea a línea |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

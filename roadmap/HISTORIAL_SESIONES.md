@@ -12,6 +12,67 @@
 
 ---
 
+### Sesión 2026-10-13 (150) — Ciclo de Product Manager: archiva Oleada v16 (R-28) y abre R-29 (Oleada v17)
+
+**Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
+`371e523` (la novena reconfirmación del Programador tras R-28, ya empujada), sin ninguna divergencia
+que resolver. `git status` limpio antes y después. `pip install -r requirements-dev.txt` instalado
+sin incidencias.
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`
+(`#24`, `#30`), ambos de proceso puro y severidad baja/media, pendientes solo de la respuesta del
+dueño a las preguntas de gobernanza #11/#12 de §6 — sin relación con el código, ninguno exige P-XX
+urgente. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`. §1 (fuente autoritativa): R-28 `COMPLETADA` desde el ciclo de Programador de esta misma
+jornada (commit `b990a1c`), sin ningún patrón de latencia que corregir.
+
+**Archiva Oleada v16 (R-28).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo
+se entregó": `pptx.exportar_pptx` valida con `validar_tarjetas` antes de escribir, lanzando
+`TarjetasInvalidasError` capturada por el `try`/`except` genérico de R-24; `salidas.py::_generar_srt`/
+`_generar_capitulos_youtube` validan cada mitad con `validar_srt`/`validar_capitulos_youtube`,
+degradando a `SalidaOmitida` a mano sin apagar la mitad sana; 4 tests nuevos 669→673, commit
+`b990a1c`). `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo que archiva: cabecera reescrita,
+sección "Oleada v16" sustituida por la nota de archivo.
+
+**Abre R-29 (Oleada v17).** Grieta de arquitectura verificada, mismo criterio que abrió R-12 a R-28,
+pero de una forma distinta a las diez repeticiones anteriores: no es una pieza sin ningún llamador,
+sino una pieza construida, probada y **documentada explícitamente como la solución a reutilizar**
+que la ruta real ignora, reimplementando en privado el mismo cálculo. `scripts/reescrituras.py:61-63`
+deja un comentario al definir `SEPARADOR_MITADES`: «Público (no `_`) porque T-17 (revalidacion)
+necesita partir `propuesta`... con la misma identidad que `aplicar_particion_aceptada`». Pero
+`revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` (`revalidacion.py:190-244`) solo
+importan esa constante y reimplementan a mano, con las mismas cuatro condiciones, el emparejamiento
+bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`
+(`reescrituras.py:322-369`) ya calculan, sin invocarlas nunca — confirmado con
+`grep -rn "aplicar_particion" scripts/ tests/` (cero invocadores reales fuera de
+`tests/test_reescrituras.py`) y lectura línea a línea de ambos módulos. Riesgo real: es el área exacta
+de dos incidencias de severidad alta ya cerradas en este proyecto (P-02, P-04, invariante (c) — "la
+edición manual manda") y hoy dos copias de la misma regla se mantienen a mano sin ningún test que las
+compare entre sí.
+
+Localización delegada a un agente Explore (instruido para no repetir candidatas ya descartadas en
+ciclos anteriores y para citar archivo:línea verificable), que devolvió cuatro candidatos; verificado
+de forma independiente que el elegido es el más claro y que los otros tres no son grietas nuevas:
+`monitorizacion.ejecutar_con_diagnostico` (ya evaluada y descartada explícitamente al abrir R-24,
+2026-10-06: semántica de abortar el proceso que no encaja con T-30), `monitorizacion.ResumenEjecucion`
+(sustituida para el consumidor real por `salidas.ResumenSalidas`, T-30) y
+`normalizacion.deshacer_normalizaciones` (prueba de propiedad sin hueco real de consumidor, la ruta
+real guarda el original directamente sin necesitar reconstruirlo). Spec completa de R-29 en
+`ROADMAP_PRODUCTO.md` (Oleada v17), pidiendo investigar primero la equivalencia de las dos
+implementaciones (mismo precedente que R-17) antes de unificar, para no repetir a ciegas el riesgo ya
+visto en P-02/P-04. Fila `R-29 | ... | PENDIENTE | — | ...` añadida a §1 en este mismo ciclo.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`:** una fila, "PM (apertura de R-29)" (2026-10-13),
+con el razonamiento completo de por qué se investiga primero en vez de prescribir la refactorización
+directamente, y por qué se descartan las otras tres candidatas.
+
+**Sin cambios en §3 (bloqueos) ni §5 (P-XX); §6 sin novedad (las preguntas #11/#12 siguen
+`(pendiente)`); sin nueva desviación en §7.** Este ciclo es de PM, no de Programador: no se ha
+ejecutado la verificación de las cuatro redes ni se ha tocado `scripts/`, `tests/` ni `assets/`. Push
+a `origin/develop` al cerrar esta sesión.
+
+---
+
 ### Sesión 2026-10-13 (149) — Ciclo de Programador: novena reconfirmación del día tras R-28, sin novedad de código
 
 **Arranque.** El contenedor arrancó de nuevo con `HEAD` *detached*. `git checkout develop` dejó la
