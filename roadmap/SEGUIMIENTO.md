@@ -10,8 +10,43 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-14 — **Ciclo de Programador: cuarta reconfirmación del día tras
+**Última actualización:** 2026-10-14 — **Ciclo de Programador: quinta reconfirmación del día tras
 R-29**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
+
+**Ciclo de Programador (2026-10-14), quinta reconfirmación del día tras R-29.** Revisión de
+entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached*, dieciocho commits por
+detrás de `develop` (incluida la cuarta reconfirmación de hoy); `git checkout develop && git pull
+origin develop` avanzó por fast-forward limpio hasta `e31f848` (esa cuarta reconfirmación, ya
+empujada), sin ninguna divergencia real que resolver. `git status` limpio antes y después.
+Dependencias de desarrollo instaladas primero con el `pip` desnudo del `PATH` (mismo síntoma ya
+documentado por `#28`/P-06: resuelve contra el intérprete equivocado y deja
+`mypy`/`ruff`/`pytest` sin instalar) y reinstaladas con `python3 -m pip install -r
+requirements-dev.txt`, tras lo cual las cuatro redes dieron `OK` (`mypy==1.18.2`, `ruff==0.14.0`,
+`pytest==8.4.2`).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-14, sin cambios desde la última
+lectura): dos `ABIERTO`, ambos de proceso puro y sin relación con el código (`#24`, prosa de "Cola
+de producto" desactualizada entre ciclos de PM; `#30`, cadencia de la rutina Programador) —
+ninguno de severidad alta que atender como P-XX urgente antes de la cola normal, ambos pendientes
+solo de la respuesta del dueño a las preguntas de gobernanza `#11`/`#12` de §6. §1 (fuente
+autoritativa) **sin ninguna fila `PENDIENTE`**: R-29 sigue `COMPLETADA` desde el ciclo de
+Programador de esta misma jornada — cola vacía hasta el próximo ciclo de PM que archive la Oleada
+v17 y abra la siguiente. `roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila de
+plantilla vacía, sin ninguna entrada `nuevo`. `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+**Sin cambio de código.** Verificación propia completa (`python3 scripts/ci.py`): `mypy`/`ruff` en
+verde (70 archivos), 675 tests en verde (sin cambio), dieciocho etapas OK en
+`verificar_salidas.py --fixture`. Cuatro redes en verde.
+
+Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca
+(su prosa de "Oleada v17 — EN CURSO"/R-29 queda desactualizada hasta el próximo ciclo de PM que la
+archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`).
+
+**Última actualización anterior (2026-10-14, ciclo de Programador): cuarta reconfirmación del día
+tras R-29**, sin novedad de código (detalle en
+la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-14), cuarta reconfirmación del día tras R-29.** Revisión de
 entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached*, dieciséis commits por
