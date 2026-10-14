@@ -10,18 +10,19 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-14 — **Ciclo de Programador: primera reconfirmación del día tras
+**Última actualización:** 2026-10-14 — **Ciclo de Programador: segunda reconfirmación del día tras
 R-29**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Ciclo de Programador (2026-10-14), primera reconfirmación del día tras R-29.** Revisión de
-entrada (protocolo): `git checkout develop` encontró el contenedor de nuevo con `HEAD` *detached*;
-`git pull origin develop` avanzó por fast-forward limpio hasta `5fa5ac8` (R-29, ya empujada), sin
-ninguna divergencia que resolver (nada parecido al artefacto de clon superficial del hallazgo
-`#21`). `git status` limpio antes y después. Dependencias de desarrollo instaladas primero con el
-`pip` desnudo del `PATH` (mismo síntoma ya documentado por `#28`/P-06: resuelve contra el
-intérprete equivocado — Python 3.13 en vez del 3.11.17 real — y deja `mypy`/`ruff`/`pytest` sin
-instalar) y reinstaladas con `python3 -m pip install -r requirements-dev.txt`, tras lo cual las
-cuatro redes dieron `OK` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+**Ciclo de Programador (2026-10-14), segunda reconfirmación del día tras R-29.** Revisión de
+entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached*, catorce commits por
+detrás de `develop` (incluida la primera reconfirmación de hoy); `git checkout develop && git pull
+origin develop` avanzó por fast-forward limpio hasta `c425efe` (esa primera reconfirmación, ya
+empujada), sin ninguna divergencia real que resolver. `git status` limpio antes y después.
+Dependencias de desarrollo instaladas primero con el `pip` desnudo del `PATH` (mismo síntoma ya
+documentado por `#28`/P-06: resuelve contra el intérprete equivocado y deja
+`mypy`/`ruff`/`pytest` sin instalar) y reinstaladas con `python3 -m pip install -r
+requirements-dev.txt`, tras lo cual las cuatro redes dieron `OK` (`mypy==1.18.2`, `ruff==0.14.0`,
+`pytest==8.4.2`).
 
 Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-14, sin cambios desde la última
 lectura): dos `ABIERTO`, ambos de proceso puro y sin relación con el código (`#24`, prosa de "Cola
@@ -43,7 +44,8 @@ Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `
 (su prosa de "Oleada v17 — EN CURSO"/R-29 queda desactualizada hasta el próximo ciclo de PM que la
 archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`).
 
-**Última actualización anterior (2026-10-14, ciclo de Programador): R-29 implementada** (detalle en
+**Última actualización anterior (2026-10-14, ciclo de Programador): primera reconfirmación del día
+tras R-29**, sin novedad de código (detalle en
 la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-14): R-29 implementada.** Revisión de entrada (protocolo):
