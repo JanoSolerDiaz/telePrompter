@@ -10,13 +10,13 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-14 — **Ciclo de Programador: segunda reconfirmación del día tras
+**Última actualización:** 2026-10-14 — **Ciclo de Programador: tercera reconfirmación del día tras
 R-29**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
 
-**Ciclo de Programador (2026-10-14), segunda reconfirmación del día tras R-29.** Revisión de
-entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached*, catorce commits por
-detrás de `develop` (incluida la primera reconfirmación de hoy); `git checkout develop && git pull
-origin develop` avanzó por fast-forward limpio hasta `c425efe` (esa primera reconfirmación, ya
+**Ciclo de Programador (2026-10-14), tercera reconfirmación del día tras R-29.** Revisión de
+entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached*, quince commits por
+detrás de `develop` (incluida la segunda reconfirmación de hoy); `git checkout develop && git pull
+origin develop` avanzó por fast-forward limpio hasta `c1c28b1` (esa segunda reconfirmación, ya
 empujada), sin ninguna divergencia real que resolver. `git status` limpio antes y después.
 Dependencias de desarrollo instaladas primero con el `pip` desnudo del `PATH` (mismo síntoma ya
 documentado por `#28`/P-06: resuelve contra el intérprete equivocado y deja
@@ -44,7 +44,7 @@ Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `
 (su prosa de "Oleada v17 — EN CURSO"/R-29 queda desactualizada hasta el próximo ciclo de PM que la
 archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`).
 
-**Última actualización anterior (2026-10-14, ciclo de Programador): primera reconfirmación del día
+**Última actualización anterior (2026-10-14, ciclo de Programador): segunda reconfirmación del día
 tras R-29**, sin novedad de código (detalle en
 la nota de esa sesión, más abajo).
 
