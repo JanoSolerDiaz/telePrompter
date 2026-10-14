@@ -808,6 +808,28 @@ para el siguiente ciclo.
   `test_disposicion_pospuesta_corrompida_con_mismo_tamano_no_pierde_ni_
   duplica_contenido` en `tests/test_revalidacion.py` y la fila de R-17 en
   `DECISIONES_TECNICAS.md`.
+- **Unificar el emparejamiento bloque↔reescritura de una partición aceptada
+  (R-29).** `revalidacion._particion_aceptada_de` reimplementaba a mano, con
+  las mismas cuatro condiciones, el `coincide` que
+  `reescrituras.aplicar_particion_aceptada` ya calculaba y documentaba como la
+  pieza a reutilizar (`reescrituras.py:61-63`). R-29 investigó primero (con
+  test, no solo lectura) si ambas rutas coincidían hoy sobre los tres guiones
+  reales y sobre guiones sintéticos con particiones de verdad aceptadas:
+  coinciden exactamente, sin ninguna divergencia que corregir. Con esa
+  evidencia, `_particion_aceptada_de` pasa a invocar
+  `aplicar_particion_aceptada` sobre una lista de un único bloque (longitud 2
+  del resultado = coincidió, longitud 1 = no coincidió) en vez de repetir las
+  cuatro condiciones; queda así una única implementación de la regla de
+  emparejamiento, no dos mantenidas a mano en paralelo -- el riesgo concreto
+  que motivó la tarea (una futura corrección de la regla en un solo sitio
+  dejaría al otro con el criterio antiguo, sin que ningún test lo
+  detectara). La salvaguarda de `indices_con_edicion_previa_a_particion`
+  (P-02/P-04, hallazgo #9) no se tocó: decide ANTES de llamar a
+  `_particion_aceptada_de` si procede buscar partición, así que seguía
+  intacta sin necesidad de filtrar reescrituras ni extender la función
+  pública. Ver `test_materializacion_revalidacion_coincide_con_aplicar_
+  particiones_tres_guiones_reales`/`..._con_particiones_reales` en
+  `tests/test_revalidacion.py` y la fila de R-29 en `DECISIONES_TECNICAS.md`.
 
 ## Reproductor: esqueleto autocontenido (T-18)
 

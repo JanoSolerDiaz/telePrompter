@@ -54,11 +54,9 @@ from estado import EstadoProyecto
 from normalizacion import cargar_diccionario_locucion, normalizar_guion
 from parser import ResultadoParseo
 from reescrituras import (
-    DECISION_ACEPTADA,
-    FAMILIA_PARTICION_RESPIRACION,
-    SEPARADOR_MITADES,
     Reescritura,
     aplicar_decisiones,
+    aplicar_particion_aceptada,
     extraer_decisiones,
     fusionar_con_estado,
     guardar_en_estado,
@@ -191,18 +189,20 @@ def _particion_aceptada_de(
     bloque: BloqueRespiracion, reescrituras: list[Reescritura]
 ) -> tuple[str, str] | None:
     """La particion aceptada (T-15) que corresponde exactamente a `bloque`
-    sin partir, si existe, como sus dos mitades de texto."""
+    sin partir, si existe, como sus dos mitades de texto.
+
+    R-29: delega el emparejamiento bloque<->reescritura en
+    `reescrituras.aplicar_particion_aceptada` en vez de reimplementar a mano
+    sus mismas cuatro condiciones (familia, decision, escena/lineas, texto
+    igual al original) -- esa funcion es la UNICA fuente de la regla, tal
+    como T-17 dejo documentado desde el principio en el comentario de
+    `SEPARADOR_MITADES`. Aplicarla sobre una lista de un solo bloque es
+    inocuo: si no coincide devuelve ese mismo bloque sin tocar (longitud 1);
+    si coincide, devuelve las dos mitades ya materializadas (longitud 2)."""
     for reescritura in reescrituras:
-        if (
-            reescritura.familia == FAMILIA_PARTICION_RESPIRACION
-            and reescritura.decision == DECISION_ACEPTADA
-            and reescritura.numero_escena == bloque.numero_escena
-            and reescritura.linea_inicio == bloque.linea_inicio
-            and reescritura.linea_fin == bloque.linea_fin
-            and reescritura.original == bloque.texto
-        ):
-            mitad_a, _separador, mitad_b = reescritura.propuesta.partition(SEPARADOR_MITADES)
-            return mitad_a, mitad_b
+        resultado = aplicar_particion_aceptada([bloque], reescritura)
+        if len(resultado) == 2:
+            return resultado[0].texto, resultado[1].texto
     return None
 
 

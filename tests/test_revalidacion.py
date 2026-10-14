@@ -29,6 +29,7 @@ from pathlib import Path
 
 import pytest
 
+import revalidacion
 from config import Configuracion
 from deteccion import detectar_problemas_guion
 from documento_revision import (
@@ -44,12 +45,13 @@ from reescrituras import (
     DECISION_RECHAZADA,
     FAMILIA_PARTICION_RESPIRACION,
     Reescritura,
+    aplicar_particiones_aceptadas,
     fusionar_con_estado,
     guardar_en_estado,
     recopilar_propuestas,
 )
 from revalidacion import Incidencia, ResultadoRevalidacion, revalidar_guion
-from tiempos import calcular_tiempos
+from tiempos import bloques_respiracion_marcados, calcular_tiempos
 from troceo import BloqueRespiracion, trocear_guion
 
 _GUION = """# Guion de prueba
@@ -306,6 +308,101 @@ def test_ciclo_de_tres_pasadas_respeta_decisiones_y_ediciones(tmp_path: Path) ->
     copias_seguridad = list(carpeta_salida.glob("guion-escenas.md.bak-*"))
     assert len(copias_seguridad) == 1
     assert destino.read_text(encoding="utf-8") == doc3
+
+
+# --- R-29: equivalencia de la materializacion con `aplicar_particiones_aceptadas` -----
+
+
+def _bloques_y_reescrituras_aceptadas(
+    texto_guion: str, configuracion: Configuracion
+) -> tuple[dict[int, list[tuple[BloqueRespiracion, bool, bool]]], list[Reescritura]]:
+    """Bloques de respiracion "de origen" por escena y las reescrituras que
+    propondria una primera pasada (T-13/T-14), con TODAS las particiones de
+    respiracion aceptadas -- el escenario que investiga el requisito 1 de
+    R-29, sin ningun conflicto edicion/particion (`estado.json` recien
+    creado, ninguna edicion manual todavia)."""
+    resultado = parsear_guion(texto_guion, configuracion=configuracion)
+    marcados_por_escena = {
+        escena.numero: bloques_respiracion_marcados(escena, configuracion)
+        for escena in resultado.escenas
+    }
+    bloques_origen = [
+        bloque for marcados in marcados_por_escena.values() for bloque, _fp, _fe in marcados
+    ]
+    detecciones = detectar_problemas_guion(bloques_origen, configuracion)
+    normalizaciones = normalizar_guion(bloques_origen, configuracion)
+    propuestas = recopilar_propuestas(normalizaciones, detecciones)
+    reescrituras_aceptadas = [
+        dataclasses.replace(reescritura, decision=DECISION_ACEPTADA)
+        if reescritura.familia == FAMILIA_PARTICION_RESPIRACION
+        else reescritura
+        for reescritura in propuestas
+    ]
+    return marcados_por_escena, reescrituras_aceptadas
+
+
+def _comparar_materializacion_con_aplicar_particiones_aceptadas(
+    texto_guion: str, configuracion: Configuracion
+) -> None:
+    marcados_por_escena, reescrituras_aceptadas = _bloques_y_reescrituras_aceptadas(
+        texto_guion, configuracion
+    )
+    bloques_origen = [
+        bloque for marcados in marcados_por_escena.values() for bloque, _fp, _fe in marcados
+    ]
+    particiones_aceptadas = [
+        reescritura
+        for reescritura in reescrituras_aceptadas
+        if reescritura.familia == FAMILIA_PARTICION_RESPIRACION
+    ]
+    esperado = aplicar_particiones_aceptadas(bloques_origen, particiones_aceptadas)
+    obtenido = [
+        bloque
+        for marcados in marcados_por_escena.values()
+        for bloque, _fp, _fe, _identidad in revalidacion._materializar_marcados(
+            marcados, reescrituras_aceptadas
+        )
+    ]
+    assert [bloque.texto for bloque in obtenido] == [bloque.texto for bloque in esperado]
+
+
+def test_materializacion_revalidacion_coincide_con_aplicar_particiones_tres_guiones_reales(
+    guiones_reales: list[Path],
+) -> None:
+    """Investigacion del requisito 1 de R-29: antes de hacer que
+    `revalidacion._particion_aceptada_de` delegue en
+    `reescrituras.aplicar_particion_aceptada` en vez de reimplementar sus
+    cuatro condiciones a mano, demuestra que ambas rutas ya coincidian bloque
+    a bloque sobre los tres guiones reales. Ninguno de los tres propone
+    ninguna particion de respiracion (T-11 ya los trocea sin dejar frases
+    candidatas) -- la comparacion es igualmente valida como regresion del
+    camino normal, y queda complementada por el test siguiente, que si
+    ejercita particiones de verdad sobre guiones sinteticos."""
+    configuracion = Configuracion()
+    for ruta in guiones_reales:
+        _comparar_materializacion_con_aplicar_particiones_aceptadas(
+            ruta.read_text(encoding="utf-8"), configuracion
+        )
+
+
+def test_materializacion_revalidacion_coincide_con_aplicar_particiones_con_particiones_reales(
+) -> None:
+    """Mismo contraste que el test anterior, pero sobre guiones sinteticos que
+    si proponen particiones de respiracion de verdad: `_GUION` (una, en la
+    escena 1) y `_GUION_ESCENA_DOS_PARTICIONES` (dos, en la MISMA escena --
+    ejercita que `aplicar_particiones_aceptadas` las aplica ambas sin que una
+    interfiera con la otra, igual que `_materializar_marcados` las trata por
+    separado al iterar los bloques de origen uno a uno)."""
+    configuracion = _configuracion()
+    for texto_guion in (_GUION, _GUION_ESCENA_DOS_PARTICIONES):
+        _marcados, reescrituras_aceptadas = _bloques_y_reescrituras_aceptadas(
+            texto_guion, configuracion
+        )
+        assert any(
+            reescritura.familia == FAMILIA_PARTICION_RESPIRACION
+            for reescritura in reescrituras_aceptadas
+        ), f"guion sin ninguna particion candidata que comparar: {texto_guion[:40]!r}"
+        _comparar_materializacion_con_aplicar_particiones_aceptadas(texto_guion, configuracion)
 
 
 # --- Identidad estable de la materializacion (unidad) --------------------------------

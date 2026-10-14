@@ -12,6 +12,52 @@
 
 ---
 
+### Sesión 2026-10-14 (151) — Ciclo de Programador: R-29 implementada
+
+**Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
+`8fc4106` (la auditoría del 2026-10-14, ya empujada), sin ninguna divergencia que resolver.
+`git status` limpio antes y después. `python3 -m pip install -r requirements-dev.txt` instalado sin
+incidencias (el `pip` desnudo del `PATH` sigue resolviendo contra el intérprete equivocado del
+contenedor — síntoma ya documentado por `#28`/P-06, evitado con el rodeo conocido).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md`: dos `ABIERTO`
+(`#24`, `#30`), ambos de proceso puro y severidad baja/media, pendientes solo de la respuesta del
+dueño a las preguntas de gobernanza #11/#12 de §6 — sin relación con el código, ninguno exige P-XX
+urgente. §1 (fuente autoritativa): **R-29 como única fila `PENDIENTE`**, spec completa en
+`ROADMAP_PRODUCTO.md` (Oleada v17). `DECISIONES_TECNICAS.md` consultado en el área a tocar
+(emparejamiento bloque↔reescritura, P-02/P-04, R-17) antes de cualquier decisión técnica.
+
+**Implementa R-29.** Investigación (requisito 1): dos tests nuevos en `tests/test_revalidacion.py`
+comparan, bloque a bloque, la materialización de `revalidacion._materializar_marcados` contra una
+llamada directa a `reescrituras.aplicar_particiones_aceptadas`, sin ningún conflicto edición/partición
+pendiente — sobre los tres guiones reales (ninguno propone hoy ninguna partición de respiración,
+verificado antes de escribir el test) y sobre guiones sintéticos con particiones de verdad aceptadas
+(`_GUION`, una; `_GUION_ESCENA_DOS_PARTICIONES`, dos en la misma escena). Las dos rutas coinciden
+exactamente: sin divergencia real que corregir (requisito 3 no aplica). Unificación (requisito 2):
+`_particion_aceptada_de` deja de reimplementar a mano las cuatro condiciones de `coincide` y pasa a
+invocar `aplicar_particion_aceptada` sobre una lista de un único bloque (longitud 2 del resultado =
+coincidió, longitud 1 = no coincidió); `revalidacion.py` deja de importar
+`SEPARADOR_MITADES`/`FAMILIA_PARTICION_RESPIRACION`/`DECISION_ACEPTADA` de `reescrituras.py`. La
+salvaguarda de `indices_con_edicion_previa_a_particion` (P-02/P-04, hallazgo #9) no se tocó: sigue
+decidiendo, antes de llamar a `_particion_aceptada_de`, si procede buscar partición — no hizo falta
+filtrar reescrituras ni extender la función pública. Queda una única implementación de la regla de
+emparejamiento, no dos mantenidas a mano en paralelo.
+
+**Verificación.** 2 tests nuevos (673→675). Los 20 tests ya existentes de `test_revalidacion.py`
+pasan sin cambio de comportamiento, incluidos los dos que fijan el hallazgo #9. Cuatro redes en verde
+(`mypy`, `ruff`, 675 tests, dieciocho etapas de `verificar_salidas.py --fixture`).
+
+**Registro.** Fila de R-29 en `DECISIONES_TECNICAS.md` (investigación + unificación, con las tres
+alternativas de implementación consideradas). §1 de `SEGUIMIENTO.md`: R-29 pasa a `COMPLETADA`
+(2026-10-14). `DEVELOPERS.md` gana un bullet nuevo junto al de R-17 (mismo patrón: investigación con
+test antes de decidir). `ROADMAP_PRODUCTO.md` no se toca en esta sesión (su prosa de "Oleada v17 — EN
+CURSO" queda desactualizada hasta el próximo ciclo de PM que la archive — patrón ya aceptado de bajo
+riesgo, hallazgo `#24`). Sin cambios en §3/§5/§6/§7 de `SEGUIMIENTO.md`.
+
+**Cierre.** Commit y push a `origin/develop`.
+
+---
+
 ### Sesión 2026-10-13 (150) — Ciclo de Product Manager: archiva Oleada v16 (R-28) y abre R-29 (Oleada v17)
 
 **Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
