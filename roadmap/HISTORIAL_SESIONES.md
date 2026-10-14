@@ -12,6 +12,57 @@
 
 ---
 
+### Sesión 2026-10-14 (161) — Ciclo de Product Manager: archiva Oleada v17 (R-29) y abre R-30 (Oleada v18)
+
+**Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
+`9edb4d3` (la novena reconfirmación del Programador tras R-29, ya empujada), sin ninguna divergencia
+que resolver. `git status` limpio antes y después.
+
+**Revisión de entrada (protocolo).** Leída `HOJA_DE_RUTA.md` completa (T-00 a T-33, todas
+`COMPLETADA` salvo T-24b, `BLOQUEADA` sin clicker, en espera indefinida del dueño) y §1 de
+`SEGUIMIENTO.md` (fuente autoritativa): R-29 `COMPLETADA` desde el ciclo de Programador de esta misma
+jornada, sin ninguna fila `PENDIENTE` — las nueve reconfirmaciones horarias de hoy (sesiones 152 a
+160) ya documentan el coste que señala el hallazgo `#30`/pregunta `#12`, todavía sin respuesta del
+dueño. Registro de hallazgos de `auditoriacontinua.md` revisado entero: solo dos `ABIERTO` (`#24`,
+`#30`), ambos de proceso puro y severidad baja/media ya enrutados como preguntas de gobernanza
+`#11`/`#12` de §6, sin relación con el código y sin ningún hallazgo de severidad alta que atender
+antes de la cola normal. `roadmap/FEEDBACK.md` revisado: sigue con su única fila de plantilla vacía,
+sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto y es la
+única fuente de la que podría salir feedback de rodaje real.
+
+**Archiva Oleada v17 (R-29).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo
+se entregó": investigados los tres guiones reales y dos casos sintéticos con particiones de verdad,
+sin divergencia entre `revalidacion.py` y `reescrituras.py::aplicar_particiones_aceptadas` bajo
+operación normal; `_particion_aceptada_de` delega ahora en `aplicar_particion_aceptada`, conservando
+intacta la salvaguarda P-02/P-04 del hallazgo #9; 2 tests nuevos 673→675, cuatro redes en verde).
+`ROADMAP_PRODUCTO.md` corregido en el mismo ciclo que archiva: cabecera reescrita, sección "Oleada
+v17" sustituida por la nota de archivo (mismo patrón ya normalizado desde el hallazgo `#29`, cerrado
+el 2026-10-08).
+
+**Abre R-30 (Oleada v18).** No por auditoría ni por `FEEDBACK.md` (ninguna de las dos fuentes aporta
+nada nuevo esta pasada), sino por el mismo tercer criterio que abrió R-12 a R-29 — grieta de
+arquitectura verificada sobre código ya construido, esta vez en el propio límite declarado del
+producto hacia la fase de montaje: `references/contrato-montaje.md` (T-33) documenta con precisión
+qué archivos deja preparados la skill (`guion.srt`/`guion-alineado.srt`, `tarjetas.json`,
+`concat-ffmpeg.txt`, `capitulos-ffmpeg.txt`) y da, como ilustración, fragmentos de comando `ffmpeg`
+sueltos con nombres de archivo de ejemplo — pero nadie los encadena en la secuencia real (concatenar
+tomas buenas → subtítulos → capítulos) con los nombres de archivo reales del guion concreto que el
+dueño acaba de procesar. Spec completa de R-30 (ficha, decisiones de diseño ya acotadas — documento
+`.md` generado por la skill, nunca ejecución de `ffmpeg` desde Python; subtítulos como pista blanda
+por defecto; cada paso opcional sin romper el encadenado) en `ROADMAP_PRODUCTO.md`, Oleada v18. Fila
+`R-30 | ... | PENDIENTE | 2026-10-14 | ...` añadida a §1 de `SEGUIMIENTO.md` en el mismo commit que
+archiva (lección del hallazgo `#29`, para no repetir el hueco de un ciclo sin fila formal).
+
+**Sin cambio de código.** Este ciclo es de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-30 queda lista para que el siguiente ciclo de
+Programador la implemente y verifique con las cuatro redes.
+
+Sin decisiones técnicas nuevas en `DECISIONES_TECNICAS.md` (ninguna decisión de arquitectura de
+código tomada esta sesión, solo de producto, ya documentada en `ROADMAP_PRODUCTO.md` como es
+convención). Sin cambios en §3, §5, §6 ni §7 de `SEGUIMIENTO.md` más allá de la fila de §1 ya citada.
+
+---
+
 ### Sesión 2026-10-14 (160) — Ciclo de Programador: novena reconfirmación del día tras R-29, sin novedad de código
 
 **Arranque.** El contenedor arrancó de nuevo con `HEAD` *detached* sobre un commit distinto al de

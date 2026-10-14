@@ -8,6 +8,11 @@
 > El estado de cada R-XX se sigue verificando en §1 de `SEGUIMIENTO.md` (fuente autoritativa); este
 > documento no lo duplica ni lo actualiza — es una fotografía de la spec en el momento del archivo.
 
+**Movido a histórico el:** 2026-10-14, ciclo de Product Manager. Se añade la Oleada v17 (R-29),
+COMPLETADA el mismo día en que se abrió (2026-10-14, primer ciclo de Programador posterior a la
+especificación del PM) y sin ningún hito de negocio propio pendiente — mismo criterio que todos los
+movimientos anteriores.
+
 **Movido a histórico el:** 2026-09-03, ciclo de Product Manager. Motivo: las tres oleadas/fases de
 abajo tenían, en ese momento, todas sus R-XX en COMPLETADA en §1 de `SEGUIMIENTO.md` y ningún hito
 de negocio propio pendiente (a diferencia de la oleada v1, que sigue viva en `ROADMAP_PRODUCTO.md`
@@ -1897,6 +1902,113 @@ produciendo contenido válido en las tres salidas). Cuatro redes en verde. `DEVE
 
 ---
 
+## Oleada v17 — Unificar la materialización de particiones aceptadas de `revalidacion.py` con `reescrituras.py`
+
+Cierra la grieta de arquitectura más sutil de la serie R-12 a R-29: no una conexión que faltaba, sino
+una reimplementación privada que sobraba, en el área de código que ya produjo dos incidencias de
+severidad alta del proyecto (P-02 y P-04, invariante (c)). Contiene R-29, su única R-XX. **Entregada
+2026-10-14** (COMPLETADA el mismo día en que se abrió, en el primer ciclo de Programador posterior a
+la especificación del PM).
+
+### R-29 — `revalidacion.py` reimplementa en privado, en vez de reutilizar, la materialización de particiones aceptadas que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó y documentó exactamente para este consumidor
+
+**Migración:** No (ningún campo nuevo en `estado.json` ni en ningún contrato; cambio interno de qué
+función calcula una materialización que el flujo real ya hace hoy, sin tocar su resultado para
+ningún guion real) · **Depende de:** T-14, T-15, T-17, P-02, P-04 (todas ya `COMPLETADA`) ·
+**Origen:** observación de arquitectura del PM (2026-10-13) — grieta de arquitectura verificada sobre
+código ya construido (mismo criterio que abrió R-12 a R-28), con una primera pasada de localización
+delegada a un agente Explore y verificada de forma independiente, leyendo el código citado línea a
+línea, antes de escribir esta ficha.
+
+**Objetivo:** `scripts/reescrituras.py:61-63` deja un comentario explícito, escrito al definir
+`SEPARADOR_MITADES`: «Público (no `_`) porque T-17 (revalidacion) necesita partir `propuesta` en sus
+dos mitades para materializar particiones con la misma identidad que `aplicar_particion_aceptada`,
+sin duplicar el separador como constante propia». La intención de diseño, por tanto, es que
+`revalidacion.py` REUTILICE `aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`
+(`reescrituras.py:322,358`, públicas, con sus propios tests en `tests/test_reescrituras.py`). En la
+práctica, `revalidacion.py` solo importa la constante `SEPARADOR_MITADES` (`revalidacion.py:59`) y
+reimplementa por su cuenta, en `_particion_aceptada_de` (`revalidacion.py:190-205`) y
+`_materializar_marcados` (`revalidacion.py:210-244`), el mismo criterio de emparejamiento bloque↔
+reescritura — las cuatro condiciones exactas (`numero_escena`, `linea_inicio`, `linea_fin`, texto
+igual al `original`) que ya calcula `aplicar_particion_aceptada` (`reescrituras.py:342-347`) — en vez
+de llamarla. `grep -rn "aplicar_particion" scripts/` confirma que ninguna de las dos funciones
+públicas tiene hoy ningún invocador real fuera de `tests/test_reescrituras.py`.
+
+El riesgo real: hoy las dos implementaciones coinciden (mismas cuatro condiciones, verificado línea a
+línea), pero nada lo garantiza hacia delante — son dos copias de la misma regla de negocio
+mantenidas a mano en dos archivos, sin ningún test que las compare entre sí. Es precisamente el área
+de código que ya produjo dos incidencias de severidad alta en este proyecto (P-02 y P-04, el cruce
+edición-manual/partición-aceptada, invariante (c) — «la edición manual manda»): una futura corrección
+de la regla de emparejamiento en un solo sitio (el más visible, probablemente
+`aplicar_particion_aceptada`, que es la función pública y documentada) dejaría al otro sitio
+(`revalidacion.py`, la ruta REAL que usa el dueño) con el criterio antiguo, sin que ningún test lo
+detectara — el mismo patrón de "la ruta real queda huérfana", pero en vez de faltar una llamada,
+sobra una reimplementación que puede divergir en silencio.
+
+Candidatas descartadas en la misma pasada del agente Explore (no son grietas nuevas):
+`monitorizacion.py::ejecutar_con_diagnostico` — ya evaluada y descartada explícitamente al abrir
+R-24 (`DECISIONES_TECNICAS.md`, 2026-10-06: «pensada para abortar un proceso entero con código de
+salida... exactamente lo contrario del requisito 3 de T-30»), no es una conexión olvidada sino una
+decisión de diseño ya tomada y documentada. `monitorizacion.py::ResumenEjecucion` — infraestructura
+genérica de T-05 (recuento de escenas/bloques/avisos/reescrituras/salidas de toda la ejecución),
+funcionalmente sustituida para el consumidor real por `salidas.py::ResumenSalidas` (T-30, con su
+propio `mostrar_resumen`, categorías `generadas`/`omitidas`/`latentes` más precisas que exige T-30
+requisito 4); candidata más débil, queda para una futura pasada si el dueño confirma que echa en
+falta el recuento genérico de `ResumenEjecucion` en algún punto del flujo real.
+`normalizacion.py::deshacer_normalizaciones` — inversa exacta de `aplicar_normalizaciones`, usada hoy
+solo como prueba de propiedad en sus propios tests; la ruta real nunca reconstruye el original por
+cálculo (lo guarda directamente en `Reescritura.original`), así que no tiene hueco real de consumidor
+que llenar.
+
+**Requisitos:**
+1. Investigar primero, con evidencia (tests nuevos si hace falta), si `_materializar_marcados`/
+   `_particion_aceptada_de` (`revalidacion.py`) y `aplicar_particiones_aceptadas`
+   (`reescrituras.py`) producen HOY el mismo resultado en todo escenario sin conflicto
+   edición/partición (es decir, en todo caso donde `indices_con_edicion_previa_a_particion` está
+   vacío) — un test que, para los bloques y reescrituras aceptadas de los tres guiones reales (y los
+   casos ya cubiertos por `tests/test_revalidacion.py`), compare ambas rutas bloque a bloque.
+2. Si son equivalentes (caso esperado, dada la lectura línea a línea de esta ficha): eliminar la
+   duplicación haciendo que `revalidacion.py` llame a `aplicar_particion_aceptada`/
+   `aplicar_particiones_aceptadas` como único cálculo de la materialización, conservando intacta la
+   salvaguarda de `indices_con_edicion_previa_a_particion` (P-02/P-04, hallazgo #9) — que la función
+   pública no contempla hoy — filtrando antes de llamarla la lista de reescrituras a aplicar (excluir
+   las que correspondan a un índice con edición previa), o extendiendo la función pública con ese
+   mismo parámetro opcional, lo que resulte más limpio a quien implemente; decisión documentada en
+   `DECISIONES_TECNICAS.md`. En cualquier caso, al terminar debe quedar UNA sola implementación de la
+   regla de emparejamiento bloque↔reescritura, no dos.
+3. Si la investigación del requisito 1 revela una divergencia real (un escenario donde las dos
+   implementaciones no coinciden hoy): tratarlo como lo que sería, un hallazgo de severidad alta sobre
+   el invariante (c), corregir la ruta real (`revalidacion.py`, la que usa el dueño) a la regla
+   correcta y dejarlo documentado como tal en `DECISIONES_TECNICAS.md` y en el registro de
+   `auditoriacontinua.md` si procede, antes de unificar.
+4. Fuera de alcance, explícito: no se cambia ninguna regla de negocio del emparejamiento en sí (ambas
+   implementaciones de hoy codifican la misma regla, verificado); no se toca la salvaguarda de
+   P-02/P-04 en su comportamiento, solo en dónde vive; no se amplía a otras reimplementaciones
+   paralelas que no sean esta (p. ej. `ejecutar_con_diagnostico`, ya evaluada y descartada como no
+   conectable por R-24 con razón documentada, no se repite aquí).
+
+**Criterio de aceptación:** test nuevo que demuestra, sobre los tres guiones reales y sobre los casos
+ya cubiertos de `tests/test_revalidacion.py`, que la materialización de `revalidacion.py` coincide
+bloque a bloque con `aplicar_particiones_aceptadas` siempre que no haya conflicto edición/partición
+pendiente; tras el requisito 2, una única función calcula el emparejamiento (no dos copias
+mantenidas a mano); los tests existentes de T-15/T-17/P-02/P-04 (incluido el que fija el
+comportamiento del hallazgo #9) pasan sin cambio de comportamiento. Cuatro redes en verde.
+
+**Cómo se entregó:** investigado el requisito 1 con dos tests nuevos que comparan ambas rutas bloque
+a bloque: sobre los tres guiones reales (sin ninguna partición propuesta hoy) y sobre los casos
+sintéticos ya construidos para esta ficha (`_GUION`/`_GUION_ESCENA_DOS_PARTICIONES`, con particiones
+de verdad), `_materializar_marcados`/`_particion_aceptada_de` y `aplicar_particiones_aceptadas`
+coincidían ya bloque a bloque — sin divergencia real, el requisito 3 no llegó a aplicar. Unificado el
+requisito 2: `_particion_aceptada_de` (`revalidacion.py`) delega ahora en
+`aplicar_particion_aceptada` (`reescrituras.py`), pasándole una lista de un único bloque candidato y
+usando la longitud del resultado para decidir si hubo coincidencia; la salvaguarda de
+`indices_con_edicion_previa_a_particion` (P-02/P-04, hallazgo #9) sigue intacta como guardia de
+entrada en `revalidacion.py`, sin tocar el comportamiento ni la firma de la función pública. Queda una
+sola implementación del emparejamiento bloque↔reescritura. 2 tests nuevos (673→675). Cuatro redes en
+verde. Decisión razonada y detalle completo del requisito 1 en `DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -1904,4 +2016,5 @@ produciendo contenido válido en las tres salidas). Cuatro redes en verde. `DEVE
 de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09-30; la de v9
 (R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05; la de v11 (R-23),
 2026-10-06; la de v12 (R-24), 2026-10-07; la de v13 (R-25), 2026-10-08; la de v14 (R-26),
-2026-10-09; la de v15 (R-27), 2026-10-12; la de v16 (R-28), 2026-10-13.)*
+2026-10-09; la de v15 (R-27), 2026-10-12; la de v16 (R-28), 2026-10-13; la de v17 (R-29),
+2026-10-14.)*

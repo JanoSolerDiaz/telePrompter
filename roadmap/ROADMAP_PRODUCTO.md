@@ -8,39 +8,40 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-13 (ciclo de PM). **R-28 (Oleada v16) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del 2026-10-13 que la implementó (los tres
-validadores de contrato restantes — `tarjetas.json`, `guion.srt`/`guion-alineado.srt`,
-`capitulos-youtube.txt` — quedan conectados de verdad a su ruta real de generación). Movida a
-`roadmap/ROADMAP_HISTORICO.md` (Oleada v16) junto con el resto de oleadas 100 % entregadas.
-
-**Se abre R-29** (Oleada v17): no por hallazgo de auditoría ni entrada de `FEEDBACK.md` — ninguna de
-las dos fuentes aporta nada nuevo este ciclo (ver abajo) — sino por **grieta de arquitectura
-verificada sobre código ya construido**, el mismo criterio que abrió R-12 a R-28, pero de una forma
-distinta a las diez repeticiones anteriores: no es una pieza sin ningún llamador, sino una pieza
-construida, probada y **documentada explícitamente como la solución a reutilizar** que la ruta real
-ignora, reimplementando en privado el mismo cálculo. `scripts/reescrituras.py:61-63` deja un
-comentario al definir `SEPARADOR_MITADES`: «Público (no `_`) porque T-17 (revalidacion) necesita
-partir `propuesta` en sus dos mitades para materializar particiones con la misma identidad que
-`aplicar_particion_aceptada`, sin duplicar el separador como constante propia». Pero
-`revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` (`revalidacion.py:190-244`) solo
-importan esa constante y reimplementan a mano, con las mismas cuatro condiciones, el emparejamiento
-bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`
-(`reescrituras.py:322-369`) ya calculan — sin invocarlas nunca. Localizada con ayuda de un agente
-Explore (instruido para no repetir candidatas ya descartadas en ciclos anteriores) y verificada
-después línea a línea de forma independiente antes de escribir la ficha. Detalle completo, con cada
-cita de archivo:línea, en "Oleada v17" más abajo.
+**Última actualización:** 2026-10-14 (ciclo de PM). **R-29 (Oleada v17) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del propio 2026-10-14 que la implementó (unificada la
+materialización de particiones aceptadas de `revalidacion.py` con `reescrituras.py`, sin divergencia
+real encontrada). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v17) junto con el resto de oleadas
+100 % entregadas. §1 de `SEGUIMIENTO.md` llevaba desde esa misma madrugada sin ninguna fila
+`PENDIENTE` — nueve reconfirmaciones horarias del Programador a lo largo del día sin tarea que
+ejecutar, el mismo coste que señala el hallazgo `#30`/pregunta `#12` (aún sin respuesta del dueño).
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
 curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` no trae ningún
-`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan dos `ABIERTO` (`#24`, prosa de "Cola de
-producto" desactualizada entre ciclos de PM; `#30`, cadencia de la rutina "Programador"), ambos de
-proceso puro y severidad baja/media, sin relación con el código, pendientes solo de la respuesta del
-dueño a las preguntas de gobernanza #11/#12 de `SEGUIMIENTO.md` §6.
+`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan los dos mismos `ABIERTO` que el ciclo
+anterior (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de PM; `#30`, cadencia de la
+rutina "Programador"), ambos de proceso puro y severidad baja/media, sin relación con el código,
+pendientes solo de la respuesta del dueño a las preguntas de gobernanza #11/#12 de `SEGUIMIENTO.md`
+§6 — nada nuevo que convertir en tarea por esta vía.
+
+**Se abre R-30** (Oleada v18): tampoco por auditoría ni por `FEEDBACK.md`, sino por el mismo tercer
+criterio que abrió R-12 a R-29 — una **grieta de arquitectura verificada sobre código ya
+construido**, esta vez en el propio límite declarado del producto hacia la fase siguiente.
+`references/contrato-montaje.md` (T-33) documenta con precisión qué archivos deja preparados esta
+skill para el montaje (`guion.srt`/`guion-alineado.srt`, `tarjetas.json`, `concat-ffmpeg.txt`,
+`capitulos-ffmpeg.txt`) y da, como ilustración, fragmentos de comando `ffmpeg` sueltos con nombres de
+archivo de ejemplo (`video.mp4`, `video-final.mp4`) — pero nadie encadena esos tres fragmentos en una
+secuencia real, con los nombres de archivo reales del guion concreto que el dueño acaba de procesar.
+El propio objetivo de producto citado en el encargo de esta sesión ("cuya fase siguiente es el
+montaje con ffmpeg") queda hoy a medio cerrar: el dueño, sin equipo de producción ni apuntador, tiene
+que **traducir él mismo** la documentación de referencia a comandos reales cada vez que termina de
+grabar, exactamente el tipo de fricción manual que el resto del producto (selector de salidas,
+`concat-ffmpeg.txt`, `capitulos-ffmpeg.txt`) ya eliminó para cada pieza por separado. Detalle
+completo en "Oleada v18" más abajo.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-29 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-30 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -214,91 +215,97 @@ su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de
 pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-13). Su spec completa y
 cómo se entregó viven ahí.
 
-### Oleada v17 — EN CURSO
+### Oleada v17 — entregada
 
-#### R-29 — `revalidacion.py` reimplementa en privado, en vez de reutilizar, la materialización de particiones aceptadas que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó y documentó exactamente para este consumidor
+La oleada v17 (unificar en `revalidacion.py` la reimplementación privada de la materialización de
+particiones aceptadas con la función pública ya existente de `reescrituras.py`, R-29) tiene su única
+R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se
+movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-14). Su spec completa y cómo se entregó
+viven ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json` ni en ningún contrato; cambio interno de qué
-función calcula una materialización que el flujo real ya hace hoy, sin tocar su resultado para
-ningún guion real) · **Depende de:** T-14, T-15, T-17, P-02, P-04 (todas ya `COMPLETADA`) ·
-**Origen:** observación de arquitectura del PM (2026-10-13) — grieta de arquitectura verificada sobre
-código ya construido (mismo criterio que abrió R-12 a R-28), con una primera pasada de localización
-delegada a un agente Explore y verificada de forma independiente, leyendo el código citado línea a
-línea, antes de escribir esta ficha.
+### Oleada v18 — EN CURSO
 
-**Objetivo:** `scripts/reescrituras.py:61-63` deja un comentario explícito, escrito al definir
-`SEPARADOR_MITADES`: «Público (no `_`) porque T-17 (revalidacion) necesita partir `propuesta` en sus
-dos mitades para materializar particiones con la misma identidad que `aplicar_particion_aceptada`,
-sin duplicar el separador como constante propia». La intención de diseño, por tanto, es que
-`revalidacion.py` REUTILICE `aplicar_particion_aceptada`/`aplicar_particiones_aceptadas`
-(`reescrituras.py:322,358`, públicas, con sus propios tests en `tests/test_reescrituras.py`). En la
-práctica, `revalidacion.py` solo importa la constante `SEPARADOR_MITADES` (`revalidacion.py:59`) y
-reimplementa por su cuenta, en `_particion_aceptada_de` (`revalidacion.py:190-205`) y
-`_materializar_marcados` (`revalidacion.py:210-244`), el mismo criterio de emparejamiento bloque↔
-reescritura — las cuatro condiciones exactas (`numero_escena`, `linea_inicio`, `linea_fin`, texto
-igual al `original`) que ya calcula `aplicar_particion_aceptada` (`reescrituras.py:342-347`) — en vez
-de llamarla. `grep -rn "aplicar_particion" scripts/` confirma que ninguna de las dos funciones
-públicas tiene hoy ningún invocador real fuera de `tests/test_reescrituras.py`.
+#### R-30 — Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación + subtítulos + capítulos) del guion concreto, en vez de dejar que el dueño traduzca a mano la documentación de referencia cada vez que termina de grabar
 
-El riesgo real: hoy las dos implementaciones coinciden (mismas cuatro condiciones, verificado línea a
-línea), pero nada lo garantiza hacia delante — son dos copias de la misma regla de negocio
-mantenidas a mano en dos archivos, sin ningún test que las compare entre sí. Es precisamente el área
-de código que ya produjo dos incidencias de severidad alta en este proyecto (P-02 y P-04, el cruce
-edición-manual/partición-aceptada, invariante (c) — «la edición manual manda»): una futura corrección
-de la regla de emparejamiento en un solo sitio (el más visible, probablemente
-`aplicar_particion_aceptada`, que es la función pública y documentada) dejaría al otro sitio
-(`revalidacion.py`, la ruta REAL que usa el dueño) con el criterio antiguo, sin que ningún test lo
-detectara — el mismo patrón de "la ruta real queda huérfana", pero en vez de faltar una llamada,
-sobra una reimplementación que puede divergir en silencio.
+**Migración:** No (ningún campo nuevo en `estado.json`; nueva salida derivada de archivos que ya
+existen, sin tocar ningún contrato existente) · **Depende de:** T-27, T-30, R-05, R-19, R-22
+(todas ya `COMPLETADA`) · **Origen:** observación de arquitectura del PM (2026-10-14) — grieta de
+arquitectura verificada sobre el propio límite declarado del producto hacia la fase de montaje (mismo
+tercer criterio que abrió R-12 a R-29), no sobre una función concreta esta vez sino sobre un
+documento de referencia.
 
-Candidatas descartadas en la misma pasada del agente Explore (no son grietas nuevas):
-`monitorizacion.py::ejecutar_con_diagnostico` — ya evaluada y descartada explícitamente al abrir
-R-24 (`DECISIONES_TECNICAS.md`, 2026-10-06: «pensada para abortar un proceso entero con código de
-salida... exactamente lo contrario del requisito 3 de T-30»), no es una conexión olvidada sino una
-decisión de diseño ya tomada y documentada. `monitorizacion.py::ResumenEjecucion` — infraestructura
-genérica de T-05 (recuento de escenas/bloques/avisos/reescrituras/salidas de toda la ejecución),
-funcionalmente sustituida para el consumidor real por `salidas.py::ResumenSalidas` (T-30, con su
-propio `mostrar_resumen`, categorías `generadas`/`omitidas`/`latentes` más precisas que exige T-30
-requisito 4); candidata más débil, queda para una futura pasada si el dueño confirma que echa en
-falta el recuento genérico de `ResumenEjecucion` en algún punto del flujo real.
-`normalizacion.py::deshacer_normalizaciones` — inversa exacta de `aplicar_normalizaciones`, usada hoy
-solo como prueba de propiedad en sus propios tests; la ruta real nunca reconstruye el original por
-cálculo (lo guarda directamente en `Reescritura.original`), así que no tiene hueco real de consumidor
-que llenar.
+**Objetivo:** `references/contrato-montaje.md` (T-33) ya documenta con precisión qué archivos deja
+preparados esta skill (`guion.srt`/`guion-alineado.srt`, `tarjetas.json`, `concat-ffmpeg.txt`,
+`capitulos-ffmpeg.txt`) y da, como ilustración para quien integre una futura skill de montaje,
+fragmentos de comando `ffmpeg` sueltos con nombres de archivo de ejemplo (`video.mp4`,
+`video-final.mp4`): uno para incrustar capítulos (línea 191) y la invocación del demuxer `concat`
+(línea 235), cada uno aislado, sin encadenar, y sin ningún paso de subtítulos. Son correctos y están
+bien probados por separado (R-19, R-21, R-22), pero nadie los une en la secuencia real —concatenar
+las tomas buenas → añadir pista de subtítulos → incrustar capítulos— con los nombres de archivo
+reales de un guion concreto. El dueño, formador en solitario sin equipo de producción, tiene hoy que
+**traducir a mano** esa documentación de referencia a comandos ejecutables cada vez que termina de
+grabar — justo el tipo de fricción manual que el resto del producto (`concat-ffmpeg.txt`,
+`capitulos-ffmpeg.txt`, el propio selector de salidas de T-30) ya eliminó pieza a pieza. Cerrar este
+último tramo es relevante precisamente ahora: es el primer eslabón real hacia "la fase siguiente es
+el montaje con ffmpeg" que todavía exige trabajo manual fuera de la skill.
+
+Decisiones de diseño ya tomadas para acotar el alcance:
+- **Documento, no script ejecutado por la skill.** Mismo patrón que `convencion-guiones.md` (R-25) o
+  `brief-pptx.md` (T-29): texto para que el dueño copie y pegue en su terminal, nunca una invocación
+  real de `ffmpeg`/subproceso desde Python — la skill no gana ninguna dependencia nueva ni ejecuta
+  nada fuera de su propia carpeta de salida (§0.2: cero red, runtime solo biblioteca estándar).
+- **`.md`, no `.sh`/`.bat`.** El dueño instaló la skill en Windows (T-32); un documento en Markdown
+  con bloques de código es legible y copiable igual en cualquier terminal (PowerShell, cmd, WSL,
+  bash), sin comprometerse a la sintaxis de un intérprete de scripts concreto.
+- **Subtítulos como pista blanda (`mov_text`) por defecto, con la alternativa de incrustado
+  ("quemado") documentada pero comentada.** Quemar subtítulos exige recodificar vídeo (coste de
+  tiempo y calidad); una pista blanda es reversible y de copia directa (`-c copy`), coherente con que
+  el resto de la cadena tampoco recodifica. Queda como comentario explícito en el documento generado
+  para quien lo prefiera, nunca como comando activo por defecto.
+- **Usa `guion-alineado.srt` si existe, si no `guion.srt`** (mismo criterio ya establecido por R-05 /
+  `references/contrato-montaje.md`: tiempos reales por delante de los estimados en cuanto hay al
+  menos una toma buena).
+- **Cada paso es opcional y el encadenado nunca se rompe por un hueco.** Sin `concat-ffmpeg.txt` (sin
+  ningún parte de rodaje con toma buena) no hay nada real que montar todavía: la salida entera se
+  omite con el motivo exacto, igual que hoy hace `concat-ffmpeg.txt` en el mismo caso. Con
+  `concat-ffmpeg.txt` presente pero sin `capitulos-ffmpeg.txt` (guion sin sección «Capítulos»), la
+  cadena de comandos se detiene en el paso de subtítulos y lo dice explícitamente — nunca inventa un
+  paso con un archivo que no existe.
 
 **Requisitos:**
-1. Investigar primero, con evidencia (tests nuevos si hace falta), si `_materializar_marcados`/
-   `_particion_aceptada_de` (`revalidacion.py`) y `aplicar_particiones_aceptadas`
-   (`reescrituras.py`) producen HOY el mismo resultado en todo escenario sin conflicto
-   edición/partición (es decir, en todo caso donde `indices_con_edicion_previa_a_particion` está
-   vacío) — un test que, para los bloques y reescrituras aceptadas de los tres guiones reales (y los
-   casos ya cubiertos por `tests/test_revalidacion.py`), compare ambas rutas bloque a bloque.
-2. Si son equivalentes (caso esperado, dada la lectura línea a línea de esta ficha): eliminar la
-   duplicación haciendo que `revalidacion.py` llame a `aplicar_particion_aceptada`/
-   `aplicar_particiones_aceptadas` como único cálculo de la materialización, conservando intacta la
-   salvaguarda de `indices_con_edicion_previa_a_particion` (P-02/P-04, hallazgo #9) — que la función
-   pública no contempla hoy — filtrando antes de llamarla la lista de reescrituras a aplicar (excluir
-   las que correspondan a un índice con edición previa), o extendiendo la función pública con ese
-   mismo parámetro opcional, lo que resulte más limpio a quien implemente; decisión documentada en
-   `DECISIONES_TECNICAS.md`. En cualquier caso, al terminar debe quedar UNA sola implementación de la
-   regla de emparejamiento bloque↔reescritura, no dos.
-3. Si la investigación del requisito 1 revela una divergencia real (un escenario donde las dos
-   implementaciones no coinciden hoy): tratarlo como lo que sería, un hallazgo de severidad alta sobre
-   el invariante (c), corregir la ruta real (`revalidacion.py`, la que usa el dueño) a la regla
-   correcta y dejarlo documentado como tal en `DECISIONES_TECNICAS.md` y en el registro de
-   `auditoriacontinua.md` si procede, antes de unificar.
-4. Fuera de alcance, explícito: no se cambia ninguna regla de negocio del emparejamiento en sí (ambas
-   implementaciones de hoy codifican la misma regla, verificado); no se toca la salvaguarda de
-   P-02/P-04 en su comportamiento, solo en dónde vive; no se amplía a otras reimplementaciones
-   paralelas que no sean esta (p. ej. `ejecutar_con_diagnostico`, ya evaluada y descartada como no
-   conectable por R-24 con razón documentada, no se repite aquí).
+1. Nueva función en un módulo propio (p. ej. `scripts/comandos_montaje.py`) que, a partir de la
+   `Configuracion` vigente y de qué archivos existen realmente para este guion
+   (`concat-ffmpeg.txt`, `guion-alineado.srt`/`guion.srt`, `capitulos-ffmpeg.txt`, los mismos nombres
+   que ya usa `references/contrato-montaje.md`), construye la secuencia de 1 a 3 comandos `ffmpeg`
+   encadenados: la salida de cada paso es literalmente la entrada del siguiente, sin renombrados
+   intermedios que el dueño tenga que hacer a mano.
+2. El documento generado (`comandos-montaje.md`, constante de módulo nueva en `config.py`, mismo
+   patrón que `NOMBRE_ARCHIVO_CAPITULOS_FFMPEG`) explica en una frase qué hace cada paso, muestra el
+   comando en un bloque de código listo para copiar tal cual (ninguna ruta de ejemplo, solo nombres
+   de archivo reales de esta carpeta de salida), y señala con una nota expresa qué escenas de
+   `concat-ffmpeg.txt` siguen con `# ESCENA N: sin_toma_buena`/`sin_archivo_anotado` (si las hay),
+   para que el dueño sepa que el resultado no estará completo hasta grabar o anotar esas escenas.
+3. Integrarlo como octava opción del selector de salidas (`scripts/salidas.py`, `TipoSalida`), mismo
+   patrón de `try`/`except`/diagnóstico de R-24: sin `concat-ffmpeg.txt`, `SalidaOmitida` con el
+   motivo exacto («aún no hay ningún parte de rodaje con una toma buena»); con él, se genera siempre,
+   con o sin subtítulos/capítulos disponibles.
+4. Actualizar `references/contrato-montaje.md` para que remita a esta salida como la forma real de
+   obtener los comandos (los fragmentos sueltos ya documentados quedan como referencia de cómo se
+   construyen, no como lo que el dueño debe copiar a mano).
+5. Fuera de alcance, explícito: no se ejecuta `ffmpeg` desde la skill, ni se verifica que esté
+   instalado (a diferencia de T-28 con Chrome/Edge, aquí no hace falta: el documento es texto, el
+   dueño decide cuándo y con qué `ffmpeg` correrlo); no se añade recodificación, normalización de
+   audio, cortes ni transiciones — solo concatenar, adjuntar subtítulos y metadatos de capítulos, las
+   mismas tres piezas que la skill ya calcula; no se cambia ninguna regla de `concat_ffmpeg.py`,
+   `srt.py`/`srt_alineado.py` ni `capitulos_youtube.py` en sí.
 
-**Criterio de aceptación:** test nuevo que demuestra, sobre los tres guiones reales y sobre los casos
-ya cubiertos de `tests/test_revalidacion.py`, que la materialización de `revalidacion.py` coincide
-bloque a bloque con `aplicar_particiones_aceptadas` siempre que no haya conflicto edición/partición
-pendiente; tras el requisito 2, una única función calcula el emparejamiento (no dos copias
-mantenidas a mano); los tests existentes de T-15/T-17/P-02/P-04 (incluido el que fija el
-comportamiento del hallazgo #9) pasan sin cambio de comportamiento. Cuatro redes en verde.
+**Criterio de aceptación:** sobre un guion con parte de rodaje completo (tomas buenas anotadas con
+`archivo_video` y sección «Capítulos»), `comandos-montaje.md` contiene exactamente tres comandos
+`ffmpeg` encadenados en el orden concat → subtítulos → capítulos, cada uno con los nombres de archivo
+reales de esa carpeta de salida y sin ninguna ruta de ejemplo; sobre el mismo guion sin sección
+«Capítulos», contiene solo los dos primeros y lo dice explícitamente; sin ningún parte de rodaje, la
+salida se omite con el motivo exacto y el resto de salidas se genera igual (generación independiente,
+T-30 requisito 3); `references/contrato-montaje.md` remite a esta salida. Cuatro redes en verde.
 
 ---
 
