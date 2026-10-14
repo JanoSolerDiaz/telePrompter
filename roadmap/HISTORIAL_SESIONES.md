@@ -12,6 +12,37 @@
 
 ---
 
+### Sesión 2026-10-14 (152) — Ciclo de Programador: primera reconfirmación del día tras R-29, sin novedad de código
+
+**Arranque.** El contenedor arrancó de nuevo con `HEAD` *detached*. `git checkout develop` dejó la
+rama local apuntando al commit de la sesión anterior; `git pull origin develop` avanzó por
+fast-forward limpio hasta `5fa5ac8` (R-29, ya empujada), sin ninguna divergencia real que resolver
+(nada parecido al artefacto de clon superficial del hallazgo `#21`). `git status` limpio antes y
+después. Dependencias de desarrollo instaladas primero con el `pip` desnudo del `PATH` (resuelve
+contra el intérprete equivocado del contenedor — Python 3.13 en vez del 3.11.17 real —, síntoma ya
+documentado por `#28`/P-06) y reinstaladas con `python3 -m pip install -r requirements-dev.txt`,
+tras lo cual las cuatro redes dieron `OK` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (auditoría
+2026-10-14, sin cambios): dos `ABIERTO`, ambos de proceso puro (`#24`, prosa de "Cola de producto"
+desactualizada entre ciclos de PM; `#30`, cadencia de la rutina Programador), ninguno de severidad
+alta, ambos pendientes solo de la respuesta del dueño a las preguntas de gobernanza `#11`/`#12` de
+§6 — ninguno exige tratamiento como P-XX urgente antes de la cola normal. §1 (fuente autoritativa)
+**sin ninguna fila `PENDIENTE`**: R-29 sigue `COMPLETADA` desde el ciclo de Programador de esta
+misma jornada (`5fa5ac8`) — cola vacía hasta el próximo ciclo de PM que archive la Oleada v17 y
+abra la siguiente. `roadmap/FEEDBACK.md` revisado de nuevo: sigue sin ninguna entrada `nuevo`.
+`mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y
+cero PR abiertos.
+
+**Sin cambio de código.** Verificación propia completa (`python3 scripts/ci.py`): `mypy`/`ruff` en
+verde, 675 tests en verde (sin cambio), dieciocho etapas OK en `verificar_salidas.py --fixture`.
+Cuatro redes en verde.
+
+Sin cambios en §3, §5 ni §7 de `SEGUIMIENTO.md`. Sin decisiones nuevas en `DECISIONES_TECNICAS.md`
+(nada que registrar: ningún cambio de código ni de criterio en esta sesión).
+
+---
+
 ### Sesión 2026-10-14 (151) — Ciclo de Programador: R-29 implementada
 
 **Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
