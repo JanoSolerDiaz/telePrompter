@@ -184,8 +184,10 @@ END=...
 title=Título del segundo capítulo
 ```
 
-La cadena de montaje puede incrustar este archivo en el `.mp4` final sin
-tocar nada más:
+La cadena de montaje puede incrustar este archivo en el `.mp4` final así
+(fragmento ilustrativo de cómo se construye el comando — **`comandos-montaje.md`**,
+ver más abajo, es la forma real de obtenerlo ya con los nombres de archivo de
+este guion, nunca este fragmento con nombres de ejemplo):
 
 ```
 ffmpeg -i video.mp4 -i capitulos-ffmpeg.txt -map_metadata 1 -codec copy video-final.mp4
@@ -238,7 +240,14 @@ la sección anterior):
 
 Sin ningún parte de rodaje en absoluto, este archivo no se genera (no hay
 nada real que concatenar todavía) — la cadena de montaje no debe asumir que
-existe hasta que el dueño haya grabado al menos una toma.
+existe hasta que el dueño haya grabado al menos una toma. El demuxer
+`concat` se invoca así (mismo fragmento ilustrativo que el resto de esta
+sección — **`comandos-montaje.md`**, ver más abajo, encadena el comando
+real con los nombres de este guion):
+
+```
+ffmpeg -f concat -safe 0 -i concat-ffmpeg.txt -c copy video.mp4
+```
 
 **Validado antes de llegar a disco (R-21, hallazgo `#27`):** `concat-ffmpeg.txt`
 nunca se escribe sin pasar antes por `concat_ffmpeg.validar_lista_concat_ffmpeg`
@@ -250,6 +259,42 @@ excepción sin capturar. `archivo_video` llega ya saneado desde su origen
 (recortado, sin saltos de línea; `references/contrato-tomas.md`), así que este
 caso solo se da si esa garantía se rompe — nunca por una toma anotada con
 normalidad.
+
+## `comandos-montaje.md` — los comandos reales ya encadenados, listos para copiar (R-30)
+
+Los fragmentos de comando de las dos secciones anteriores son ilustrativos —
+muestran cómo se construye cada paso por separado, con nombres de ejemplo
+(`video.mp4`, `video-final.mp4`). **`comandos-montaje.md` es la forma real**
+de obtenerlos: octava opción del selector de salidas (T-30),
+`scripts/comandos_montaje.py` encadena en un único documento, con los
+nombres de archivo REALES de esta carpeta de salida, la secuencia completa
+—concatenar las tomas buenas → añadir subtítulos → incrustar capítulos—, de
+modo que la salida de cada paso es literalmente la entrada del siguiente:
+el dueño ya no tiene que traducir él mismo esta documentación de referencia
+a comandos ejecutables.
+
+- **Usa `guion-alineado.srt` si al menos una escena está alineada con su
+  toma buena, si no `guion.srt`** — mismo criterio que la sección de
+  `guion.srt`/`guion-alineado.srt` más arriba.
+- **Subtítulos como pista blanda (`mov_text`) por defecto**, reversible y
+  sin recodificar vídeo (`-c copy`); la alternativa incrustada ("quemada")
+  queda documentada como comentario en el propio archivo, nunca como
+  comando activo.
+- **El paso de capítulos es el único realmente opcional**: sin sección
+  `Capítulos` en el guion, el documento se detiene en el paso de subtítulos
+  y lo dice explícitamente — nunca inventa un paso con un archivo que no
+  existe.
+- **Sin ningún parte de rodaje con una toma buena** (mismo caso que deja
+  `concat-ffmpeg.txt` sin generar), este documento tampoco se genera — no
+  hay nada real que montar todavía.
+- Si quedan escenas de `concat-ffmpeg.txt` sin toma buena o sin archivo de
+  vídeo anotado, una nota al final del documento lo dice explícitamente: el
+  resultado de estos comandos no estará completo hasta grabar o anotar esas
+  escenas.
+- **Documento, no script ejecutado por la skill** (mismo patrón que
+  `convencion-guiones.md`, ver más abajo): texto para que el dueño copie y
+  pegue en su propia terminal — la skill no ejecuta `ffmpeg` ni comprueba
+  que esté instalado.
 
 ## `convencion-guiones.md` — prevenir desviaciones futuras, no detectar las de hoy (R-25)
 

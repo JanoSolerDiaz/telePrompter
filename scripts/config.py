@@ -150,6 +150,21 @@ NOMBRE_ARCHIVO_CAPITULOS_FFMPEG: str = "capitulos-ffmpeg.txt"
 # dentro de la carpeta de salida del guion.
 NOMBRE_ARCHIVO_CONCAT_FFMPEG: str = "concat-ffmpeg.txt"
 
+# --- Comandos de montaje encadenados (R-30) -----------------------------------------
+# Nombre del documento con los comandos ffmpeg reales (concat -> subtitulos ->
+# capitulos) del guion concreto, dentro de la carpeta de salida -- no es un valor
+# que el dueno deba poder cambiar, mismo criterio que NOMBRE_ARCHIVO_CAPITULOS_FFMPEG.
+NOMBRE_ARCHIVO_COMANDOS_MONTAJE: str = "comandos-montaje.md"
+# Sufijos de los nombres de archivo de video intermedios que proponen los comandos
+# generados (requisito 1: "sin renombrados intermedios que el dueno tenga que hacer a
+# mano") -- a diferencia de NOMBRE_ARCHIVO_COMANDOS_MONTAJE, estos SI son overridable:
+# no son archivos que la skill escriba, son el nombre que el propio ffmpeg le dara al
+# resultado de cada paso cuando el dueno ejecute el comando, asi que es una convencion
+# de nomenclatura suya, no un contrato interno de la skill.
+COMANDOS_MONTAJE_SUFIJO_CONCATENADO: str = "-concatenado.mp4"
+COMANDOS_MONTAJE_SUFIJO_CON_SUBTITULOS: str = "-con-subtitulos.mp4"
+COMANDOS_MONTAJE_SUFIJO_FINAL: str = "-final.mp4"
+
 # --- Adaptador .pptx via 480-branded-pptx (T-29) -----------------------------------
 # Version del contrato de intercambio `tarjetas.json` (requisito 1, documentado en
 # `references/contrato-tarjetas.md`): sube si el JSON cambia de forma incompatible,
@@ -558,6 +573,9 @@ class Configuracion:
     srt_alineado_tolerancia_segundos: float = SRT_ALINEADO_TOLERANCIA_SEGUNDOS
     titulo_seccion_capitulos: str = TITULO_SECCION_CAPITULOS
     capitulos_youtube_marca_minima_segundos: float = CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS
+    comandos_montaje_sufijo_concatenado: str = COMANDOS_MONTAJE_SUFIJO_CONCATENADO
+    comandos_montaje_sufijo_con_subtitulos: str = COMANDOS_MONTAJE_SUFIJO_CON_SUBTITULOS
+    comandos_montaje_sufijo_final: str = COMANDOS_MONTAJE_SUFIJO_FINAL
     ruta_logo_pdf: str = RUTA_LOGO_PDF
     pdf_ancho_logo_portada_pulgadas: float = PDF_ANCHO_LOGO_PORTADA_PULGADAS
     pdf_ancho_logo_pie_pulgadas: float = PDF_ANCHO_LOGO_PIE_PULGADAS

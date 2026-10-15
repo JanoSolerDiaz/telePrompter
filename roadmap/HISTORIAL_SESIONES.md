@@ -12,6 +12,56 @@
 
 ---
 
+### Sesión 2026-10-15 (162) — Ciclo de Programador: R-30 implementada
+
+**Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
+`5a3706f` (la auditoría del 2026-10-15, ya empujada), sin ninguna divergencia que resolver. `git
+status` limpio antes y después. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` (lección ya documentada por `#28`/P-06).
+
+**Revisión de entrada (protocolo).** Registro de hallazgos de `auditoriacontinua.md` (auditoría
+2026-10-15) revisado antes de proceder: tres `ABIERTO` (`#24`, baja; `#30`, media; `#31`, baja, nuevo
+esta pasada — apertura de R-30 sin fila en `DECISIONES_TECNICAS.md`), ninguno de severidad alta
+(pérdida de texto del guión, corrupción de `estado.json`, rotura del reproductor o de la
+auto-contención del HTML, seguridad) que atender como P-XX urgente antes de la cola normal — los tres
+de proceso puro, sin relación con el código, pendientes de respuesta del dueño o de un futuro ciclo
+de PM. §1 de `SEGUIMIENTO.md` (fuente autoritativa) traía **R-30 como única fila `PENDIENTE`**: spec
+consultada en `ROADMAP_PRODUCTO.md` (Oleada v18), `DECISIONES_TECNICAS.md` revisado en el área de
+ffmpeg/selector de salidas antes de tocar código (ninguna decisión previa contradicha).
+
+**Implementación.** `scripts/comandos_montaje.py` nuevo: encadena de 1 a 3 comandos `ffmpeg`
+(concatenar las tomas buenas → añadir subtítulos → incrustar capítulos) con los nombres de archivo
+reales de la carpeta de salida, reutilizando tal cual `concat_ffmpeg.calcular_lista_concat_ffmpeg`
+(R-19), `srt_alineado.generar_srt_alineado` (R-05) y
+`capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg` (R-07/R-22) — las mismas
+tres condiciones que ya deciden si `concat-ffmpeg.txt`/`guion-alineado.srt`/`capitulos-ffmpeg.txt`
+existirían en esta misma pasada, sin reimplementar ninguna (mismo criterio de reuso que motivó R-29).
+Octava opción del selector de salidas (`TipoSalida.COMANDOS_MONTAJE`), mismo patrón
+`try`/`except`/diagnóstico de R-24: sin ningún parte de rodaje con una toma buena, `SalidaOmitida`
+con el motivo exacto; con él, se genera siempre, deteniéndose antes del paso de capítulos si el guion
+no trae sección `Capítulos` y diciéndolo explícito. Tres campos nuevos de `Configuracion` para los
+sufijos de los vídeos intermedios, overridables (regla "todo default configurable" de §0.2).
+`references/contrato-montaje.md` y `SKILL.md` remiten ahora a esta salida como la forma real de
+obtener los comandos. `verificar_salidas.py --fixture` gana la etapa "Generación de los comandos de
+montaje" (dieciocho → diecinueve), sin etapa de "Validez" aparte (mismo criterio que
+`convencion-guiones.md`/R-25: texto libre para el dueño, sin contrato de formato externo que
+verificar). Detalle completo de las tres decisiones de diseño (condición de generación, sufijos
+configurables, forma de la etapa de verificación) en tres filas nuevas de `DECISIONES_TECNICAS.md`
+(2026-10-15) y en `DEVELOPERS.md`.
+
+**Verificación.** 15 tests nuevos (675→690): 10 en `tests/test_comandos_montaje.py`, 5 en
+`tests/test_salidas.py`. Cuatro redes en verde: `mypy`/`ruff` en 72 archivos, 690 tests,
+diecinueve etapas OK en `verificar_salidas.py --fixture` (ninguna `NO APLICABLE`, gracias a la toma
+sintética ya existente de R-19 y a la sección `Capítulos` del guion de ejemplo).
+
+**Registro.** §1 de `SEGUIMIENTO.md`: R-30 `COMPLETADA`. Sin cambios en §3 (bloqueos), §5 (P-XX) ni
+§7 (desviaciones). §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño. `ROADMAP_PRODUCTO.md`
+no se toca en esta sesión (prosa de "Oleada v18 — EN CURSO" queda desactualizada hasta el próximo
+ciclo de PM que la archive — mismo patrón ya descrito y aceptado como de bajo riesgo en el hallazgo
+`#24`).
+
+---
+
 ### Sesión 2026-10-14 (161) — Ciclo de Product Manager: archiva Oleada v17 (R-29) y abre R-30 (Oleada v18)
 
 **Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta

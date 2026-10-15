@@ -10,8 +10,60 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-14 — **Ciclo de Programador: novena reconfirmación del día tras
-R-29**, sin novedad de código (detalle en la nota de esta sesión, más abajo).
+**Última actualización:** 2026-10-15 — **Ciclo de Programador: R-30 implementada**, detalle de la
+sesión más abajo.
+
+**Ciclo de Programador (2026-10-15): R-30 implementada.** Revisión de entrada (protocolo):
+`git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta `5a3706f`
+(la auditoría del 2026-10-15, ya empujada), sin ninguna divergencia real que resolver; `git status`
+limpio antes y después. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` (no el `pip` desnudo del `PATH`, lección ya documentada por `#28`/P-06).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-15) revisado antes de proceder:
+tres `ABIERTO` (`#24`, baja; `#30`, media; `#31`, baja, nuevo esta pasada — apertura de R-30 sin fila
+en `DECISIONES_TECNICAS.md`), ninguno de severidad alta (pérdida de guión, corrupción de estado,
+rotura del reproductor/auto-contención, seguridad) que atender como P-XX urgente antes de la cola
+normal — los tres de proceso puro, sin relación con el código. §1 (fuente autoritativa) traía **R-30
+como única fila `PENDIENTE`**: implementada en esta sesión siguiendo al pie de la letra su spec de
+`ROADMAP_PRODUCTO.md` (Oleada v18), verificada contra `DECISIONES_TECNICAS.md` antes de tocar código
+(ninguna decisión previa contradicha).
+
+**Implementación.** `scripts/comandos_montaje.py` nuevo: `calcular_comandos_montaje` construye la
+secuencia de 1 a 3 comandos `ffmpeg` encadenados (concatenar → subtítulos → capítulos) reutilizando
+tal cual `concat_ffmpeg.calcular_lista_concat_ffmpeg` (R-19), `srt_alineado.generar_srt_alineado`
+(R-05) y `capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg` (R-07/R-22) —
+las mismas tres condiciones que ya deciden si `concat-ffmpeg.txt`/`guion-alineado.srt`/
+`capitulos-ffmpeg.txt` existirían en esta misma pasada, sin reimplementar ninguna (mismo criterio de
+reuso que motivó R-29). `comandos-montaje.md` (`config.NOMBRE_ARCHIVO_COMANDOS_MONTAJE`) trae cada
+paso con su explicación de una frase, el comando listo para copiar con nombres de archivo reales
+(nunca una ruta de ejemplo), subtítulos como pista blanda por defecto con la alternativa incrustada
+documentada como comentario, y una nota final si quedan escenas de `concat-ffmpeg.txt` sin toma
+buena o sin archivo anotado. Sin sección `Capítulos`, se detiene en el paso de subtítulos y lo dice
+explícito; sin ningún parte de rodaje con una toma buena, no se genera nada (mismo criterio que
+`concat-ffmpeg.txt`). Octava opción del selector de salidas (`scripts/salidas.py::TipoSalida.
+COMANDOS_MONTAJE`), mismo patrón `try`/`except`/diagnóstico de R-24. Tres campos nuevos de
+`Configuracion` para los sufijos de los vídeos intermedios (`comandos_montaje_sufijo_concatenado`/
+`_con_subtitulos`/`_final`, overridables — regla "todo default configurable" de §0.2), documentados
+en `SKILL.md`. `references/contrato-montaje.md` y `SKILL.md` actualizados para remitir a esta salida
+como la forma real de obtener los comandos, dejando los fragmentos sueltos ya documentados como
+ilustrativos de cómo se construye cada paso. `verificar_salidas.py --fixture` gana una etapa de
+"Generación" (reutilizando la misma toma sintética de R-19, sin etapa de "Validez" aparte — no hay
+contrato con una herramienta externa que verificar, mismo criterio que `convencion-guiones.md`/R-25).
+Razonamiento completo de las tres alternativas consideradas en `DECISIONES_TECNICAS.md`.
+
+**Verificación.** 15 tests nuevos (675→690): 10 en `tests/test_comandos_montaje.py` y 5 en
+`tests/test_salidas.py` (detalle completo en `DEVELOPERS.md`). Cuatro redes en verde (`mypy`/`ruff`
+en 72 archivos, 690 tests, diecinueve etapas OK en `verificar_salidas.py --fixture`, ninguna
+`NO APLICABLE` gracias a la toma sintética + sección `Capítulos` del guion de ejemplo).
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5: sin ningún P-XX nuevo (la cola normal cubría
+el trabajo de esta sesión). §6: preguntas `#11`/`#12` siguen `(pendiente)` de respuesta del dueño,
+sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca en esta sesión (su prosa de "Oleada v18
+— EN CURSO"/R-30 queda desactualizada hasta el próximo ciclo de PM que la archive — mismo patrón ya
+descrito y aceptado como de bajo riesgo en el hallazgo `#24`).
+
+**Última actualización anterior (2026-10-14, ciclo de Programador): novena reconfirmación del día
+tras R-29**, sin novedad de código (detalle en la nota de esa sesión, más abajo).
 
 **Ciclo de Programador (2026-10-14), novena reconfirmación del día tras R-29.** Revisión de
 entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached* sobre un commit distinto
@@ -3419,7 +3471,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-27 | El aviso de guion modificado (`avisar_si_guion_modificado`, T-07) no tiene ningún llamador real ni mención en `SKILL.md`, y aunque se wireara tal cual, `estado.guion.hash_sha256`/`tamano_bytes` nunca se actualizan tras `estado_inicial`, así que el aviso se repetiría para siempre en vez de aparecer una sola vez | **COMPLETADA** | 2026-10-12 | `scripts/estado.py` gana `actualizar_info_guion(estado, ruta_guion)` (refresca `hash_sha256`/`tamano_bytes` al contenido actual, mutando `estado` en el sitio, llamada justo antes de `guardar_estado`). `documento_revision.generar_documento_revision` gana `guion_modificado: bool = False`: con `True`, la cabecera del resumen global añade la línea de aviso visible (mismo criterio de transparencia que ppm/T-12, diccionario/R-26, desviaciones/R-23). `SKILL.md` documenta el paso explícito con el fragmento de código exacto (tras cargar `estado.json` y antes de re-parsear/regenerar, `avisar_si_guion_modificado` → `generar_documento_revision(..., guion_modificado=...)`; `actualizar_info_guion` justo antes de `guardar_estado`), mismo patrón que R-26. Sin migración (solo refresca valores ya existentes de `InfoGuion`); `revalidar_guion` intacto, sin releer el guion de origen. 4 tests nuevos (665→669): 2 en `tests/test_estado.py` (refresco exacto al hash/tamaño actuales; cierra el bucle — tras actualizar, `avisar_si_guion_modificado` vuelve a `False` sin que el guion cambie de nuevo) y 2 en `tests/test_documento_revision.py` (línea de aviso con `True`; ninguna línea nueva con `False`, el valor por defecto). Cuatro redes en verde. `DEVELOPERS.md` actualizado con sección propia. Oleada v15, `origen: observación de arquitectura del PM (2026-10-09)` |
 | R-28 | Tres validadores de contrato ya construidos (`pptx.validar_tarjetas`, `srt.validar_srt`, `capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de `scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — mismo patrón de grieta ya cerrado por R-21 (`concat-ffmpeg.txt`) y R-22 (`capitulos-ffmpeg.txt`), sin corregir aquí para sus tres gemelos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) | **COMPLETADA** | 2026-10-13 | `pptx.py::exportar_pptx` valida con `validar_tarjetas` antes de `guardar_tarjetas_json` (lanza `TarjetasInvalidasError`, capturada por el `try`/`except` genérico de R-24); `salidas.py::_generar_srt`/`_generar_capitulos_youtube` validan cada mitad por separado con `validar_srt`/`validar_capitulos_youtube`, degradando a `SalidaOmitida` a mano (mismo patrón que `_generar_concat_ffmpeg`/R-21) sin impedir que la mitad sana se genere. Cero cambio en las reglas de los tres validadores ni en `concat_ffmpeg.py`/`validar_capitulos_ffmpeg` (ya conectados). 4 tests nuevos (669→673). Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio. `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` actualizados |
 | R-29 | `revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` reimplementan en privado, con las mismas cuatro condiciones a mano, el emparejamiento bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó, probó y documentó explícitamente como la pieza a reutilizar por T-17 — nunca llamadas desde la ruta real, en el área exacta de dos incidencias de severidad alta ya cerradas (P-02, P-04) | **COMPLETADA** | 2026-10-14 | Investigado (requisito 1): dos tests nuevos confirman que ambas rutas ya coincidían bloque a bloque (tres guiones reales, sin ninguna partición propuesta hoy; y `_GUION`/`_GUION_ESCENA_DOS_PARTICIONES`, con particiones de verdad) — sin divergencia real (requisito 3 no aplica). Unificado (requisito 2): `_particion_aceptada_de` ahora delega en `aplicar_particion_aceptada` (lista de un bloque, longitud del resultado decide si coincidió); la salvaguarda P-02/P-04 (hallazgo #9) sigue intacta como guardia de entrada, sin tocar la función pública. 2 tests nuevos (673→675). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
-| R-30 | Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación de tomas buenas + subtítulos + capítulos) del guion concreto que se acaba de procesar, en vez de dejar que el dueño traduzca a mano los fragmentos de ejemplo de `references/contrato-montaje.md` cada vez que termina de grabar | PENDIENTE | 2026-10-14 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v18. `origen: observación de arquitectura del PM` |
+| R-30 | Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación de tomas buenas + subtítulos + capítulos) del guion concreto que se acaba de procesar, en vez de dejar que el dueño traduzca a mano los fragmentos de ejemplo de `references/contrato-montaje.md` cada vez que termina de grabar | **COMPLETADA** | 2026-10-15 | `scripts/comandos_montaje.py` nuevo: encadena de 1 a 3 comandos reutilizando tal cual `concat_ffmpeg.calcular_lista_concat_ffmpeg` (R-19), `srt_alineado.generar_srt_alineado` (R-05) y `capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg` (R-07/R-22), sin reimplementar ninguna de las tres condiciones. Octava opción del selector de salidas (`TipoSalida.COMANDOS_MONTAJE`), mismo patrón `try`/`except`/diagnóstico de R-24. `references/contrato-montaje.md` y `SKILL.md` remiten a esta salida como la forma real de obtener los comandos. 15 tests nuevos (675→690). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` (una nueva: "Generación de los comandos de montaje"). Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

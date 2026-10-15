@@ -47,6 +47,7 @@ select = [
 "tests/test_pptx.py" = ["RUF001"]
 "tests/test_salidas.py" = ["RUF001"]
 "tests/test_fixture_ejemplo.py" = ["RUF001"]
+"tests/test_comandos_montaje.py" = ["RUF001"]
 
 [tool.mypy]
 python_version = "3.12"

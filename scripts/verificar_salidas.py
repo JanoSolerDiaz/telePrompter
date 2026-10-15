@@ -64,6 +64,17 @@ las dos etapas de capítulos de YouTube, solo formateados en el `FFMETADATA1`
 nativo de ffmpeg en vez del texto para pegar en una descripcion -- sin la
 marca minima de YouTube (requisito 4), asi que valida de verdad que `END`
 del ultimo capitulo coincide con `duracion_total_segundos`.
+
+R-30 anade "Generación de los comandos de montaje" (`scripts/comandos_montaje.py`):
+reutiliza la misma toma SINTETICA que ya ejercita la lista de concatenacion
+(R-19) -- con ella, y con la seccion `Capítulos` que ya trae
+`fixtures/guion-ejemplo.md`, esta etapa ejercita el caso completo (los tres
+comandos encadenados), no solo el caso degradado "sin ningun parte de rodaje"
+(ese lo cubren los tests unitarios de `comandos_montaje.py`). Sin un
+validador de formato propio que ejercitar por separado (es texto libre para
+el dueno, no un contrato con una herramienta externa como ffmpeg/YouTube --
+mismo razonamiento que ya se aplico a `convencion-guiones.md`/R-25), no gana
+una etapa de "Validez" aparte.
 """
 
 from __future__ import annotations
@@ -85,6 +96,7 @@ from capitulos_youtube import (
     validar_capitulos_ffmpeg,
     validar_capitulos_youtube,
 )
+from comandos_montaje import generar_comandos_montaje, guardar_comandos_montaje
 from concat_ffmpeg import (
     generar_lista_concat_ffmpeg,
     guardar_lista_concat_ffmpeg,
@@ -554,6 +566,64 @@ def verificar_concat_ffmpeg(ruta_txt: Path) -> Resultado:
     )
 
 
+def generar_comandos_montaje_fixture() -> Resultado:
+    """Genera `comandos-montaje.md` (R-30) sobre el mismo guion de
+    verificacion y la misma toma SINTETICA que ya ejercita la lista de
+    concatenacion (`generar_concat_ffmpeg_fixture`): con ella, y con la
+    seccion `Capítulos` que ya trae `fixtures/guion-ejemplo.md`, esta etapa
+    ejercita el caso completo -- tres comandos encadenados --, no solo el
+    caso degradado "sin ningun parte de rodaje" (ese lo cubren los tests
+    unitarios de `comandos_montaje.py`)."""
+    ruta_guion = _ruta_guion_para_verificar()
+    if ruta_guion is None:
+        return Resultado(
+            "Generación de los comandos de montaje",
+            "NO APLICABLE",
+            "no hay guion de ejemplo ni guiones reales con los que generarlo.",
+        )
+    try:
+        texto = ruta_guion.read_text(encoding="utf-8")
+        resultado = parsear_guion(texto)
+        tiempos = calcular_tiempos(resultado)
+        primera_escena = tiempos.escenas[0].numero
+        tomas_sinteticas = {
+            str(primera_escena): {
+                "titulo": "Escena de verificacion",
+                "tomas": [
+                    {
+                        "numero": 1,
+                        "duracion_segundos": 4.0,
+                        "nota": "",
+                        "buena": True,
+                        "archivo_video": "verificacion.mp4",
+                    }
+                ],
+            }
+        }
+        contenido, calculo = generar_comandos_montaje(
+            resultado, tiempos, ruta_guion.stem, tomas_sinteticas
+        )
+    except Exception as excepcion:  # se informa en el resultado, nunca se oculta
+        return Resultado(
+            "Generación de los comandos de montaje",
+            "FALLO",
+            f"no se pudo generar sobre {ruta_guion.name}: {excepcion}",
+        )
+    if contenido is None:
+        return Resultado(
+            "Generación de los comandos de montaje",
+            "NO APLICABLE",
+            f"no se pudo generar sobre {ruta_guion.name}: {calculo.motivo_sin_generar}",
+        )
+    guardar_comandos_montaje(contenido, CARPETA_SALIDA_FIXTURE)
+    detalle = (
+        f"generado sobre {ruta_guion.name} (toma sintetica en la escena {primera_escena}) "
+        f"con {len(calculo.pasos)} paso(s) encadenado(s) "
+        f"({'con' if calculo.incluye_capitulos else 'sin'} capítulos)."
+    )
+    return Resultado("Generación de los comandos de montaje", "OK", detalle)
+
+
 def generar_pdf_fixture() -> Resultado:
     """Genera el HTML de impresion y, si hay Chrome/Edge, el `.pdf` (T-28) sobre
     el mismo guion de verificacion que usan el reproductor y el .srt. La
@@ -703,6 +773,7 @@ def main() -> int:
         verificar_capitulos_ffmpeg(RUTA_CAPITULOS_FFMPEG_FIXTURE),
         generar_concat_ffmpeg_fixture(),
         verificar_concat_ffmpeg(RUTA_CONCAT_FFMPEG_FIXTURE),
+        generar_comandos_montaje_fixture(),
         generar_pdf_fixture(),
         verificar_autocontencion(
             RUTA_HTML_IMPRESION_FIXTURE, etapa="Auto-contención del HTML de impresión"

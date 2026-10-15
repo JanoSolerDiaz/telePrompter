@@ -170,6 +170,7 @@ def test_no_seleccionadas_quedan_omitidas_sin_generar_archivo(tmp_path: Path) ->
         TipoSalida.CAPITULOS_YOUTUBE,
         TipoSalida.CONCAT_FFMPEG,
         TipoSalida.CONVENCION_GUIONES,
+        TipoSalida.COMANDOS_MONTAJE,
     }
     for omitida in resumen.omitidas:
         assert "no seleccionada" in omitida.motivo
@@ -280,12 +281,17 @@ def test_pptx_latente_no_impide_las_demas(tmp_path: Path) -> None:
         TipoSalida.CONVENCION_GUIONES,
     }
     assert any(latente.tipo is TipoSalida.PPTX for latente in resumen.latentes)
-    # CAPITULOS_YOUTUBE (sin seccion `Capítulos`, R-18) y CONCAT_FFMPEG (sin
-    # ningun parte de rodaje registrado, R-19) quedan omitidas por el mismo
-    # motivo estructural: nada real que generar todavia, nunca un fallo.
-    assert len(resumen.omitidas) == 2
+    # CAPITULOS_YOUTUBE (sin seccion `Capítulos`, R-18), CONCAT_FFMPEG (sin
+    # ningun parte de rodaje registrado, R-19) y COMANDOS_MONTAJE (mismo
+    # motivo que CONCAT_FFMPEG, R-30) quedan omitidas por el mismo motivo
+    # estructural: nada real que generar todavia, nunca un fallo.
+    assert len(resumen.omitidas) == 3
     tipos_omitidos = {o.tipo for o in resumen.omitidas}
-    assert tipos_omitidos == {TipoSalida.CAPITULOS_YOUTUBE, TipoSalida.CONCAT_FFMPEG}
+    assert tipos_omitidos == {
+        TipoSalida.CAPITULOS_YOUTUBE,
+        TipoSalida.CONCAT_FFMPEG,
+        TipoSalida.COMANDOS_MONTAJE,
+    }
     for omitida in resumen.omitidas:
         assert not omitida.motivo.startswith("fallo al generar")
     archivos_pptx = [a for a in resumen.generadas if a.tipo is TipoSalida.PPTX]
@@ -389,22 +395,29 @@ def test_capitulos_youtube_es_la_quinta_opcion_de_la_pregunta() -> None:
     """Requisito 4 de R-18: `TipoSalida` gana una quinta opcion,
     `CAPITULOS_YOUTUBE`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
     junto a las cuatro ya existentes."""
-    assert TODAS_LAS_SALIDAS[-3] is TipoSalida.CAPITULOS_YOUTUBE
+    assert TODAS_LAS_SALIDAS[-4] is TipoSalida.CAPITULOS_YOUTUBE
 
 
 def test_concat_ffmpeg_es_la_sexta_opcion_de_la_pregunta() -> None:
     """Requisito 4 de R-19: `TipoSalida` gana una sexta opcion,
     `CONCAT_FFMPEG`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
     junto a las cinco ya existentes."""
-    assert TODAS_LAS_SALIDAS[-2] is TipoSalida.CONCAT_FFMPEG
+    assert TODAS_LAS_SALIDAS[-3] is TipoSalida.CONCAT_FFMPEG
 
 
 def test_convencion_guiones_es_la_septima_opcion_de_la_pregunta() -> None:
     """Requisito 1 de R-25: `TipoSalida` gana una septima opcion,
     `CONVENCION_GUIONES`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
-    junto a las seis ya existentes, al final del orden establecido."""
-    assert TODAS_LAS_SALIDAS[-1] is TipoSalida.CONVENCION_GUIONES
-    assert len(TODAS_LAS_SALIDAS) == 7
+    junto a las seis ya existentes."""
+    assert TODAS_LAS_SALIDAS[-2] is TipoSalida.CONVENCION_GUIONES
+
+
+def test_comandos_montaje_es_la_octava_opcion_de_la_pregunta() -> None:
+    """Requisito 3 de R-30: `TipoSalida` gana una octava opcion,
+    `COMANDOS_MONTAJE`, presente en `TODAS_LAS_SALIDAS`/`DESCRIPCION_SALIDA`
+    junto a las siete ya existentes, al final del orden establecido."""
+    assert TODAS_LAS_SALIDAS[-1] is TipoSalida.COMANDOS_MONTAJE
+    assert len(TODAS_LAS_SALIDAS) == 8
 
 
 def test_capitulos_youtube_generado_coincide_con_la_llamada_directa(tmp_path: Path) -> None:
@@ -635,6 +648,98 @@ def test_convencion_guiones_generada_coincide_con_la_llamada_directa(tmp_path: P
         o for o in resumen.omitidas if o.tipo is TipoSalida.CONVENCION_GUIONES
     ]
     assert omitida_convencion == []
+
+
+# --- R-30: COMANDOS_MONTAJE, octava opcion del selector ------------------------------
+
+
+def test_comandos_montaje_generado_coincide_con_la_llamada_directa(tmp_path: Path) -> None:
+    """Requisito 3 de R-30: seleccionar `COMANDOS_MONTAJE` produce exactamente
+    el mismo contenido que la llamada directa a
+    `comandos_montaje.generar_comandos_montaje` en las mismas condiciones."""
+    from comandos_montaje import generar_comandos_montaje
+
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.COMANDOS_MONTAJE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+    )
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
+    contenido_directo, _ = generar_comandos_montaje(
+        resultado, tiempos, "prueba", _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO
+    )
+    assert contenido_directo is not None
+    assert archivo.ruta.read_text(encoding="utf-8") == contenido_directo
+
+
+def test_comandos_montaje_sin_parte_de_rodaje_queda_omitida_nunca_latente_ni_fallo(
+    tmp_path: Path,
+) -> None:
+    """Requisito 3 de R-30: sin ningun parte de rodaje con una toma buena, la
+    salida queda como `SalidaOmitida` con el motivo exacto -- nunca como
+    fallo ni como `SalidaLatente` (no depende de nada externo ausente),
+    mismo criterio que `CONCAT_FFMPEG` (R-19)."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.COMANDOS_MONTAJE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+    )
+    assert resumen.generadas == ()
+    assert not resumen.latentes
+    omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.COMANDOS_MONTAJE)
+    assert not omitida.motivo.startswith("fallo al generar")
+    assert "no seleccionada" not in omitida.motivo
+    assert "aún no hay ningún parte de rodaje con una toma buena" in omitida.motivo
+
+
+def test_comandos_montaje_se_genera_siempre_aunque_falten_capitulos(tmp_path: Path) -> None:
+    """Requisito 3 de R-30: con `concat-ffmpeg.txt` presente pero sin seccion
+    `Capítulos` en el guion, `COMANDOS_MONTAJE` se genera igual -- el
+    encadenado nunca se rompe por un hueco, solo se detiene antes."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)  # sin seccion Capítulos
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.COMANDOS_MONTAJE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+    )
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
+    contenido = archivo.ruta.read_text(encoding="utf-8")
+    assert "capitulos-ffmpeg.txt" not in contenido
+    omitida_comandos_montaje = [
+        o for o in resumen.omitidas if o.tipo is TipoSalida.COMANDOS_MONTAJE
+    ]
+    assert omitida_comandos_montaje == []
+
+
+def test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg(
+    tmp_path: Path,
+) -> None:
+    """Generacion independiente (T-30 requisito 3): `COMANDOS_MONTAJE` no
+    necesita leer `concat-ffmpeg.txt` del disco ni que se haya seleccionado
+    tambien `CONCAT_FFMPEG` en la misma pasada -- se calcula por su cuenta a
+    partir de `tomas_por_escena`."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.COMANDOS_MONTAJE,)),  # sin CONCAT_FFMPEG
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+    )
+    assert not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
+    assert "concat-ffmpeg.txt" in archivo.ruta.read_text(encoding="utf-8")
 
 
 def test_convencion_guiones_se_ofrece_siempre_sin_ningun_parte_de_rodaje(

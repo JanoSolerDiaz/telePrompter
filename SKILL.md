@@ -564,6 +564,14 @@ de normalización más arriba.
 | `titulo_seccion_capitulos` | `Capítulos` | Prefijo con el que se reconoce la sección auxiliar (T-08) que trae la tabla de capítulos |
 | `capitulos_youtube_marca_minima_segundos` | 10 s | Mínimo de la propia plataforma YouTube entre dos marcas consecutivas; una marca más cercana a la anterior se omite |
 
+### Comandos de montaje encadenados (R-30)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `comandos_montaje_sufijo_concatenado` | `-concatenado.mp4` | Nombre del vídeo intermedio que propone el paso 1 (concatenación); no es un archivo de la skill, es la convención de nombres que el dueño teclea al ejecutar el comando |
+| `comandos_montaje_sufijo_con_subtitulos` | `-con-subtitulos.mp4` | Nombre del vídeo intermedio del paso 2 (subtítulos) |
+| `comandos_montaje_sufijo_final` | `-final.mp4` | Nombre del vídeo del paso 3 (capítulos), si el guion trae sección `Capítulos` |
+
 ### Exportador `.pdf` con identidad 480 (T-28)
 
 | Clave | Por defecto | Nota |
@@ -610,6 +618,16 @@ De toda la carpeta de salida (`<nombre-guion><sufijo>/`, sufijo configurable en 
 - **`tarjetas.json`** — contrato de intercambio con la generación del `.pptx` (T-29, `references/contrato-tarjetas.md`), pero reutilizable por cualquier consumidor: trae `duracion_estimada_segundos` por escena en el mismo orden que el guion, `duracion_real_segundos` (R-13, la misma duración de la toma buena que usa `guion-alineado.srt`, `null` si la escena no la tiene todavía) y, desde **R-16**, ya trae resuelto por escena el rango absoluto `inicio_segundos`/`fin_segundos` (coherente con `guion-alineado.srt` cuando hay parte de rodaje, con `guion.srt` si no) — la fase de montaje lee esas dos claves directamente, sin sumar nada por su cuenta (el `.srt` no lleva ninguna marca de escena en su propio texto). Desde **R-20**, también trae `indicaciones_ancladas` por escena, con el instante absoluto estimado de cada indicación de pantalla/nota dentro del vídeo. Desde **R-23**, `metadatos.desviaciones_convencion` trae las desviaciones de la convención del guion completo (vacío si no hay ninguna), ausente del contrato exportado con `--para-terceros`. Fórmula de cómo se calculan, a título informativo, en `references/contrato-montaje.md`.
 
 **Nombres y orden de escenas, estables y predecibles (requisito 2 de T-33):** el `numero` de cada escena (`## BLOQUE N — <título>`) es la única clave para casar una toma grabada con su escena sin ambigüedad. Debe ser único y estrictamente creciente en el orden del documento — el mismo orden en que aparecen en `tarjetas.json` y en el que se generan los subtítulos del `.srt`. `convencion.detectar_desviaciones` (T-10, ampliada en T-33) señala `numero_escena_duplicado` y `numero_escena_no_creciente` sin bloquear el proceso; si aparecen, la cadena de montaje no debe fiarse del número de escena hasta corregir el guion de origen. Desde **R-23**, la señal es visible de verdad en los dos consumidores reales: al pie de la escena en `guion-escenas.md` y en `tarjetas.json.metadatos.desviaciones_convencion`.
+
+**Los comandos `ffmpeg` reales, ya encadenados (R-30):** el dueño no tiene que
+traducir a mano los fragmentos de ejemplo de arriba — `comandos-montaje.md`
+(octava opción del selector de salidas, T-30) encadena en un único documento,
+con los nombres de archivo reales de esta carpeta de salida, la secuencia
+completa (concatenar las tomas buenas → añadir subtítulos → incrustar
+capítulos), lista para copiar y pegar en la terminal. Sin ningún parte de
+rodaje con una toma buena, no se genera (nada real que montar todavía); sin
+sección `Capítulos` en el guion, se detiene en el paso de subtítulos y lo
+dice explícitamente. Detalle completo en `references/contrato-montaje.md`.
 
 **Proyectos creados antes de R-06:** si un guion ya tenía una carpeta de salida con el sufijo antiguo `-tarjetas`, la primera vez que esta versión la vuelve a procesar la renombra sola a `-teleprompter` — sin perder `estado.json`, `guion-escenas.md` ni ningún otro archivo, y dejando antes una copia de seguridad completa (`<nombre-guion>-tarjetas.bak-<marca>`, junto a la carpeta) por si hiciera falta consultar el estado previo a la migración. No hace falta ningún paso manual del dueño ni de la skill de montaje.
 

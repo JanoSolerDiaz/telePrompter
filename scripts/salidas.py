@@ -86,6 +86,17 @@ ofrece siempre en `construir_pregunta_salidas` sin condicion ninguna
 (nunca omitida por falta de datos del guion) y el unico fallo posible es
 de escritura a disco, cubierto por el mismo patron `except`/diagnostico
 de R-24.
+
+R-30 anade una octava opcion, `COMANDOS_MONTAJE`: `comandos_montaje.py`
+encadena en un unico documento (`comandos-montaje.md`) los comandos `ffmpeg`
+reales -- concatenar las tomas buenas, anadir subtitulos, incrustar
+capitulos -- con los nombres de archivo reales de esta carpeta de salida,
+en vez de dejar que el dueno traduzca a mano los fragmentos sueltos de
+`references/contrato-montaje.md`. Mismo patron que `CONCAT_FFMPEG`/R-19:
+sin ningun parte de rodaje con una toma buena, `SalidaOmitida` con el
+motivo exacto, nunca fallo ni latente; con el, se genera siempre, con o
+sin subtitulos/capitulos disponibles (cada paso es independiente y el
+encadenado nunca se rompe por un hueco).
 """
 
 from __future__ import annotations
@@ -103,6 +114,7 @@ from capitulos_youtube import (
     validar_capitulos_ffmpeg,
     validar_capitulos_youtube,
 )
+from comandos_montaje import generar_comandos_montaje, guardar_comandos_montaje
 from concat_ffmpeg import (
     generar_lista_concat_ffmpeg,
     guardar_lista_concat_ffmpeg,
@@ -124,8 +136,8 @@ from tiempos import ResultadoTiempos
 
 
 class TipoSalida(str, Enum):
-    """Las siete salidas de la skill (requisito 1 de T-30, septima opcion
-    de R-25), en el orden en que se ofrecen siempre en la pregunta y en el
+    """Las ocho salidas de la skill (requisito 1 de T-30, octava opcion
+    de R-30), en el orden en que se ofrecen siempre en la pregunta y en el
     resumen."""
 
     HTML = "html"
@@ -135,6 +147,7 @@ class TipoSalida(str, Enum):
     CAPITULOS_YOUTUBE = "capitulos_youtube"
     CONCAT_FFMPEG = "concat_ffmpeg"
     CONVENCION_GUIONES = "convencion_guiones"
+    COMANDOS_MONTAJE = "comandos_montaje"
 
 
 DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
@@ -145,6 +158,7 @@ DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
     TipoSalida.CAPITULOS_YOUTUBE: "Capítulos de YouTube con marcas de tiempo (.txt)",
     TipoSalida.CONCAT_FFMPEG: "Lista de concatenación de ffmpeg (.txt)",
     TipoSalida.CONVENCION_GUIONES: "Convención de guiones para pegar en tu plantilla (.md)",
+    TipoSalida.COMANDOS_MONTAJE: "Comandos ffmpeg de montaje encadenados (.md)",
 }
 
 TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
@@ -155,6 +169,7 @@ TODAS_LAS_SALIDAS: tuple[TipoSalida, ...] = (
     TipoSalida.CAPITULOS_YOUTUBE,
     TipoSalida.CONCAT_FFMPEG,
     TipoSalida.CONVENCION_GUIONES,
+    TipoSalida.COMANDOS_MONTAJE,
 )
 
 
@@ -171,8 +186,9 @@ class OpcionSalida:
 @dataclass(frozen=True)
 class PreguntaSeleccionSalidas:
     """La pregunta que Claude formula al dueno en cada validacion
-    (requisito 1). `opciones` trae siempre las cinco salidas; la
-    seleccion final la decide el dueno, nunca este modulo."""
+    (requisito 1). `opciones` trae siempre todas las salidas de
+    `TODAS_LAS_SALIDAS`; la seleccion final la decide el dueno, nunca este
+    modulo."""
 
     opciones: tuple[OpcionSalida, ...]
 
@@ -196,7 +212,7 @@ def _ultima_seleccion(estado: EstadoProyecto) -> tuple[TipoSalida, ...] | None:
 def construir_pregunta_salidas(estado: EstadoProyecto) -> PreguntaSeleccionSalidas:
     """Construye la pregunta de opcion multiple (requisito 1) con la
     ultima seleccion marcada como sugerencia (requisito 2); a falta de
-    historico, sugiere las cinco salidas."""
+    historico, sugiere todas las salidas de `TODAS_LAS_SALIDAS`."""
     sugerencia = _ultima_seleccion(estado)
     sugeridas = sugerencia if sugerencia is not None else TODAS_LAS_SALIDAS
     return PreguntaSeleccionSalidas(
@@ -486,6 +502,28 @@ def _generar_concat_ffmpeg(
     return [ArchivoGenerado(TipoSalida.CONCAT_FFMPEG, ruta, ruta.stat().st_size)], []
 
 
+def _generar_comandos_montaje(
+    resultado: ResultadoParseo,
+    resultado_tiempos: ResultadoTiempos,
+    carpeta_salida: Path,
+    nombre_guion: str,
+    configuracion: Configuracion,
+    tomas_por_escena: dict[str, Any],
+) -> tuple[list[ArchivoGenerado], list[SalidaOmitida]]:
+    """R-30: entrega `comandos-montaje.md` reutilizando tal cual
+    `comandos_montaje.generar_comandos_montaje` -- mismo patron que
+    `_generar_concat_ffmpeg`: sin ningun parte de rodaje con una toma buena,
+    `SalidaOmitida` con el motivo exacto; con el, se genera siempre."""
+    contenido, calculo = generar_comandos_montaje(
+        resultado, resultado_tiempos, nombre_guion, tomas_por_escena, configuracion
+    )
+    if contenido is None:
+        motivo = calculo.motivo_sin_generar or "no hay nada real que montar todavía."
+        return [], [SalidaOmitida(TipoSalida.COMANDOS_MONTAJE, motivo)]
+    ruta = guardar_comandos_montaje(contenido, carpeta_salida)
+    return [ArchivoGenerado(TipoSalida.COMANDOS_MONTAJE, ruta, ruta.stat().st_size)], []
+
+
 def _generar_convencion_guiones(
     carpeta_salida: Path,
     configuracion: Configuracion,
@@ -586,6 +624,17 @@ def generar_salidas_seleccionadas(
                 omitidas.extend(nuevas_omitidas)
             elif tipo is TipoSalida.CONVENCION_GUIONES:
                 generadas.extend(_generar_convencion_guiones(carpeta_salida, configuracion))
+            elif tipo is TipoSalida.COMANDOS_MONTAJE:
+                nuevas, nuevas_omitidas = _generar_comandos_montaje(
+                    resultado,
+                    resultado_tiempos,
+                    carpeta_salida,
+                    nombre_guion,
+                    configuracion,
+                    tomas_por_escena,
+                )
+                generadas.extend(nuevas)
+                omitidas.extend(nuevas_omitidas)
         except Exception as excepcion:  # una salida rota no tumba la pasada
             ruta = ruta_diagnostico(carpeta_salida)
             volcar_diagnostico(ruta, excepcion)

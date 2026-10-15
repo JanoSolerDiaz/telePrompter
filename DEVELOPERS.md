@@ -3559,6 +3559,99 @@ guion real del dueño.
   no impide que `guion.srt` se mantenga; `capitulos-youtube.txt` inválido
   no impide que `capitulos-ffmpeg.txt` se genere). Cuatro redes en verde.
 
+## Encadenar los comandos de montaje de ffmpeg (R-30)
+
+`references/contrato-montaje.md` (T-33) ya documentaba con precisión qué
+archivos deja preparados esta skill (`guion.srt`/`guion-alineado.srt`,
+`tarjetas.json`, `concat-ffmpeg.txt`, `capitulos-ffmpeg.txt`) y daba, como
+ilustración, fragmentos de comando `ffmpeg` sueltos con nombres de ejemplo
+(`video.mp4`, `video-final.mp4`) — uno para concatenar (R-19) y otro para
+incrustar capítulos (R-22), cada uno aislado, sin encadenar, y sin ningún
+paso de subtítulos. El dueño, formador en solitario sin equipo de
+producción, tenía que traducir él mismo esa documentación de referencia a
+comandos ejecutables cada vez que terminaba de grabar — justo el tipo de
+fricción manual que el resto del producto ya eliminaba pieza a pieza.
+
+- **Módulo nuevo, `scripts/comandos_montaje.py`** (requisito 1).
+  `calcular_comandos_montaje` construye la secuencia de 1 a 3 pasos —
+  concatenar las tomas buenas → añadir subtítulos → incrustar capítulos—
+  sin reimplementar ninguna de las tres condiciones que ya deciden si
+  `concat-ffmpeg.txt`, `guion-alineado.srt` y `capitulos-ffmpeg.txt`
+  existirían en esta misma pasada: reutiliza tal cual
+  `concat_ffmpeg.calcular_lista_concat_ffmpeg` (R-19),
+  `srt_alineado.generar_srt_alineado` (R-05) y
+  `capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg`
+  (R-07/R-22). Es una función pura de esas tres piezas — nunca relee del
+  disco lo que otras salidas ya hayan escrito, así que no depende de que el
+  dueño haya seleccionado también `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE`
+  en la misma pasada (generación independiente, T-30 requisito 3).
+- **El paso 1 decide si hay algo real que montar** (requisito 1 del
+  objetivo): sin ningún parte de rodaje con una toma buena (mismo caso que
+  deja `concat-ffmpeg.txt` sin generar), `calcular_comandos_montaje` no
+  construye ningún paso — `motivo_sin_generar` explícito, nunca un
+  documento con pasos inventados.
+- **`comandos-montaje.md`** (requisito 2, `config.NOMBRE_ARCHIVO_COMANDOS_MONTAJE`,
+  mismo patrón que `NOMBRE_ARCHIVO_CAPITULOS_FFMPEG`): cada paso trae su
+  explicación de una frase y el comando en un bloque de código listo para
+  copiar tal cual, con los nombres de archivo REALES de esta carpeta de
+  salida — nunca una ruta de ejemplo. Los nombres de los vídeos
+  INTERMEDIOS (`<nombre-guion>-concatenado.mp4`,
+  `<nombre-guion>-con-subtitulos.mp4`, `<nombre-guion>-final.mp4`) sí son
+  configurables (`comandos_montaje_sufijo_concatenado`/
+  `comandos_montaje_sufijo_con_subtitulos`/`comandos_montaje_sufijo_final`,
+  regla "todo default configurable" de §0.2): a diferencia del nombre del
+  propio documento, no son un archivo que la skill escriba, son la
+  convención de nomenclatura que el dueño teclea al ejecutar el comando.
+  Subtítulos como pista blanda (`mov_text`) por defecto, con la alternativa
+  incrustada ("quemada") documentada como comentario `<!-- -->`, nunca como
+  comando activo (recodificar vídeo no es reversible). Si queda alguna
+  escena de `concat-ffmpeg.txt` sin toma buena o sin archivo anotado, una
+  nota final lo dice explícitamente. Sin sección `Capítulos` en el guion,
+  el documento se detiene en el paso de subtítulos y lo dice explícito
+  (criterio de aceptación literal de R-30).
+- **Octava opción del selector de salidas** (requisito 3,
+  `scripts/salidas.py::TipoSalida.COMANDOS_MONTAJE`): mismo patrón
+  `try`/`except`/diagnóstico de R-24 que el resto de salidas; sin ningún
+  parte de rodaje con una toma buena, `SalidaOmitida` con el motivo exacto
+  («aún no hay ningún parte de rodaje con una toma buena»), nunca fallo ni
+  latente (no depende de nada externo ausente); con él, se genera siempre,
+  con o sin subtítulos/capítulos disponibles.
+- **`references/contrato-montaje.md` actualizado** (requisito 4): nueva
+  sección propia que remite a `comandos-montaje.md` como la forma real de
+  obtener los comandos; los fragmentos sueltos ya documentados (concat,
+  capítulos FFMETADATA1) se marcan explícitamente como ilustrativos de cómo
+  se construye cada paso, no como lo que el dueño debe copiar a mano.
+  `SKILL.md` gana un párrafo equivalente en "Dónde encaja".
+- **`verificar_salidas.py --fixture` gana una etapa** (dieciocho →
+  diecinueve): "Generación de los comandos de montaje", que reutiliza la
+  misma toma SINTÉTICA que ya ejercita `concat-ffmpeg.txt` (R-19) —
+  con ella, y con la sección `Capítulos` que ya trae
+  `fixtures/guion-ejemplo.md`, ejercita el caso completo (los tres
+  comandos encadenados). Sin un validador de formato propio que ejercitar
+  por separado (es texto libre para el dueño, no un contrato con una
+  herramienta externa como ffmpeg/YouTube — mismo razonamiento que
+  `convencion-guiones.md`/R-25), no gana una etapa de "Validez" aparte.
+- **Fuera de alcance** (requisito 5): no se ejecuta `ffmpeg` desde la
+  skill, ni se verifica que esté instalado; no se añade recodificación,
+  normalización de audio, cortes ni transiciones; cero cambio en
+  `concat_ffmpeg.py`, `srt.py`/`srt_alineado.py` ni `capitulos_youtube.py`
+  en sí.
+- **Verificación.** 15 tests nuevos (675→690): 10 en
+  `tests/test_comandos_montaje.py` (sin rodaje no genera nada; con tomas
+  registradas pero ninguna `buena` sí concatena, mismo criterio que
+  `concat-ffmpeg.txt`; guion completo con capítulos genera tres pasos
+  encadenados byte a byte, cada paso consumiendo literalmente la salida del
+  anterior; sin sección `Capítulos` solo dos pasos y lo dice explícito; sin
+  toma alineada cae a `guion.srt`; el formato no trae ninguna ruta de
+  ejemplo; nota de escenas pendientes presente/ausente según corresponda;
+  sufijos de archivo intermedio configurables; `guardar_comandos_montaje`
+  escribe el archivo) y 5 en `tests/test_salidas.py` (octava opción de la
+  pregunta; contenido coincide con la llamada directa; sin parte de rodaje
+  queda omitida con el motivo exacto; se genera igual sin sección
+  `Capítulos`; generación independiente de `CONCAT_FFMPEG`). Cuatro redes
+  en verde. Detalle completo de las decisiones de diseño en
+  `DECISIONES_TECNICAS.md`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
