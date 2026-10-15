@@ -10,18 +10,16 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-15 — **Ciclo de Programador: primera reconfirmación del día tras
+**Última actualización:** 2026-10-15 — **Ciclo de Programador: segunda reconfirmación del día tras
 R-30, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-15), primera reconfirmación del día tras R-30.** Revisión de
-entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached* sobre un commit distinto
-al de `develop`; `git checkout develop && git pull origin develop` avanzó por fast-forward limpio
-hasta `2312795` (la implementación de R-30, ya empujada), sin ninguna divergencia real que
-resolver. `git status` limpio antes y después. Dependencias de desarrollo instaladas primero con el
-`pip` desnudo del `PATH` (mismo síntoma ya documentado por `#28`/P-06: resuelve contra el
-intérprete equivocado — Python 3.13 en vez del 3.11.17 real — y deja `mypy`/`ruff`/`pytest` sin
-instalar) y reinstaladas con `python3 -m pip install -r requirements-dev.txt`, tras lo cual las
-cuatro redes dieron `OK` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+**Ciclo de Programador (2026-10-15), segunda reconfirmación del día tras R-30.** Revisión de
+entrada (protocolo): `git checkout develop && git pull origin develop` avanzó por fast-forward
+limpio hasta `20b3005` (la reconfirmación anterior, ya empujada), sin ninguna divergencia real que
+resolver. `git status` limpio antes y después. Dependencias de desarrollo instaladas desde el
+principio con `python3 -m pip install -r requirements-dev.txt` (no el `pip` desnudo del `PATH`,
+lección ya documentada por `#28`/P-06), resolviendo contra el intérprete real (`mypy==1.18.2`,
+`ruff==0.14.0`, `pytest==8.4.2`, Python 3.11.17).
 
 Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-15, sin cambios desde la última
 lectura) revisado antes de proceder: tres `ABIERTO` (`#24`, baja; `#30`, media; `#31`, baja), los
@@ -45,8 +43,8 @@ archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`). Sin deci
 `DECISIONES_TECNICAS.md` (nada que registrar: ningún cambio de código ni de criterio en esta
 sesión).
 
-**Última actualización anterior (2026-10-15, ciclo de Programador): R-30 implementada**, detalle en
-la nota de esa sesión, más abajo.
+**Última actualización anterior (2026-10-15, ciclo de Programador): primera reconfirmación del día
+tras R-30, sin novedad de código**, detalle en la nota de esa sesión, más abajo.
 
 **Ciclo de Programador (2026-10-15): R-30 implementada.** Revisión de entrada (protocolo):
 `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta `5a3706f`
