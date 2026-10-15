@@ -10,16 +10,18 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-15 — **Ciclo de Programador: sexta reconfirmación del día tras
+**Última actualización:** 2026-10-15 — **Ciclo de Programador: séptima reconfirmación del día tras
 R-30, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-15), sexta reconfirmación del día tras R-30.** Revisión de
+**Ciclo de Programador (2026-10-15), séptima reconfirmación del día tras R-30.** Revisión de
 entrada (protocolo): `git checkout develop && git pull origin develop` avanzó por fast-forward
-limpio hasta `4e6b6bf` (la reconfirmación anterior, ya empujada), sin ninguna divergencia real que
+limpio hasta `b65614a` (la reconfirmación anterior, ya empujada), sin ninguna divergencia real que
 resolver — el contenedor arrancó con `HEAD` *detached*, resuelto con `git checkout develop` antes de
-tocar nada. `git status` limpio antes y después. Dependencias de desarrollo instaladas desde el
-principio con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (Python
-3.11.17), sin el síntoma de `#28`/P-06 esta vez; las cuatro redes dieron verde a la primera.
+tocar nada. `git status` limpio antes y después. `pip install -r requirements-dev.txt` pelado (sin
+`python3 -m` por delante) reprodujo una vez más el síntoma de `#28`/P-06 (instala contra Python
+3.13, no el 3.11.17 real): las tres redes de tipos/estilo/tests dieron inicialmente `No module
+named mypy`/`ruff`/`pytest`; reinstalado con `python3 -m pip install -r requirements-dev.txt` tal
+como documentan `DEVELOPERS.md`/`SKILL.md`, las cuatro redes pasaron a verde.
 
 Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-15, sin cambios desde la última
 lectura) revisado antes de proceder: tres `ABIERTO` (`#24`, baja; `#30`, media; `#31`, baja), los
@@ -41,13 +43,13 @@ Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `
 (su prosa de "Oleada v18 — EN CURSO"/R-30 queda desactualizada hasta el próximo ciclo de PM que la
 archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`). Sin decisiones nuevas en
 `DECISIONES_TECNICAS.md` (nada que registrar: ningún cambio de código ni de criterio en esta
-sesión). **Nota sobre `#30`:** esta es la sexta reconfirmación horaria sin tarea pendiente desde
+sesión). **Nota sobre `#30`:** esta es la séptima reconfirmación horaria sin tarea pendiente desde
 que R-30 se completó esta misma jornada — el mismo patrón que el hallazgo ya documenta, sin que
 ninguno de los dos remedios propuestos (espaciar el cron / comprobación barata de cola vacía) esté
 autorizado todavía; se sigue el protocolo completo tal como está escrito hasta que el dueño
 responda a la pregunta `#12`.
 
-**Última actualización anterior (2026-10-15, ciclo de Programador): quinta reconfirmación del día
+**Última actualización anterior (2026-10-15, ciclo de Programador): sexta reconfirmación del día
 tras R-30, sin novedad de código**, detalle en la nota de esa sesión, más abajo.
 
 **Ciclo de Programador (2026-10-15), tercera reconfirmación del día tras R-30.** Revisión de
