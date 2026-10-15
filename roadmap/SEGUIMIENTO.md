@@ -10,16 +10,18 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-15 — **Ciclo de Programador: cuarta reconfirmación del día tras
+**Última actualización:** 2026-10-15 — **Ciclo de Programador: quinta reconfirmación del día tras
 R-30, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-15), cuarta reconfirmación del día tras R-30.** Revisión de
+**Ciclo de Programador (2026-10-15), quinta reconfirmación del día tras R-30.** Revisión de
 entrada (protocolo): `git checkout develop && git pull origin develop` avanzó por fast-forward
-limpio hasta `e45facb` (la reconfirmación anterior, ya empujada), sin ninguna divergencia real que
+limpio hasta `0e8bc6f` (la reconfirmación anterior, ya empujada), sin ninguna divergencia real que
 resolver — el contenedor arrancó con `HEAD` *detached*, resuelto con `git checkout develop` antes de
-tocar nada. `git status` limpio antes y después. Dependencias de desarrollo instaladas desde el
-principio con `python3 -m pip install -r requirements-dev.txt` (no el `pip` desnudo del `PATH`,
-lección ya documentada por `#28`/P-06), resolviendo contra el intérprete real (Python 3.11.17).
+tocar nada. `git status` limpio antes y después. Dependencias de desarrollo instaladas inicialmente
+con el `pip` desnudo del `PATH` (resolvió contra Python 3.13, dejando `mypy`/`ruff`/`pytest` en
+ROJO por `No module named` — síntoma exacto de `#28`/P-06), corregido reinstalando con `python3 -m
+pip install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17), tras lo cual las
+cuatro redes dieron verde.
 
 Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-15, sin cambios desde la última
 lectura) revisado antes de proceder: tres `ABIERTO` (`#24`, baja; `#30`, media; `#31`, baja), los
@@ -41,13 +43,13 @@ Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `
 (su prosa de "Oleada v18 — EN CURSO"/R-30 queda desactualizada hasta el próximo ciclo de PM que la
 archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`). Sin decisiones nuevas en
 `DECISIONES_TECNICAS.md` (nada que registrar: ningún cambio de código ni de criterio en esta
-sesión). **Nota sobre `#30`:** esta es la cuarta reconfirmación horaria sin tarea pendiente desde
+sesión). **Nota sobre `#30`:** esta es la quinta reconfirmación horaria sin tarea pendiente desde
 que R-30 se completó esta misma jornada — el mismo patrón que el hallazgo ya documenta, sin que
 ninguno de los dos remedios propuestos (espaciar el cron / comprobación barata de cola vacía) esté
 autorizado todavía; se sigue el protocolo completo tal como está escrito hasta que el dueño
 responda a la pregunta `#12`.
 
-**Última actualización anterior (2026-10-15, ciclo de Programador): tercera reconfirmación del día
+**Última actualización anterior (2026-10-15, ciclo de Programador): cuarta reconfirmación del día
 tras R-30, sin novedad de código**, detalle en la nota de esa sesión, más abajo.
 
 **Ciclo de Programador (2026-10-15), tercera reconfirmación del día tras R-30.** Revisión de
