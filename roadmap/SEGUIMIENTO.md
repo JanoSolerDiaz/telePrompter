@@ -10,8 +10,43 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-15 — **Ciclo de Programador: R-30 implementada**, detalle de la
-sesión más abajo.
+**Última actualización:** 2026-10-15 — **Ciclo de Programador: primera reconfirmación del día tras
+R-30, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-15), primera reconfirmación del día tras R-30.** Revisión de
+entrada (protocolo): el contenedor arrancó de nuevo con `HEAD` *detached* sobre un commit distinto
+al de `develop`; `git checkout develop && git pull origin develop` avanzó por fast-forward limpio
+hasta `2312795` (la implementación de R-30, ya empujada), sin ninguna divergencia real que
+resolver. `git status` limpio antes y después. Dependencias de desarrollo instaladas primero con el
+`pip` desnudo del `PATH` (mismo síntoma ya documentado por `#28`/P-06: resuelve contra el
+intérprete equivocado — Python 3.13 en vez del 3.11.17 real — y deja `mypy`/`ruff`/`pytest` sin
+instalar) y reinstaladas con `python3 -m pip install -r requirements-dev.txt`, tras lo cual las
+cuatro redes dieron `OK` (`mypy==1.18.2`, `ruff==0.14.0`, `pytest==8.4.2`).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-15, sin cambios desde la última
+lectura) revisado antes de proceder: tres `ABIERTO` (`#24`, baja; `#30`, media; `#31`, baja), los
+tres de proceso puro y sin relación con el código, ninguno de severidad alta (pérdida de texto del
+guión, corrupción de `estado.json`, rotura del reproductor/auto-contención, seguridad) que atender
+como P-XX urgente antes de la cola normal. §1 (fuente autoritativa) **sin ninguna fila
+`PENDIENTE`**: R-30 sigue `COMPLETADA` desde el ciclo de Programador de esta misma jornada — cola
+vacía hasta el próximo ciclo de PM que archive la Oleada v18 y abra la siguiente.
+`roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila de plantilla vacía, sin ninguna
+entrada `nuevo`. `mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`:
+cero issues y cero PR abiertos.
+
+**Sin cambio de código.** Verificación propia completa (`python3 scripts/ci.py`): `mypy`/`ruff` en
+verde (72 archivos), 690 tests en verde (sin cambio), diecinueve etapas OK en
+`verificar_salidas.py --fixture`. Cuatro redes en verde.
+
+Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca
+(su prosa de "Oleada v18 — EN CURSO"/R-30 queda desactualizada hasta el próximo ciclo de PM que la
+archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`). Sin decisiones nuevas en
+`DECISIONES_TECNICAS.md` (nada que registrar: ningún cambio de código ni de criterio en esta
+sesión).
+
+**Última actualización anterior (2026-10-15, ciclo de Programador): R-30 implementada**, detalle en
+la nota de esa sesión, más abajo.
 
 **Ciclo de Programador (2026-10-15): R-30 implementada.** Revisión de entrada (protocolo):
 `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta `5a3706f`
