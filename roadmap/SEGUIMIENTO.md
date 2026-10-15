@@ -10,8 +10,51 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-15 — **Ciclo de Programador: novena reconfirmación del día tras
-R-30, sin novedad de código**, detalle de la sesión más abajo.
+**Última actualización:** 2026-10-15 — **Ciclo de Product Manager: archiva Oleada v18 (R-30),
+corrige el hallazgo `#31` y abre R-31 (Oleada v19)**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-15): archiva Oleada v18 (R-30), corrige el hallazgo `#31` y
+abre R-31 (Oleada v19).** Revisión de entrada (protocolo): `git checkout develop && git pull origin
+develop` avanzó por fast-forward limpio hasta `3f4894d` (la novena reconfirmación del Programador
+tras R-30, ya empujada), sin ninguna divergencia que resolver. §1 (fuente autoritativa) sin ninguna
+fila `PENDIENTE`: R-30 `COMPLETADA` desde el ciclo de Programador de esta misma jornada. Registro de
+hallazgos de `auditoriacontinua.md` revisado entero: tres `ABIERTO` (`#24`, baja, prosa de "Cola de
+producto"; `#30`, media, cadencia de la rutina Programador; `#31`, baja, apertura de R-30 sin fila en
+`DECISIONES_TECNICAS.md`), ninguno de severidad alta. `roadmap/FEEDBACK.md`: sigue con su única fila
+de plantilla vacía, sin ninguna entrada `nuevo`.
+
+**Corrige el hallazgo `#31`.** Añadida en `DECISIONES_TECNICAS.md` la fila `PM (apertura de R-30)`
+que faltaba (confirmado con `grep -n "apertura de R-"` que las nueve aperturas anteriores sí la
+tienen), corrigiendo la premisa inexacta de "convención" que la sesión de apertura de R-30 había
+escrito en `HISTORIAL_SESIONES.md`.
+
+**Archiva Oleada v18 (R-30).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa, "Cómo
+se entregó" y la nota de gobernanza sobre el hallazgo `#31`). `ROADMAP_PRODUCTO.md` corregido en el
+mismo ciclo: cabecera reescrita, sección "Oleada v18" sustituida por la nota de archivo.
+
+**Abre R-31 (Oleada v19).** Tercer criterio ya establecido (R-12 a R-30): grieta de arquitectura
+verificada sobre código ya construido, esta vez en la propia salida que R-30 acaba de entregar.
+`comandos_montaje.calcular_comandos_montaje` es, por diseño, una función pura de `tomas_por_escena`
+que nunca relee del disco lo que otras salidas ya hayan escrito — lo que permite seleccionar solo
+`COMANDOS_MONTAJE` sin `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE` (generación independiente, T-30
+requisito 3) y generar `comandos-montaje.md` citando archivos que no existen todavía en la carpeta de
+salida. Verificado con el propio test de R-30
+(`tests/test_salidas.py::test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`),
+que fija exactamente ese caso: confirma que `concat-ffmpeg.txt` NO está en disco a la vez que el
+documento generado sí lo referencia. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v19 — comprobar
+existencia en disco (no contenido) de los archivos referenciados, avisar con una nota visible sin
+bloquear ni degradar la generación, sin forzar ninguna selección conjunta. Fila `R-31 | ... |
+PENDIENTE | 2026-10-15 | ...` añadida a §1 en este mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-31 queda lista para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño. Dos decisiones nuevas en `DECISIONES_TECNICAS.md` (corrección
+del hallazgo `#31` y apertura de R-31).
+
+**Última actualización anterior (2026-10-15, ciclo de Programador): novena reconfirmación del día
+tras R-30, sin novedad de código**, detalle en la nota de esa sesión, más abajo.
 
 **Ciclo de Programador (2026-10-15), novena reconfirmación del día tras R-30.** Revisión de entrada
 (protocolo): `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
@@ -3618,6 +3661,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-28 | Tres validadores de contrato ya construidos (`pptx.validar_tarjetas`, `srt.validar_srt`, `capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de `scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — mismo patrón de grieta ya cerrado por R-21 (`concat-ffmpeg.txt`) y R-22 (`capitulos-ffmpeg.txt`), sin corregir aquí para sus tres gemelos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) | **COMPLETADA** | 2026-10-13 | `pptx.py::exportar_pptx` valida con `validar_tarjetas` antes de `guardar_tarjetas_json` (lanza `TarjetasInvalidasError`, capturada por el `try`/`except` genérico de R-24); `salidas.py::_generar_srt`/`_generar_capitulos_youtube` validan cada mitad por separado con `validar_srt`/`validar_capitulos_youtube`, degradando a `SalidaOmitida` a mano (mismo patrón que `_generar_concat_ffmpeg`/R-21) sin impedir que la mitad sana se genere. Cero cambio en las reglas de los tres validadores ni en `concat_ffmpeg.py`/`validar_capitulos_ffmpeg` (ya conectados). 4 tests nuevos (669→673). Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio. `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` actualizados |
 | R-29 | `revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` reimplementan en privado, con las mismas cuatro condiciones a mano, el emparejamiento bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó, probó y documentó explícitamente como la pieza a reutilizar por T-17 — nunca llamadas desde la ruta real, en el área exacta de dos incidencias de severidad alta ya cerradas (P-02, P-04) | **COMPLETADA** | 2026-10-14 | Investigado (requisito 1): dos tests nuevos confirman que ambas rutas ya coincidían bloque a bloque (tres guiones reales, sin ninguna partición propuesta hoy; y `_GUION`/`_GUION_ESCENA_DOS_PARTICIONES`, con particiones de verdad) — sin divergencia real (requisito 3 no aplica). Unificado (requisito 2): `_particion_aceptada_de` ahora delega en `aplicar_particion_aceptada` (lista de un bloque, longitud del resultado decide si coincidió); la salvaguarda P-02/P-04 (hallazgo #9) sigue intacta como guardia de entrada, sin tocar la función pública. 2 tests nuevos (673→675). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-30 | Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación de tomas buenas + subtítulos + capítulos) del guion concreto que se acaba de procesar, en vez de dejar que el dueño traduzca a mano los fragmentos de ejemplo de `references/contrato-montaje.md` cada vez que termina de grabar | **COMPLETADA** | 2026-10-15 | `scripts/comandos_montaje.py` nuevo: encadena de 1 a 3 comandos reutilizando tal cual `concat_ffmpeg.calcular_lista_concat_ffmpeg` (R-19), `srt_alineado.generar_srt_alineado` (R-05) y `capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg` (R-07/R-22), sin reimplementar ninguna de las tres condiciones. Octava opción del selector de salidas (`TipoSalida.COMANDOS_MONTAJE`), mismo patrón `try`/`except`/diagnóstico de R-24. `references/contrato-montaje.md` y `SKILL.md` remiten a esta salida como la forma real de obtener los comandos. 15 tests nuevos (675→690). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` (una nueva: "Generación de los comandos de montaje"). Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
+| R-31 | Advertir en `comandos-montaje.md` cuando el documento referencia un archivo (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) que no existe todavía en la carpeta de salida real, en vez de dar por hecho que las demás salidas de las que depende ya se generaron | PENDIENTE | 2026-10-15 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v19. `origen: observación de arquitectura del PM` — grieta verificada con el propio test de R-30 (`test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`), que prueba que el documento puede referenciar un archivo ausente en disco. Pendiente de implementación por el siguiente ciclo de Programador |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

@@ -8,40 +8,42 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-14 (ciclo de PM). **R-29 (Oleada v17) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del propio 2026-10-14 que la implementó (unificada la
-materialización de particiones aceptadas de `revalidacion.py` con `reescrituras.py`, sin divergencia
-real encontrada). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v17) junto con el resto de oleadas
-100 % entregadas. §1 de `SEGUIMIENTO.md` llevaba desde esa misma madrugada sin ninguna fila
-`PENDIENTE` — nueve reconfirmaciones horarias del Programador a lo largo del día sin tarea que
-ejecutar, el mismo coste que señala el hallazgo `#30`/pregunta `#12` (aún sin respuesta del dueño).
+**Última actualización:** 2026-10-15 (ciclo de PM). **R-30 (Oleada v18) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del propio 2026-10-14 que la implementó (encadenado
+en `comandos-montaje.md` de los tres comandos `ffmpeg` reales de montaje, reutilizando tal cual las
+piezas ya construidas por R-05/R-19/R-22, octava opción del selector de salidas). Movida a
+`roadmap/ROADMAP_HISTORICO.md` (Oleada v18) junto con el resto de oleadas 100 % entregadas. §1 de
+`SEGUIMIENTO.md` llevaba desde esa misma madrugada sin ninguna fila `PENDIENTE` — nueve
+reconfirmaciones horarias del Programador a lo largo del día sin tarea que ejecutar, el mismo coste
+que señala el hallazgo `#30`/pregunta `#12` (aún sin respuesta del dueño).
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
-curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` no trae ningún
-`ABIERTO` nuevo de producto/arquitectura esta pasada: quedan los dos mismos `ABIERTO` que el ciclo
-anterior (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de PM; `#30`, cadencia de la
-rutina "Programador"), ambos de proceso puro y severidad baja/media, sin relación con el código,
-pendientes solo de la respuesta del dueño a las preguntas de gobernanza #11/#12 de `SEGUIMIENTO.md`
-§6 — nada nuevo que convertir en tarea por esta vía.
+curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` trae un hallazgo
+nuevo de proceso puro (`#31`, baja: la apertura de R-30 no dejó su fila en `DECISIONES_TECNICAS.md`
+— corregida en este mismo ciclo, ver nota de gobernanza en `ROADMAP_HISTORICO.md`, Oleada v18) y
+reconfirma los dos ya conocidos (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de
+PM; `#30`, cadencia de la rutina "Programador"), los tres de severidad baja/media, sin relación con
+el código, pendientes solo de la respuesta del dueño a las preguntas de gobernanza #11/#12 de
+`SEGUIMIENTO.md` §6 — ninguno de producto/arquitectura que convertir en R-XX nueva por esta vía.
 
-**Se abre R-30** (Oleada v18): tampoco por auditoría ni por `FEEDBACK.md`, sino por el mismo tercer
-criterio que abrió R-12 a R-29 — una **grieta de arquitectura verificada sobre código ya
-construido**, esta vez en el propio límite declarado del producto hacia la fase siguiente.
-`references/contrato-montaje.md` (T-33) documenta con precisión qué archivos deja preparados esta
-skill para el montaje (`guion.srt`/`guion-alineado.srt`, `tarjetas.json`, `concat-ffmpeg.txt`,
-`capitulos-ffmpeg.txt`) y da, como ilustración, fragmentos de comando `ffmpeg` sueltos con nombres de
-archivo de ejemplo (`video.mp4`, `video-final.mp4`) — pero nadie encadena esos tres fragmentos en una
-secuencia real, con los nombres de archivo reales del guion concreto que el dueño acaba de procesar.
-El propio objetivo de producto citado en el encargo de esta sesión ("cuya fase siguiente es el
-montaje con ffmpeg") queda hoy a medio cerrar: el dueño, sin equipo de producción ni apuntador, tiene
-que **traducir él mismo** la documentación de referencia a comandos reales cada vez que termina de
-grabar, exactamente el tipo de fricción manual que el resto del producto (selector de salidas,
-`concat-ffmpeg.txt`, `capitulos-ffmpeg.txt`) ya eliminó para cada pieza por separado. Detalle
-completo en "Oleada v18" más abajo.
+**Se abre R-31** (Oleada v19): tampoco por auditoría ni por `FEEDBACK.md`, sino por el mismo tercer
+criterio que abrió R-12 a R-30 — una **grieta de arquitectura verificada sobre código ya
+construido**, esta vez en la propia salida que R-30 acaba de entregar. `comandos-montaje.md` calcula
+sus tres comandos como una función pura de `tomas_por_escena` (R-30, por diseño: "nunca relee del
+disco lo que otras salidas ya hayan escrito"), así que puede generarse seleccionando SOLO
+`COMANDOS_MONTAJE` en el selector de salidas, sin seleccionar también `CONCAT_FFMPEG`/`SRT`/
+`CAPITULOS_YOUTUBE` (generación independiente, T-30 requisito 3) — en ese caso el documento referencia
+`concat-ffmpeg.txt`/el `.srt` elegido/`capitulos-ffmpeg.txt` por su nombre fijo aunque esos archivos
+no existan todavía en la carpeta de salida. No es una hipótesis: el propio test de R-30
+(`tests/test_salidas.py::test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`)
+fija y prueba exactamente ese caso — `not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()` a la vez
+que `"concat-ffmpeg.txt" in archivo.ruta.read_text(...)`. El dueño que siga ese documento al pie de la
+letra la primera vez se encontraría con un `ffmpeg`: `concat-ffmpeg.txt: No such file or directory`.
+Detalle completo en "Oleada v19" más abajo.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-30 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-31 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -223,89 +225,93 @@ R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio p
 movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-14). Su spec completa y cómo se entregó
 viven ahí.
 
-### Oleada v18 — EN CURSO
+### Oleada v18 — entregada
 
-#### R-30 — Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación + subtítulos + capítulos) del guion concreto, en vez de dejar que el dueño traduzca a mano la documentación de referencia cada vez que termina de grabar
+La oleada v18 (encadenar en `comandos-montaje.md` los comandos `ffmpeg` reales de montaje —
+concatenación de tomas buenas + subtítulos + capítulos—, R-30) tiene su única R-XX en **COMPLETADA**
+en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a
+`ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-15), junto con la nota de gobernanza sobre cómo
+se corrigió el hallazgo `#31` (fila de apertura faltante en `DECISIONES_TECNICAS.md`). Su spec
+completa y cómo se entregó viven ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json`; nueva salida derivada de archivos que ya
-existen, sin tocar ningún contrato existente) · **Depende de:** T-27, T-30, R-05, R-19, R-22
-(todas ya `COMPLETADA`) · **Origen:** observación de arquitectura del PM (2026-10-14) — grieta de
-arquitectura verificada sobre el propio límite declarado del producto hacia la fase de montaje (mismo
-tercer criterio que abrió R-12 a R-29), no sobre una función concreta esta vez sino sobre un
-documento de referencia.
+### Oleada v19 — EN CURSO
 
-**Objetivo:** `references/contrato-montaje.md` (T-33) ya documenta con precisión qué archivos deja
-preparados esta skill (`guion.srt`/`guion-alineado.srt`, `tarjetas.json`, `concat-ffmpeg.txt`,
-`capitulos-ffmpeg.txt`) y da, como ilustración para quien integre una futura skill de montaje,
-fragmentos de comando `ffmpeg` sueltos con nombres de archivo de ejemplo (`video.mp4`,
-`video-final.mp4`): uno para incrustar capítulos (línea 191) y la invocación del demuxer `concat`
-(línea 235), cada uno aislado, sin encadenar, y sin ningún paso de subtítulos. Son correctos y están
-bien probados por separado (R-19, R-21, R-22), pero nadie los une en la secuencia real —concatenar
-las tomas buenas → añadir pista de subtítulos → incrustar capítulos— con los nombres de archivo
-reales de un guion concreto. El dueño, formador en solitario sin equipo de producción, tiene hoy que
-**traducir a mano** esa documentación de referencia a comandos ejecutables cada vez que termina de
-grabar — justo el tipo de fricción manual que el resto del producto (`concat-ffmpeg.txt`,
-`capitulos-ffmpeg.txt`, el propio selector de salidas de T-30) ya eliminó pieza a pieza. Cerrar este
-último tramo es relevante precisamente ahora: es el primer eslabón real hacia "la fase siguiente es
-el montaje con ffmpeg" que todavía exige trabajo manual fuera de la skill.
+#### R-31 — Advertir en `comandos-montaje.md` cuando el documento referencia un archivo que no existe todavía en esta carpeta de salida, en vez de dar por hecho que las demás salidas de las que depende ya se generaron
+
+**Migración:** No (ningún campo nuevo en `estado.json`; mismo módulo y misma salida de R-30, solo
+gana una comprobación adicional antes de formatear el texto) · **Depende de:** R-30 (`COMPLETADA`) ·
+**Origen:** observación de arquitectura del PM (2026-10-15) — grieta de arquitectura verificada sobre
+código ya construido (mismo tercer criterio que abrió R-12 a R-30), esta vez en la propia salida que
+R-30 acaba de entregar, no en código heredado de tareas anteriores.
+
+**Objetivo:** `comandos_montaje.calcular_comandos_montaje` (R-30) es, por diseño deliberado, una
+función **pura** de `tomas_por_escena`: nunca relee del disco lo que `concat-ffmpeg.txt`,
+`guion.srt`/`guion-alineado.srt` o `capitulos-ffmpeg.txt` ya hayan escrito, precisamente para no
+depender de que el dueño haya seleccionado también esas otras salidas en la misma pasada (generación
+independiente, T-30 requisito 3). Esa misma independencia es la que abre la grieta: el selector de
+salidas (`scripts/salidas.py`) deja elegir **solo** `COMANDOS_MONTAJE` sin elegir también
+`CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE`, y en ese caso `comandos-montaje.md` se genera igual,
+citando esos tres archivos por su nombre fijo como si ya existieran en la carpeta de salida. No es
+una hipótesis del PM: el propio test de R-30
+(`tests/test_salidas.py::test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`)
+fija y prueba exactamente este caso —selecciona solo `COMANDOS_MONTAJE`, confirma con
+`not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()` que `concat-ffmpeg.txt` NO está en disco, y
+a la vez confirma que `"concat-ffmpeg.txt" in archivo.ruta.read_text(...)`—. Un dueño que, sin
+conocer ese matiz, copie el primer comando de `comandos-montaje.md` tal cual la primera vez se
+encuentra con `ffmpeg: concat-ffmpeg.txt: No such file or directory`, exactamente el tipo de
+fricción manual silenciosa que el resto del producto (y la propia R-30) existe para eliminar.
 
 Decisiones de diseño ya tomadas para acotar el alcance:
-- **Documento, no script ejecutado por la skill.** Mismo patrón que `convencion-guiones.md` (R-25) o
-  `brief-pptx.md` (T-29): texto para que el dueño copie y pegue en su terminal, nunca una invocación
-  real de `ffmpeg`/subproceso desde Python — la skill no gana ninguna dependencia nueva ni ejecuta
-  nada fuera de su propia carpeta de salida (§0.2: cero red, runtime solo biblioteca estándar).
-- **`.md`, no `.sh`/`.bat`.** El dueño instaló la skill en Windows (T-32); un documento en Markdown
-  con bloques de código es legible y copiable igual en cualquier terminal (PowerShell, cmd, WSL,
-  bash), sin comprometerse a la sintaxis de un intérprete de scripts concreto.
-- **Subtítulos como pista blanda (`mov_text`) por defecto, con la alternativa de incrustado
-  ("quemado") documentada pero comentada.** Quemar subtítulos exige recodificar vídeo (coste de
-  tiempo y calidad); una pista blanda es reversible y de copia directa (`-c copy`), coherente con que
-  el resto de la cadena tampoco recodifica. Queda como comentario explícito en el documento generado
-  para quien lo prefiera, nunca como comando activo por defecto.
-- **Usa `guion-alineado.srt` si existe, si no `guion.srt`** (mismo criterio ya establecido por R-05 /
-  `references/contrato-montaje.md`: tiempos reales por delante de los estimados en cuanto hay al
-  menos una toma buena).
-- **Cada paso es opcional y el encadenado nunca se rompe por un hueco.** Sin `concat-ffmpeg.txt` (sin
-  ningún parte de rodaje con toma buena) no hay nada real que montar todavía: la salida entera se
-  omite con el motivo exacto, igual que hoy hace `concat-ffmpeg.txt` en el mismo caso. Con
-  `concat-ffmpeg.txt` presente pero sin `capitulos-ffmpeg.txt` (guion sin sección «Capítulos»), la
-  cadena de comandos se detiene en el paso de subtítulos y lo dice explícitamente — nunca inventa un
-  paso con un archivo que no existe.
+- **Comprobación de existencia en disco, no de contenido.** Los tres archivos referenciados
+  (`concat-ffmpeg.txt`, el `.srt` que corresponda, `capitulos-ffmpeg.txt`) ya tienen su propio
+  validador de formato en su propia ruta de generación (R-21/R-28): esta tarea solo necesita saber
+  si el archivo **está** en `carpeta_salida` (de esta misma pasada o de una anterior), no releer ni
+  revalidar su contenido.
+- **El orden de `TODAS_LAS_SALIDAS` ya resuelve el caso favorable.** `COMANDOS_MONTAJE` es la octava
+  y última opción que procesa `scripts/salidas.py::generar_salidas_seleccionadas`; si el dueño
+  selecciona también `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE` en la misma pasada, esos archivos ya
+  estarán escritos en disco cuando le toque el turno a `COMANDOS_MONTAJE` — la comprobación de
+  existencia no necesita ningún orden especial ni forzar nada, solo mirar el disco real en el
+  momento en que a ella le toca generarse.
+- **Nunca bloquea ni degrada la generación.** Mismo principio que ya fijó R-30 ("cada paso es
+  opcional y el encadenado nunca se rompe por un hueco"): un archivo ausente en disco es un hueco
+  más que reportar con una nota visible, igual que ya hace el documento con las escenas sin toma
+  buena o sin archivo anotado — nunca un motivo para que la salida entera quede omitida o en fallo.
+- **No se fuerza ninguna selección conjunta.** Seleccionar `COMANDOS_MONTAJE` sigue sin exigir
+  seleccionar también las otras tres opciones (generación independiente, T-30 requisito 3 — pilar
+  del selector desde T-30, no se toca); el remedio es avisar, no acoplar.
 
 **Requisitos:**
-1. Nueva función en un módulo propio (p. ej. `scripts/comandos_montaje.py`) que, a partir de la
-   `Configuracion` vigente y de qué archivos existen realmente para este guion
-   (`concat-ffmpeg.txt`, `guion-alineado.srt`/`guion.srt`, `capitulos-ffmpeg.txt`, los mismos nombres
-   que ya usa `references/contrato-montaje.md`), construye la secuencia de 1 a 3 comandos `ffmpeg`
-   encadenados: la salida de cada paso es literalmente la entrada del siguiente, sin renombrados
-   intermedios que el dueño tenga que hacer a mano.
-2. El documento generado (`comandos-montaje.md`, constante de módulo nueva en `config.py`, mismo
-   patrón que `NOMBRE_ARCHIVO_CAPITULOS_FFMPEG`) explica en una frase qué hace cada paso, muestra el
-   comando en un bloque de código listo para copiar tal cual (ninguna ruta de ejemplo, solo nombres
-   de archivo reales de esta carpeta de salida), y señala con una nota expresa qué escenas de
-   `concat-ffmpeg.txt` siguen con `# ESCENA N: sin_toma_buena`/`sin_archivo_anotado` (si las hay),
-   para que el dueño sepa que el resultado no estará completo hasta grabar o anotar esas escenas.
-3. Integrarlo como octava opción del selector de salidas (`scripts/salidas.py`, `TipoSalida`), mismo
-   patrón de `try`/`except`/diagnóstico de R-24: sin `concat-ffmpeg.txt`, `SalidaOmitida` con el
-   motivo exacto («aún no hay ningún parte de rodaje con una toma buena»); con él, se genera siempre,
-   con o sin subtítulos/capítulos disponibles.
-4. Actualizar `references/contrato-montaje.md` para que remita a esta salida como la forma real de
-   obtener los comandos (los fragmentos sueltos ya documentados quedan como referencia de cómo se
-   construyen, no como lo que el dueño debe copiar a mano).
-5. Fuera de alcance, explícito: no se ejecuta `ffmpeg` desde la skill, ni se verifica que esté
-   instalado (a diferencia de T-28 con Chrome/Edge, aquí no hace falta: el documento es texto, el
-   dueño decide cuándo y con qué `ffmpeg` correrlo); no se añade recodificación, normalización de
-   audio, cortes ni transiciones — solo concatenar, adjuntar subtítulos y metadatos de capítulos, las
-   mismas tres piezas que la skill ya calcula; no se cambia ninguna regla de `concat_ffmpeg.py`,
-   `srt.py`/`srt_alineado.py` ni `capitulos_youtube.py` en sí.
+1. `scripts/comandos_montaje.py::calcular_comandos_montaje` (o, si encaja mejor con cómo ya recibe
+   `carpeta_salida`, `scripts/salidas.py::_generar_comandos_montaje`) comprueba, tras construir los
+   pasos, si `concat-ffmpeg.txt`, el `.srt` elegido (`guion-alineado.srt` si hay alineación, si no
+   `guion.srt`) y, solo cuando el tercer paso está incluido, `capitulos-ffmpeg.txt` existen de
+   verdad en `carpeta_salida`.
+2. `formatear_comandos_montaje` añade, por cada archivo referenciado que falte, una nota visible
+   (bajo el paso que lo usa, o agrupada en una sección propia antes de los pasos) citando el nombre
+   del archivo que falta y la opción exacta del selector que hay que marcar para generarlo (el mismo
+   texto de `DESCRIPCION_SALIDA` en `scripts/salidas.py`), para que el dueño sepa qué seleccionar la
+   próxima vez antes de ejecutar el comando.
+3. Ningún archivo faltante bloquea la generación de `comandos-montaje.md` ni lo degrada a
+   `SalidaOmitida`/fallo: el documento se genera igual, con la nota añadida.
+4. Si los tres archivos referenciados ya existen en `carpeta_salida` (de esta misma pasada o de una
+   anterior), el documento no gana ninguna línea nueva respecto al comportamiento actual de R-30 —
+   sin falso positivo.
+5. Fuera de alcance, explícito: no se valida el CONTENIDO de los archivos referenciados (ya lo hacen
+   sus propios validadores en su propia ruta de generación, R-21/R-28); no se fuerza a generarlos
+   automáticamente ni se cambia la generación independiente de T-30 requisito 3; no se cambia ninguna
+   regla de `concat_ffmpeg.py`, `srt.py`/`srt_alineado.py` ni `capitulos_youtube.py` en sí.
 
-**Criterio de aceptación:** sobre un guion con parte de rodaje completo (tomas buenas anotadas con
-`archivo_video` y sección «Capítulos»), `comandos-montaje.md` contiene exactamente tres comandos
-`ffmpeg` encadenados en el orden concat → subtítulos → capítulos, cada uno con los nombres de archivo
-reales de esa carpeta de salida y sin ninguna ruta de ejemplo; sobre el mismo guion sin sección
-«Capítulos», contiene solo los dos primeros y lo dice explícitamente; sin ningún parte de rodaje, la
-salida se omite con el motivo exacto y el resto de salidas se genera igual (generación independiente,
-T-30 requisito 3); `references/contrato-montaje.md` remite a esta salida. Cuatro redes en verde.
+**Criterio de aceptación:** seleccionando solo `COMANDOS_MONTAJE` (sin `CONCAT_FFMPEG`/`SRT`/
+`CAPITULOS_YOUTUBE`) sobre un guion con parte de rodaje completo, `comandos-montaje.md` trae los
+tres comandos de siempre MÁS una nota visible por cada uno de los tres archivos referenciados que no
+está en la carpeta de salida; seleccionando las cuatro opciones a la vez en la misma pasada, el
+documento no trae ninguna nota (todos ya en disco cuando le toca el turno a `COMANDOS_MONTAJE`);
+seleccionando solo `COMANDOS_MONTAJE` tras una pasada anterior que ya dejó esos tres archivos en esa
+misma carpeta, tampoco aparece ninguna nota (existencia real en disco, no "seleccionado en esta
+pasada"). Test nuevo que reproduce el escenario ya fijado por
+`test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg` verificando que
+ahora SÍ aparece el aviso. Cuatro redes en verde.
 
 ---
 

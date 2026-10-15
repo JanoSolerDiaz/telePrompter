@@ -12,6 +12,61 @@
 
 ---
 
+### Sesión 2026-10-15 (172) — Ciclo de Product Manager: archiva Oleada v18 (R-30), corrige el hallazgo `#31` y abre R-31 (Oleada v19)
+
+**Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
+`3f4894d` (la novena reconfirmación del Programador tras R-30, ya empujada), sin ninguna divergencia
+que resolver. `git status` limpio antes y después.
+
+**Revisión de entrada (protocolo).** Leída `HOJA_DE_RUTA.md` completa (T-00 a T-33, todas
+`COMPLETADA` salvo T-24b, `BLOQUEADA` sin clicker, en espera indefinida del dueño) y §1 de
+`SEGUIMIENTO.md` (fuente autoritativa): R-30 `COMPLETADA` desde el ciclo de Programador de esta misma
+jornada, sin ninguna fila `PENDIENTE` — las nueve reconfirmaciones horarias de hoy ya documentan el
+coste que señala el hallazgo `#30`/pregunta `#12`, todavía sin respuesta del dueño. Registro de
+hallazgos de `auditoriacontinua.md` revisado entero: tres `ABIERTO` (`#24`, prosa de "Cola de
+producto" desactualizada entre ciclos de PM; `#30`, cadencia de la rutina Programador; `#31`,
+apertura de R-30 sin fila en `DECISIONES_TECNICAS.md`, con una premisa de "convención" inexacta en
+`HISTORIAL_SESIONES.md`), ninguno de severidad alta que atender como P-XX urgente antes de la cola
+normal. `roadmap/FEEDBACK.md` revisado: sigue con su única fila de plantilla vacía, sin ninguna
+entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto y es la única fuente
+de la que podría salir feedback de rodaje real.
+
+**Corrige el hallazgo `#31`.** Verificado con `grep -n "apertura de R-" roadmap/DECISIONES_TECNICAS.md`
+que, en efecto, las nueve aperturas anteriores (R-21 a R-29) tienen su fila propia y la de R-30 no.
+Añadida en este ciclo la fila `PM (corrección del hallazgo #31...)` documentando la decisión de
+apertura de R-30 que debió registrarse el 2026-10-14, citando las opciones consideradas entonces y
+por qué; la premisa de "convención" que la motivó queda corregida (la convención real es registrar
+también aquí, no solo en `ROADMAP_PRODUCTO.md`) y no se repite en la apertura de R-31, más abajo.
+
+**Archiva Oleada v18 (R-30).** Movida íntegra a `roadmap/ROADMAP_HISTORICO.md` (spec completa + "Cómo
+se entregó" + la nota de gobernanza sobre el hallazgo `#31`). `ROADMAP_PRODUCTO.md` corregido en el
+mismo ciclo que archiva: cabecera reescrita, sección "Oleada v18" sustituida por la nota de archivo.
+
+**Abre R-31 (Oleada v19).** No por auditoría ni por `FEEDBACK.md`, sino por el mismo tercer criterio
+que abrió R-12 a R-30 — grieta de arquitectura verificada sobre código ya construido, esta vez en la
+propia salida que R-30 acaba de entregar: `comandos_montaje.calcular_comandos_montaje` es una función
+pura de `tomas_por_escena` por diseño («nunca relee del disco lo que otras salidas ya hayan
+escrito»), lo que permite seleccionar solo `COMANDOS_MONTAJE` sin `CONCAT_FFMPEG`/`SRT`/
+`CAPITULOS_YOUTUBE` (generación independiente, T-30 requisito 3) y generar `comandos-montaje.md`
+citando archivos que no existen todavía en la carpeta de salida — verificado no como hipótesis sino
+leyendo el propio test de R-30 que fija ese caso exacto
+(`tests/test_salidas.py::test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`:
+`not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()` a la vez que el documento sí lo referencia).
+Spec completa de R-31 (ficha, decisiones de diseño ya acotadas — comprobación de existencia en disco,
+nunca de contenido; nota visible sin bloquear ni degradar la generación; sin forzar selección
+conjunta, la independencia de T-30 requisito 3 se mantiene) en `ROADMAP_PRODUCTO.md`, Oleada v19. Fila
+`R-31 | ... | PENDIENTE | 2026-10-15 | ...` añadida a §1 de `SEGUIMIENTO.md` en este mismo commit.
+
+**Sin cambio de código.** Este ciclo es de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-31 queda lista para que el siguiente ciclo de
+Programador la implemente y verifique con las cuatro redes.
+
+Decisiones nuevas en `DECISIONES_TECNICAS.md`: la corrección del hallazgo `#31` y la apertura de R-31
+(dos filas, ver arriba). Cambios en `SEGUIMIENTO.md`: fila de R-31 en §1 (la única novedad; sin
+cambios en §3, §5, §6 ni §7 — las preguntas `#11`/`#12` siguen `(pendiente)`).
+
+---
+
 ### Sesión 2026-10-15 (171) — Ciclo de Programador: novena reconfirmación del día tras R-30, sin novedad de código
 
 **Arranque.** El contenedor arrancó de nuevo con `HEAD` *detached*. `git checkout develop` seguido
