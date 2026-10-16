@@ -10,7 +10,62 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-15 — **Ciclo de Product Manager: archiva Oleada v18 (R-30),
+**Última actualización:** 2026-10-16 — **Ciclo de Programador: implementa R-31 (avisar de
+archivos referenciados ausentes en `comandos-montaje.md`)**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-16): implementa R-31.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` *detached* sobre `b62c0af`; `git checkout develop && git pull origin
+develop` avanzó por fast-forward limpio hasta `7dc3036` (36 commits), sin ninguna divergencia que
+resolver. `git status` limpio antes y después. Dependencias de desarrollo instaladas con
+`python3 -m pip install -r requirements-dev.txt` (no el `pip` desnudo del `PATH`, `#28`/P-06),
+resolviendo contra el intérprete real (Python 3.11.17).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-16) revisado antes de proceder:
+dos `ABIERTO` (`#24`, baja; `#30`, media), ambos de proceso puro, sin relación con el código,
+ninguno de severidad alta que atender como P-XX urgente antes de la cola normal. §1 (fuente
+autoritativa) traía a **R-31 como única fila `PENDIENTE`**: spec completa leída en
+`ROADMAP_PRODUCTO.md` §Oleada v19, sin contradecir ninguna decisión previa de
+`DECISIONES_TECNICAS.md` en el área tocada (`comandos_montaje.py`/`salidas.py`).
+
+**Implementa R-31.** `comandos_montaje.calcular_comandos_montaje` gana `carpeta_salida: Path |
+None = None` (requisito 1): comprueba en disco —solo existencia, nunca contenido, eso ya lo hacen
+los validadores propios de R-21/R-28— si `concat-ffmpeg.txt`, el `.srt` elegido (misma decisión
+real/alineado ya calculada para el paso de subtítulos) y, solo si el tercer paso está incluido,
+`capitulos-ffmpeg.txt` están presentes. Cada ausente se recoge en la dataclass nueva
+`ArchivoReferenciadoFaltante` (`ResultadoComandosMontaje.archivos_referenciados_faltantes`);
+`formatear_comandos_montaje` la vuelca como nota visible al principio del documento (requisito 2),
+citando el nombre del archivo y la opción exacta del selector — nunca bloquea ni degrada la
+generación (requisito 3). Las tres descripciones de opción se centralizan como constantes de
+`config.py` (`DESCRIPCION_OPCION_CONCAT_FFMPEG`/`_SRT`/`_CAPITULOS_YOUTUBE`), reutilizadas tal
+cual por `salidas.py::DESCRIPCION_SALIDA`, para cumplir "el mismo texto de `DESCRIPCION_SALIDA`"
+sin crear un ciclo de imports (`salidas.py` ya importa de `comandos_montaje.py` desde R-30).
+`scripts/salidas.py::_generar_comandos_montaje` (que ya recibía `carpeta_salida`) se limita a
+reenviarla. Sin `carpeta_salida` (cualquier llamada directa preexistente), comportamiento idéntico
+al de antes de R-31 (requisito de compatibilidad, verificado con test dedicado). Sin falso positivo
+(requisito 4): `TODAS_LAS_SALIDAS` procesa `COMANDOS_MONTAJE` en último lugar, así que seleccionar
+también `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE` en la misma pasada dejo todos los archivos ya en
+disco cuando le toca el turno, verificado con test nuevo. Fuera de alcance intacto (requisito 5):
+cero cambio en `concat_ffmpeg.py`/`srt.py`/`srt_alineado.py`/`capitulos_youtube.py`.
+
+**Documentación actualizada.** `references/contrato-montaje.md` gana el párrafo de R-31 en la
+sección de `comandos-montaje.md`; `DEVELOPERS.md` gana la sección "Advertir de archivos
+referenciados ausentes en `comandos-montaje.md` (R-31)"; `DECISIONES_TECNICAS.md` gana la fila de
+implementación citando las tres alternativas consideradas para centralizar el texto de las
+opciones. `SKILL.md` no cambia (sin migración, sin campo nuevo de `Configuracion`).
+
+**Verificación propia completa.** `mypy`/`ruff` en verde (72 archivos), 696 tests en verde
+(690→696: 5 en `tests/test_comandos_montaje.py`, 1 en `tests/test_salidas.py`, más dos tests
+existentes de R-30 actualizados para reflejar la nota nueva en vez de romperse), diecinueve etapas
+OK en `verificar_salidas.py --fixture`. Cuatro redes en verde.
+
+Fila `R-31` actualizada en §1 arriba a `COMPLETADA` (2026-10-16). Sin cambios en §3 (bloqueos) ni
+§7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del
+dueño, sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se toca (su prosa de "Oleada v19 — EN
+CURSO"/R-31 queda desactualizada hasta el próximo ciclo de PM que la archive — mismo patrón ya
+descrito y aceptado en el hallazgo `#24`). Entrada añadida a `HISTORIAL_SESIONES.md` referenciando
+la decisión nueva de `DECISIONES_TECNICAS.md` y el cambio de estado de R-31.
+
+**Última actualización anterior (2026-10-15, ciclo de Product Manager): archiva Oleada v18 (R-30),
 corrige el hallazgo `#31` y abre R-31 (Oleada v19)**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-15): archiva Oleada v18 (R-30), corrige el hallazgo `#31` y
@@ -3661,7 +3716,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-28 | Tres validadores de contrato ya construidos (`pptx.validar_tarjetas`, `srt.validar_srt`, `capitulos_youtube.validar_capitulos_youtube`) nunca se invocan en la ruta real de generación de `scripts/salidas.py`/`pptx.exportar_pptx`, solo desde `verificar_salidas.py --fixture` — mismo patrón de grieta ya cerrado por R-21 (`concat-ffmpeg.txt`) y R-22 (`capitulos-ffmpeg.txt`), sin corregir aquí para sus tres gemelos (`tarjetas.json`, `guion.srt`/`guion-alineado.srt`, `capitulos-youtube.txt`) | **COMPLETADA** | 2026-10-13 | `pptx.py::exportar_pptx` valida con `validar_tarjetas` antes de `guardar_tarjetas_json` (lanza `TarjetasInvalidasError`, capturada por el `try`/`except` genérico de R-24); `salidas.py::_generar_srt`/`_generar_capitulos_youtube` validan cada mitad por separado con `validar_srt`/`validar_capitulos_youtube`, degradando a `SalidaOmitida` a mano (mismo patrón que `_generar_concat_ffmpeg`/R-21) sin impedir que la mitad sana se genere. Cero cambio en las reglas de los tres validadores ni en `concat_ffmpeg.py`/`validar_capitulos_ffmpeg` (ya conectados). 4 tests nuevos (669→673). Cuatro redes en verde, dieciocho etapas de `verificar_salidas.py --fixture` sin cambio. `DEVELOPERS.md` y `DECISIONES_TECNICAS.md` actualizados |
 | R-29 | `revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` reimplementan en privado, con las mismas cuatro condiciones a mano, el emparejamiento bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó, probó y documentó explícitamente como la pieza a reutilizar por T-17 — nunca llamadas desde la ruta real, en el área exacta de dos incidencias de severidad alta ya cerradas (P-02, P-04) | **COMPLETADA** | 2026-10-14 | Investigado (requisito 1): dos tests nuevos confirman que ambas rutas ya coincidían bloque a bloque (tres guiones reales, sin ninguna partición propuesta hoy; y `_GUION`/`_GUION_ESCENA_DOS_PARTICIONES`, con particiones de verdad) — sin divergencia real (requisito 3 no aplica). Unificado (requisito 2): `_particion_aceptada_de` ahora delega en `aplicar_particion_aceptada` (lista de un bloque, longitud del resultado decide si coincidió); la salvaguarda P-02/P-04 (hallazgo #9) sigue intacta como guardia de entrada, sin tocar la función pública. 2 tests nuevos (673→675). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-30 | Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación de tomas buenas + subtítulos + capítulos) del guion concreto que se acaba de procesar, en vez de dejar que el dueño traduzca a mano los fragmentos de ejemplo de `references/contrato-montaje.md` cada vez que termina de grabar | **COMPLETADA** | 2026-10-15 | `scripts/comandos_montaje.py` nuevo: encadena de 1 a 3 comandos reutilizando tal cual `concat_ffmpeg.calcular_lista_concat_ffmpeg` (R-19), `srt_alineado.generar_srt_alineado` (R-05) y `capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg` (R-07/R-22), sin reimplementar ninguna de las tres condiciones. Octava opción del selector de salidas (`TipoSalida.COMANDOS_MONTAJE`), mismo patrón `try`/`except`/diagnóstico de R-24. `references/contrato-montaje.md` y `SKILL.md` remiten a esta salida como la forma real de obtener los comandos. 15 tests nuevos (675→690). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` (una nueva: "Generación de los comandos de montaje"). Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
-| R-31 | Advertir en `comandos-montaje.md` cuando el documento referencia un archivo (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) que no existe todavía en la carpeta de salida real, en vez de dar por hecho que las demás salidas de las que depende ya se generaron | PENDIENTE | 2026-10-15 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v19. `origen: observación de arquitectura del PM` — grieta verificada con el propio test de R-30 (`test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`), que prueba que el documento puede referenciar un archivo ausente en disco. Pendiente de implementación por el siguiente ciclo de Programador |
+| R-31 | Advertir en `comandos-montaje.md` cuando el documento referencia un archivo (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) que no existe todavía en la carpeta de salida real, en vez de dar por hecho que las demás salidas de las que depende ya se generaron | **COMPLETADA** | 2026-10-16 | `comandos_montaje.calcular_comandos_montaje` gana `carpeta_salida: Path \| None = None` (comprobación de existencia en disco, nunca de contenido); cada archivo ausente se recoge en `ResultadoComandosMontaje.archivos_referenciados_faltantes` (`ArchivoReferenciadoFaltante`) y `formatear_comandos_montaje` lo vuelca como nota visible al principio del documento, nunca bloquea ni degrada la generación. Descripciones de opción centralizadas en `config.py` (`DESCRIPCION_OPCION_*`), reutilizadas tal cual por `salidas.py::DESCRIPCION_SALIDA`, sin ciclo de imports. `scripts/salidas.py::_generar_comandos_montaje` reenvía `carpeta_salida`; sin ella, comportamiento idéntico al de antes de R-31. 6 tests nuevos (690→696). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

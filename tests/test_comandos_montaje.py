@@ -268,3 +268,105 @@ def test_guardar_comandos_montaje_escribe_el_archivo(tmp_path: Path) -> None:
     ruta = guardar_comandos_montaje(contenido, tmp_path)
     assert ruta == tmp_path / NOMBRE_ARCHIVO_COMANDOS_MONTAJE
     assert ruta.read_text(encoding="utf-8") == contenido
+
+
+# --- R-31: avisar de archivos referenciados que todavia no existen en disco --------
+
+
+def test_sin_carpeta_salida_no_comprueba_nada_comportamiento_identico_a_antes_de_r31() -> None:
+    """Requisito 4/compatibilidad: sin pasar `carpeta_salida` (valor por
+    defecto `None`), ningun archivo se marca como faltante -- mismo
+    comportamiento exacto que antes de R-31."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    calculo = calcular_comandos_montaje(
+        resultado, tiempos, "prueba", _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO
+    )
+    assert calculo.archivos_referenciados_faltantes == ()
+    contenido = formatear_comandos_montaje(calculo, "prueba")
+    assert contenido is not None
+    assert "todavía no existen en esta carpeta de salida" not in contenido
+
+
+def test_con_carpeta_salida_vacia_avisa_de_los_tres_archivos_faltantes(tmp_path: Path) -> None:
+    """Escenario del criterio de aceptacion de R-31: carpeta de salida vacia
+    (solo se selecciono `COMANDOS_MONTAJE`) -- los tres archivos referenciados
+    (concat, srt, capitulos) faltan, cada uno con la opcion exacta del
+    selector que hay que marcar."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+        carpeta_salida=tmp_path,
+    )
+    faltantes = {
+        f.nombre_archivo: f.descripcion_opcion for f in calculo.archivos_referenciados_faltantes
+    }
+    assert faltantes == {
+        "concat-ffmpeg.txt": "Lista de concatenación de ffmpeg (.txt)",
+        "guion-alineado.srt": "Subtítulos .srt borrador",
+        "capitulos-ffmpeg.txt": "Capítulos de YouTube con marcas de tiempo (.txt)",
+    }
+
+    contenido = formatear_comandos_montaje(calculo, "prueba")
+    assert contenido is not None
+    assert "todavía no existen en esta carpeta de salida" in contenido
+    for nombre_archivo, descripcion in faltantes.items():
+        assert f"`{nombre_archivo}`: selecciona «{descripcion}»" in contenido
+
+
+def test_sin_seccion_capitulos_no_avisa_del_archivo_de_capitulos(tmp_path: Path) -> None:
+    """Sin seccion `Capítulos` en el guion, el tercer paso no se incluye --
+    tampoco debe avisar de `capitulos-ffmpeg.txt`, que nunca se referencia."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)  # sin seccion Capítulos
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+        carpeta_salida=tmp_path,
+    )
+    nombres_faltantes = {f.nombre_archivo for f in calculo.archivos_referenciados_faltantes}
+    assert nombres_faltantes == {"concat-ffmpeg.txt", "guion-alineado.srt"}
+
+
+def test_con_los_tres_archivos_ya_en_disco_no_avisa_de_nada(tmp_path: Path) -> None:
+    """Requisito 4: con los tres archivos referenciados ya en `carpeta_salida`
+    (de una pasada anterior, por ejemplo), ningun archivo se marca como
+    faltante y el documento no gana ninguna linea nueva -- sin falso
+    positivo."""
+    for nombre in ("concat-ffmpeg.txt", "guion-alineado.srt", "capitulos-ffmpeg.txt"):
+        (tmp_path / nombre).write_text("contenido de prueba", encoding="utf-8")
+
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+        carpeta_salida=tmp_path,
+    )
+    assert calculo.archivos_referenciados_faltantes == ()
+    contenido = formatear_comandos_montaje(calculo, "prueba")
+    assert contenido is not None
+    assert "todavía no existen en esta carpeta de salida" not in contenido
+
+
+def test_sin_toma_alineada_el_archivo_faltante_es_el_srt_estimado(tmp_path: Path) -> None:
+    """Sin ninguna escena con toma buena, el paso de subtitulos referencia
+    `guion.srt` (no `guion-alineado.srt`, ver
+    `test_sin_toma_alineada_usa_el_srt_estimado`) -- el aviso de archivo
+    faltante debe seguir exactamente esa misma decision, nunca duplicar ni
+    inventar un nombre distinto."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_SIN_BUENA,
+        carpeta_salida=tmp_path,
+    )
+    nombres_faltantes = {f.nombre_archivo for f in calculo.archivos_referenciados_faltantes}
+    assert "guion.srt" in nombres_faltantes
+    assert "guion-alineado.srt" not in nombres_faltantes

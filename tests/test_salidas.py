@@ -670,7 +670,7 @@ def test_comandos_montaje_generado_coincide_con_la_llamada_directa(tmp_path: Pat
     )
     archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
     contenido_directo, _ = generar_comandos_montaje(
-        resultado, tiempos, "prueba", _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO
+        resultado, tiempos, "prueba", _TOMAS_ESCENA_0_BUENA_CON_ARCHIVO, carpeta_salida=tmp_path
     )
     assert contenido_directo is not None
     assert archivo.ruta.read_text(encoding="utf-8") == contenido_directo
@@ -739,7 +739,43 @@ def test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_f
     )
     assert not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()
     archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
-    assert "concat-ffmpeg.txt" in archivo.ruta.read_text(encoding="utf-8")
+    contenido = archivo.ruta.read_text(encoding="utf-8")
+    assert "concat-ffmpeg.txt" in contenido
+    # R-31: sin CONCAT_FFMPEG tambien seleccionado, el archivo que referencia
+    # todavia no existe en disco -- debe avisarlo, no darlo por hecho en silencio.
+    assert "todavía no existen en esta carpeta de salida" in contenido
+    assert "`concat-ffmpeg.txt`: selecciona «Lista de concatenación de ffmpeg" in contenido
+
+
+def test_comandos_montaje_no_avisa_si_se_seleccionan_tambien_las_otras_tres_opciones(
+    tmp_path: Path,
+) -> None:
+    """Criterio de aceptación de R-31: seleccionando las cuatro opciones a la
+    vez en la misma pasada, `COMANDOS_MONTAJE` (octava y última opción de
+    `TODAS_LAS_SALIDAS`) encuentra los tres archivos ya en disco y el
+    documento no trae ninguna nota de archivo faltante."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas(
+            (
+                TipoSalida.CONCAT_FFMPEG,
+                TipoSalida.SRT,
+                TipoSalida.CAPITULOS_YOUTUBE,
+                TipoSalida.COMANDOS_MONTAJE,
+            )
+        ),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+    )
+    assert (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()
+    assert (tmp_path / NOMBRE_ARCHIVO_SRT_ALINEADO).exists()
+    assert (tmp_path / NOMBRE_ARCHIVO_CAPITULOS_FFMPEG).exists()
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
+    contenido = archivo.ruta.read_text(encoding="utf-8")
+    assert "todavía no existen en esta carpeta de salida" not in contenido
 
 
 def test_convencion_guiones_se_ofrece_siempre_sin_ningun_parte_de_rodaje(

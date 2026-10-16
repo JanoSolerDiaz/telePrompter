@@ -120,7 +120,12 @@ from concat_ffmpeg import (
     guardar_lista_concat_ffmpeg,
     validar_lista_concat_ffmpeg,
 )
-from config import Configuracion
+from config import (
+    DESCRIPCION_OPCION_CAPITULOS_YOUTUBE,
+    DESCRIPCION_OPCION_CONCAT_FFMPEG,
+    DESCRIPCION_OPCION_SRT,
+    Configuracion,
+)
 from convencion import guardar_convencion_guiones
 from estado import EstadoProyecto, marca_de_tiempo
 from logger import obtener_logger
@@ -154,9 +159,9 @@ DESCRIPCION_SALIDA: dict[TipoSalida, str] = {
     TipoSalida.HTML: "Reproductor .html (principal, para grabar)",
     TipoSalida.PPTX: "Presentación .pptx con marca 480",
     TipoSalida.PDF: "Documento .pdf con marca 480",
-    TipoSalida.SRT: "Subtítulos .srt borrador",
-    TipoSalida.CAPITULOS_YOUTUBE: "Capítulos de YouTube con marcas de tiempo (.txt)",
-    TipoSalida.CONCAT_FFMPEG: "Lista de concatenación de ffmpeg (.txt)",
+    TipoSalida.SRT: DESCRIPCION_OPCION_SRT,
+    TipoSalida.CAPITULOS_YOUTUBE: DESCRIPCION_OPCION_CAPITULOS_YOUTUBE,
+    TipoSalida.CONCAT_FFMPEG: DESCRIPCION_OPCION_CONCAT_FFMPEG,
     TipoSalida.CONVENCION_GUIONES: "Convención de guiones para pegar en tu plantilla (.md)",
     TipoSalida.COMANDOS_MONTAJE: "Comandos ffmpeg de montaje encadenados (.md)",
 }
@@ -513,9 +518,15 @@ def _generar_comandos_montaje(
     """R-30: entrega `comandos-montaje.md` reutilizando tal cual
     `comandos_montaje.generar_comandos_montaje` -- mismo patron que
     `_generar_concat_ffmpeg`: sin ningun parte de rodaje con una toma buena,
-    `SalidaOmitida` con el motivo exacto; con el, se genera siempre."""
+    `SalidaOmitida` con el motivo exacto; con el, se genera siempre.
+
+    Pasa `carpeta_salida` (R-31) para que el documento avise de los archivos
+    que todavia no esten en disco en el momento en que le toca el turno --
+    octava y ultima opcion de `TODAS_LAS_SALIDAS`, asi que si el dueno
+    selecciono tambien `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE` en esta misma
+    pasada, esos archivos ya estaran escritos cuando se compruebe."""
     contenido, calculo = generar_comandos_montaje(
-        resultado, resultado_tiempos, nombre_guion, tomas_por_escena, configuracion
+        resultado, resultado_tiempos, nombre_guion, tomas_por_escena, configuracion, carpeta_salida
     )
     if contenido is None:
         motivo = calculo.motivo_sin_generar or "no hay nada real que montar todavía."

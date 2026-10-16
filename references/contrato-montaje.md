@@ -291,6 +291,16 @@ a comandos ejecutables.
   vídeo anotado, una nota al final del documento lo dice explícitamente: el
   resultado de estos comandos no estará completo hasta grabar o anotar esas
   escenas.
+- **Si se selecciona solo `COMANDOS_MONTAJE` sin también `CONCAT_FFMPEG`/
+  `SRT`/`CAPITULOS_YOUTUBE`, los archivos que los comandos referencian
+  (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) pueden no
+  existir todavía en esta misma carpeta de salida** (R-31): el documento se
+  genera igual —generación independiente, T-30 requisito 3, nunca se fuerza
+  una selección conjunta— pero trae una nota al principio por cada archivo
+  ausente, citando la opción exacta del selector que hay que marcar antes de
+  ejecutar los comandos. Seleccionando también esas tres opciones en la misma
+  pasada (o si ya se generaron en una pasada anterior sobre esta carpeta), no
+  aparece ninguna nota.
 - **Documento, no script ejecutado por la skill** (mismo patrón que
   `convencion-guiones.md`, ver más abajo): texto para que el dueño copie y
   pegue en su propia terminal — la skill no ejecuta `ffmpeg` ni comprueba

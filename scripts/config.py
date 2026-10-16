@@ -165,6 +165,15 @@ COMANDOS_MONTAJE_SUFIJO_CONCATENADO: str = "-concatenado.mp4"
 COMANDOS_MONTAJE_SUFIJO_CON_SUBTITULOS: str = "-con-subtitulos.mp4"
 COMANDOS_MONTAJE_SUFIJO_FINAL: str = "-final.mp4"
 
+# Texto de la opcion correspondiente en la pregunta del selector de salidas (T-30,
+# `scripts/salidas.py::DESCRIPCION_SALIDA`), centralizado aqui para que R-31 pueda
+# citarlo tal cual en `comandos-montaje.md` cuando un archivo referenciado todavia
+# no existe en la carpeta de salida, sin que `comandos_montaje.py` importe de
+# `salidas.py` (evita el ciclo: `salidas.py` ya importa de `comandos_montaje.py`).
+DESCRIPCION_OPCION_CONCAT_FFMPEG: str = "Lista de concatenación de ffmpeg (.txt)"
+DESCRIPCION_OPCION_SRT: str = "Subtítulos .srt borrador"
+DESCRIPCION_OPCION_CAPITULOS_YOUTUBE: str = "Capítulos de YouTube con marcas de tiempo (.txt)"
+
 # --- Adaptador .pptx via 480-branded-pptx (T-29) -----------------------------------
 # Version del contrato de intercambio `tarjetas.json` (requisito 1, documentado en
 # `references/contrato-tarjetas.md`): sube si el JSON cambia de forma incompatible,

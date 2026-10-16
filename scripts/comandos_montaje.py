@@ -48,6 +48,16 @@ Requisito 5 (regenerable sin intervencion manual, fuera de alcance explicito): e
 modulo no ejecuta `ffmpeg` ni comprueba que este instalado, no anade recodificacion,
 normalizacion de audio, cortes ni transiciones, y no cambia ninguna regla de
 `concat_ffmpeg.py`, `srt.py`/`srt_alineado.py` ni `capitulos_youtube.py` en si.
+
+R-31 cierra la grieta que abre la propia independencia de generacion de este modulo:
+como `calcular_comandos_montaje` es una funcion pura de `tomas_por_escena` (nunca relee
+del disco), el documento se genera igual si el dueno selecciona SOLO `COMANDOS_MONTAJE`
+sin tambien `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE`, citando esos tres archivos por su
+nombre fijo aunque no existan todavia en la carpeta de salida. Con `carpeta_salida`
+(parametro opcional, comprobacion de EXISTENCIA en disco, nunca de contenido -- eso ya
+lo hacen los validadores propios de cada salida en su propia ruta de generacion, R-21/
+R-28), cada archivo ausente gana una nota visible al principio del documento citando la
+opcion exacta del selector que hay que marcar -- nunca bloquea ni degrada la generacion.
 """
 
 from __future__ import annotations
@@ -59,6 +69,9 @@ from typing import Any
 from capitulos_youtube import formatear_capitulos_ffmpeg, generar_capitulos_youtube
 from concat_ffmpeg import EscenaPendiente, calcular_lista_concat_ffmpeg
 from config import (
+    DESCRIPCION_OPCION_CAPITULOS_YOUTUBE,
+    DESCRIPCION_OPCION_CONCAT_FFMPEG,
+    DESCRIPCION_OPCION_SRT,
     NOMBRE_ARCHIVO_CAPITULOS_FFMPEG,
     NOMBRE_ARCHIVO_COMANDOS_MONTAJE,
     NOMBRE_ARCHIVO_CONCAT_FFMPEG,
@@ -86,6 +99,16 @@ class PasoComandoMontaje:
 
 
 @dataclass(frozen=True)
+class ArchivoReferenciadoFaltante:
+    """Un archivo que los comandos citan por su nombre pero que todavia no
+    existe en la carpeta de salida (R-31): el dueno no selecciono tambien esa
+    opcion del selector en esta misma pasada, ni en ninguna anterior."""
+
+    nombre_archivo: str
+    descripcion_opcion: str
+
+
+@dataclass(frozen=True)
 class ResultadoComandosMontaje:
     """Salida de `calcular_comandos_montaje`.
 
@@ -96,13 +119,18 @@ class ResultadoComandosMontaje:
     `concat-ffmpeg.txt` que todavia no tienen un archivo de video real (sin toma
     buena, o con ella pero sin anotar) -- vacio significa que todas las escenas
     con toma buena ya tienen su archivo real. `incluye_capitulos` dice si el
-    tercer paso (capitulos) se incluyo.
+    tercer paso (capitulos) se incluyo. `archivos_referenciados_faltantes`
+    (R-31) son los archivos que los pasos citan por su nombre pero que todavia
+    no existen en `carpeta_salida` -- vacio si no se paso `carpeta_salida` a
+    `calcular_comandos_montaje` (comportamiento identico al de antes de R-31)
+    o si los tres ya estan en disco.
     """
 
     pasos: tuple[PasoComandoMontaje, ...]
     escenas_pendientes: tuple[EscenaPendiente, ...]
     incluye_capitulos: bool
     motivo_sin_generar: str | None
+    archivos_referenciados_faltantes: tuple[ArchivoReferenciadoFaltante, ...] = ()
 
 
 def calcular_comandos_montaje(
@@ -111,6 +139,7 @@ def calcular_comandos_montaje(
     nombre_guion: str,
     tomas_por_escena: dict[str, Any] | None = None,
     configuracion: Configuracion | None = None,
+    carpeta_salida: Path | None = None,
 ) -> ResultadoComandosMontaje:
     """Construye la secuencia de 1 a 3 comandos encadenados (requisito 1).
 
@@ -119,7 +148,14 @@ def calcular_comandos_montaje(
     en esta misma pasada de `scripts/salidas.py` -- nunca relee del disco lo que
     esas salidas ya hayan escrito, para no depender de que el dueno las haya
     seleccionado tambien en esta pasada (generacion independiente, T-30
-    requisito 3)."""
+    requisito 3).
+
+    `carpeta_salida` (R-31, opcional) solo se usa para comprobar si los
+    archivos referenciados por los pasos YA ESTAN en disco -- nunca para
+    releer ni revalidar su contenido (eso ya lo hacen sus propios validadores
+    en su propia ruta de generacion, R-21/R-28). Sin ella (`None`, valor por
+    defecto), el comportamiento es identico al de antes de R-31: ningun
+    archivo se marca como faltante."""
     configuracion = configuracion or Configuracion()
     tomas_por_escena = tomas_por_escena or {}
 
@@ -188,11 +224,28 @@ def calcular_comandos_montaje(
             )
         )
 
+    archivos_referenciados_faltantes: list[ArchivoReferenciadoFaltante] = []
+    if carpeta_salida is not None:
+        candidatos = [
+            (NOMBRE_ARCHIVO_CONCAT_FFMPEG, DESCRIPCION_OPCION_CONCAT_FFMPEG),
+            (nombre_srt, DESCRIPCION_OPCION_SRT),
+        ]
+        if incluye_capitulos:
+            candidatos.append(
+                (NOMBRE_ARCHIVO_CAPITULOS_FFMPEG, DESCRIPCION_OPCION_CAPITULOS_YOUTUBE)
+            )
+        archivos_referenciados_faltantes = [
+            ArchivoReferenciadoFaltante(nombre_archivo, descripcion_opcion)
+            for nombre_archivo, descripcion_opcion in candidatos
+            if not (carpeta_salida / nombre_archivo).exists()
+        ]
+
     return ResultadoComandosMontaje(
         pasos=tuple(pasos),
         escenas_pendientes=resultado_concat.escenas_pendientes,
         incluye_capitulos=incluye_capitulos,
         motivo_sin_generar=None,
+        archivos_referenciados_faltantes=tuple(archivos_referenciados_faltantes),
     )
 
 
@@ -208,7 +261,10 @@ def formatear_comandos_montaje(
     detiene antes de los capitulos (sin seccion `Capitulos` en el guion), lo
     dice explicitamente. Si quedan escenas de `concat-ffmpeg.txt` sin toma
     buena o sin archivo anotado, una nota al final avisa de que el resultado
-    no estara completo hasta grabar o anotar esas escenas."""
+    no estara completo hasta grabar o anotar esas escenas. Si algun archivo
+    referenciado todavia no existe en la carpeta de salida (R-31), una nota
+    al principio avisa de que opcion del selector hay que marcar para
+    generarlo antes de ejecutar los comandos."""
     if not resultado.pasos:
         return None
 
@@ -219,6 +275,19 @@ def formatear_comandos_montaje(
         "dentro de esta misma carpeta de salida."
     )
     lineas.append("")
+
+    if resultado.archivos_referenciados_faltantes:
+        lineas.append(
+            "**Archivos referenciados que todavía no existen en esta carpeta de "
+            "salida** — selecciona la opción correspondiente del selector de "
+            "salidas y vuelve a generar antes de ejecutar estos comandos:"
+        )
+        lineas.append("")
+        for faltante in resultado.archivos_referenciados_faltantes:
+            lineas.append(
+                f"- `{faltante.nombre_archivo}`: selecciona «{faltante.descripcion_opcion}»"
+            )
+        lineas.append("")
 
     for indice, paso in enumerate(resultado.pasos, start=1):
         lineas.append(f"## {indice}. {paso.descripcion}")
@@ -259,14 +328,16 @@ def generar_comandos_montaje(
     nombre_guion: str,
     tomas_por_escena: dict[str, Any] | None = None,
     configuracion: Configuracion | None = None,
+    carpeta_salida: Path | None = None,
 ) -> tuple[str | None, ResultadoComandosMontaje]:
     """Punto de entrada de R-30: calcula y formatea en un solo paso, mismo
     patron que `concat_ffmpeg.generar_lista_concat_ffmpeg`/
     `capitulos_youtube.generar_capitulos_youtube`. `contenido` es `None`
     cuando no hay nada que generar: no llamar a `guardar_comandos_montaje` en
-    ese caso."""
+    ese caso. `carpeta_salida` (R-31, opcional) se pasa tal cual a
+    `calcular_comandos_montaje`."""
     resultado_comandos = calcular_comandos_montaje(
-        resultado, resultado_tiempos, nombre_guion, tomas_por_escena, configuracion
+        resultado, resultado_tiempos, nombre_guion, tomas_por_escena, configuracion, carpeta_salida
     )
     contenido = formatear_comandos_montaje(resultado_comandos, nombre_guion)
     return contenido, resultado_comandos

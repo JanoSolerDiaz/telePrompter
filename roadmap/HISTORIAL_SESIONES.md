@@ -12,6 +12,64 @@
 
 ---
 
+### Sesión 2026-10-16 (173) — Ciclo de Programador: implementa R-31 (avisar de archivos referenciados ausentes en `comandos-montaje.md`)
+
+**Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `b62c0af`. `git checkout develop
+&& git pull origin develop` avanzó por fast-forward limpio hasta `7dc3036` (36 commits), sin
+ninguna divergencia que requiriera `git fetch --unshallow`/`--deepen` ni `reset --hard`. `git
+status` limpio antes y después.
+
+**Dependencias.** `python3 -m pip install -r requirements-dev.txt` (no el `pip` desnudo del
+`PATH`, lección ya documentada por `#28`/P-06) instaló `mypy==1.18.2`/`ruff==0.14.0`/
+`pytest==8.4.2` contra el intérprete real (Python 3.11.17).
+
+**Revisión de entrada (protocolo).** `auditoriacontinua.md` revisado entero: dos `ABIERTO`
+(`#24`, baja, prosa de "Cola de producto" desactualizada entre ciclos de PM; `#30`, media,
+cadencia de la rutina Programador), ambos de proceso puro, sin relación con el código ni con
+pérdida de texto/corrupción de estado/rotura del reproductor/seguridad — ninguno exige P-XX
+urgente antes de la cola normal. §1 de `SEGUIMIENTO.md` (fuente autoritativa) traía a **R-31 como
+única fila `PENDIENTE`**; spec completa leída en `ROADMAP_PRODUCTO.md` §Oleada v19.
+`DECISIONES_TECNICAS.md` consultado en el área a tocar (`comandos_montaje.py`/`salidas.py`): sin
+ninguna decisión previa que contradecir.
+
+**Implementa R-31.** `comandos_montaje.calcular_comandos_montaje` gana `carpeta_salida: Path |
+None = None` (requisito 1): comprueba en disco (solo existencia, nunca contenido — los
+validadores de R-21/R-28 ya cubren el formato) si `concat-ffmpeg.txt`, el `.srt` elegido (misma
+decisión real/alineado del paso de subtítulos) y, solo con el tercer paso incluido,
+`capitulos-ffmpeg.txt` están presentes. Dataclass nueva `ArchivoReferenciadoFaltante`
+(`ResultadoComandosMontaje.archivos_referenciados_faltantes`); `formatear_comandos_montaje` la
+vuelca como nota visible al principio del documento (requisito 2), sin bloquear ni degradar la
+generación (requisito 3). Descripciones de opción centralizadas en `config.py`
+(`DESCRIPCION_OPCION_CONCAT_FFMPEG`/`_SRT`/`_CAPITULOS_YOUTUBE`), reutilizadas tal cual por
+`salidas.py::DESCRIPCION_SALIDA` para evitar un ciclo de imports con `comandos_montaje.py`.
+`scripts/salidas.py::_generar_comandos_montaje` reenvía `carpeta_salida`, ya recibida desde R-30.
+Sin `carpeta_salida`, comportamiento idéntico al de antes de R-31 (compatibilidad verificada con
+test dedicado). `TODAS_LAS_SALIDAS` procesa `COMANDOS_MONTAJE` en último lugar, así que
+seleccionar también las otras tres opciones en la misma pasada no produce ninguna nota (requisito
+4, verificado con test nuevo).
+
+**Documentación.** `references/contrato-montaje.md` gana el párrafo de R-31;
+`DEVELOPERS.md` gana la sección "Advertir de archivos referenciados ausentes en
+`comandos-montaje.md` (R-31)"; `DECISIONES_TECNICAS.md` gana la fila de implementación (detalle
+de las tres alternativas consideradas para centralizar el texto de las opciones del selector).
+`SKILL.md` no cambia (sin migración, sin campo nuevo de `Configuracion`).
+
+**Verificación.** `mypy`/`ruff` en verde (72 archivos), 696 tests en verde (690→696: 5 en
+`tests/test_comandos_montaje.py`, 1 en `tests/test_salidas.py`; dos tests existentes de R-30
+actualizados para reflejar la nota nueva en vez de romperse), diecinueve etapas OK en
+`verificar_salidas.py --fixture`. Cuatro redes en verde.
+
+**Cambios de estado.** §1 de `SEGUIMIENTO.md`: R-31 pasa de `PENDIENTE` a `COMPLETADA`
+(2026-10-16). Decisión nueva en `DECISIONES_TECNICAS.md`: fila "R-31 (implementación)". Sin
+cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `#11`/`#12` `(pendiente)`
+de respuesta del dueño. `ROADMAP_PRODUCTO.md` no se toca (su prosa de "Oleada v19 — EN CURSO"
+queda desactualizada hasta el próximo ciclo de PM que la archive — mismo patrón del hallazgo
+`#24`).
+
+**Push.** Commit y push a `origin/develop`.
+
+---
+
 ### Sesión 2026-10-15 (172) — Ciclo de Product Manager: archiva Oleada v18 (R-30), corrige el hallazgo `#31` y abre R-31 (Oleada v19)
 
 **Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta

@@ -3652,6 +3652,64 @@ fricción manual que el resto del producto ya eliminaba pieza a pieza.
   en verde. Detalle completo de las decisiones de diseño en
   `DECISIONES_TECNICAS.md`.
 
+## Advertir de archivos referenciados ausentes en `comandos-montaje.md` (R-31)
+
+`comandos_montaje.calcular_comandos_montaje` (R-30) es, por diseño, una función
+**pura** de `tomas_por_escena`: nunca relee del disco lo que `concat-ffmpeg.txt`,
+`guion.srt`/`guion-alineado.srt` o `capitulos-ffmpeg.txt` ya hayan escrito, para no
+depender de que el dueño haya seleccionado también esas salidas en la misma pasada
+(generación independiente, T-30 requisito 3). Esa misma independencia abría una
+grieta: seleccionando SOLO `COMANDOS_MONTAJE`, el documento citaba esos tres
+archivos por su nombre fijo aunque no existieran todavía — el propio test de R-30
+(`test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`)
+ya lo demostraba.
+
+- **Comprobación de existencia, no de contenido** (requisito 1).
+  `calcular_comandos_montaje` gana un parámetro opcional `carpeta_salida: Path |
+  None = None`: con él, comprueba si `concat-ffmpeg.txt`, el `.srt` elegido (la
+  misma decisión real/alineado ya calculada para el paso de subtítulos) y, solo
+  cuando el tercer paso está incluido, `capitulos-ffmpeg.txt` existen de verdad en
+  esa carpeta — nunca revalida su formato, eso ya lo hacen los validadores propios
+  de R-21/R-28 en su propia ruta de generación. Sin `carpeta_salida` (valor por
+  defecto `None`, cualquier llamada directa preexistente), el comportamiento es
+  idéntico al de antes de R-31.
+- **Nota visible, nunca bloqueo** (requisitos 2 y 3). Cada archivo ausente se
+  recoge en `ResultadoComandosMontaje.archivos_referenciados_faltantes`
+  (`ArchivoReferenciadoFaltante`, dataclass nueva con `nombre_archivo`/
+  `descripcion_opcion`); `formatear_comandos_montaje` la vuelca como una sección
+  propia al principio del documento, antes de los pasos, citando el nombre del
+  archivo y la opción exacta del selector que hay que marcar. Ningún archivo
+  faltante degrada la salida a `SalidaOmitida` ni a fallo: el documento se genera
+  igual, con la nota añadida.
+- **Mismo texto que `DESCRIPCION_SALIDA`, sin ciclo de imports** (requisito 2,
+  literal). Las tres descripciones (`DESCRIPCION_OPCION_CONCAT_FFMPEG`/`_SRT`/
+  `_CAPITULOS_YOUTUBE`) se centralizan como constantes de módulo en `config.py` —
+  ni en `salidas.py` (crearía el ciclo: ya importa de `comandos_montaje.py` desde
+  R-30) ni duplicadas a mano en `comandos_montaje.py` (dos fuentes de verdad que
+  podrían desincronizarse). `salidas.py::DESCRIPCION_SALIDA` pasa a leer esas
+  mismas constantes para las tres opciones correspondientes.
+- **Sin falso positivo** (requisito 4). `scripts/salidas.py::TODAS_LAS_SALIDAS`
+  procesa `COMANDOS_MONTAJE` en último lugar (octava opción): si el dueño
+  selecciona también `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE` en la misma pasada,
+  esos archivos ya están en disco cuando a `COMANDOS_MONTAJE` le toca el turno —
+  la comprobación solo mira el disco real en ese momento, sin ningún orden
+  especial ni selección forzada. Lo mismo si ya existían de una pasada anterior
+  sobre la misma carpeta.
+- **Fuera de alcance** (requisito 5): no se valida el contenido de los archivos
+  referenciados; no se fuerza a generarlos automáticamente; cero cambio en
+  `concat_ffmpeg.py`, `srt.py`/`srt_alineado.py` ni `capitulos_youtube.py` en sí,
+  ni en la generación independiente de T-30 requisito 3.
+- **Verificación.** 6 tests nuevos (690→696): 5 en `tests/test_comandos_montaje.py`
+  (sin `carpeta_salida` no cambia nada, compatibilidad hacia atrás; carpeta vacía
+  avisa de los tres archivos con la opción exacta de cada uno; sin sección
+  `Capítulos` no avisa del archivo de capítulos, que nunca se referencia; con los
+  tres ya en disco no avisa de nada; sin toma alineada el archivo que falta es el
+  `.srt` estimado, no el alineado) y 1 en `tests/test_salidas.py` (seleccionando
+  las cuatro opciones a la vez no aparece ninguna nota). Los dos tests existentes
+  de R-30 que comparaban `comandos-montaje.md` con `concat-ffmpeg.txt` ausente se
+  actualizaron para reflejar la nota nueva. Cuatro redes en verde. Detalle
+  completo de las decisiones de diseño en `DECISIONES_TECNICAS.md`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
