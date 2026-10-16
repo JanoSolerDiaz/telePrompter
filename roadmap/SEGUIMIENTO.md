@@ -10,12 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-16 — **Ciclo de Programador: cuarta reconfirmación del día
+**Última actualización:** 2026-10-16 — **Ciclo de Programador: quinta reconfirmación del día
 tras R-31, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-16), cuarta reconfirmación del día tras R-31.** Revisión de
-entrada (protocolo): el contenedor arrancó con `HEAD` *detached* sobre `2716322` (ya con la
-tercera reconfirmación del día empujada); `git checkout develop && git pull origin develop`
+**Ciclo de Programador (2026-10-16), quinta reconfirmación del día tras R-31.** Revisión de
+entrada (protocolo): el contenedor arrancó con `HEAD` *detached* sobre `86c8cc2` (ya con la
+cuarta reconfirmación del día empujada); `git checkout develop && git pull origin develop`
 confirmó que no había nada nuevo que traer. `git status` limpio antes y después. Dependencias de
 desarrollo reinstaladas con `python3 -m pip install -r requirements-dev.txt` (no el `pip` desnudo
 del `PATH`, que de nuevo resolvió contra Python 3.13 en vez del intérprete real — mismo síntoma de
@@ -42,13 +42,13 @@ Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `
 toca (su prosa de "Oleada v19 — EN CURSO"/R-31 queda desactualizada hasta el próximo ciclo de PM
 que la archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`). Sin decisiones
 nuevas en `DECISIONES_TECNICAS.md` (nada que registrar: ningún cambio de código ni de criterio
-en esta sesión). **Nota sobre `#30`:** esta es la cuarta reconfirmación horaria sin tarea
+en esta sesión). **Nota sobre `#30`:** esta es la quinta reconfirmación horaria sin tarea
 pendiente desde que R-31 se completó esta misma jornada — el mismo patrón que el hallazgo ya
 documenta, sin que ninguno de los dos remedios propuestos (espaciar el cron / comprobación
 barata de cola vacía) esté autorizado todavía; se sigue el protocolo completo tal como está
 escrito hasta que el dueño responda a la pregunta `#12`.
 
-**Última actualización anterior (2026-10-16, ciclo de Programador): tercera reconfirmación del
+**Última actualización anterior (2026-10-16, ciclo de Programador): cuarta reconfirmación del
 día tras R-31, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-16), segunda reconfirmación del día tras R-31.** Revisión de
