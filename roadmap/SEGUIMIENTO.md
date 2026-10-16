@@ -10,8 +10,46 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-16 — **Ciclo de Programador: quinta reconfirmación del día
+**Última actualización:** 2026-10-16 — **Ciclo de Programador: sexta reconfirmación del día
 tras R-31, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-16), sexta reconfirmación del día tras R-31.** Revisión de
+entrada (protocolo): el contenedor arrancó con `HEAD` *detached* sobre `7d7afe0` (ya con la
+quinta reconfirmación del día empujada); `git checkout develop && git pull origin develop`
+confirmó que no había nada nuevo que traer. `git status` limpio antes y después. Dependencias de
+desarrollo reinstaladas con `python3 -m pip install -r requirements-dev.txt` (no el `pip` desnudo
+del `PATH`, que de nuevo resolvió contra Python 3.13 en vez del intérprete real — mismo síntoma de
+`#28`/P-06, reconfirmado una vez más en esta sesión).
+
+Registro de hallazgos de `auditoriacontinua.md` (auditoría 2026-10-16, sin cambios desde la
+última lectura) revisado antes de proceder: dos `ABIERTO` (`#24`, baja; `#30`, media), ambos de
+proceso puro y sin relación con el código, ninguno de severidad alta (pérdida de texto del
+guión, corrupción de `estado.json`, rotura del reproductor/auto-contención, seguridad) que
+atender como P-XX urgente antes de la cola normal. §1 (fuente autoritativa) **sin ninguna fila
+`PENDIENTE`**: R-31 sigue `COMPLETADA` desde el ciclo de Programador de esta misma jornada — cola
+vacía hasta el próximo ciclo de PM que archive la Oleada v19 y abra la siguiente.
+`roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila de plantilla vacía, sin ninguna
+entrada `nuevo`. `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+**Sin cambio de código.** Verificación propia completa (`mypy`, `ruff`, `pytest`,
+`verificar_salidas.py --fixture`): `mypy`/`ruff` en verde (72 archivos), 696 tests en verde (sin
+cambio desde R-31), diecinueve etapas OK en `verificar_salidas.py --fixture`. Cuatro redes en
+verde.
+
+Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se
+toca (su prosa de "Oleada v19 — EN CURSO"/R-31 queda desactualizada hasta el próximo ciclo de PM
+que la archive — mismo patrón ya descrito y aceptado en el hallazgo `#24`). Sin decisiones
+nuevas en `DECISIONES_TECNICAS.md` (nada que registrar: ningún cambio de código ni de criterio
+en esta sesión). **Nota sobre `#30`:** esta es la sexta reconfirmación horaria sin tarea
+pendiente desde que R-31 se completó esta misma jornada — el mismo patrón que el hallazgo ya
+documenta, sin que ninguno de los dos remedios propuestos (espaciar el cron / comprobación
+barata de cola vacía) esté autorizado todavía; se sigue el protocolo completo tal como está
+escrito hasta que el dueño responda a la pregunta `#12`.
+
+**Última actualización anterior (2026-10-16, ciclo de Programador): quinta reconfirmación del
+día tras R-31, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-16), quinta reconfirmación del día tras R-31.** Revisión de
 entrada (protocolo): el contenedor arrancó con `HEAD` *detached* sobre `86c8cc2` (ya con la
