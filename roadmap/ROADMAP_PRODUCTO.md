@@ -8,42 +8,38 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-15 (ciclo de PM). **R-30 (Oleada v18) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del propio 2026-10-14 que la implementó (encadenado
-en `comandos-montaje.md` de los tres comandos `ffmpeg` reales de montaje, reutilizando tal cual las
-piezas ya construidas por R-05/R-19/R-22, octava opción del selector de salidas). Movida a
-`roadmap/ROADMAP_HISTORICO.md` (Oleada v18) junto con el resto de oleadas 100 % entregadas. §1 de
-`SEGUIMIENTO.md` llevaba desde esa misma madrugada sin ninguna fila `PENDIENTE` — nueve
-reconfirmaciones horarias del Programador a lo largo del día sin tarea que ejecutar, el mismo coste
-que señala el hallazgo `#30`/pregunta `#12` (aún sin respuesta del dueño).
+**Última actualización:** 2026-10-16 (ciclo de PM). **R-31 (Oleada v19) está `COMPLETADA`** (§1 de
+`SEGUIMIENTO.md`) desde el ciclo de Programador del propio 2026-10-16 que la implementó (aviso de
+archivos referenciados ausentes en `comandos-montaje.md`, reutilizando tal cual la comprobación de
+existencia en disco). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v19) junto con el resto de
+oleadas 100 % entregadas. §1 de `SEGUIMIENTO.md` llevaba desde esa misma madrugada sin ninguna fila
+`PENDIENTE` — nueve reconfirmaciones horarias del Programador a lo largo del día sin tarea que
+ejecutar, el mismo coste que señala el hallazgo `#30`/pregunta `#12` (aún sin respuesta del dueño).
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
-curso completo) sigue abierto. El registro de hallazgos de `auditoriacontinua.md` trae un hallazgo
-nuevo de proceso puro (`#31`, baja: la apertura de R-30 no dejó su fila en `DECISIONES_TECNICAS.md`
-— corregida en este mismo ciclo, ver nota de gobernanza en `ROADMAP_HISTORICO.md`, Oleada v18) y
-reconfirma los dos ya conocidos (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de
-PM; `#30`, cadencia de la rutina "Programador"), los tres de severidad baja/media, sin relación con
-el código, pendientes solo de la respuesta del dueño a las preguntas de gobernanza #11/#12 de
+curso completo) sigue abierto. La auditoría del propio día (`auditoriacontinua.md`, 2026-10-16) no
+trae hallazgos nuevos: solo reconfirma los dos ya conocidos (`#24`, prosa de "Cola de producto"
+desactualizada entre ciclos de PM; `#30`, cadencia de la rutina "Programador"), ambos de
+proceso/gobernanza puro, pendientes solo de la respuesta del dueño a las preguntas #11/#12 de
 `SEGUIMIENTO.md` §6 — ninguno de producto/arquitectura que convertir en R-XX nueva por esta vía.
 
-**Se abre R-31** (Oleada v19): tampoco por auditoría ni por `FEEDBACK.md`, sino por el mismo tercer
-criterio que abrió R-12 a R-30 — una **grieta de arquitectura verificada sobre código ya
-construido**, esta vez en la propia salida que R-30 acaba de entregar. `comandos-montaje.md` calcula
-sus tres comandos como una función pura de `tomas_por_escena` (R-30, por diseño: "nunca relee del
-disco lo que otras salidas ya hayan escrito"), así que puede generarse seleccionando SOLO
-`COMANDOS_MONTAJE` en el selector de salidas, sin seleccionar también `CONCAT_FFMPEG`/`SRT`/
-`CAPITULOS_YOUTUBE` (generación independiente, T-30 requisito 3) — en ese caso el documento referencia
-`concat-ffmpeg.txt`/el `.srt` elegido/`capitulos-ffmpeg.txt` por su nombre fijo aunque esos archivos
-no existan todavía en la carpeta de salida. No es una hipótesis: el propio test de R-30
-(`tests/test_salidas.py::test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`)
-fija y prueba exactamente ese caso — `not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()` a la vez
-que `"concat-ffmpeg.txt" in archivo.ruta.read_text(...)`. El dueño que siga ese documento al pie de la
-letra la primera vez se encontraría con un `ffmpeg`: `concat-ffmpeg.txt: No such file or directory`.
-Detalle completo en "Oleada v19" más abajo.
+**Se abre R-32** (Oleada v20): tampoco por auditoría ni por `FEEDBACK.md`, sino por el mismo tercer
+criterio que abrió R-12 a R-31 — una **grieta de arquitectura verificada sobre código ya
+construido**, esta vez en el exportador `.pdf` (T-28). `convertir_html_a_pdf` nunca lanza una
+excepción (decisión deliberada de T-28): cuando Chrome/Edge headless arranca pero la conversión
+falla de verdad (código de salida distinto de cero, tiempo agotado, proceso roto), `_generar_pdf`
+(`scripts/salidas.py`) clasifica el resultado exactamente igual que cuando Chrome/Edge **no está
+instalado**: `SalidaLatente`. Eso contradice el propio contrato documentado de `SalidaLatente`
+("nunca se confunde con un fallo: el motivo es siempre la falta de una dependencia externa, no un
+error del código") y dista de cómo se trata un fallo real en cualquier otra salida desde R-24: ni
+`volcar_diagnostico` ni `obtener_logger().error(...)` se invocan nunca para este caso, así que un
+Chrome que revienta en el entorno del dueño no deja ningún rastro en `teleprompter.log` ni en
+`diagnostico-<timestamp>.log` — la única salida del selector cuyo fallo real queda sin diagnóstico.
+Detalle completo en "Oleada v20" más abajo.
 
 Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-31 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+spec de R-32 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
 
 ---
 
@@ -234,84 +230,88 @@ en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se mov
 se corrigió el hallazgo `#31` (fila de apertura faltante en `DECISIONES_TECNICAS.md`). Su spec
 completa y cómo se entregó viven ahí.
 
-### Oleada v19 — EN CURSO
+### Oleada v19 — entregada
 
-#### R-31 — Advertir en `comandos-montaje.md` cuando el documento referencia un archivo que no existe todavía en esta carpeta de salida, en vez de dar por hecho que las demás salidas de las que depende ya se generaron
+La oleada v19 (avisar en `comandos-montaje.md` de archivos referenciados que no existen todavía en
+la carpeta de salida real, R-31) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin
+ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM
+(2026-10-16). Su spec completa y cómo se entregó viven ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json`; mismo módulo y misma salida de R-30, solo
-gana una comprobación adicional antes de formatear el texto) · **Depende de:** R-30 (`COMPLETADA`) ·
-**Origen:** observación de arquitectura del PM (2026-10-15) — grieta de arquitectura verificada sobre
-código ya construido (mismo tercer criterio que abrió R-12 a R-30), esta vez en la propia salida que
-R-30 acaba de entregar, no en código heredado de tareas anteriores.
+### Oleada v20 — EN CURSO
 
-**Objetivo:** `comandos_montaje.calcular_comandos_montaje` (R-30) es, por diseño deliberado, una
-función **pura** de `tomas_por_escena`: nunca relee del disco lo que `concat-ffmpeg.txt`,
-`guion.srt`/`guion-alineado.srt` o `capitulos-ffmpeg.txt` ya hayan escrito, precisamente para no
-depender de que el dueño haya seleccionado también esas otras salidas en la misma pasada (generación
-independiente, T-30 requisito 3). Esa misma independencia es la que abre la grieta: el selector de
-salidas (`scripts/salidas.py`) deja elegir **solo** `COMANDOS_MONTAJE` sin elegir también
-`CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE`, y en ese caso `comandos-montaje.md` se genera igual,
-citando esos tres archivos por su nombre fijo como si ya existieran en la carpeta de salida. No es
-una hipótesis del PM: el propio test de R-30
-(`tests/test_salidas.py::test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg`)
-fija y prueba exactamente este caso —selecciona solo `COMANDOS_MONTAJE`, confirma con
-`not (tmp_path / NOMBRE_ARCHIVO_CONCAT_FFMPEG).exists()` que `concat-ffmpeg.txt` NO está en disco, y
-a la vez confirma que `"concat-ffmpeg.txt" in archivo.ruta.read_text(...)`—. Un dueño que, sin
-conocer ese matiz, copie el primer comando de `comandos-montaje.md` tal cual la primera vez se
-encuentra con `ffmpeg: concat-ffmpeg.txt: No such file or directory`, exactamente el tipo de
-fricción manual silenciosa que el resto del producto (y la propia R-30) existe para eliminar.
+#### R-32 — Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad
+
+**Migración:** No (ningún campo nuevo en `estado.json`; un campo aditivo en `ResultadoPdf` y un
+tercer elemento en la tupla de retorno de `_generar_pdf`) · **Depende de:** T-05, T-28, R-24 (todas
+`COMPLETADA`) · **Origen:** observación de arquitectura del PM (2026-10-16) — grieta de arquitectura
+verificada sobre código ya construido (mismo tercer criterio que abrió R-12 a R-31), esta vez en el
+único generador de salidas que aísla sus propios fallos reales sin pasar por el patrón de
+diagnóstico que R-24 ya construyó para el resto.
+
+**Objetivo:** `scripts/pdf.py::convertir_html_a_pdf` nunca lanza una excepción (decisión ya tomada y
+documentada en `DECISIONES_TECNICAS.md`, T-28: "cualquier fallo... se devuelve como mensaje
+accionable"): cuando el ejecutable de Chrome/Edge no se encuentra, o cuando se encuentra pero la
+conversión falla de verdad (código de salida distinto de cero, `OSError`, tiempo agotado — p. ej. un
+guion muy largo, o un sandbox que exige `--no-sandbox` en un entorno distinto al ya contemplado),
+devuelve en ambos casos `(False, mensaje)`. `scripts/salidas.py::_generar_pdf` (el consumidor real)
+no distingue entre los dos: los dos acaban como `SalidaLatente`, exactamente el mismo contenedor que
+usa el caso "la skill de marca 480-branded-pptx no está instalada" (T-29). Eso contradice el propio
+contrato documentado de `SalidaLatente` — "nunca se confunde con un fallo: el motivo es siempre la
+falta de una dependencia externa, no un error del código" (docstring de `scripts/salidas.py`) — y
+dista de cómo se trata un fallo real en cualquier otra salida desde R-24: ni `volcar_diagnostico` ni
+`obtener_logger().error(...)` se invocan nunca en esta ruta, verificado con `grep`
+(`scripts/pdf.py` no importa `logger` ni `monitorizacion` en absoluto). Un Chrome que revienta en el
+entorno real del dueño queda así indistinguible, en el resumen final y en los registros, de "no
+tengo Chrome instalado" (que no requiere ninguna acción) — sin ningún `diagnostico-<timestamp>.log`
+que investigar, pese a que T-05/R-24 construyeron esa infraestructura precisamente para este tipo de
+consumidor.
 
 Decisiones de diseño ya tomadas para acotar el alcance:
-- **Comprobación de existencia en disco, no de contenido.** Los tres archivos referenciados
-  (`concat-ffmpeg.txt`, el `.srt` que corresponda, `capitulos-ffmpeg.txt`) ya tienen su propio
-  validador de formato en su propia ruta de generación (R-21/R-28): esta tarea solo necesita saber
-  si el archivo **está** en `carpeta_salida` (de esta misma pasada o de una anterior), no releer ni
-  revalidar su contenido.
-- **El orden de `TODAS_LAS_SALIDAS` ya resuelve el caso favorable.** `COMANDOS_MONTAJE` es la octava
-  y última opción que procesa `scripts/salidas.py::generar_salidas_seleccionadas`; si el dueño
-  selecciona también `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE` en la misma pasada, esos archivos ya
-  estarán escritos en disco cuando le toque el turno a `COMANDOS_MONTAJE` — la comprobación de
-  existencia no necesita ningún orden especial ni forzar nada, solo mirar el disco real en el
-  momento en que a ella le toca generarse.
-- **Nunca bloquea ni degrada la generación.** Mismo principio que ya fijó R-30 ("cada paso es
-  opcional y el encadenado nunca se rompe por un hueco"): un archivo ausente en disco es un hueco
-  más que reportar con una nota visible, igual que ya hace el documento con las escenas sin toma
-  buena o sin archivo anotado — nunca un motivo para que la salida entera quede omitida o en fallo.
-- **No se fuerza ninguna selección conjunta.** Seleccionar `COMANDOS_MONTAJE` sigue sin exigir
-  seleccionar también las otras tres opciones (generación independiente, T-30 requisito 3 — pilar
-  del selector desde T-30, no se toca); el remedio es avisar, no acoplar.
+- **No se toca `convertir_html_a_pdf`.** Sigue sin lanzar nunca una excepción (decisión ya tomada en
+  T-28); la distinción y el diagnóstico viven solo en `_generar_pdf` (`scripts/salidas.py`), el mismo
+  sitio donde ya vive el patrón de diagnóstico de R-24 para las demás salidas.
+- **El HTML de impresión nunca se pierde de vista.** Se genera con éxito siempre, se clasifique el
+  resto como latente o como fallo real (requisito 4 de T-28: "nunca falla por la ausencia de
+  Chrome"); sigue apareciendo en `generadas` exactamente igual que hoy en los tres desenlaces.
+- **El caso "Chrome no encontrado" no cambia en absoluto.** Sigue siendo `SalidaLatente` con el mismo
+  mensaje de Ctrl+P, sin ningún diagnóstico — es exactamente la dependencia externa opcional que
+  `SalidaLatente` documenta, no un fallo.
+- **Reutilizar tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger`** (`monitorizacion.py`/
+  `logger.py`, R-24): mismo mensaje de `SalidaOmitida` ("fallo al generar: revisa el diagnóstico
+  técnico en {ruta}") que ya usan las demás salidas, para que el resumen final no tenga un formato
+  distinto para el `.pdf`.
 
 **Requisitos:**
-1. `scripts/comandos_montaje.py::calcular_comandos_montaje` (o, si encaja mejor con cómo ya recibe
-   `carpeta_salida`, `scripts/salidas.py::_generar_comandos_montaje`) comprueba, tras construir los
-   pasos, si `concat-ffmpeg.txt`, el `.srt` elegido (`guion-alineado.srt` si hay alineación, si no
-   `guion.srt`) y, solo cuando el tercer paso está incluido, `capitulos-ffmpeg.txt` existen de
-   verdad en `carpeta_salida`.
-2. `formatear_comandos_montaje` añade, por cada archivo referenciado que falte, una nota visible
-   (bajo el paso que lo usa, o agrupada en una sección propia antes de los pasos) citando el nombre
-   del archivo que falta y la opción exacta del selector que hay que marcar para generarlo (el mismo
-   texto de `DESCRIPCION_SALIDA` en `scripts/salidas.py`), para que el dueño sepa qué seleccionar la
-   próxima vez antes de ejecutar el comando.
-3. Ningún archivo faltante bloquea la generación de `comandos-montaje.md` ni lo degrada a
-   `SalidaOmitida`/fallo: el documento se genera igual, con la nota añadida.
-4. Si los tres archivos referenciados ya existen en `carpeta_salida` (de esta misma pasada o de una
-   anterior), el documento no gana ninguna línea nueva respecto al comportamiento actual de R-30 —
-   sin falso positivo.
-5. Fuera de alcance, explícito: no se valida el CONTENIDO de los archivos referenciados (ya lo hacen
-   sus propios validadores en su propia ruta de generación, R-21/R-28); no se fuerza a generarlos
-   automáticamente ni se cambia la generación independiente de T-30 requisito 3; no se cambia ninguna
-   regla de `concat_ffmpeg.py`, `srt.py`/`srt_alineado.py` ni `capitulos_youtube.py` en sí.
+1. `ResultadoPdf` (`scripts/pdf.py`) gana el campo `chrome_detectado: bool`: `True` siempre que
+   `detectar_ejecutable_chrome` haya encontrado un ejecutable, con independencia de si la conversión
+   tuvo éxito; `False` solo cuando no se encontró ninguno. Cero cambio en `convertir_html_a_pdf` (sigue
+   devolviendo `(bool, str)`, nunca lanza).
+2. `_generar_pdf` distingue tres desenlaces en vez de dos: éxito (sin cambios); `chrome_detectado=False`
+   → `SalidaLatente` (sin cambios, mismo mensaje); `chrome_detectado=True` y conversión fallida →
+   fallo real: vuelca diagnóstico con `volcar_diagnostico`/`ruta_diagnostico` (con una excepción
+   construida a partir del mensaje de `convertir_html_a_pdf`, para dejar tipo+mensaje+traceback real
+   tal como exige T-05), registra en el logger con `obtener_logger().error(...)` y devuelve
+   `SalidaOmitida(TipoSalida.PDF, f"fallo al generar: revisa el diagnóstico técnico en {ruta}")` —
+   mismo mensaje exacto que usa el `except Exception` genérico de `generar_salidas_seleccionadas`
+   para las demás salidas.
+3. `_generar_pdf` cambia su firma de retorno de `(generadas, latentes)` a
+   `(generadas, latentes, omitidas)`; `generar_salidas_seleccionadas` actualiza su único punto de
+   llamada para repartir la tercera lista en `omitidas`, igual que ya hace con otras salidas de tres
+   vías.
+4. El HTML de impresión sigue apareciendo siempre en `generadas`, tanto en el caso latente como en el
+   de fallo real — nunca se pierde ni se oculta silenciosamente.
+5. Fuera de alcance, explícito: no se cambia `convertir_html_a_pdf` ni su contrato de "nunca lanza";
+   no se reintenta la conversión; no se cambia la detección de Chrome/Edge ni el flag
+   `--no-sandbox`; no se toca `verificar_salidas.py` (su propia etapa de PDF ya trata el resultado
+   como informativo, sin ninguna clasificación latente/omitida que corregir).
 
-**Criterio de aceptación:** seleccionando solo `COMANDOS_MONTAJE` (sin `CONCAT_FFMPEG`/`SRT`/
-`CAPITULOS_YOUTUBE`) sobre un guion con parte de rodaje completo, `comandos-montaje.md` trae los
-tres comandos de siempre MÁS una nota visible por cada uno de los tres archivos referenciados que no
-está en la carpeta de salida; seleccionando las cuatro opciones a la vez en la misma pasada, el
-documento no trae ninguna nota (todos ya en disco cuando le toca el turno a `COMANDOS_MONTAJE`);
-seleccionando solo `COMANDOS_MONTAJE` tras una pasada anterior que ya dejó esos tres archivos en esa
-misma carpeta, tampoco aparece ninguna nota (existencia real en disco, no "seleccionado en esta
-pasada"). Test nuevo que reproduce el escenario ya fijado por
-`test_comandos_montaje_es_independiente_de_que_tambien_se_seleccione_concat_ffmpeg` verificando que
-ahora SÍ aparece el aviso. Cuatro redes en verde.
+**Criterio de aceptación:** forzando (vía monkeypatch de test, mismo patrón que R-21/R-28) que
+`convertir_html_a_pdf` devuelva éxito `False` con un ejecutable de Chrome detectado, `_generar_pdf`
+deja un `diagnostico-<timestamp>.log` en la carpeta de salida, registra el fallo en el logger y
+clasifica el `.pdf` como `SalidaOmitida` (no `SalidaLatente`), con el HTML de impresión intacto en
+`generadas`; sin Chrome detectado en absoluto, el comportamiento es idéntico al de antes de R-32
+(test de regresión): `SalidaLatente` con el mismo mensaje, sin ningún diagnóstico. Cuatro redes en
+verde.
 
 ---
 

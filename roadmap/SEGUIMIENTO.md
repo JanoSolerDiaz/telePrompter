@@ -10,7 +10,65 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-16 — **Ciclo de Programador: novena reconfirmación del día
+**Última actualización:** 2026-10-16 — **Ciclo de Product Manager: archiva Oleada v19 (R-31) y
+abre R-32 (Oleada v20)**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-16): archiva Oleada v19 (R-31) y abre R-32 (Oleada v20).**
+Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` avanzó por
+fast-forward limpio hasta `7fcbaab` (la novena reconfirmación del Programador tras R-31, ya
+empujada), sin ninguna divergencia que resolver. Dependencias de desarrollo instaladas con
+`pip install -r requirements-dev.txt`, tal como exige el protocolo para una sesión de nube.
+
+**Revisión de hallazgos y feedback (§0.1.2/§0.1.3 del encargo).** `auditoriacontinua.md` (última
+pasada, 2026-10-16): cero hallazgos nuevos; el registro queda con los mismos dos `ABIERTO` de
+siempre (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de PM; `#30`, cadencia de
+la rutina "Programador"), ambos de proceso/gobernanza puro, ya enrutados como preguntas `#11`/`#12`
+de §6 pendientes solo de la respuesta del dueño — nada que convertir en R-XX nueva ni en deuda
+técnica por esta vía; ninguno de severidad alta, por lo que tampoco hay P-XX urgente que atender
+antes de este ciclo. `roadmap/FEEDBACK.md` revisado: sigue con su única fila de plantilla vacía, sin
+ninguna entrada `nuevo` — no hay historia de rodaje real que incorporar (bloqueo #7 de §3, grabar un
+curso completo, sigue abierto).
+
+§1 (fuente autoritativa) sin ninguna fila `PENDIENTE`: R-31 `COMPLETADA` desde el ciclo de
+Programador de esta misma jornada (commit `3cb5075`), reconfirmada en verde nueve veces seguidas sin
+tarea nueva. **Archivada la Oleada v19 (R-31)** en `roadmap/ROADMAP_HISTORICO.md` (nota "Movido a
+histórico el: 2026-10-16" al principio del documento, más la sección completa con su "Cómo se
+entregó" y la nota de gobernanza del hallazgo `#31`). `ROADMAP_PRODUCTO.md` corregido en el mismo
+ciclo: cabecera reescrita, sección "Oleada v19" sustituida por la nota de archivo.
+
+**Abre R-32 (Oleada v20).** Tercer criterio ya establecido (R-12 a R-31): grieta de arquitectura
+verificada sobre código ya construido, esta vez en el exportador `.pdf` (T-28). Verificado con
+`grep` real (no solo lectura): `scripts/pdf.py` no importa `logger` ni `monitorizacion` en
+absoluto — los dos únicos módulos que invocan `obtener_logger()` son `monitorizacion.py` y
+`salidas.py`. `convertir_html_a_pdf` nunca lanza una excepción (decisión ya documentada en T-28):
+devuelve `(False, mensaje)` tanto si Chrome/Edge no se encuentra como si se encuentra pero la
+conversión falla de verdad (código de salida ≠ 0, `OSError`, tiempo agotado). `_generar_pdf`
+(`scripts/salidas.py`) clasifica los dos casos igual, como `SalidaLatente` — el mismo contenedor
+cuyo propio docstring dice "nunca se confunde con un fallo: el motivo es siempre la falta de una
+dependencia externa, no un error del código" (`scripts/salidas.py`, verificado literalmente). Un
+Chrome que revienta en el entorno real del dueño queda así sin ningún `diagnostico-<timestamp>.log`
+ni entrada en `teleprompter.log`, a diferencia de cualquier otra salida desde R-24. Investigación
+delegada a un agente de exploración (subagente `Explore`), que recorrió `pdf.py`/`pptx.py`/
+`convencion.py` y descartó tres candidatos ya resueltos (`detectar_desviaciones`, `validar_tarjetas`,
+`medir_consistencia_senales`/`proponer_convenciones`, este último infraestructura deliberadamente
+latente, no una grieta) antes de confirmar este; el PM reverificó con `grep`/lectura directa del
+código antes de especificarlo, sin dar por buena la palabra del subagente sin pruebas. Spec completa
+en `ROADMAP_PRODUCTO.md`, Oleada v20 — `ResultadoPdf` gana `chrome_detectado: bool`, `_generar_pdf`
+distingue los tres desenlaces (éxito / Chrome ausente → latente, sin cambios / Chrome detectado pero
+conversión fallida → diagnóstico + `SalidaOmitida`, reutilizando tal cual `volcar_diagnostico`/
+`ruta_diagnostico`/`obtener_logger` de R-24), sin tocar `convertir_html_a_pdf` ni perder nunca el
+HTML de impresión ya generado. Fila `R-32 | ... | PENDIENTE | 2026-10-16 | ...` añadida a §1 en este
+mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-32 queda lista para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño. Una decisión nueva en `DECISIONES_TECNICAS.md` (apertura de
+R-32, con las alternativas consideradas); el archivo de R-31/Oleada v19 no añade ninguna decisión de
+diseño nueva — es puro movimiento de estado, ya reflejado en §1 y en `ROADMAP_HISTORICO.md`.
+
+**Última actualización anterior (2026-10-16, ciclo de Programador): novena reconfirmación del día
 tras R-31, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-16), novena reconfirmación del día tras R-31.** Revisión de
@@ -3915,6 +3973,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-29 | `revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` reimplementan en privado, con las mismas cuatro condiciones a mano, el emparejamiento bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó, probó y documentó explícitamente como la pieza a reutilizar por T-17 — nunca llamadas desde la ruta real, en el área exacta de dos incidencias de severidad alta ya cerradas (P-02, P-04) | **COMPLETADA** | 2026-10-14 | Investigado (requisito 1): dos tests nuevos confirman que ambas rutas ya coincidían bloque a bloque (tres guiones reales, sin ninguna partición propuesta hoy; y `_GUION`/`_GUION_ESCENA_DOS_PARTICIONES`, con particiones de verdad) — sin divergencia real (requisito 3 no aplica). Unificado (requisito 2): `_particion_aceptada_de` ahora delega en `aplicar_particion_aceptada` (lista de un bloque, longitud del resultado decide si coincidió); la salvaguarda P-02/P-04 (hallazgo #9) sigue intacta como guardia de entrada, sin tocar la función pública. 2 tests nuevos (673→675). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-30 | Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación de tomas buenas + subtítulos + capítulos) del guion concreto que se acaba de procesar, en vez de dejar que el dueño traduzca a mano los fragmentos de ejemplo de `references/contrato-montaje.md` cada vez que termina de grabar | **COMPLETADA** | 2026-10-15 | `scripts/comandos_montaje.py` nuevo: encadena de 1 a 3 comandos reutilizando tal cual `concat_ffmpeg.calcular_lista_concat_ffmpeg` (R-19), `srt_alineado.generar_srt_alineado` (R-05) y `capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg` (R-07/R-22), sin reimplementar ninguna de las tres condiciones. Octava opción del selector de salidas (`TipoSalida.COMANDOS_MONTAJE`), mismo patrón `try`/`except`/diagnóstico de R-24. `references/contrato-montaje.md` y `SKILL.md` remiten a esta salida como la forma real de obtener los comandos. 15 tests nuevos (675→690). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` (una nueva: "Generación de los comandos de montaje"). Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-31 | Advertir en `comandos-montaje.md` cuando el documento referencia un archivo (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) que no existe todavía en la carpeta de salida real, en vez de dar por hecho que las demás salidas de las que depende ya se generaron | **COMPLETADA** | 2026-10-16 | `comandos_montaje.calcular_comandos_montaje` gana `carpeta_salida: Path \| None = None` (comprobación de existencia en disco, nunca de contenido); cada archivo ausente se recoge en `ResultadoComandosMontaje.archivos_referenciados_faltantes` (`ArchivoReferenciadoFaltante`) y `formatear_comandos_montaje` lo vuelca como nota visible al principio del documento, nunca bloquea ni degrada la generación. Descripciones de opción centralizadas en `config.py` (`DESCRIPCION_OPCION_*`), reutilizadas tal cual por `salidas.py::DESCRIPCION_SALIDA`, sin ciclo de imports. `scripts/salidas.py::_generar_comandos_montaje` reenvía `carpeta_salida`; sin ella, comportamiento idéntico al de antes de R-31. 6 tests nuevos (690→696). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
+| R-32 | Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad | PENDIENTE | 2026-10-16 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v20. `origen: observación de arquitectura del PM` — grieta verificada con `grep` real: `scripts/pdf.py` no importa `logger`/`monitorizacion`, así que un Chrome detectado que revienta en la conversión se clasifica igual que "Chrome no instalado" (`SalidaLatente`), contradiciendo el propio contrato documentado de esa clase y sin dejar ningún diagnóstico (patrón R-24) pese a tenerlo disponible. Pendiente de implementación por el siguiente ciclo de Programador |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

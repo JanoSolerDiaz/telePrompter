@@ -12,6 +12,62 @@
 
 ---
 
+### Sesión 2026-10-16 (183) — Ciclo de Product Manager: archiva Oleada v19 (R-31) y abre R-32 (Oleada v20)
+
+**Arranque.** El contenedor arrancó sobre `HEAD` *detached*; `git checkout develop && git pull
+origin develop` avanzó por fast-forward limpio hasta `7fcbaab` (la novena reconfirmación del
+Programador tras R-31, ya empujada), sin ninguna divergencia. `git status` limpio.
+Dependencias de desarrollo instaladas con `pip install -r requirements-dev.txt`.
+
+**Lectura completa del registro repartido.** `HOJA_DE_RUTA.md` (protocolo §0, sin tocar),
+`SEGUIMIENTO.md` §1/§3/§4/§5/§6/§7, `ROADMAP_PRODUCTO.md`, `DECISIONES_TECNICAS.md` (muestreo),
+`FEEDBACK.md` (vacío, confirmado), y el registro de hallazgos completo de `auditoriacontinua.md`
+(sin ningún `ABIERTO` nuevo desde la última pasada del auditor, 2026-10-16: solo `#24`/`#30`, ambos
+de proceso puro, ya enrutados como preguntas `#11`/`#12` de §6 pendientes de respuesta del dueño).
+§1 confirmada como fuente autoritativa: R-31 `COMPLETADA` desde el ciclo de Programador de esta
+misma jornada (commit `3cb5075`), nueve reconfirmaciones sin tarea nueva desde entonces.
+
+**Archivado de la Oleada v19 (R-31).** Movida a `roadmap/ROADMAP_HISTORICO.md` con su ficha
+completa y el "Cómo se entregó" (nota "Movido a histórico el: 2026-10-16" al principio del
+documento). `ROADMAP_PRODUCTO.md` actualizado: cabecera reescrita, sección "Oleada v19" sustituida
+por la nota de archivo de una línea.
+
+**Apertura de R-32 (Oleada v20).** Mismo tercer criterio que abrió R-12 a R-31: grieta de
+arquitectura verificada sobre código ya construido. Investigación delegada primero a un subagente
+de exploración (`Explore`), que recorrió `pdf.py`/`pptx.py`/`convencion.py`/`revalidacion.py` en
+busca de una función o validador ya construido y probado pero sin consumidor real, descartando tres
+candidatos ya resueltos (`detectar_desviaciones` en R-23, `validar_tarjetas` en R-28,
+`medir_consistencia_senales`/`proponer_convenciones` como infraestructura deliberadamente latente,
+no una grieta) antes de confirmar uno: `scripts/pdf.py::convertir_html_a_pdf`/`exportar_pdf`,
+consumida por `scripts/salidas.py::_generar_pdf`. El PM reverificó la evidencia con `grep`/lectura
+directa antes de dar el hallazgo por bueno (nunca se da por buena la palabra de un subagente sin
+pruebas propias): confirmado que `scripts/pdf.py` no importa `logger` ni `monitorizacion` en
+absoluto, que `convertir_html_a_pdf` nunca lanza una excepción (decisión ya tomada en T-28) y
+devuelve `(False, mensaje)` tanto si Chrome/Edge no se encuentra como si se encuentra pero la
+conversión falla de verdad, y que `_generar_pdf` clasifica ambos casos como `SalidaLatente` — el
+mismo contenedor cuyo propio docstring dice "nunca se confunde con un fallo: el motivo es siempre la
+falta de una dependencia externa, no un error del código". Spec completa en `ROADMAP_PRODUCTO.md`,
+Oleada v20: `ResultadoPdf` gana `chrome_detectado: bool`, `_generar_pdf` distingue los tres
+desenlaces reutilizando tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de R-24,
+sin tocar `convertir_html_a_pdf` ni perder nunca el HTML de impresión ya generado.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecutó `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-32 queda lista para el siguiente ciclo de
+Programador.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-31: `COMPLETADA` → sin cambio (ya lo estaba).
+R-32: fila nueva, `PENDIENTE`.
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Una fila nueva: "PM (apertura de R-32)", con
+las tres alternativas consideradas (no actuar; hacer que `convertir_html_a_pdf` lance una
+excepción; distinguir en `_generar_pdf` con un campo aditivo en `ResultadoPdf`) y por qué se eligió
+la tercera.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones).** §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin cambio desde la sesión anterior.
+
+---
+
 ### Sesión 2026-10-16 (182) — Ciclo de Programador: novena reconfirmación del día tras R-31, sin novedad de código
 
 **Arranque.** El contenedor arrancó con `HEAD` al día sobre `1ea171b` (ya con la octava
