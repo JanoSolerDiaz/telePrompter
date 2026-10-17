@@ -8,38 +8,24 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-16 (ciclo de PM). **R-31 (Oleada v19) está `COMPLETADA`** (§1 de
-`SEGUIMIENTO.md`) desde el ciclo de Programador del propio 2026-10-16 que la implementó (aviso de
-archivos referenciados ausentes en `comandos-montaje.md`, reutilizando tal cual la comprobación de
-existencia en disco). Movida a `roadmap/ROADMAP_HISTORICO.md` (Oleada v19) junto con el resto de
-oleadas 100 % entregadas. §1 de `SEGUIMIENTO.md` llevaba desde esa misma madrugada sin ninguna fila
-`PENDIENTE` — nueve reconfirmaciones horarias del Programador a lo largo del día sin tarea que
-ejecutar, el mismo coste que señala el hallazgo `#30`/pregunta `#12` (aún sin respuesta del dueño).
+**Última actualización:** 2026-10-17 (ciclo de PM, sin apertura de R-XX nueva). **R-32 (Oleada v20)
+sigue `PENDIENTE`** (§1 de `SEGUIMIENTO.md`): ningún ciclo de Programador la ha tocado todavía desde
+que se abrió el 2026-10-16 — confirmado con `git log` sobre `scripts/pdf.py`/`scripts/salidas.py`,
+sin ningún commit desde entonces.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
-curso completo) sigue abierto. La auditoría del propio día (`auditoriacontinua.md`, 2026-10-16) no
-trae hallazgos nuevos: solo reconfirma los dos ya conocidos (`#24`, prosa de "Cola de producto"
-desactualizada entre ciclos de PM; `#30`, cadencia de la rutina "Programador"), ambos de
-proceso/gobernanza puro, pendientes solo de la respuesta del dueño a las preguntas #11/#12 de
-`SEGUIMIENTO.md` §6 — ninguno de producto/arquitectura que convertir en R-XX nueva por esta vía.
+curso completo) sigue abierto. La auditoría del propio día (`auditoriacontinua.md`, 2026-10-17)
+revisó de forma independiente tanto R-31 como la apertura de R-32 y no trae hallazgos nuevos: solo
+reconfirma los dos ya conocidos (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de
+PM; `#30`, cadencia de la rutina "Programador"), ambos de proceso/gobernanza puro, pendientes solo
+de la respuesta del dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 — ninguno de
+producto/arquitectura que convertir en R-XX nueva por esta vía.
 
-**Se abre R-32** (Oleada v20): tampoco por auditoría ni por `FEEDBACK.md`, sino por el mismo tercer
-criterio que abrió R-12 a R-31 — una **grieta de arquitectura verificada sobre código ya
-construido**, esta vez en el exportador `.pdf` (T-28). `convertir_html_a_pdf` nunca lanza una
-excepción (decisión deliberada de T-28): cuando Chrome/Edge headless arranca pero la conversión
-falla de verdad (código de salida distinto de cero, tiempo agotado, proceso roto), `_generar_pdf`
-(`scripts/salidas.py`) clasifica el resultado exactamente igual que cuando Chrome/Edge **no está
-instalado**: `SalidaLatente`. Eso contradice el propio contrato documentado de `SalidaLatente`
-("nunca se confunde con un fallo: el motivo es siempre la falta de una dependencia externa, no un
-error del código") y dista de cómo se trata un fallo real en cualquier otra salida desde R-24: ni
-`volcar_diagnostico` ni `obtener_logger().error(...)` se invocan nunca para este caso, así que un
-Chrome que revienta en el entorno del dueño no deja ningún rastro en `teleprompter.log` ni en
-`diagnostico-<timestamp>.log` — la única salida del selector cuyo fallo real queda sin diagnóstico.
-Detalle completo en "Oleada v20" más abajo.
-
-Este ciclo es de PM, no de Programador: no se ha ejecutado la verificación de las cuatro redes; la
-spec de R-32 queda lista para que el siguiente ciclo de Programador la implemente y verifique.
+**No se abre ninguna R-XX nueva este ciclo.** R-32 es la única fila `PENDIENTE` de §1, y el criterio
+establecido desde R-19 es nunca tener más de una R-XX pendiente de código a la vez sin evidencia real
+que lo justifique. Su spec completa sigue vigente, sin cambios, en "Oleada v20" más abajo, lista para
+el siguiente ciclo de Programador que la implemente y verifique.
 
 ---
 
