@@ -10,7 +10,70 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-16 — **Ciclo de Product Manager: archiva Oleada v19 (R-31) y
+**Última actualización:** 2026-10-18 — **Ciclo de Product Manager: corrige el hallazgo de
+gobernanza `#32` (cabecera sin actualizar), reconfirma R-32 como única pendiente y especifica R-33
+(Oleada v21) sin abrirla todavía en §1**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-18): corrige `#32`, reconfirma R-32, especifica R-33 sin abrirla.**
+Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` encontró el clon
+local desincronizado con `origin/develop` ("diverged", 50 commits distintos a cada lado — la rama
+remota ha debido reescribirse en algún punto anterior del proyecto; el árbol de trabajo estaba
+limpio, nada sin confirmar), resuelto con `git reset --hard origin/develop` para alinear con la
+fuente de verdad remota, sin pérdida de trabajo (clon efímero, sin ningún commit local propio
+todavía). Dependencias de desarrollo instaladas con `pip install -r requirements-dev.txt`, tal como
+exige el protocolo para una sesión de nube.
+
+**Corrección del hallazgo `#32` de `auditoriacontinua.md`.** El ciclo de PM del 2026-10-17 (commit
+`1b8fae3`) revisó la auditoría del día, reconfirmó R-32 como única fila `PENDIENTE` y actualizó
+`ROADMAP_PRODUCTO.md`/`DECISIONES_TECNICAS.md`/`HISTORIAL_SESIONES.md`, pero no tocó este
+documento — incumpliendo la "definición de hecho" de §0.4 (actualizar cabecera y "última
+actualización" al cerrar sesión). Esta misma actualización lo corrige: no hay ninguna pérdida de
+información real (recuperable en `HISTORIAL_SESIONES.md`/`git log`, y así lo reconoce el propio
+hallazgo), solo la cabecera quedó desactualizada un ciclo.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-18): tres
+`ABIERTO`, los tres de proceso/gobernanza, ninguno de producto/arquitectura ni de severidad alta —
+`#24` (prosa de "Cola de producto" desactualizada entre ciclos de PM) y `#30` (cadencia horaria de
+la rutina "Programador" sin comprobación barata de cola vacía) siguen enrutados como preguntas
+`#11`/`#12` de §6, pendientes solo de respuesta del dueño; `#32` queda corregido con esta misma
+actualización. Sin hallazgo de severidad alta abierto, no hay ninguna P-XX urgente que anteponer.
+`roadmap/FEEDBACK.md` revisado: sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue siendo la razón: sin rodaje real no
+llega feedback real que priorizar.
+
+**§1 sin cambios de estado:** `R-32` (Oleada v20, exportador `.pdf`) sigue `PENDIENTE`; confirmado
+con `git log -- scripts/pdf.py scripts/salidas.py` que ningún commit la ha tocado desde que se abrió
+el 2026-10-16. No se abre ninguna R-XX nueva en §1 este ciclo: el criterio establecido desde R-19
+(nunca más de una R-XX pendiente de código a la vez sin evidencia real que lo justifique) sigue
+aplicando y R-32 continúa sin implementar.
+
+**Se especifica R-33 (Oleada v21), sin abrirla en §1.** Origen: observación de producto del PM (no
+de auditoría, no de feedback) — verificada con grep real: la sección auxiliar "Preparación antes de
+grabar" (`config.SECCIONES_AUXILIARES`) se reconoce en `scripts/parser.py`/`scripts/clasificador.py`/
+`scripts/convencion.py` solo para no clasificarla como escena ni como desviación de convención; su
+contenido (`SeccionAuxiliar.contenido`) nunca llega a ninguna salida real (ni
+`scripts/reproductor.py::_construir_datos`, ni `tarjetas.json`, ni `.pdf`) — grep de
+`preparacion_antes_grabar`/`notas_produc` en todo el repositorio no encuentra ningún consumidor
+aparte de la validación de convención. Un formador en solitario que escribe en su guión una lista de
+comprobación (encuadre, audio, luz, attrezzo) la pierde justo en el momento en que más la necesita: a
+pie de cámara, sin nadie detrás que se la recuerde. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada
+v21, con el mismo formato de ficha que cualquier R-XX ya archivada.
+
+**Por qué no se abre ya en §1 (decisión explícita de este ciclo, documentada en
+`DECISIONES_TECNICAS.md`):** mantener la disciplina de una sola R-XX pendiente de código a la vez,
+ya consolidada en veinte ciclos consecutivos (R-12 a R-32). R-33 queda lista para abrirse en el
+ciclo de PM que archive R-32 (patrón ya seguido en R-19→R-20, R-20→F-J, etc.), o antes si el dueño
+prefiere adelantarla: no hay solape de archivos con R-32 (R-32 toca `scripts/pdf.py`/
+`scripts/salidas.py`; R-33 tocaría `scripts/reproductor.py`, `scripts/config.py` y
+`assets/reproductor/`), así que ambas podrían convivir en paralelo sin conflicto si el dueño decide
+priorizarlo así.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin preguntas nuevas: R-33 no depende de ninguna decisión de
+alcance de §0.3, así que no se enruta como pregunta. Dos decisiones nuevas en
+`DECISIONES_TECNICAS.md` (corrección de `#32` y la decisión de especificar-sin-abrir R-33).
+
+**Última actualización anterior (2026-10-16, ciclo de Product Manager): archiva Oleada v19 (R-31) y
 abre R-32 (Oleada v20)**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-16): archiva Oleada v19 (R-31) y abre R-32 (Oleada v20).**

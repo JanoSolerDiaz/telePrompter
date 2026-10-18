@@ -8,24 +8,31 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-17 (ciclo de PM, sin apertura de R-XX nueva). **R-32 (Oleada v20)
-sigue `PENDIENTE`** (§1 de `SEGUIMIENTO.md`): ningún ciclo de Programador la ha tocado todavía desde
-que se abrió el 2026-10-16 — confirmado con `git log` sobre `scripts/pdf.py`/`scripts/salidas.py`,
-sin ningún commit desde entonces.
+**Última actualización:** 2026-10-18 (ciclo de PM). Corrige el hallazgo de gobernanza `#32` de
+`auditoriacontinua.md` (la cabecera de `SEGUIMIENTO.md` no se actualizó en el ciclo de PM anterior,
+2026-10-17) y reconfirma el estado de cola: **R-32 (Oleada v20) sigue `PENDIENTE`** (§1 de
+`SEGUIMIENTO.md`) — ningún ciclo de Programador la ha tocado todavía desde que se abrió el
+2026-10-16, confirmado de nuevo con `git log` sobre `scripts/pdf.py`/`scripts/salidas.py`, sin
+ningún commit desde entonces.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
-curso completo) sigue abierto. La auditoría del propio día (`auditoriacontinua.md`, 2026-10-17)
-revisó de forma independiente tanto R-31 como la apertura de R-32 y no trae hallazgos nuevos: solo
-reconfirma los dos ya conocidos (`#24`, prosa de "Cola de producto" desactualizada entre ciclos de
-PM; `#30`, cadencia de la rutina "Programador"), ambos de proceso/gobernanza puro, pendientes solo
-de la respuesta del dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 — ninguno de
-producto/arquitectura que convertir en R-XX nueva por esta vía.
+curso completo) sigue abierto. La auditoría del propio día (`auditoriacontinua.md`, 2026-10-18) no
+trae ningún hallazgo nuevo de producto/arquitectura: los tres `ABIERTO` (`#24`, `#30`, `#32`) son de
+proceso/gobernanza puro; `#32` queda corregido con esta misma sesión (cabecera de `SEGUIMIENTO.md`
+actualizada); `#24`/`#30` siguen pendientes solo de la respuesta del dueño a las preguntas #11/#12
+de `SEGUIMIENTO.md` §6 — ninguno de los tres es convertible en R-XX nueva.
 
-**No se abre ninguna R-XX nueva este ciclo.** R-32 es la única fila `PENDIENTE` de §1, y el criterio
-establecido desde R-19 es nunca tener más de una R-XX pendiente de código a la vez sin evidencia real
-que lo justifique. Su spec completa sigue vigente, sin cambios, en "Oleada v20" más abajo, lista para
-el siguiente ciclo de Programador que la implemente y verifique.
+**No se abre ninguna R-XX nueva en §1 este ciclo.** R-32 sigue siendo la única fila `PENDIENTE`, y
+el criterio establecido desde R-19 es nunca tener más de una R-XX pendiente de código a la vez sin
+evidencia real que lo justifique. Su spec completa sigue vigente, sin cambios, en "Oleada v20" más
+abajo, lista para el siguiente ciclo de Programador que la implemente y verifique.
+
+**Se especifica, por primera vez, la siguiente R-XX candidata: R-33 (Oleada v21)**, ficha completa
+más abajo — pero **no se abre todavía en §1**: queda lista para el ciclo de PM que archive R-32 (o
+antes, si el dueño prefiere adelantarla en paralelo; no hay solape de archivos entre ambas). Origen:
+observación de producto del propio PM, verificada con grep, no de auditoría ni de feedback de
+rodaje (que sigue sin llegar).
 
 ---
 
@@ -298,6 +305,75 @@ clasifica el `.pdf` como `SalidaOmitida` (no `SalidaLatente`), con el HTML de im
 `generadas`; sin Chrome detectado en absoluto, el comportamiento es idéntico al de antes de R-32
 (test de regresión): `SalidaLatente` con el mismo mensaje, sin ningún diagnóstico. Cuatro redes en
 verde.
+
+---
+
+### Oleada v21 — especificada, pendiente de apertura en §1
+
+> **Nota de gobernanza:** esta ficha NO está abierta en §1 de `SEGUIMIENTO.md` (no es `PENDIENTE`
+> todavía). Se especifica completa este ciclo para no perder la observación, y queda lista para que
+> el ciclo de PM que archive R-32 la abra sin tener que re-investigarla. El dueño puede adelantarla
+> en paralelo a R-32 si lo prefiere: no hay solape de archivos (R-32 toca `scripts/pdf.py` y
+> `scripts/salidas.py`; R-33 tocaría `scripts/reproductor.py`, `scripts/config.py` y
+> `assets/reproductor/`).
+
+#### R-33 — Mostrar la sección "Preparación antes de grabar" del guión como checklist reabrible en el reproductor, en vez de descartar su contenido tras la validación de convención
+
+**Migración:** No (ningún campo nuevo en `estado.json`; un campo aditivo en el payload embebido del
+reproductor y una tecla nueva en `mapa_teclas_reproductor`) · **Depende de:** T-08, T-09, T-18, R-12
+(todas `COMPLETADA`) · **Origen:** observación de producto del PM (2026-10-18), no de auditoría ni
+de feedback de rodaje (`roadmap/FEEDBACK.md` sigue vacío) — grieta funcional verificada con grep: la
+sección auxiliar "Preparación antes de grabar" (`config.SECCIONES_AUXILIARES[1]`) se reconoce en
+`scripts/parser.py`/`scripts/clasificador.py` únicamente para no clasificarla como escena, y en
+`scripts/convencion.py` únicamente para no señalarla como desviación; su `SeccionAuxiliar.contenido`
+no se propaga a ninguna salida real (`scripts/reproductor.py::_construir_datos` no la lee; tampoco
+`scripts/pptx.py::generar_tarjetas` ni `scripts/pdf.py`) — grep de `preparacion_antes_grabar` y de
+`notas_produc` en todo el repositorio no encuentra ningún consumidor fuera de la propia validación
+de convención.
+
+**Objetivo:** cuando el guión trae una sección `## Preparación antes de grabar`, su contenido debe
+llegar íntegro al reproductor y mostrarse como un panel de comprobación reutilizable — mismo patrón
+ya usado para la ayuda de teclado (`ayuda-teclado`, `guion.js`): overlay centrado, nunca bloqueante,
+reabrible en cualquier momento, nunca interpuesto durante una cuenta atrás o el registro de una
+toma. Encaja con el principio de producto 5 (legibilidad y utilidad en el momento de grabar por
+encima de todo): un formador en solitario, a pie de cámara, no tiene a nadie detrás que le recuerde
+revisar encuadre, audio o luz antes de rodar una escena — si lo escribió en su propio guión, el
+reproductor no debe dejarlo tirado en el documento fuente.
+
+**Requisitos:**
+1. `scripts/reproductor.py::_construir_datos` añade al payload un campo nuevo
+   `preparacion_antes_grabar: str | None`: el `contenido` (tal cual, sin reescritura) de la
+   `SeccionAuxiliar` cuyo `titulo` coincide con `config.SECCIONES_AUXILIARES[1]` ("Preparación antes
+   de grabar"), o `None` si el guión no trae esa sección. Sin sección en el guión → sin panel, nunca
+   se inventa contenido (invariante (a): nada se descarta, pero tampoco se fabrica).
+2. `guion.js` añade un panel nuevo (`preparacion-grabacion`), mismo esqueleto CSS/JS que
+   `ayuda-teclado`: contenido volcado con `textContent` (nunca `innerHTML`, mismo patrón de
+   seguridad ya establecido para todo el reproductor), cerrable con `Esc` o con su propia tecla.
+3. El panel se abre solo una vez, la primera vez que el reproductor se carga en ese navegador para
+   ese guión (mismo mecanismo de flag en `localStorage` que ya usa el reproductor para "ya visto"),
+   y solo si `preparacion_antes_grabar` no es `None`. En cargas posteriores no se abre solo; se
+   reabre a mano con su tecla o con un botón visible en el índice de escenas.
+4. Tecla propia nueva en `mapa_teclas_reproductor` (`scripts/config.py`), documentada en `SKILL.md`
+   igual que las demás, sin colisionar con ninguna ya asignada (Espacio, RePág/AvPág, flechas, +/-,
+   `[`/`]`, R, H, Esc, ?) y sin modificadores (§0.2: compatible con clicker Bluetooth genérico).
+5. El panel nunca se abre ni se superpone mientras hay una cuenta atrás activa o mientras se está
+   registrando una toma (teclas G/T/V) — misma prioridad que ya respeta `ayuda-teclado`.
+6. Contenido largo: el panel hace scroll interno, nunca se trunca en silencio.
+7. **Fuera de alcance, explícito:** no se toca la sección "Notas de producción" (sigue descartada
+   tras la validación de convención, como hoy — su contenido es más heterogéneo y sin consumidor
+   claro todavía; candidata a una R-XX futura si el rodaje real revela que hace falta); no se cambia
+   la lista negra de secciones auxiliares ni la detección de desviaciones de convención
+   (`scripts/convencion.py`); no se añade ninguna sección nueva reconocida por el parser; no se toca
+   `tarjetas.json` ni el flujo de `.pptx`/`.pdf`; no se cambia la convención de marcado acordada
+   (§0.3.1) ni la identidad visual 480.
+
+**Criterio de aceptación:** un guión fixture con `## Preparación antes de grabar` genera un
+reproductor cuyo HTML embebe el contenido íntegro de esa sección en el JSON
+(`preparacion_antes_grabar`), visible la primera vez que se abre en un navegador nuevo y reabrible
+después sin recargar; un guión fixture sin esa sección genera un reproductor sin el campo (o `null`)
+y sin ningún panel que se abra solo. `verificar_salidas.py` sigue confirmando la auto-contención a
+nivel de bytes del HTML resultante (regla dura de §0.2: ningún `http://`/`https://`/`//cdn`/`fetch`
+nuevo). Cuatro redes en verde.
 
 ---
 

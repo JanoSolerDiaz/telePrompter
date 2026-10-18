@@ -12,6 +12,70 @@
 
 ---
 
+### Sesión 2026-10-18 (185) — Ciclo de Product Manager: corrige el hallazgo de gobernanza `#32`, reconfirma R-32 y especifica R-33 (Oleada v21) sin abrirla
+
+**Arranque.** `git checkout develop` encontró el clon local desincronizado con `origin/develop`
+("diverged", 50 commits distintos a cada lado — la rama remota ha debido reescribirse en algún punto
+anterior del proyecto). `git status` limpio (nada sin confirmar, sin ningún commit local propio
+todavía), así que se resolvió con `git reset --hard origin/develop` para alinear con la fuente de
+verdad remota, sin pérdida de trabajo. Dependencias de desarrollo instaladas con
+`pip install -r requirements-dev.txt` (no se ejecutaron las cuatro redes: ciclo de PM, no toca
+código).
+
+**Lectura completa del registro repartido.** `HOJA_DE_RUTA.md` (protocolo §0, sin tocar; releído
+§0.3/§0.4), `SEGUIMIENTO.md` completo, `ROADMAP_PRODUCTO.md` completo, `ROADMAP_HISTORICO.md`
+(cabecera/cola, para confirmar numeración), `FEEDBACK.md` completo, `DECISIONES_TECNICAS.md`
+(decisiones vigentes relevantes), el registro de hallazgos completo de `auditoriacontinua.md`,
+`PROYECTO.md`, `roadmap/prompts-agentes.md` y el código fuente real de `scripts/` (parser,
+clasificador, convención, reproductor) para verificar con grep el estado funcional actual del
+producto antes de especificar nada nuevo.
+
+**Corrección del hallazgo `#32` de `auditoriacontinua.md`.** El ciclo de PM del 2026-10-17 (commit
+`1b8fae3`) tocó `ROADMAP_PRODUCTO.md`/`DECISIONES_TECNICAS.md`/`HISTORIAL_SESIONES.md` pero no
+`SEGUIMIENTO.md`, dejando su cabecera y "última actualización" fechadas en 2026-10-16 —
+incumpliendo la "definición de hecho" de §0.4. Corregido en esta sesión: cabecera y "última
+actualización" de `SEGUIMIENTO.md` reescritas con la fecha y el resumen reales de hoy.
+
+**Hallazgos del auditor.** La auditoría del propio día (`auditoriacontinua.md`, 2026-10-18) trae un
+hallazgo nuevo, el propio `#32` ya corregido arriba, y reconfirma los dos de siempre (`#24`, prosa de
+"Cola de producto"; `#30`, cadencia horaria del Programador), ambos de proceso/gobernanza puro, ya
+enrutados como preguntas `#11`/`#12` de §6, pendientes solo de respuesta del dueño — ninguno de
+producto/arquitectura ni de severidad alta, así que tampoco hay P-XX urgente que atender antes de
+este ciclo.
+
+**Feedback de rodaje.** `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila de
+plantilla, vacía): el bloqueo #7 de §3 (grabar un curso completo) sigue abierto, así que sigue sin
+llegar fricción de uso real que priorizar.
+
+**§1 sin cambios de estado.** R-32 (Oleada v20, exportador `.pdf`) sigue `PENDIENTE`; confirmado con
+`git log -- scripts/pdf.py scripts/salidas.py` que ningún commit la ha tocado desde que se abrió el
+2026-10-16. No se abre ninguna R-XX nueva en §1 este ciclo (criterio vigente desde R-19: nunca más de
+una R-XX pendiente de código a la vez sin evidencia real que lo justifique).
+
+**Se especifica R-33 (Oleada v21) en `ROADMAP_PRODUCTO.md`, sin abrirla en §1.** Origen: observación
+de producto del propio PM (no de auditoría, no de feedback), verificada con grep real: la sección
+auxiliar "Preparación antes de grabar" (`config.SECCIONES_AUXILIARES`) se reconoce en
+`scripts/parser.py`/`scripts/clasificador.py`/`scripts/convencion.py` solo para no clasificarla como
+escena ni como desviación de convención; su contenido nunca llega a ninguna salida real (ni
+`scripts/reproductor.py::_construir_datos`, ni `tarjetas.json`, ni `.pdf`) — un formador en solitario
+que escribe una lista de comprobación antes de una escena la pierde justo cuando más la necesita, a
+pie de cámara. Ficha completa (requisitos, fuera de alcance, criterio de aceptación) en
+`ROADMAP_PRODUCTO.md`; queda explícitamente **sin abrir en §1** para preservar la disciplina de una
+sola R-XX de código pendiente a la vez, lista para el ciclo de PM que archive R-32 (o antes, si el
+dueño prefiere adelantarla — no hay solape de archivos entre ambas).
+
+**Decisiones:** 2 filas nuevas en `DECISIONES_TECNICAS.md` (2026-10-18: corrección del hallazgo `#32`
+y la decisión de especificar-sin-abrir R-33).
+
+**Cambios de estado:** ninguno en §1 (R-32 sigue `PENDIENTE`, ninguna fila nueva); ninguno en §3, §5
+ni §7; §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño, sin preguntas nuevas.
+`ROADMAP_PRODUCTO.md`: cabecera reescrita + sección nueva "Oleada v21" con la ficha completa de R-33.
+`SEGUIMIENTO.md`: cabecera y "última actualización" corregidas (hallazgo `#32`).
+
+**Push:** `git push -u origin develop`.
+
+---
+
 ### Sesión 2026-10-17 (184) — Ciclo de Product Manager: sin apertura de R-XX nueva, confirmación independiente de que R-32 sigue siendo la única grieta pendiente
 
 **Arranque.** `git checkout develop && git pull origin develop` avanzó por fast-forward limpio hasta
