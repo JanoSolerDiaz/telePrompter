@@ -45,7 +45,8 @@
 | #27 | 2026-10-01 | Robustez / validación de salida (R-19, concat-ffmpeg) | media | **RESUELTO** | `scripts/concat_ffmpeg.py` exponía un validador propio del formato del demuxer `concat` de ffmpeg que la ruta real de generación nunca invocaba, y `archivo_video` no se recortaba ni rechazaba saltos de línea en sus dos puntos de entrada — detalle completo de los dos huecos reproducidos en la entrada original de este registro (recuperable con `git log -p -- auditoriacontinua.md`). **Cerrado por R-21** (commit `1e8d514`, 2026-10-02), verificado en esta pasada leyendo el diff completo, no solo la ficha de `SEGUIMIENTO.md`: `scripts/salidas.py::_generar_concat_ffmpeg` llama ahora a `validar_lista_concat_ffmpeg` sobre el contenido antes de `guardar_lista_concat_ffmpeg`, degradando a `SalidaOmitida` con el motivo exacto si falla (cubierto por `test_concat_ffmpeg_con_contenido_invalido_degrada_a_omitida_en_vez_de_escribir`, que fuerza el fallo por monkeypatch y confirma que nunca llega a escribirse a disco); `scripts/tomas.py` gana `_sanear_archivo_video` (recorta espacios, normaliza a `""` si queda vacío o trae `\n`/`\r`), aplicada en `_toma_desde_dict`; `assets/reproductor/guion.js` gana la función gemela `sanearArchivoVideo`, aplicada en los dos puntos donde el dueño teclea el valor (verificado leyendo ambos puntos de entrada línea a línea, no solo el nombre de la función). Las dos decisiones de diseño (saneamiento duplicado en los dos lenguajes en vez de confiar en uno solo; valor inválido normalizado a "sin anotar" en vez de error fatal) están razonadas en `DECISIONES_TECNICAS.md` y son coherentes con el resto del proyecto (mismo criterio que R-10 ya aplicó para `\r\n` en `entrada.py`). 6 tests nuevos (613→619), los cuatro redes en verde. | `scripts/concat_ffmpeg.py` · `scripts/salidas.py` · `scripts/tomas.py` · `assets/reproductor/guion.js` · cerrado por **R-21** (commit `1e8d514`, 2026-10-02), verificado de forma independiente por esta auditoría (2026-10-03) leyendo el diff completo |
 | #29 | 2026-10-08 | Proceso / gobernanza del Product Manager (§1 de SEGUIMIENTO.md como fuente autoritativa) | baja | **RESUELTO** | El ciclo de PM que archivó la Oleada v12 y abrió R-25 (commit `2628739`, 2026-10-07) rompió, por primera vez desde que existe el patrón, la práctica hasta ahora constante de añadir una fila `PENDIENTE` a §1 de `SEGUIMIENTO.md` en el mismo commit que abre cada R-XX nueva — verificado comparando los diffs de apertura de R-23/R-24 (que sí añadían su fila) contra el de R-25, que no lo hacía. Riesgo mitigado en la práctica desde el principio (cabecera de `SEGUIMIENTO.md` e `HISTORIAL_SESIONES.md` sí narraban la apertura), pero la fila formal de §1 faltaba. Recomendación de cierre de esta misma fila (pasada 2026-10-08): añadir `R-25 | ... | PENDIENTE | ...` a §1 en el próximo ciclo que lo tocara. **Cerrado por el propio ciclo de PM del 2026-10-08** (commit `7e803f2`, el mismo que archivó R-25 y abrió R-26): verificado en esta pasada (2026-10-09) con `grep -n "^| R-2[4-6]" roadmap/SEGUIMIENTO.md` sobre el `HEAD` actual (`7e803f2`) — §1 trae ahora `R-25 | ... | COMPLETADA | 2026-10-08 | ...` **y** `R-26 | ... | PENDIENTE | 2026-10-08 | ...`, ambas con fila propia, sin ningún hueco. El propio commit de apertura de R-26 ya reconocía y cerraba la causa raíz en su prosa ("§1 tenía a R-25 como COMPLETADA desde el mismo commit... sin el patrón de latencia que motivó #24 esta vez"). No vuelve a repetirse: dos aperturas de R-XX seguidas (R-25 then R-26) con exactamente un ciclo de retraso en la primera y ninguno en la segunda. | `roadmap/SEGUIMIENTO.md` §1 · cerrado por el ciclo de PM del 2026-10-08 (`7e803f2`) · verificado de forma independiente por esta auditoría (2026-10-09) |
 | #31 | 2026-10-15 | Proceso / trazabilidad de decisiones (`DECISIONES_TECNICAS.md`) | baja | **RESUELTO** | Primera ruptura de un patrón constante desde R-21: las nueve aperturas de R-XX anteriores (R-21 a R-29) tenían cada una su fila `PM (apertura de R-XX)` en `DECISIONES_TECNICAS.md`; la apertura de R-30 (commit `87fc45e`, 2026-10-14) no la tenía, y la narrativa de esa sesión justificaba la omisión con una premisa de "convención" verificablemente falsa (detalle completo en `git log -p -- auditoriacontinua.md`). **Cerrado por el propio ciclo de PM del 2026-10-15** (commit `96ea17a`, el mismo que archiva la Oleada v18 y abre R-31), verificado en esta pasada (2026-10-16) leyendo el diff completo: añade dos filas nuevas a `DECISIONES_TECNICAS.md` — `PM (corrección del hallazgo #31: fila de apertura de R-30 faltante)`, que documenta con fecha real de la corrección la decisión de apertura de R-30 que debió registrarse el 2026-10-14, citando explícitamente por qué se añade ahora y no se deja ausente (evitar que una futura sesión cite la omisión como precedente válido); y `PM (apertura de R-31)`, que **no repite** la premisa de "convención" — exactamente la condición de cierre que pedía esta fila. Cierre completo, no una mención de pasada. | `roadmap/DECISIONES_TECNICAS.md` · cerrado por el ciclo de PM del 2026-10-15 (`96ea17a`) · verificado de forma independiente por esta auditoría (2026-10-16) |
-| #30 | 2026-10-10 | Proceso / coste de cómputo (cadencia de la rutina Programador) | media | ABIERTO | La rutina programada "Programador" dispara con cron horario durante toda la jornada. Cuando la R-XX del día se implementa temprano, las **nueve** reconfirmaciones horarias siguientes no tienen ninguna tarea que ejecutar (§1 de `SEGUIMIENTO.md` vacío hasta el siguiente ciclo de PM) y aun así cada una repite el protocolo completo de entrada: `git pull`, `pip install`, y las cuatro redes enteras, solo para commitear "sin novedad de código". No es un síntoma oculto: el propio ciclo de Programador lo señaló antes de que esta auditoría lo registrara. Riesgo de producto: ninguno (verificación siempre en verde). Coste real: cada reconfirmación ociosa paga el precio íntegro de una sesión de nube completa por un commit que no cambia una sola línea de `scripts/`, `tests/` ni `assets/`. **Enrutado por el PM el 2026-10-10** (commit `845e2d9`) como pregunta de gobernanza `#12` de `SEGUIMIENTO.md` §6, **pendiente**, con dos remedios propuestos (espaciar el cron, o añadir una comprobación barata de "cola vacía") que ninguno de los dos aplicable sin autorización del dueño. **Materializado de forma idéntica en cada oleada desde R-27** (R-27 a R-30, detalle día a día recuperable con `git log -p -- auditoriacontinua.md`) **y de nuevo con R-31** (esta pasada, 2026-10-17): R-31 completada a las 06:25 del 2026-10-16 (`3cb5075`); las nueve reconfirmaciones horarias siguientes (`07:16` a `15:17`, `0d01fcc`…`7fcbaab`) repiten el protocolo completo sin ningún cambio de código que reportar, hasta que el ciclo de PM de la tarde (`08a59de`, 19:21) archiva la oleada y abre R-32. El hallazgo sigue `ABIERTO` porque ninguno de los dos remedios se ha aplicado todavía. Fila recondensada de nuevo en esta pasada para legibilidad. | `roadmap/SEGUIMIENTO.md` (notas de reconfirmación del Programador) · enrutado como pregunta `#12` de `SEGUIMIENTO.md` §6 por el PM el 2026-10-10 (commit `845e2d9`) · coste reconfirmado de nuevo con R-31 (nueve reconfirmaciones del 2026-10-16, verificado por esta auditoría el 2026-10-17) |
+| #30 | 2026-10-10 | Proceso / coste de cómputo (cadencia de la rutina Programador) | media | ABIERTO | La rutina programada "Programador" dispara con cron horario durante toda la jornada. Cuando la R-XX del día se implementa temprano, las **nueve** reconfirmaciones horarias siguientes no tienen ninguna tarea que ejecutar (§1 de `SEGUIMIENTO.md` vacío hasta el siguiente ciclo de PM) y aun así cada una repite el protocolo completo de entrada: `git pull`, `pip install`, y las cuatro redes enteras, solo para commitear "sin novedad de código". No es un síntoma oculto: el propio ciclo de Programador lo señaló antes de que esta auditoría lo registrara. Riesgo de producto: ninguno (verificación siempre en verde). Coste real: cada reconfirmación ociosa paga el precio íntegro de una sesión de nube completa por un commit que no cambia una sola línea de `scripts/`, `tests/` ni `assets/`. **Enrutado por el PM el 2026-10-10** (commit `845e2d9`) como pregunta de gobernanza `#12` de `SEGUIMIENTO.md` §6, **pendiente**, con dos remedios propuestos (espaciar el cron, o añadir una comprobación barata de "cola vacía") que ninguno de los dos aplicable sin autorización del dueño. **Materializado de forma idéntica en cada oleada desde R-27** (R-27 a R-30, detalle día a día recuperable con `git log -p -- auditoriacontinua.md`) **y de nuevo con R-31** (R-31 completada a las 06:25 del 2026-10-16, `3cb5075`; nueve reconfirmaciones horarias siguientes, `07:16` a `15:17`, `0d01fcc`…`7fcbaab`, sin cambio de código). **Sin nueva repetición que registrar en esta pasada (2026-10-18):** desde la apertura de R-32 (`08a59de`, 2026-10-16 19:21) no ha corrido ningún ciclo de Programador todavía, solo auditoría y PM, así que el patrón no tiene ocasión de repetirse hasta que lo haga. El hallazgo sigue `ABIERTO` porque ninguno de los dos remedios se ha aplicado todavía y la pregunta `#12` sigue `(pendiente)`. | `roadmap/SEGUIMIENTO.md` (notas de reconfirmación del Programador) · enrutado como pregunta `#12` de `SEGUIMIENTO.md` §6 por el PM el 2026-10-10 (commit `845e2d9`) · reconfirmado por última vez con R-31 (2026-10-17); sin ciclos de Programador que reconfirmar en la pasada del 2026-10-18 |
+| #32 | 2026-10-18 | Proceso / gobernanza del Product Manager (§0.4 cierre de sesión) | baja | ABIERTO | El ciclo de PM del 2026-10-17 19:11 (commit `1b8fae3`) tocó `DECISIONES_TECNICAS.md`, `ROADMAP_PRODUCTO.md` e `HISTORIAL_SESIONES.md`, pero no `roadmap/SEGUIMIENTO.md` — confirmado con `git show --stat 1b8fae3`, que no lista el archivo. Incumple la regla de cierre de sesión §0.4.1 de `HOJA_DE_RUTA.md` ("Actualiza el estado de la tarea en §1 de SEGUIMIENTO... y «última actualización» de la cabecera"), aplicable a toda sesión que termina. Efecto observable: la cabecera de `SEGUIMIENTO.md` sigue fechada "2026-10-16" y `grep -n "2026-10-17" roadmap/SEGUIMIENTO.md` no encuentra ninguna coincidencia, pese a que el propio documento se autodescribe como el único "hub" que el dueño revisa ("El dueño no revisa el código: revisa este documento"). No se pierde información (recuperable en `HISTORIAL_SESIONES.md`/`git log`) ni se infringe ningún invariante de producto; es un hallazgo de proceso puro, mismo perfil que `#29`/`#31`, normalmente autocorregido por el propio PM en su ciclo siguiente. Detectado por esta auditoría (2026-10-18) por ser posterior al commit de la auditoría anterior (`7490d1b`): ningún auditor lo había revisado hasta ahora, y ningún ciclo posterior lo ha corregido todavía. | `roadmap/SEGUIMIENTO.md` §0.4.1 · commit `1b8fae3` (2026-10-17) · detectado de forma independiente por esta auditoría (2026-10-18) |
 
 ---
 
@@ -54,6 +55,116 @@
 > Cada pasada: fecha, hallazgos y conclusiones. Append, la más reciente arriba. Prestar
 > atención especial a la coherencia entre lo decidido (`DECISIONES_TECNICAS.md` y §0.2 de la
 > hoja de ruta) y lo realmente implementado, y a las desviaciones (§7 de SEGUIMIENTO).
+
+### Auditoría 2026-10-18 — un hallazgo nuevo (`#32`, proceso/PM, baja): el ciclo de PM del 2026-10-17 (19:11, commit `1b8fae3`) no tocó `SEGUIMIENTO.md`, incumpliendo su propia regla de cierre de sesión (§0.4.1); R-32 (Oleada v20, exportador `.pdf`) sigue `PENDIENTE` sin ningún commit de código desde su apertura; `#24` reconfirmado sin desfase activo ahora mismo; `#30` sin ciclos de Programador que reconfirmar desde la apertura de R-32
+
+**Nota de arranque.** El contenedor arrancó, igual que en pasadas anteriores, con `HEAD` *detached*
+sobre un commit antiguo de `develop` (`b62c0af`). `git checkout develop` seguido de `git pull
+origin develop` resolvió por **fast-forward limpio** hasta `1b8fae3` (49 commits), sin ninguna
+divergencia que requiriera `git fetch --deepen`/`--unshallow` ni `reset --hard`. `git status`
+limpio antes y después.
+
+**Reinstalación de dependencias.** El `pip` pelado de este contenedor vuelve a resolver, igual que
+advierten `#22`/`#28`, contra un intérprete distinto del real; `python3 -m pip install -r
+requirements-dev.txt` (forma correcta ya documentada en `DEVELOPERS.md`/`SKILL.md`) instaló
+`mypy==1.18.2`/`ruff==0.14.0`/`pytest==8.4.2` contra el intérprete real del proyecto (Python
+3.11.17). Sin incidencia nueva: la nota de `#28`/P-06 sigue cubriendo exactamente este síntoma.
+
+**Verificación propia completa.** `python3 scripts/ci.py` da las cuatro redes en verde: `mypy` sin
+hallazgos (72 archivos), `ruff` sin hallazgos, **696 tests** (sin cambio desde la auditoría
+anterior — coincide con que no ha corrido ningún ciclo de Programador ni de código desde R-31) y
+las diecinueve etapas de `verificar_salidas.py --fixture` en `OK`, incluida la auto-contención de
+`reproductor.html` y `guion-impresion.html` (ambos explícitamente confirmados "autocontenido" por
+el propio validador). Aviso textual ya conocido y aceptado desde T-06 (desajuste Python 3.11 real
+vs. `>=3.12` declarado en `pyproject.toml`), sin bloquear nada. Dos salidas quedan `SalidaLatente`
+como es esperado (`.pptx` real por falta de la skill `480-branded-pptx` instalada en este
+contenedor, `.pdf` por falta de Chrome/Edge) y dos etapas se omiten por falta de parte de rodaje —
+mismo comportamiento que pasadas anteriores, sin novedad.
+
+**Los seis invariantes, revisados directamente contra el código (no contra documentación vieja).**
+(a) Cobertura total: `parser.py`/`clasificador.py` clasifican cada bloque sin ningún descarte
+silencioso; test dedicado `test_deteccion.py::test_cobertura_total_guiones_reales` compara
+`len(resultados) == len(bloques)` sobre guiones reales. (b) Original recuperable + ediciones
+manuales: `reescrituras.py` conserva siempre `original` junto a `propuesta`
+(`fusionar_con_estado`/`revertir_reescrituras` nunca lo borran); `revalidacion.py` relee
+`guion-escenas.md` del disco y trata cualquier discrepancia frente al texto esperado como edición
+manual autoritativa que nunca se sobrescribe, incluido el conflicto edición-manual-vs-partición ya
+resuelto por P-02/P-03 (`#9`/`#14`). (c) Auto-contención: `assets/reproductor/*` sin ninguna URL,
+CDN ni `fetch` externo (grep limpio); `verificar_salidas.py::verificar_autocontencion` cubre 13
+patrones y corre tanto en `tests/test_reproductor.py` como en la cuarta red de `ci.py` — matiz ya
+conocido y aceptado por diseño: la verificación es de tests/CI, no un chequeo bloqueante inline
+dentro de `generar_reproductor_html`, porque la garantía real viene de que las plantillas nunca
+referencian nada externo. (d) Runtime solo stdlib: ningún import de terceros en `scripts/*.py`;
+`pyproject.toml` declara `dependencies = []` citando la regla §0.2 en el propio comentario. (e)
+Configuración: `config.py` (~124 constantes) alimenta `Configuracion`, y
+`test_skill_md.py::test_toda_clave_de_configuracion_esta_documentada_en_skill_md` (4 passed)
+confirma mecánicamente que cada campo está en `SKILL.md`; los números "mágicos" que sí aparecen
+sueltos en `reproductor.py` son la fórmula fija WCAG de luminancia relativa (255, 12.92, 2.4,
+0.2126…), no un umbral de negocio. (f) Contención + `.bak`: `entrada.py::carpeta_salida_para`
+valida con `.resolve().relative_to(...)` que toda escritura caiga dentro de la carpeta del guion;
+los cuatro sitios que sobrescriben contenido único del dueño o de instalación
+(`documento_revision.py`, `entrada.py`, `feedback.py`, `instalar_skill.py`) siguen aplicando la
+copia `.bak`; las salidas puramente derivadas (reproductor, `.srt`, `.pdf`, `.pptx`, capítulos,
+comandos de montaje, convención) no la llevan por política ya documentada y consistente (no son
+contenido único ni se releen como entrada) — mismo criterio que ya cubría `convencion.py`, ahora
+confirmado extendido sin excepción al resto de generadores. **Los seis invariantes se cumplen.**
+
+**Coherencia roadmap↔código.** Revisadas las últimas decisiones técnicas (R-27 a R-32) contra las
+reglas innegociables de `HOJA_DE_RUTA.md` §0.2: ninguna las incumple (cero red, cero dependencia
+nueva, español, `encoding="utf-8"`, sin números mágicos, logger centralizado — R-32 existe
+precisamente para reforzar esta última). `SEGUIMIENTO.md` §7 sin ninguna desviación activa nueva:
+las siete filas existentes siguen siendo todas de 2026-08-31/09-02, cerradas o incorporadas a la
+norma permanente.
+
+**R-32 (Oleada v20, exportador `.pdf`) sigue `PENDIENTE`.** `git log -- scripts/pdf.py
+scripts/salidas.py` desde `08a59de` (su apertura, 2026-10-16) no trae ningún commit nuevo: cero
+código tocado. Correctamente no se ha abierto ninguna R-33 (regla de "nunca más de una R-XX
+pendiente de código a la vez", explícita en el propio commit `1b8fae3`). Tampoco ha corrido ningún
+ciclo de "Programador" desde la apertura de R-32 — solo el de auditoría (`7490d1b`) y el de PM
+(`1b8fae3`), ambos el mismo día 2026-10-17.
+
+**`#24` reconfirmado: sin desfase activo ahora mismo.** El propio ciclo de PM (`1b8fae3`) reescribió
+la prosa de cabecera de `ROADMAP_PRODUCTO.md` ("Última actualización: 2026-10-17… R-32 sigue
+PENDIENTE") al cerrar su ciclo, exactamente el patrón de autocorrección que el hallazgo describe.
+Sigue `ABIERTO` en el registro porque la pregunta de gobernanza `#11` de `SEGUIMIENTO.md` §6 sigue
+`(pendiente)` de respuesta del dueño y el mecanismo de fondo no ha cambiado — no porque haya
+desfase hoy.
+
+**`#30` sin poder reconfirmarse esta vez: no ha corrido ningún ciclo de Programador desde la
+apertura de R-32.** El patrón de nueve reconfirmaciones horarias "sin novedad de código" se repitió
+sin excepción en las cuatro oleadas anteriores (R-27 a R-30/R-31), pero desde que se abrió R-32
+(2026-10-16 19:21) solo han corrido la auditoría y el PM — ninguna reconfirmación del Programador
+todavía. El hallazgo sigue `ABIERTO` (la pregunta `#12` de §6 sigue `(pendiente)` y el cron no se ha
+espaciado), pero esta pasada no puede añadir una repetición nueva del patrón porque no se ha dado
+la circunstancia que lo dispara.
+
+**Hallazgo nuevo `#32` (proceso / gobernanza del PM, baja): el ciclo de PM del 2026-10-17 (19:11,
+commit `1b8fae3`) no actualizó `SEGUIMIENTO.md`.** Verificado de forma directa, no solo citado:
+`git show --stat 1b8fae3` lista `DECISIONES_TECNICAS.md`, `HISTORIAL_SESIONES.md` y
+`ROADMAP_PRODUCTO.md` como únicos archivos tocados — `roadmap/SEGUIMIENTO.md` no aparece. Efecto
+observable: su cabecera sigue fechada "**Última actualización:** 2026-10-16" y `grep -n
+"2026-10-17" roadmap/SEGUIMIENTO.md` no encuentra ninguna coincidencia en todo el archivo, pese a
+que el propio ciclo de PM sí tomó una decisión real ese día (confirmar que R-32 sigue sin código,
+decidir no abrir R-33, y corregir la prosa de `ROADMAP_PRODUCTO.md` para cerrar `#24`). Esto
+incumple literalmente la regla de cierre de sesión §0.4.1 de `HOJA_DE_RUTA.md` ("Actualiza el
+**estado** de la tarea en §1 de SEGUIMIENTO (y «última actualización» de la cabecera)"), que se
+aplica a *cualquier* sesión que termine, no solo a las que cambian el estado de una tarea. El
+riesgo real es de experiencia de uso más que de producto: `SEGUIMIENTO.md` se autodescribe como
+"Hub / panel de control" y dice explícitamente "El dueño no revisa el código: revisa este
+documento" — un dueño que solo abra `SEGUIMIENTO.md` hoy no vería ningún rastro de que hubo un
+ciclo de PM la noche del 17, ni de la corrección de `#24`; tendría que ir a `HISTORIAL_SESIONES.md`
+o al propio `git log` para enterarse, rompiendo la promesa de "un solo documento que consultar". No
+se pierde ninguna información (recuperable en `HISTORIAL_SESIONES.md`/`git log`) ni se infringe
+ningún invariante de producto — mismo perfil exacto que `#29` (fila de §1 faltante) y `#31` (fila
+de `DECISIONES_TECNICAS.md` faltante), ambos puro proceso, autocorregidos por el propio PM en su
+siguiente ciclo. Queda `ABIERTO`: es posterior al commit de la auditoría anterior (`7490d1b`), así
+que ningún auditor lo había revisado hasta ahora, y ningún ciclo posterior lo ha corregido todavía.
+
+**Verificación GitHub y `FEEDBACK.md`.** `list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter` devuelven cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue
+con su única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+
+---
 
 ### Auditoría 2026-10-17 — sin hallazgos nuevos; R-31 (Oleada v19) revisado de forma independiente y correcto; R-32 (Oleada v20) abierto por el PM el 2026-10-16, grieta de arquitectura en el exportador `.pdf` verificada de forma independiente y bien fundamentada, aún `PENDIENTE` de implementación; `#24` reconfirmado `ABIERTO` (decimocuarta repetición, con R-31); `#30` reconfirmado `ABIERTO`, coste vuelto a materializarse con las nueve reconfirmaciones ociosas del Programador tras R-31
 
