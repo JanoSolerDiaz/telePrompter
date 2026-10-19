@@ -8,6 +8,11 @@
 > El estado de cada R-XX se sigue verificando en §1 de `SEGUIMIENTO.md` (fuente autoritativa); este
 > documento no lo duplica ni lo actualiza — es una fotografía de la spec en el momento del archivo.
 
+**Movido a histórico el:** 2026-10-19 (tercer ciclo del día, PM). Se añade la Oleada v21 (R-33),
+COMPLETADA el mismo día en que se abrió (2026-10-19, ciclo combinado de PM + Programador, sesión
+190) y sin ningún hito de negocio propio pendiente, que además abre R-34 (Oleada v22) — mismo
+criterio que todos los movimientos anteriores.
+
 **Movido a histórico el:** 2026-10-19 (segundo ciclo del día). Se añade la Oleada v20 (R-32),
 COMPLETADA el mismo día en que se abrió (2026-10-16) y reconfirmada en verde en tres
 reconfirmaciones sucesivas sin tarea nueva (sesiones 187, 188, 189) antes de este ciclo, que
@@ -2257,6 +2262,57 @@ Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md`.
 
 ---
 
+## Oleada v21 — Checklist reabrible de "Preparación antes de grabar" en el reproductor
+
+### R-33 — Mostrar la sección "Preparación antes de grabar" del guión como checklist reabrible en el reproductor, en vez de descartar su contenido tras la validación de convención
+
+**Migración:** No (ningún campo nuevo en `estado.json`; un campo aditivo en el payload embebido del
+reproductor y una tecla nueva en `mapa_teclas_reproductor`) · **Depende de:** T-08, T-09, T-18, R-12
+(todas `COMPLETADA`) · **Origen:** observación de producto del PM (2026-10-18), no de auditoría ni
+de feedback de rodaje (`roadmap/FEEDBACK.md` seguía vacío) — grieta funcional verificada con grep: la
+sección auxiliar "Preparación antes de grabar" (`config.SECCIONES_AUXILIARES[1]`) se reconocía en
+`scripts/parser.py`/`scripts/clasificador.py` únicamente para no clasificarla como escena, y en
+`scripts/convencion.py` únicamente para no señalarla como desviación; su `SeccionAuxiliar.contenido`
+no se propagaba a ninguna salida real.
+
+**Objetivo:** cuando el guión trae una sección `## Preparación antes de grabar`, su contenido debe
+llegar íntegro al reproductor y mostrarse como un panel de comprobación reutilizable — mismo patrón
+ya usado para la ayuda de teclado (`ayuda-teclado`, `guion.js`): overlay centrado, nunca bloqueante,
+reabrible en cualquier momento, nunca interpuesto durante una cuenta atrás o el registro de una
+toma. Un formador en solitario, a pie de cámara, no tiene a nadie detrás que le recuerde revisar
+encuadre, audio o luz antes de rodar una escena — si lo escribió en su propio guión, el reproductor
+no debe dejarlo tirado en el documento fuente.
+
+**Requisitos (resumen; ficha completa con el razonamiento íntegro en el historial de Git y en
+`DECISIONES_TECNICAS.md`):** `reproductor.py::_construir_datos` añade `preparacion_antes_grabar: str
+| None` al payload (contenido tal cual de la sección, `None` si el guión no la trae); `guion.js`
+añade un panel nuevo con el mismo esqueleto CSS/JS que `ayuda-teclado`, cerrable con `Esc` o con su
+propia tecla; se abre solo una vez (flag en `localStorage`, mismo mecanismo que "ya visto"); tecla
+nueva en `mapa_teclas_reproductor`, sin colisionar con ninguna ya asignada; nunca se abre durante una
+cuenta atrás o el registro de una toma; contenido largo hace scroll interno. Fuera de alcance: no se
+toca la sección "Notas de producción", ni la lista negra de secciones auxiliares, ni `tarjetas.json`
+ni el flujo de `.pptx`/`.pdf`.
+
+**Cómo se entregó:** `Configuracion` gana `titulo_seccion_preparacion` (campo propio, mismo criterio
+que `titulo_seccion_capitulos` de R-07, en vez de asumir el índice 1 de `SECCIONES_AUXILIARES`);
+`reproductor.py::_buscar_seccion_preparacion` localiza la sección por prefijo (mismo patrón que
+`capitulos_youtube._buscar_seccion_capitulos`) y `_construir_datos` incorpora
+`preparacion_antes_grabar: str | None` al payload. `guion.js` muestra el panel en el **índice de
+escenas**, no en la vista de reproducción — decisión de diseño que satisface "nunca se abre... durante
+una cuenta atrás o el registro de una toma" **por construcción**, no con una comprobación de estado:
+esas dos situaciones solo existen dentro de una escena en reproducción, a la que este panel no tiene
+acceso. Reutiliza tal cual el overlay `.ayuda-teclado`/`.ayuda-teclado-panel` (T-24); la tecla nueva
+(`preparacion_grabacion`, `P`/`p`) se gestiona en un manejador de teclado propio
+(`manejarTeclaIndice`), separado del de la vista de reproducción, activo solo con el índice visible;
+`Esc` cierra el panel desde el mismo manejador. Primera apertura automática, una sola vez, mediante
+una bandera de "primera renderización del índice" (no encadenada tras la llamada inicial a
+`renderizarIndice()`, para no alterar el invariante — ya protegido por un test existente — de que
+nada se dispara automáticamente después de esa llamada). Botón propio «Preparación antes de grabar»
+en el índice como segunda vía de reapertura. 5 tests nuevos en `tests/test_reproductor.py`
+(699→704). Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2266,4 +2322,5 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 2026-10-06; la de v12 (R-24), 2026-10-07; la de v13 (R-25), 2026-10-08; la de v14 (R-26),
 2026-10-09; la de v15 (R-27), 2026-10-12; la de v16 (R-28), 2026-10-13; la de v17 (R-29),
 2026-10-14; la de v18 (R-30), 2026-10-15; la de v19 (R-31), 2026-10-16; la de v20 (R-32),
-2026-10-16 (implementación), archivada el 2026-10-19.)*
+2026-10-16 (implementación), archivada el 2026-10-19; la de v21 (R-33), 2026-10-19 (implementación),
+archivada el mismo día.)*

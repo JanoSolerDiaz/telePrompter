@@ -12,6 +12,72 @@
 
 ---
 
+### Sesión 2026-10-19 (196) — Ciclo de Product Manager (tercero del día): archiva Oleada v21 (R-33) y abre R-34 (Oleada v22), sin implementarla
+
+**Arranque.** El contenedor arrancó con `HEAD` *detached* y `develop` local desincronizado de
+`origin/develop` ("diverged", 50 commits distintos a cada lado bajo el horizonte del
+`git clone --depth` de cada contenedor efímero, mismo síntoma ya normalizado en
+`auditoriacontinua.md` `#21`). Árbol de trabajo limpio, sin nada sin confirmar. Resuelto con
+`git fetch origin develop` + `git checkout develop` + `git reset --hard origin/develop`, sin
+pérdida de trabajo real. Dependencias de desarrollo instaladas con
+`pip install -r requirements-dev.txt`.
+
+**Lectura completa del registro repartido.** `HOJA_DE_RUTA.md` (protocolo §0, sin tocar),
+`SEGUIMIENTO.md` §1/§3/§4/§5/§6/§7 íntegros, `ROADMAP_PRODUCTO.md`, `PROYECTO.md`, `FEEDBACK.md`
+(vacío, confirmado) y el registro de hallazgos completo de `auditoriacontinua.md`. §1 confirmada
+como fuente autoritativa: R-33 (Oleada v21) `COMPLETADA` desde el ciclo combinado de PM +
+Programador de la sesión 190, el mismo día; ninguna fila `PENDIENTE`.
+
+**Paso 1 — hallazgos del auditor.** Solo dos `ABIERTO`: `#24` (baja) y `#30` (media), ambos de
+proceso/gobernanza puro, pendientes únicamente de la respuesta del dueño a las preguntas `#11`/`#12`
+de `SEGUIMIENTO.md` §6 — ninguno de severidad alta, ninguno convertible en R-XX de producto ni en
+deuda técnica de backlog. Nada que enrutar esta vez.
+
+**Paso 2 — feedback de rodaje.** `roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila
+de plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
+curso completo) sigue abierto.
+
+**Archivado de la Oleada v21 (R-33).** Movida a `roadmap/ROADMAP_HISTORICO.md` con su ficha completa
+y el "Cómo se entregó" (nota "Movido a histórico el: 2026-10-19 (tercer ciclo del día, PM)" al
+principio del documento). `ROADMAP_PRODUCTO.md` actualizado: cabecera reescrita, sección "Oleada
+v21" sustituida por la nota de archivo de una línea.
+
+**Apertura de R-34 (Oleada v22), sin implementar.** Origen: observación de producto del propio PM,
+no de auditoría ni de feedback de rodaje. Verificado leyendo
+`assets/reproductor/guion.js::finalizarTomaActual` (R-02) y `::alternarTropiezoBloqueActual` (R-03):
+la primera ya calcula el tiempo real transcurrido desde el inicio de la toma en curso
+(`cronometroMsAcumulados` + lo corrido desde `cronometroInicioMarca` si no está en pausa) para la
+duración de la toma; la segunda, que marca un tropiezo con la misma tecla `T` mientras esa misma
+toma está en marcha, nunca reutiliza ese cálculo — un tropiezo solo guarda `indice_bloque`/`texto`.
+`scripts/feedback.py::TropiezoBloque` confirma la misma ausencia (sin ningún campo de tiempo).
+Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v22: extraer el cálculo a una función compartida
+reutilizada por ambas funciones de `guion.js`; `instante_toma_segundos` nuevo en el tropiezo
+marcado; límite documentado explícitamente en `references/contrato-tropiezos.md` (versión 2,
+aditivo) sobre a qué toma pertenece ese instante si se regraba la escena; columna nueva «Instante»
+en el `FEEDBACK.md` de la carpeta de salida; compatibilidad hacia atrás con un `.json` de la versión
+1 del contrato (campo ausente, no error). Motivo: encaja con la fase de montaje con ffmpeg que viene
+justo después de grabar (T-33) — el dueño podrá saltar al segundo exacto del vídeo real donde se
+trabó, en vez de revisar la toma entera, mismo principio que ya aplicaron R-19 (archivo de vídeo
+real) y R-22 (capítulos incrustables).
+
+**Sin cambio de código.** Ciclo de PM: no se ejecutó `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-34 queda lista para el siguiente ciclo de
+Programador.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-33: `COMPLETADA` → sin cambio (ya lo estaba).
+R-34: fila nueva, `PENDIENTE`.
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Una fila nueva: "PM (archiva Oleada v21, abre
+R-34 sin implementarla)", con las tres alternativas consideradas (no abrir nada; abrir y especificar
+sin implementar; abrir e implementar en la misma sesión como con R-33) y por qué se eligió la
+segunda.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones).** §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin preguntas nuevas: R-34 no depende de ninguna decisión que
+los agentes no puedan tomar por sí mismos.
+
+---
+
 ### Sesión 2026-10-19 (195) — Ciclo de Programador: quinta reconfirmación del día tras R-33, sin novedad de código
 
 **Arranque.** El contenedor arrancó de nuevo con `HEAD` *detached* y `develop` local

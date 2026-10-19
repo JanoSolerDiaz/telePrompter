@@ -10,7 +10,61 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-19 — **Ciclo de Programador: quinta reconfirmación del día
+**Última actualización:** 2026-10-19 — **Ciclo de Product Manager (tercero del día): archiva la
+Oleada v21 (R-33) y abre R-34 (Oleada v22), sin implementarla**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-19), tercero del día.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` *detached* y `develop` local desincronizado de `origin/develop`
+("diverged", 50 commits distintos a cada lado bajo el horizonte del `git clone --depth` de cada
+contenedor efímero, mismo síntoma ya normalizado en `auditoriacontinua.md` `#21`). Árbol de trabajo
+limpio, sin nada sin confirmar. Resuelto con `git fetch origin develop` + `git checkout develop` +
+`git reset --hard origin/develop`, sin pérdida de trabajo real. Dependencias de desarrollo
+instaladas con `pip install -r requirements-dev.txt`.
+
+**Lectura completa del registro repartido** antes de proponer nada: `HOJA_DE_RUTA.md` (protocolo §0,
+sin tocar), este documento (§1/§3/§4/§5/§6/§7 íntegros), `ROADMAP_PRODUCTO.md`, `PROYECTO.md`,
+`roadmap/FEEDBACK.md` y el registro completo de hallazgos de `auditoriacontinua.md`. §1 confirmada
+como fuente autoritativa: R-33 (Oleada v21) `COMPLETADA` desde el ciclo combinado de PM + Programador
+de la sesión 190, el mismo día; ninguna fila `PENDIENTE`.
+
+**Paso 1 — hallazgos del auditor.** Solo dos `ABIERTO` en `auditoriacontinua.md`: `#24` (baja) y
+`#30` (media), ambos de proceso/gobernanza puro, pendientes únicamente de la respuesta del dueño a
+las preguntas `#11`/`#12` de §6 — ninguno de severidad alta, ninguno convertible en R-XX de producto
+ni en deuda técnica de backlog. Nada que enrutar esta vez.
+
+**Paso 2 — feedback de rodaje.** `roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila de
+plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue
+abierto, así que no hay todavía ninguna historia de rodaje real que convertir en R-XX.
+
+**Paso 3 — evoluciona el roadmap.** Archivada la Oleada v21 (R-33) en `roadmap/ROADMAP_HISTORICO.md`
+(ficha completa + "Cómo se entregó"), con nota de archivo en `ROADMAP_PRODUCTO.md`. Abierta **R-34**
+(Oleada v22): capturar el instante real (segundos desde el inicio de la toma) en el que se marca un
+tropiezo durante la grabación, reutilizando el cronómetro que `finalizarTomaActual` (R-02) ya calcula
+en el mismo `assets/reproductor/guion.js` para la duración de la toma, y que
+`alternarTropiezoBloqueActual` (R-03) nunca llegó a reutilizar — verificado leyendo ambas funciones y
+`scripts/feedback.py::TropiezoBloque` (sin ningún campo de tiempo hoy). Origen: observación de
+producto del propio PM, no de auditoría ni de feedback de rodaje. Motivo: encaja directamente con la
+fase de montaje con ffmpeg que viene después de grabar (T-33) — el dueño podrá saltar al segundo
+exacto del vídeo real donde se trabó, en vez de revisar la toma entera, mismo principio que ya
+aplicaron R-19 (archivo de vídeo real) y R-22 (capítulos incrustables). Ficha completa (migración,
+dependencias, requisitos, límite documentado del requisito 3, fuera de alcance, criterio de
+aceptación) en `ROADMAP_PRODUCTO.md`, Oleada v22.
+
+**Sin cambio de código.** Ciclo de PM puro: no se tocó `scripts/`, `tests/` ni `assets/`; no se
+ejecutó `scripts/ci.py` ni `verificar_salidas.py --fixture`. La spec de R-34 queda lista para el
+siguiente ciclo de Programador.
+
+**Cambios de estado (§1).** R-33: sigue `COMPLETADA` (sin cambio). R-34: fila nueva, `PENDIENTE`.
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Una fila nueva: "PM (apertura de R-34)", con las
+alternativas consideradas y por qué se eligió capturar el instante en el momento de marcar (y no,
+por ejemplo, reconstruirlo después a partir del `.srt`/`concat-ffmpeg.txt`).
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §5 (P-XX): ninguna nueva. §6 sigue con
+`#11`/`#12` `(pendiente)` de respuesta del dueño — ninguna pregunta nueva de este ciclo, porque R-34
+no depende de ninguna decisión que los agentes no puedan tomar por sí mismos.
+
+**Última actualización anterior (2026-10-19, ciclo de Programador): quinta reconfirmación del día
 tras R-33, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-19), quinta reconfirmación del día tras R-33.** Revisión de
@@ -4445,6 +4499,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-31 | Advertir en `comandos-montaje.md` cuando el documento referencia un archivo (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) que no existe todavía en la carpeta de salida real, en vez de dar por hecho que las demás salidas de las que depende ya se generaron | **COMPLETADA** | 2026-10-16 | `comandos_montaje.calcular_comandos_montaje` gana `carpeta_salida: Path \| None = None` (comprobación de existencia en disco, nunca de contenido); cada archivo ausente se recoge en `ResultadoComandosMontaje.archivos_referenciados_faltantes` (`ArchivoReferenciadoFaltante`) y `formatear_comandos_montaje` lo vuelca como nota visible al principio del documento, nunca bloquea ni degrada la generación. Descripciones de opción centralizadas en `config.py` (`DESCRIPCION_OPCION_*`), reutilizadas tal cual por `salidas.py::DESCRIPCION_SALIDA`, sin ciclo de imports. `scripts/salidas.py::_generar_comandos_montaje` reenvía `carpeta_salida`; sin ella, comportamiento idéntico al de antes de R-31. 6 tests nuevos (690→696). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-32 | Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad | **COMPLETADA** | 2026-10-19 | `ResultadoPdf` (`scripts/pdf.py`) gana `chrome_detectado: bool` (fijado en `exportar_pdf`, cero cambio en `convertir_html_a_pdf`, que sigue sin lanzar nunca); `_generar_pdf` (`scripts/salidas.py`) distingue ahora tres desenlaces — éxito; `chrome_detectado=False` → `SalidaLatente` idéntica a antes; `chrome_detectado=True` con conversión fallida → fallo real, reutilizando tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de R-24 (misma `SalidaOmitida` que las demás salidas) — con una excepción construida y capturada en el momento para dejar traceback real. `_generar_pdf` cambia su firma a `(generadas, latentes, omitidas)`; único punto de llamada actualizado. HTML de impresión intacto en `generadas` en los tres casos. 3 tests nuevos (696→699): 2 en `tests/test_pdf.py`, 2 en `tests/test_salidas.py` (más 2 aserciones de `chrome_detectado` en tests ya existentes). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`. Archivada en `ROADMAP_HISTORICO.md` (Oleada v20) en el ciclo de PM del 2026-10-19 |
 | R-33 | Mostrar la sección "Preparación antes de grabar" del guión como checklist reabrible en el reproductor, en vez de descartar su contenido tras la validación de convención | **COMPLETADA** | 2026-10-19 | `Configuracion` gana `titulo_seccion_preparacion` (campo propio, mismo criterio que `titulo_seccion_capitulos` de R-07, en vez de asumir el índice 1 de `SECCIONES_AUXILIARES`); `reproductor.py::_buscar_seccion_preparacion` localiza la sección por prefijo (mismo patrón que `capitulos_youtube._buscar_seccion_capitulos`) y `_construir_datos` incorpora `preparacion_antes_grabar: str o None` al payload — `None` sin esa sección en el guión, nunca se fabrica contenido. `guion.js` muestra un panel nuevo en el índice de escenas (nunca en la vista de reproducción), reutilizando el overlay `.ayuda-teclado`/`.ayuda-teclado-panel` de T-24; tecla nueva `preparacion_grabacion` (`P`/`p`) gestionada por un manejador de teclado propio (`manejarTeclaIndice`), separado del de la vista de reproducción — así el requisito "nunca se abre durante una cuenta atrás o el registro de una toma" queda satisfecho por construcción, no por una comprobación de estado, porque esas dos situaciones solo existen dentro de una escena. Apertura automática una sola vez (bandera de "primera renderización", sin encadenar tras la llamada inicial a `renderizarIndice()`, para no romper el test existente que protege que nada se dispara automáticamente después de esa llamada); botón propio en el índice como segunda vía de reapertura. Verificado también visualmente con Playwright/Chromium real: apertura automática la primera vez, cierre con Esc, no reapertura tras recargar (ya "vista"), reapertura con `P` y con el botón, y sin ningún efecto al pulsar `P` dentro de una escena. 5 tests nuevos (699→704). Oleada v21, `origen: observación de arquitectura del PM (2026-10-18)` |
+| R-34 | Capturar el instante real (segundos desde el inicio de la toma) en que se marca un tropiezo durante la grabación, para saltar directo al punto de corte en el montaje con ffmpeg | PENDIENTE | — | Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v22. `origen: observación de producto del PM (2026-10-19)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

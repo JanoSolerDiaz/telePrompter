@@ -8,26 +8,27 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-19 (ciclo de PM + Programador en la misma sesión). R-32 (Oleada
-v20) llevaba `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-10-16 (reconfirmada en verde tres
-veces sin tarea nueva, sesiones 187-189) sin que ningún ciclo de PM la archivara todavía. Este ciclo
-archiva la Oleada v20 en `ROADMAP_HISTORICO.md`, abre R-33 (Oleada v21, ya especificada desde el
-2026-10-18) en §1 y la implementa en la misma sesión: el criterio de una sola R-XX pendiente de
-código a la vez (vigente desde R-19) queda respetado en todo momento porque ambos pasos — abrir e
-implementar — ocurrieron sin que hubiera ninguna otra R-XX pendiente entremedias.
+**Última actualización:** 2026-10-19 (tercer ciclo del día, ciclo de Product Manager). R-33 (Oleada
+v21) llevaba `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el ciclo combinado de PM + Programador de
+la sesión 190, el mismo día, sin que ningún ciclo de PM la archivara todavía. Este ciclo archiva la
+Oleada v21 en `ROADMAP_HISTORICO.md` y abre R-34 (Oleada v22) en §1, sin implementarla: el criterio
+de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda respetado porque no había
+ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
 completo) sigue abierto. `auditoriacontinua.md` revisado antes de elegir tarea: solo dos `ABIERTO`
 (`#24`, baja; `#30`, media), ambos de proceso/gobernanza puro y pendientes solo de la respuesta del
 dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 — ninguno de severidad alta, ninguno
-convertible en R-XX nueva.
+convertible en R-XX nueva ni en deuda técnica de backlog.
 
-**Oleada v20 (R-32) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v21 (R-33) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v21 (R-33) abierta e implementada.** Ficha completa más abajo, ahora con su "Cómo se
-entregó". Origen: observación de producto del propio PM (2026-10-18), verificada con grep, no de
-auditoría ni de feedback de rodaje.
+**Oleada v22 (R-34) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+producto del propio PM (2026-10-19), verificada contra `assets/reproductor/guion.js` y
+`scripts/feedback.py`: ningún llamador real guarda hoy ningún instante de tiempo junto a un tropiezo
+marcado, pese a que el cronómetro de la toma (T-23) ya calcula ese dato para otro consumidor
+(`finalizarTomaActual`, R-02) en el mismo archivo.
 
 ---
 
@@ -235,83 +236,82 @@ ahí.
 
 ### Oleada v21 — entregada
 
-#### R-33 — Mostrar la sección "Preparación antes de grabar" del guión como checklist reabrible en el reproductor, en vez de descartar su contenido tras la validación de convención
+La oleada v21 (checklist reabrible de "Preparación antes de grabar" en el índice del reproductor,
+R-33) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio
+propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-19, tercer ciclo
+del día). Su spec completa y cómo se entregó viven ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json`; un campo aditivo en el payload embebido del
-reproductor y una tecla nueva en `mapa_teclas_reproductor`) · **Depende de:** T-08, T-09, T-18, R-12
-(todas `COMPLETADA`) · **Origen:** observación de producto del PM (2026-10-18), no de auditoría ni
-de feedback de rodaje (`roadmap/FEEDBACK.md` sigue vacío) — grieta funcional verificada con grep: la
-sección auxiliar "Preparación antes de grabar" (`config.SECCIONES_AUXILIARES[1]`) se reconoce en
-`scripts/parser.py`/`scripts/clasificador.py` únicamente para no clasificarla como escena, y en
-`scripts/convencion.py` únicamente para no señalarla como desviación; su `SeccionAuxiliar.contenido`
-no se propaga a ninguna salida real (`scripts/reproductor.py::_construir_datos` no la lee; tampoco
-`scripts/pptx.py::generar_tarjetas` ni `scripts/pdf.py`) — grep de `preparacion_antes_grabar` y de
-`notas_produc` en todo el repositorio no encuentra ningún consumidor fuera de la propia validación
-de convención.
+### Oleada v22 — Instante exacto de cada tropiezo dentro de la toma
 
-**Objetivo:** cuando el guión trae una sección `## Preparación antes de grabar`, su contenido debe
-llegar íntegro al reproductor y mostrarse como un panel de comprobación reutilizable — mismo patrón
-ya usado para la ayuda de teclado (`ayuda-teclado`, `guion.js`): overlay centrado, nunca bloqueante,
-reabrible en cualquier momento, nunca interpuesto durante una cuenta atrás o el registro de una
-toma. Encaja con el principio de producto 5 (legibilidad y utilidad en el momento de grabar por
-encima de todo): un formador en solitario, a pie de cámara, no tiene a nadie detrás que le recuerde
-revisar encuadre, audio o luz antes de rodar una escena — si lo escribió en su propio guión, el
-reproductor no debe dejarlo tirado en el documento fuente.
+#### R-34 — Capturar el instante real (segundos desde el inicio de la toma) en que se marca un tropiezo, para saltar directo al punto de corte en el montaje con ffmpeg
+
+**Migración:** No (ningún campo nuevo en `estado.json`: los tropiezos no se persisten ahí, igual que
+fijó R-03; cambio aditivo en el `.json` exportado por "Exportar tropiezos" y en el `FEEDBACK.md` de
+la carpeta de salida — `references/contrato-tropiezos.md` sube a versión 2) · **Depende de:** T-23
+(cronómetro de la toma), R-02 (parte de rodaje), R-03 (tropiezos marcados) — todas `COMPLETADA` ·
+**Origen:** observación de producto del PM (2026-10-19), no de auditoría ni de feedback de rodaje
+(`roadmap/FEEDBACK.md` sigue vacío) — grieta de producto verificada sobre código ya construido:
+`assets/reproductor/guion.js::finalizarTomaActual` (R-02) ya calcula el tiempo real transcurrido
+desde el inicio de la toma en curso (`cronometroMsAcumulados` + lo corrido desde
+`cronometroInicioMarca` si no está en pausa) para guardar `duracion_segundos` de la toma, pero
+`alternarTropiezoBloqueActual` (R-03), que vive en el mismo archivo y se dispara con la misma tecla
+`T` mientras esa toma está en marcha, no reutiliza ese cálculo: un tropiezo marcado hoy solo guarda
+`indice_bloque` y `texto`, nunca CUÁNDO ocurrió dentro de la toma. `scripts/feedback.py` (el lado
+Python del volcado) confirma la misma ausencia: `TropiezoBloque` no tiene ningún campo de tiempo.
+
+**Objetivo:** cuando el dueño marca con `T` un bloque como tropiezo mientras graba, el reproductor ya
+sabe en qué segundo de la toma en curso ocurre (es el mismo cronómetro que ya muestra en pantalla,
+T-23) — hoy ese dato se descarta en el momento de marcar. Capturarlo y llevarlo hasta el `FEEDBACK.md`
+de la carpeta de salida (y hasta ahí llega hoy, sin ningún apoyo del reproductor) ahorra al dueño,
+en la fase de montaje con ffmpeg (T-33) que viene justo después, tener que reproducir la toma entera
+para encontrar a ojo el segundo exacto del archivo de vídeo real donde se trabó — el mismo principio
+de producto que ya justificó R-19 (enlazar la toma con su archivo de vídeo) y R-22 (capítulos
+incrustables): dar al montaje datos que ya existen en memoria durante la grabación, en vez de
+obligar al dueño a reconstruirlos a mano después.
 
 **Requisitos:**
-1. `scripts/reproductor.py::_construir_datos` añade al payload un campo nuevo
-   `preparacion_antes_grabar: str | None`: el `contenido` (tal cual, sin reescritura) de la
-   `SeccionAuxiliar` cuyo `titulo` coincide con `config.SECCIONES_AUXILIARES[1]` ("Preparación antes
-   de grabar"), o `None` si el guión no trae esa sección. Sin sección en el guión → sin panel, nunca
-   se inventa contenido (invariante (a): nada se descarta, pero tampoco se fabrica).
-2. `guion.js` añade un panel nuevo (`preparacion-grabacion`), mismo esqueleto CSS/JS que
-   `ayuda-teclado`: contenido volcado con `textContent` (nunca `innerHTML`, mismo patrón de
-   seguridad ya establecido para todo el reproductor), cerrable con `Esc` o con su propia tecla.
-3. El panel se abre solo una vez, la primera vez que el reproductor se carga en ese navegador para
-   ese guión (mismo mecanismo de flag en `localStorage` que ya usa el reproductor para "ya visto"),
-   y solo si `preparacion_antes_grabar` no es `None`. En cargas posteriores no se abre solo; se
-   reabre a mano con su tecla o con un botón visible en el índice de escenas.
-4. Tecla propia nueva en `mapa_teclas_reproductor` (`scripts/config.py`), documentada en `SKILL.md`
-   igual que las demás, sin colisionar con ninguna ya asignada (Espacio, RePág/AvPág, flechas, +/-,
-   `[`/`]`, R, H, Esc, ?) y sin modificadores (§0.2: compatible con clicker Bluetooth genérico).
-5. El panel nunca se abre ni se superpone mientras hay una cuenta atrás activa o mientras se está
-   registrando una toma (teclas G/T/V) — misma prioridad que ya respeta `ayuda-teclado`.
-6. Contenido largo: el panel hace scroll interno, nunca se trunca en silencio.
-7. **Fuera de alcance, explícito:** no se toca la sección "Notas de producción" (sigue descartada
-   tras la validación de convención, como hoy — su contenido es más heterogéneo y sin consumidor
-   claro todavía; candidata a una R-XX futura si el rodaje real revela que hace falta); no se cambia
-   la lista negra de secciones auxiliares ni la detección de desviaciones de convención
-   (`scripts/convencion.py`); no se añade ninguna sección nueva reconocida por el parser; no se toca
-   `tarjetas.json` ni el flujo de `.pptx`/`.pdf`; no se cambia la convención de marcado acordada
-   (§0.3.1) ni la identidad visual 480.
+1. `guion.js`: extraer el cálculo de tiempo transcurrido que hoy vive solo dentro de
+   `finalizarTomaActual` (`cronometroMsAcumulados` + lo corrido desde `cronometroInicioMarca` si
+   `!pausado`) a una función compartida, y que `alternarTropiezoBloqueActual` la reutilice tal cual
+   — nunca una segunda implementación del mismo cálculo (mismo criterio ya aplicado en R-19/R-20:
+   "promover la función que ya existe, no duplicarla").
+2. Al marcar un bloque como tropiezo (no al desmarcarlo), el objeto guardado en `tropiezosEscena`
+   gana `instante_toma_segundos` (número, segundos desde el inicio de la toma en curso en ese
+   instante, con el mismo redondeo a un decimal que ya usa el cronómetro visible). Si se desmarca el
+   tropiezo antes de exportar, se pierde entero (el elemento se elimina del array), igual que hoy se
+   pierde `texto`/`indice_bloque`: no hay historial de tropiezos retirados, fuera de alcance.
+3. **Límite documentado, no resuelto con heurística:** `instante_toma_segundos` describe el momento
+   dentro de la toma que estaba en marcha cuando se pulsó `T`, no se re-ancla si después se repite la
+   escena y se marca una toma distinta como "buena" (`G`) sin volver a marcar el mismo tropiezo en
+   ella. `references/contrato-tropiezos.md` documenta explícitamente esta limitación: el dato es
+   fiable sin más cuando se sigue grabando sin cortar tras el tropiezo (el caso más común al empujar
+   una toma larga), y deja de serlo si se regraba la escena desde cero; no se intenta adivinar a cuál
+   toma pertenece cada tropiezo, porque eso exigiría inventar una asociación que el dueño no dio.
+4. `scripts/feedback.py`: `TropiezoBloque` gana el campo opcional `instante_toma_segundos: float |
+   None = None`; `_tropiezo_desde_dict` lo admite si está presente (numérico, ≥ 0) y lo deja en
+   `None` si falta — un `.json` de tropiezos exportado por una versión anterior del reproductor
+   (sin el campo) se sigue cargando sin error, igual que R-19 con `archivo_video` ausente.
+5. `_ENCABEZADO_FEEDBACK`/`_PATRON_FILA`/`registrar_tropiezos_en_feedback`: columna nueva «Instante»
+   en la tabla de `FEEDBACK.md` (carpeta de salida), con el valor formateado `mm:ss` (vacía si
+   `instante_toma_segundos` es `None`). La detección de fila duplicada (misma escena + mismo índice
+   de bloque + mismo texto) no cambia: el instante es informativo, no forma parte de la clave.
+6. `references/contrato-tropiezos.md` sube a **versión 2** (cambio aditivo): documenta el campo
+   nuevo, su ausencia en archivos de la versión 1, el formato `mm:ss` de la columna nueva y la
+   limitación del requisito 3, con el mismo nivel de detalle que ya tiene el resto del contrato.
+7. **Fuera de alcance, explícito:** no se genera ningún comando `ffmpeg` de salto automático a partir
+   de este instante (construir sobre un dato sin verificación de rodaje real todavía sería
+   adelantarse; candidata a una R-XX futura si el primer rodaje real lo pide); no se toca
+   `documento_revision.py` más allá de lo que ya hace hoy (sigue destacando el bloque por texto, T-15);
+   no se persiste nada en `estado.json` (mismo criterio ya fijado por R-03); no se añade ninguna
+   tecla nueva (se reutiliza `T`, ya asignada); no se cambia la convención de marcado ni la identidad
+   visual 480.
 
-**Criterio de aceptación:** un guión fixture con `## Preparación antes de grabar` genera un
-reproductor cuyo HTML embebe el contenido íntegro de esa sección en el JSON
-(`preparacion_antes_grabar`), visible la primera vez que se abre en un navegador nuevo y reabrible
-después sin recargar; un guión fixture sin esa sección genera un reproductor sin el campo (o `null`)
-y sin ningún panel que se abra solo. `verificar_salidas.py` sigue confirmando la auto-contención a
-nivel de bytes del HTML resultante (regla dura de §0.2: ningún `http://`/`https://`/`//cdn`/`fetch`
-nuevo). Cuatro redes en verde.
-
-**Cómo se entregó:** `Configuracion` gana `titulo_seccion_preparacion` (`"Preparación antes de
-grabar"` por defecto) — campo propio en vez de asumir el índice 1 de `SECCIONES_AUXILIARES`, mismo
-criterio ya usado por `titulo_seccion_capitulos` (R-07), que esa lista es la lista negra completa de
-T-08/T-10, no un índice de "cuál es la de preparación". `reproductor.py` gana
-`_buscar_seccion_preparacion` (mismo patrón de búsqueda por prefijo que
-`capitulos_youtube._buscar_seccion_capitulos`) y `_construir_datos` incorpora el campo
-`preparacion_antes_grabar: str | None` al payload. En `guion.js`, el panel vive en el **índice de
-escenas**, no en la vista de reproducción — decisión de diseño que satisface el requisito 5 ("nunca
-se abre... durante una cuenta atrás o el registro de una toma") **por construcción**, no con una
-comprobación de estado: esas dos situaciones solo existen dentro de una escena en reproducción, a la
-que este panel no tiene acceso. Reutiliza tal cual el overlay `.ayuda-teclado`/`.ayuda-teclado-panel`
-(T-24); la tecla nueva (`preparacion_grabacion`, `P`/`p`) se gestiona en un manejador de teclado
-propio (`manejarTeclaIndice`), separado del de la vista de reproducción, activo solo con el índice
-visible; `Esc` cierra el panel desde el mismo manejador. Primera apertura automática, una sola vez,
-mediante una bandera de "primera renderización del índice" (no encadenada tras la llamada inicial a
-`renderizarIndice()`, para no alterar el invariante — ya protegido por un test existente — de que
-nada se dispara automáticamente después de esa llamada). Botón propio «Preparación antes de grabar»
-en el índice como segunda vía de reapertura. 5 tests nuevos en `tests/test_reproductor.py` (699→704).
-Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md`.
+**Criterio de aceptación:** con un test que controla el reloj (doble de `Date.now`, sin depender de
+tiempo real de ejecución), marcar un tropiezo a los 47,0 s de una toma en curso exporta
+`instante_toma_segundos: 47.0`; la fila correspondiente de `FEEDBACK.md` (carpeta de salida) muestra
+`00:47` en la columna nueva; un `.json` de tropiezos sin el campo (fixture de la versión 1 del
+contrato) se sigue cargando sin error, con la columna vacía para esas filas; exportar el mismo
+registro dos veces no duplica filas (mismo criterio ya exigido por R-03). Cuatro redes en verde.
 
 ---
 
