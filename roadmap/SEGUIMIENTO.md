@@ -10,7 +10,46 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-19 — **Ciclo de Programador: implementa R-32 (Oleada v20,
+**Última actualización:** 2026-10-19 — **Ciclo de Programador: primera reconfirmación del día
+tras R-32, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-19), primera reconfirmación del día tras R-32.** Revisión de
+entrada (protocolo): el contenedor arrancó con `HEAD` *detached* sobre un commit antiguo de
+`develop` ("diverged" frente a `origin/develop`, 50 commits distintos a cada lado — mismo
+síntoma del `git clone --depth` de cada contenedor efímero ya diagnosticado como falso positivo
+en `auditoriacontinua.md` `#21`); árbol de trabajo limpio, sin nada sin confirmar, así que se
+resolvió con `git reset --hard origin/develop`, sin pérdida de trabajo real. Dependencias de
+desarrollo reinstaladas con `python3 -m pip install -r requirements-dev.txt` (el `pip` desnudo
+del `PATH` volvió a resolver contra Python 3.13 en vez del intérprete real — mismo síntoma ya
+documentado en `#22`/`#28`/P-06).
+
+Registro de hallazgos de `auditoriacontinua.md` revisado antes de elegir tarea: solo dos
+`ABIERTO` (`#24`, baja; `#30`, media), ambos de proceso/gobernanza puro, pendientes solo de
+respuesta del dueño a las preguntas `#11`/`#12` de §6 — ninguno de severidad alta (pérdida de
+texto del guión, corrupción de `estado.json`, rotura del reproductor o de su auto-contención,
+seguridad) que atender como P-XX urgente. §1 (fuente autoritativa) **sin ninguna fila
+`PENDIENTE`**: R-32 (Oleada v20) quedó `COMPLETADA` en el ciclo de Programador de esta misma
+jornada (sesión anterior); R-33 (Oleada v21) ya tiene spec completa en `ROADMAP_PRODUCTO.md`,
+pero su apertura en §1 es decisión del próximo ciclo de Product Manager, que archivará la Oleada
+v20 — no le corresponde al Programador adelantarla. Cola vacía hasta entonces.
+`mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y
+cero PR abiertos. `roadmap/FEEDBACK.md` revisado de nuevo: sigue con su única fila de plantilla
+vacía, sin ninguna entrada `nuevo`.
+
+**Sin cambio de código.** Verificación propia completa (`python3 -m mypy scripts/ tests/`,
+`python3 -m ruff check scripts/ tests/`, `python3 -m pytest`, `python3 scripts/
+verificar_salidas.py --fixture`): mypy limpio (72 archivos), ruff limpio, 699 tests en verde (sin
+cambio desde R-32), diecinueve etapas OK en `verificar_salidas.py --fixture`. Cuatro redes en
+verde.
+
+Sin cambios en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones). §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin novedad de esta sesión. `ROADMAP_PRODUCTO.md` no se
+toca (su prosa sigue hablando de R-32 `PENDIENTE`, desactualizada hasta el próximo ciclo de PM
+que la archive junto con la apertura de R-33 — mismo patrón ya descrito y aceptado en el hallazgo
+`#24`). Sin decisiones nuevas en `DECISIONES_TECNICAS.md` (nada que registrar: ningún cambio de
+código ni de criterio en esta sesión).
+
+**Última actualización anterior (2026-10-19, ciclo de Programador): implementa R-32 (Oleada v20,
 distingue en el exportador `.pdf` un fallo real de conversión de Chrome/Edge de su simple
 ausencia)**, detalle de la sesión más abajo.
 
