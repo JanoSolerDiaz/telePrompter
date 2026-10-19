@@ -97,6 +97,19 @@ sin ningun parte de rodaje con una toma buena, `SalidaOmitida` con el
 motivo exacto, nunca fallo ni latente; con el, se genera siempre, con o
 sin subtitulos/capitulos disponibles (cada paso es independiente y el
 encadenado nunca se rompe por un hueco).
+
+R-32: `_generar_pdf` distingue "Chrome ausente" de "Chrome detectado pero la
+conversion revento" -- hasta entonces `convertir_html_a_pdf` nunca lanza
+(T-28, decision que se mantiene intacta) y los dos casos llegaban igual de
+`SalidaLatente`, contradiciendo su propio contrato ("nunca se confunde con
+un fallo") y sin dejar ningun diagnostico pese a que R-24 ya construyo esa
+infraestructura. `ResultadoPdf.chrome_detectado` (`pdf.py`) distingue ambos
+casos sin que `pdf.py` tenga que clasificar nada; Chrome ausente sigue
+siendo `SalidaLatente` sin cambios, y Chrome detectado con conversion
+fallida reutiliza tal cual `volcar_diagnostico`/`ruta_diagnostico`/
+`obtener_logger` (R-24), con el mismo mensaje de `SalidaOmitida` que las
+demas salidas. El HTML de impresion sigue apareciendo siempre en
+`generadas`, en los tres desenlaces.
 """
 
 from __future__ import annotations
@@ -373,7 +386,15 @@ def _generar_pdf(
     carpeta_salida: Path,
     nombre_guion: str,
     configuracion: Configuracion,
-) -> tuple[list[ArchivoGenerado], list[SalidaLatente]]:
+) -> tuple[list[ArchivoGenerado], list[SalidaLatente], list[SalidaOmitida]]:
+    """R-32: distingue "Chrome ausente" (dependencia externa opcional,
+    `SalidaLatente`, sin cambios) de "Chrome detectado pero la conversion
+    revento" (fallo real) -- hasta ahora `convertir_html_a_pdf` nunca lanza
+    (T-28) y los dos casos se fusionaban en el mismo `SalidaLatente`, sin
+    dejar ningun diagnostico. El fallo real reutiliza tal cual
+    `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de R-24, con una
+    excepcion construida a partir del mensaje de `convertir_html_a_pdf` para
+    dejar tipo+mensaje+traceback real."""
     resultado_pdf = exportar_pdf(
         resultado, resultado_tiempos, carpeta_salida, nombre_guion, configuracion
     )
@@ -388,8 +409,21 @@ def _generar_pdf(
                 TipoSalida.PDF, resultado_pdf.ruta_pdf, resultado_pdf.ruta_pdf.stat().st_size
             )
         )
-        return generadas, []
-    return generadas, [SalidaLatente(TipoSalida.PDF, resultado_pdf.mensaje)]
+        return generadas, [], []
+    if not resultado_pdf.chrome_detectado:
+        return generadas, [SalidaLatente(TipoSalida.PDF, resultado_pdf.mensaje)], []
+
+    try:
+        raise RuntimeError(resultado_pdf.mensaje)
+    except RuntimeError as excepcion:
+        ruta = ruta_diagnostico(carpeta_salida)
+        volcar_diagnostico(ruta, excepcion)
+        obtener_logger().error(
+            "Fallo al generar la salida %s. Diagnostico en %s", TipoSalida.PDF.value, ruta,
+            exc_info=excepcion,
+        )
+    motivo = f"fallo al generar: revisa el diagnóstico técnico en {ruta}"
+    return generadas, [], [SalidaOmitida(TipoSalida.PDF, motivo)]
 
 
 def _generar_pptx(
@@ -595,11 +629,12 @@ def generar_salidas_seleccionadas(
                 generadas.extend(nuevas)
                 omitidas.extend(nuevas_omitidas)
             elif tipo is TipoSalida.PDF:
-                nuevas, nuevas_latentes = _generar_pdf(
+                nuevas, nuevas_latentes, nuevas_omitidas = _generar_pdf(
                     resultado, resultado_tiempos, carpeta_salida, nombre_guion, configuracion
                 )
                 generadas.extend(nuevas)
                 latentes.extend(nuevas_latentes)
+                omitidas.extend(nuevas_omitidas)
             elif tipo is TipoSalida.PPTX:
                 nuevas, nuevas_latentes = _generar_pptx(
                     resultado,

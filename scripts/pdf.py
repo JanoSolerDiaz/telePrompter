@@ -414,11 +414,19 @@ def convertir_html_a_pdf(
 class ResultadoPdf:
     """Resultado de `exportar_pdf`: el HTML de impresion siempre existe; el
     PDF solo si se encontro y funciono un Chrome/Edge headless (requisito 4).
-    `mensaje` es siempre accionable, se haya generado el PDF o no."""
+    `mensaje` es siempre accionable, se haya generado el PDF o no.
+
+    `chrome_detectado` (R-32): `True` siempre que se encontro un ejecutable de
+    Chrome/Edge, con independencia de si la conversion tuvo exito -- permite a
+    `salidas._generar_pdf` distinguir "Chrome ausente" (dependencia externa
+    opcional, `SalidaLatente`) de "Chrome encontrado pero la conversion
+    revento" (fallo real, mismo diagnostico que las demas salidas desde R-24),
+    sin que este modulo tenga que clasificar nada por su cuenta."""
 
     ruta_html: Path
     ruta_pdf: Path | None
     mensaje: str
+    chrome_detectado: bool
 
 
 def exportar_pdf(
@@ -444,11 +452,11 @@ def exportar_pdf(
             f"Chrome/Edge no encontrado: abre {ruta_html.name} en el navegador y usa "
             "Ctrl+P (Imprimir → Guardar como PDF) para exportarlo a mano."
         )
-        return ResultadoPdf(ruta_html, None, mensaje)
+        return ResultadoPdf(ruta_html, None, mensaje, chrome_detectado=False)
 
     ruta_pdf = carpeta_salida / NOMBRE_ARCHIVO_PDF
     exito, mensaje = convertir_html_a_pdf(ruta_html, ruta_pdf, ejecutable, configuracion)
     if not exito:
         mensaje += f" El HTML de impresión queda listo en {ruta_html.name} para exportar a mano."
-        return ResultadoPdf(ruta_html, None, mensaje)
-    return ResultadoPdf(ruta_html, ruta_pdf, mensaje)
+        return ResultadoPdf(ruta_html, None, mensaje, chrome_detectado=True)
+    return ResultadoPdf(ruta_html, ruta_pdf, mensaje, chrome_detectado=True)

@@ -3710,6 +3710,56 @@ ya lo demostraba.
   actualizaron para reflejar la nota nueva. Cuatro redes en verde. Detalle
   completo de las decisiones de diseño en `DECISIONES_TECNICAS.md`.
 
+## Distinguir Chrome ausente de conversión `.pdf` fallida (R-32)
+
+`scripts/pdf.py::convertir_html_a_pdf` nunca lanza una excepción (decisión de T-28,
+sin cambios): cuando Chrome/Edge no se encuentra, o cuando se encuentra pero la
+conversión falla de verdad (código de salida ≠ 0, `OSError`, tiempo agotado), ambos
+casos devolvían `(False, mensaje)` y `scripts/salidas.py::_generar_pdf` los
+clasificaba por igual como `SalidaLatente` — el mismo contenedor que "la skill de
+marca no está instalada" (T-29), contradiciendo su propio contrato ("nunca se
+confunde con un fallo: el motivo es siempre la falta de una dependencia externa, no
+un error del código") y sin dejar ningún `diagnostico-<timestamp>.log` ni entrada en
+`teleprompter.log`, a diferencia de cualquier otra salida desde R-24.
+
+- **Distinción en `ResultadoPdf`, no en `convertir_html_a_pdf`** (requisito 1).
+  `ResultadoPdf` gana el campo `chrome_detectado: bool`: `True` siempre que
+  `detectar_ejecutable_chrome` haya encontrado un ejecutable, con independencia de si
+  la conversión tuvo éxito; `False` solo cuando no se encontró ninguno.
+  `convertir_html_a_pdf` sigue sin tocar: mismo contrato `(bool, str)`, nunca lanza.
+- **Tres desenlaces en `_generar_pdf`, no dos** (requisitos 2 y 3). Éxito: sin
+  cambios. `chrome_detectado=False`: sin cambios, `SalidaLatente` con el mismo
+  mensaje de Ctrl+P. `chrome_detectado=True` y conversión fallida: fallo real —
+  `_generar_pdf` construye una excepción a partir del mensaje de
+  `convertir_html_a_pdf` (para tener tipo+mensaje+traceback real, como exige T-05) y
+  reutiliza tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de
+  R-24: mismo `diagnostico-<timestamp>.log`, mismo registro en el logger
+  centralizado, y devuelve `SalidaOmitida(TipoSalida.PDF, "fallo al generar: revisa
+  el diagnóstico técnico en {ruta}")` — mensaje idéntico al que ya usa el `except
+  Exception` genérico de `generar_salidas_seleccionadas` para las demás salidas.
+  `_generar_pdf` cambia su firma de `(generadas, latentes)` a
+  `(generadas, latentes, omitidas)`; el único punto de llamada
+  (`generar_salidas_seleccionadas`) reparte la tercera lista en `omitidas`.
+- **El HTML de impresión nunca se pierde de vista** (requisito 4): sigue apareciendo
+  en `generadas` en los tres desenlaces, se clasifique el resto como latente o como
+  fallo real.
+- **Fuera de alcance, como pedía la spec** (requisito 5): no se toca
+  `convertir_html_a_pdf` ni su contrato de "nunca lanza"; no se reintenta la
+  conversión; no se cambia la detección de Chrome/Edge ni el flag `--no-sandbox`; no
+  se toca `verificar_salidas.py` (su etapa de PDF ya trata el resultado como
+  informativo).
+- **Tests.** 2 nuevos en `tests/test_pdf.py` (`chrome_detectado` en los casos
+  sin-Chrome y con-Chrome-éxito ya cubiertos, más uno nuevo que fuerza, vía
+  monkeypatch de `convertir_html_a_pdf` y `detectar_ejecutable_chrome` — mismo
+  patrón que R-21/R-28 —, un Chrome "detectado" con conversión fallida y confirma
+  `chrome_detectado is True`) y 2 nuevos en `tests/test_salidas.py` (Chrome
+  detectado + conversión fallida degrada a `SalidaOmitida` con diagnóstico en disco
+  y en el logger, nunca `SalidaLatente`; test de regresión explícito: sin Chrome
+  detectado en absoluto, el comportamiento es idéntico al de antes de R-32 —
+  `SalidaLatente` con el mismo mensaje, sin ningún diagnóstico). 696→699 tests.
+  Cuatro redes en verde. Detalle completo de las decisiones de diseño en
+  `DECISIONES_TECNICAS.md`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

@@ -10,7 +10,59 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-18 — **Ciclo de Product Manager: corrige el hallazgo de
+**Última actualización:** 2026-10-19 — **Ciclo de Programador: implementa R-32 (Oleada v20,
+distingue en el exportador `.pdf` un fallo real de conversión de Chrome/Edge de su simple
+ausencia)**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-19): implementa R-32 (Oleada v20).**
+Revisión de entrada (protocolo): `git checkout develop` encontró el contenedor con `HEAD`
+*detached* sobre un commit antiguo de `develop`; `git pull origin develop` reveló que el clon
+local había quedado "diverged" frente a `origin/develop` (50 commits distintos a cada lado —
+mismo síntoma ya normalizado por auditorías previas, árbol de trabajo limpio, sin nada sin
+confirmar), resuelto con `git reset --hard origin/develop` sin pérdida de trabajo real (ningún
+commit local propio todavía). `pip install -r requirements-dev.txt` pelado resolvió, como ya
+documentan `#22`/`#28`, contra un intérprete distinto del real; reinstalado con `python3 -m pip
+install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17).
+
+**Sin hallazgo de severidad alta abierto** en `auditoriacontinua.md` (última pasada, 2026-10-19):
+los dos `ABIERTO` (`#24`, `#30`) son de proceso/gobernanza puro, pendientes solo de la respuesta
+del dueño a las preguntas `#11`/`#12` de §6 — ninguna P-XX urgente que anteponer a la cola normal.
+
+**R-32 implementada en §1, única `PENDIENTE` de la cola.** Spec completa ya en
+`ROADMAP_PRODUCTO.md` (Oleada v20): `ResultadoPdf` (`scripts/pdf.py`) gana `chrome_detectado:
+bool` (fijado en `exportar_pdf`; cero cambio en `convertir_html_a_pdf`, que sigue sin lanzar
+nunca, decisión de T-28); `_generar_pdf` (`scripts/salidas.py`) distingue ahora tres desenlaces en
+vez de dos — éxito, sin cambios; `chrome_detectado=False` → `SalidaLatente` idéntica a antes del
+cambio; `chrome_detectado=True` con conversión fallida → fallo real, reutilizando tal cual
+`volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de R-24 (misma `SalidaOmitida` con el
+mismo mensaje que usan las demás salidas), con una excepción construida y capturada en el momento
+para dejar un traceback real (no fabricado a mano) en el diagnóstico. `_generar_pdf` cambia su
+firma de retorno de `(generadas, latentes)` a `(generadas, latentes, omitidas)`; el único punto de
+llamada (`generar_salidas_seleccionadas`) actualizado para repartir la tercera lista. El HTML de
+impresión sigue apareciendo siempre en `generadas`, en los tres casos. Fuera de alcance respetado
+tal como pedía la ficha: no se toca `convertir_html_a_pdf` ni su contrato de "nunca lanza"; no se
+reintenta la conversión; no se cambia la detección de Chrome/Edge ni `--no-sandbox`; no se toca
+`verificar_salidas.py`.
+
+**Tests y verificación.** 3 tests nuevos (696→699): 2 en `tests/test_pdf.py` (uno nuevo que fuerza,
+vía monkeypatch de `convertir_html_a_pdf`/`detectar_ejecutable_chrome` — mismo patrón que R-21/
+R-28 —, un Chrome "detectado" con conversión fallida y confirma `chrome_detectado is True`; más
+dos aserciones de `chrome_detectado` añadidas a los tests ya existentes de los casos sin-Chrome y
+con-Chrome-éxito) y 2 en `tests/test_salidas.py` (Chrome detectado + conversión fallida degrada a
+`SalidaOmitida` con diagnóstico en disco y en el logger, nunca `SalidaLatente`; test de regresión
+explícito del criterio de aceptación: sin Chrome detectado en absoluto, el comportamiento es
+idéntico al de antes de R-32 — `SalidaLatente` con el mismo mensaje, sin ningún diagnóstico).
+Cuatro redes en verde (`python3 scripts/ci.py`): mypy sin hallazgos, ruff sin hallazgos, 699 tests,
+diecinueve etapas de `verificar_salidas.py --fixture` en `OK`.
+
+**Fila `R-32` actualizada en §1 abajo a `COMPLETADA` (2026-10-19).** Sin cambios en §3 (bloqueos) ni
+§7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del
+dueño, sin preguntas nuevas. Una decisión nueva en `DECISIONES_TECNICAS.md` (implementación de
+R-32, con las dos alternativas de construcción de la excepción consideradas). No se abre R-33 en
+este ciclo (criterio de §0.4: la apertura de la siguiente R-XX es decisión del ciclo de PM que
+archive la oleada actual, no del ciclo de Programador que la implementa).
+
+**Última actualización anterior (2026-10-18, ciclo de Product Manager): corrige el hallazgo de
 gobernanza `#32` (cabecera sin actualizar), reconfirma R-32 como única pendiente y especifica R-33
 (Oleada v21) sin abrirla todavía en §1**, detalle de la sesión más abajo.
 
@@ -4036,7 +4088,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-29 | `revalidacion.py::_particion_aceptada_de`/`_materializar_marcados` reimplementan en privado, con las mismas cuatro condiciones a mano, el emparejamiento bloque↔reescritura que `reescrituras.py::aplicar_particion_aceptada`/`aplicar_particiones_aceptadas` ya construyó, probó y documentó explícitamente como la pieza a reutilizar por T-17 — nunca llamadas desde la ruta real, en el área exacta de dos incidencias de severidad alta ya cerradas (P-02, P-04) | **COMPLETADA** | 2026-10-14 | Investigado (requisito 1): dos tests nuevos confirman que ambas rutas ya coincidían bloque a bloque (tres guiones reales, sin ninguna partición propuesta hoy; y `_GUION`/`_GUION_ESCENA_DOS_PARTICIONES`, con particiones de verdad) — sin divergencia real (requisito 3 no aplica). Unificado (requisito 2): `_particion_aceptada_de` ahora delega en `aplicar_particion_aceptada` (lista de un bloque, longitud del resultado decide si coincidió); la salvaguarda P-02/P-04 (hallazgo #9) sigue intacta como guardia de entrada, sin tocar la función pública. 2 tests nuevos (673→675). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-30 | Encadenar en un único documento `comandos-montaje.md` los comandos `ffmpeg` reales (concatenación de tomas buenas + subtítulos + capítulos) del guion concreto que se acaba de procesar, en vez de dejar que el dueño traduzca a mano los fragmentos de ejemplo de `references/contrato-montaje.md` cada vez que termina de grabar | **COMPLETADA** | 2026-10-15 | `scripts/comandos_montaje.py` nuevo: encadena de 1 a 3 comandos reutilizando tal cual `concat_ffmpeg.calcular_lista_concat_ffmpeg` (R-19), `srt_alineado.generar_srt_alineado` (R-05) y `capitulos_youtube.generar_capitulos_youtube`/`formatear_capitulos_ffmpeg` (R-07/R-22), sin reimplementar ninguna de las tres condiciones. Octava opción del selector de salidas (`TipoSalida.COMANDOS_MONTAJE`), mismo patrón `try`/`except`/diagnóstico de R-24. `references/contrato-montaje.md` y `SKILL.md` remiten a esta salida como la forma real de obtener los comandos. 15 tests nuevos (675→690). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` (una nueva: "Generación de los comandos de montaje"). Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-31 | Advertir en `comandos-montaje.md` cuando el documento referencia un archivo (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) que no existe todavía en la carpeta de salida real, en vez de dar por hecho que las demás salidas de las que depende ya se generaron | **COMPLETADA** | 2026-10-16 | `comandos_montaje.calcular_comandos_montaje` gana `carpeta_salida: Path \| None = None` (comprobación de existencia en disco, nunca de contenido); cada archivo ausente se recoge en `ResultadoComandosMontaje.archivos_referenciados_faltantes` (`ArchivoReferenciadoFaltante`) y `formatear_comandos_montaje` lo vuelca como nota visible al principio del documento, nunca bloquea ni degrada la generación. Descripciones de opción centralizadas en `config.py` (`DESCRIPCION_OPCION_*`), reutilizadas tal cual por `salidas.py::DESCRIPCION_SALIDA`, sin ciclo de imports. `scripts/salidas.py::_generar_comandos_montaje` reenvía `carpeta_salida`; sin ella, comportamiento idéntico al de antes de R-31. 6 tests nuevos (690→696). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
-| R-32 | Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad | PENDIENTE | 2026-10-16 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v20. `origen: observación de arquitectura del PM` — grieta verificada con `grep` real: `scripts/pdf.py` no importa `logger`/`monitorizacion`, así que un Chrome detectado que revienta en la conversión se clasifica igual que "Chrome no instalado" (`SalidaLatente`), contradiciendo el propio contrato documentado de esa clase y sin dejar ningún diagnóstico (patrón R-24) pese a tenerlo disponible. Pendiente de implementación por el siguiente ciclo de Programador |
+| R-32 | Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad | **COMPLETADA** | 2026-10-19 | `ResultadoPdf` (`scripts/pdf.py`) gana `chrome_detectado: bool` (fijado en `exportar_pdf`, cero cambio en `convertir_html_a_pdf`, que sigue sin lanzar nunca); `_generar_pdf` (`scripts/salidas.py`) distingue ahora tres desenlaces — éxito; `chrome_detectado=False` → `SalidaLatente` idéntica a antes; `chrome_detectado=True` con conversión fallida → fallo real, reutilizando tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de R-24 (misma `SalidaOmitida` que las demás salidas) — con una excepción construida y capturada en el momento para dejar traceback real. `_generar_pdf` cambia su firma a `(generadas, latentes, omitidas)`; único punto de llamada actualizado. HTML de impresión intacto en `generadas` en los tres casos. 3 tests nuevos (696→699): 2 en `tests/test_pdf.py`, 2 en `tests/test_salidas.py` (más 2 aserciones de `chrome_detectado` en tests ya existentes). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

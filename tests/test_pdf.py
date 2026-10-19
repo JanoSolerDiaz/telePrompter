@@ -217,6 +217,36 @@ def test_exportar_pdf_sin_chrome_deja_html_con_mensaje_accionable(
     assert resultado_pdf.ruta_html.exists()
     assert resultado_pdf.ruta_pdf is None
     assert "Ctrl+P" in resultado_pdf.mensaje
+    assert resultado_pdf.chrome_detectado is False  # R-32: ausente, no un fallo
+
+
+def test_exportar_pdf_chrome_detectado_conversion_fallida_marca_chrome_detectado(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-32: con un ejecutable detectado pero la conversion fallando de
+    verdad, `ResultadoPdf.chrome_detectado` es `True` -- la distincion que
+    permite a `salidas._generar_pdf` tratarlo como fallo real en vez de
+    `SalidaLatente`. `convertir_html_a_pdf` sigue sin lanzar (T-28)."""
+    import pdf as modulo_pdf
+
+    monkeypatch.setattr(
+        modulo_pdf, "detectar_ejecutable_chrome", lambda configuracion: Path("chrome-simulado")
+    )
+    monkeypatch.setattr(
+        modulo_pdf,
+        "convertir_html_a_pdf",
+        lambda ruta_html, ruta_pdf, ejecutable, configuracion: (
+            False,
+            "Chrome/Edge no pudo generar el PDF: fallo simulado",
+        ),
+    )
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resultado_pdf = modulo_pdf.exportar_pdf(resultado, tiempos, tmp_path, nombre_guion="g")
+
+    assert resultado_pdf.chrome_detectado is True
+    assert resultado_pdf.ruta_pdf is None
+    assert resultado_pdf.ruta_html.exists()
+    assert "fallo simulado" in resultado_pdf.mensaje
 
 
 @pytest.mark.skipif(_chrome_disponible() is None, reason="no hay Chrome/Edge disponible")
@@ -233,6 +263,7 @@ def test_exportar_pdf_con_chrome_genera_pdf_con_paginas_correctas(tmp_path: Path
     )
 
     assert resultado_pdf.ruta_pdf is not None
+    assert resultado_pdf.chrome_detectado is True  # R-32
     assert resultado_pdf.ruta_pdf.exists()
     contenido = resultado_pdf.ruta_pdf.read_bytes()
     coincidencia = None

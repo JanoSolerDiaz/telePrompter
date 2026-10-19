@@ -12,6 +12,54 @@
 
 ---
 
+### Sesión 2026-10-19 (186) — Ciclo de Programador: implementa R-32 (Oleada v20, exportador `.pdf`)
+
+**Arranque.** El contenedor arrancó con `HEAD` *detached* sobre un commit antiguo de `develop`.
+`git checkout develop` encontró el clon local "diverged" frente a `origin/develop` (50 commits
+distintos a cada lado — misma reescritura de la rama remota ya normalizada por sesiones
+anteriores; árbol de trabajo limpio, sin nada sin confirmar). Resuelto con `git reset --hard
+origin/develop`, sin pérdida de trabajo real (ningún commit local propio todavía). Dependencias de
+desarrollo instaladas primero con `pip install -r requirements-dev.txt` (resolvió contra Python
+3.13, no el 3.11.17 real — síntoma ya documentado en `#22`/`#28`) y reinstaladas correctamente con
+`python3 -m pip install -r requirements-dev.txt`.
+
+**Elección de tarea.** Sin ningún hallazgo `ABIERTO` de severidad alta en `auditoriacontinua.md`
+(los dos abiertos, `#24`/`#30`, son de proceso puro, pendientes solo de respuesta del dueño) no
+había ninguna P-XX urgente que anteponer. §1 de `SEGUIMIENTO.md` traía una única fila `PENDIENTE`:
+R-32 (Oleada v20), con spec completa ya escrita en `ROADMAP_PRODUCTO.md` por el ciclo de PM del
+2026-10-16. Consultado `DECISIONES_TECNICAS.md` en el área a tocar (`pdf.py`/`salidas.py`, entradas
+de T-28 y R-24) antes de implementar, para no contradecir ninguna decisión previa — en particular,
+que `convertir_html_a_pdf` nunca debe lanzar (T-28).
+
+**Implementación.** `ResultadoPdf` (`scripts/pdf.py`) gana el campo `chrome_detectado: bool`,
+fijado en `exportar_pdf` según si `detectar_ejecutable_chrome` encontró un ejecutable, con
+independencia del éxito de la conversión; `convertir_html_a_pdf` no se toca. `_generar_pdf`
+(`scripts/salidas.py`) distingue ahora tres desenlaces: éxito; Chrome ausente → `SalidaLatente`
+idéntica a antes; Chrome detectado con conversión fallida → fallo real, que construye y captura
+una excepción en el momento (para tener un traceback real, no fabricado) y reutiliza tal cual
+`volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de R-24, devolviendo `SalidaOmitida` con
+el mismo mensaje que usan las demás salidas. `_generar_pdf` cambia su firma de
+`(generadas, latentes)` a `(generadas, latentes, omitidas)`; actualizado el único punto de llamada.
+El HTML de impresión sigue intacto en `generadas` en los tres casos. Fuera de alcance respetado
+íntegro (no se toca la detección de Chrome/Edge, `--no-sandbox`, ni `verificar_salidas.py`).
+
+**Tests y verificación.** 3 tests nuevos (696→699): 2 en `tests/test_pdf.py` (uno que fuerza, vía
+monkeypatch — mismo patrón que R-21/R-28 —, Chrome "detectado" con conversión fallida y confirma
+`chrome_detectado is True`; dos aserciones nuevas en tests ya existentes) y 2 en
+`tests/test_salidas.py` (degradación a `SalidaOmitida` con diagnóstico en disco y en el logger;
+test de regresión explícito del criterio de aceptación con Chrome ausente). Cuatro redes en verde
+(`python3 scripts/ci.py`): mypy limpio, ruff limpio (una línea larga corregida tras el primer
+intento), 699 tests, diecinueve etapas de `verificar_salidas.py --fixture` en `OK`.
+
+**Cierre.** Fila `R-32` actualizada en §1 de `SEGUIMIENTO.md` a `COMPLETADA` (2026-10-19), cabecera
+y "última actualización" actualizadas en el mismo commit. Una decisión nueva en
+`DECISIONES_TECNICAS.md` (implementación de R-32, con las dos alternativas de construcción de la
+excepción consideradas). `DEVELOPERS.md` gana la sección "Distinguir Chrome ausente de conversión
+`.pdf` fallida (R-32)". No se abre R-33 en este ciclo (su apertura es decisión del próximo ciclo de
+PM, que archivará la Oleada v20). Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-10-18 (185) — Ciclo de Product Manager: corrige el hallazgo de gobernanza `#32`, reconfirma R-32 y especifica R-33 (Oleada v21) sin abrirla
 
 **Arranque.** `git checkout develop` encontró el clon local desincronizado con `origin/develop`

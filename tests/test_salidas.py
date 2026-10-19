@@ -1033,3 +1033,76 @@ def test_capitulos_youtube_con_contenido_invalido_degrada_a_omitida(
     omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.CAPITULOS_YOUTUBE)
     assert "capitulos-youtube.txt" in omitida.motivo
     assert "problema simulado" in omitida.motivo
+
+
+def test_pdf_chrome_detectado_pero_conversion_fallida_degrada_a_omitida_con_diagnostico(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R-32 (hallazgo de arquitectura): `convertir_html_a_pdf` nunca lanza
+    (T-28, decision que se mantiene), pero hasta ahora Chrome detectado con
+    la conversion fallida se clasificaba igual que Chrome ausente
+    (`SalidaLatente`), sin dejar ningun diagnostico. Chrome detectado pero
+    fallido es ahora un fallo real: diagnostico tecnico en disco y logger
+    (mismo patron de R-24), `SalidaOmitida` en vez de `SalidaLatente` -- el
+    HTML de impresion sigue generandose siempre."""
+    import salidas as modulo_salidas
+    from pdf import ResultadoPdf
+
+    def _exportar_pdf_simulado(
+        resultado: ResultadoParseo,
+        resultado_tiempos: ResultadoTiempos,
+        carpeta_salida: Path,
+        nombre_guion: str = "guion",
+        configuracion: Configuracion | None = None,
+    ) -> ResultadoPdf:
+        carpeta_salida.mkdir(parents=True, exist_ok=True)
+        ruta_html = carpeta_salida / "guion-impresion.html"
+        ruta_html.write_text("<html></html>", encoding="utf-8")
+        return ResultadoPdf(
+            ruta_html,
+            None,
+            "Chrome/Edge no pudo generar el PDF: fallo simulado de conversion",
+            chrome_detectado=True,
+        )
+
+    monkeypatch.setattr(modulo_salidas, "exportar_pdf", _exportar_pdf_simulado)
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.PDF,)), resultado, tiempos, tmp_path, nombre_guion="prueba"
+    )
+
+    generados_pdf = [a for a in resumen.generadas if a.tipo is TipoSalida.PDF]
+    assert len(generados_pdf) == 1
+    assert generados_pdf[0].ruta.name == "guion-impresion.html"
+    assert not any(latente.tipo is TipoSalida.PDF for latente in resumen.latentes)
+    omitida = next(o for o in resumen.omitidas if o.tipo is TipoSalida.PDF)
+    assert omitida.motivo.startswith("fallo al generar: revisa el diagnóstico técnico en")
+
+    archivos_diagnostico = list(tmp_path.glob("diagnostico-*.log"))
+    assert len(archivos_diagnostico) == 1
+    assert str(archivos_diagnostico[0]) in omitida.motivo
+    contenido = archivos_diagnostico[0].read_text(encoding="utf-8")
+    assert "RuntimeError" in contenido
+    assert "fallo simulado de conversion" in contenido
+
+
+def test_pdf_sin_chrome_sigue_latente_sin_diagnostico_regresion_r32(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test de regresion del criterio de aceptacion de R-32: sin ningun
+    Chrome/Edge detectado, el comportamiento es identico al de antes de
+    R-32 -- `SalidaLatente` con el mismo mensaje de Ctrl+P, sin ningun
+    diagnostico."""
+    import pdf as modulo_pdf
+
+    monkeypatch.setattr(modulo_pdf, "detectar_ejecutable_chrome", lambda configuracion: None)
+
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.PDF,)), resultado, tiempos, tmp_path, nombre_guion="prueba"
+    )
+
+    assert not any(o.tipo is TipoSalida.PDF for o in resumen.omitidas)
+    latente = next(latente for latente in resumen.latentes if latente.tipo is TipoSalida.PDF)
+    assert "Ctrl+P" in latente.motivo
+    assert not list(tmp_path.glob("diagnostico-*.log"))
