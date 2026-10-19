@@ -8,31 +8,26 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-18 (ciclo de PM). Corrige el hallazgo de gobernanza `#32` de
-`auditoriacontinua.md` (la cabecera de `SEGUIMIENTO.md` no se actualizó en el ciclo de PM anterior,
-2026-10-17) y reconfirma el estado de cola: **R-32 (Oleada v20) sigue `PENDIENTE`** (§1 de
-`SEGUIMIENTO.md`) — ningún ciclo de Programador la ha tocado todavía desde que se abrió el
-2026-10-16, confirmado de nuevo con `git log` sobre `scripts/pdf.py`/`scripts/salidas.py`, sin
-ningún commit desde entonces.
+**Última actualización:** 2026-10-19 (ciclo de PM + Programador en la misma sesión). R-32 (Oleada
+v20) llevaba `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-10-16 (reconfirmada en verde tres
+veces sin tarea nueva, sesiones 187-189) sin que ningún ciclo de PM la archivara todavía. Este ciclo
+archiva la Oleada v20 en `ROADMAP_HISTORICO.md`, abre R-33 (Oleada v21, ya especificada desde el
+2026-10-18) en §1 y la implementa en la misma sesión: el criterio de una sola R-XX pendiente de
+código a la vez (vigente desde R-19) queda respetado en todo momento porque ambos pasos — abrir e
+implementar — ocurrieron sin que hubiera ninguna otra R-XX pendiente entremedias.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
-historia de rodaje real que incorporar este ciclo — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un
-curso completo) sigue abierto. La auditoría del propio día (`auditoriacontinua.md`, 2026-10-18) no
-trae ningún hallazgo nuevo de producto/arquitectura: los tres `ABIERTO` (`#24`, `#30`, `#32`) son de
-proceso/gobernanza puro; `#32` queda corregido con esta misma sesión (cabecera de `SEGUIMIENTO.md`
-actualizada); `#24`/`#30` siguen pendientes solo de la respuesta del dueño a las preguntas #11/#12
-de `SEGUIMIENTO.md` §6 — ninguno de los tres es convertible en R-XX nueva.
+historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
+completo) sigue abierto. `auditoriacontinua.md` revisado antes de elegir tarea: solo dos `ABIERTO`
+(`#24`, baja; `#30`, media), ambos de proceso/gobernanza puro y pendientes solo de la respuesta del
+dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 — ninguno de severidad alta, ninguno
+convertible en R-XX nueva.
 
-**No se abre ninguna R-XX nueva en §1 este ciclo.** R-32 sigue siendo la única fila `PENDIENTE`, y
-el criterio establecido desde R-19 es nunca tener más de una R-XX pendiente de código a la vez sin
-evidencia real que lo justifique. Su spec completa sigue vigente, sin cambios, en "Oleada v20" más
-abajo, lista para el siguiente ciclo de Programador que la implemente y verifique.
+**Oleada v20 (R-32) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Se especifica, por primera vez, la siguiente R-XX candidata: R-33 (Oleada v21)**, ficha completa
-más abajo — pero **no se abre todavía en §1**: queda lista para el ciclo de PM que archive R-32 (o
-antes, si el dueño prefiere adelantarla en paralelo; no hay solape de archivos entre ambas). Origen:
-observación de producto del propio PM, verificada con grep, no de auditoría ni de feedback de
-rodaje (que sigue sin llegar).
+**Oleada v21 (R-33) abierta e implementada.** Ficha completa más abajo, ahora con su "Cómo se
+entregó". Origen: observación de producto del propio PM (2026-10-18), verificada con grep, no de
+auditoría ni de feedback de rodaje.
 
 ---
 
@@ -230,92 +225,15 @@ la carpeta de salida real, R-31) tiene su única R-XX en **COMPLETADA** en §1 d
 ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM
 (2026-10-16). Su spec completa y cómo se entregó viven ahí.
 
-### Oleada v20 — EN CURSO
+### Oleada v20 — entregada
 
-#### R-32 — Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad
+La oleada v20 (distinguir, en el exportador `.pdf`, un fallo real de la conversión de Chrome/Edge
+de la simple ausencia de Chrome/Edge, R-32) tiene su única R-XX en **COMPLETADA** en §1 de
+`SEGUIMIENTO.md` desde el 2026-10-16, sin ningún hito de negocio propio pendiente. Se movió a
+`ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-19). Su spec completa y cómo se entregó viven
+ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json`; un campo aditivo en `ResultadoPdf` y un
-tercer elemento en la tupla de retorno de `_generar_pdf`) · **Depende de:** T-05, T-28, R-24 (todas
-`COMPLETADA`) · **Origen:** observación de arquitectura del PM (2026-10-16) — grieta de arquitectura
-verificada sobre código ya construido (mismo tercer criterio que abrió R-12 a R-31), esta vez en el
-único generador de salidas que aísla sus propios fallos reales sin pasar por el patrón de
-diagnóstico que R-24 ya construyó para el resto.
-
-**Objetivo:** `scripts/pdf.py::convertir_html_a_pdf` nunca lanza una excepción (decisión ya tomada y
-documentada en `DECISIONES_TECNICAS.md`, T-28: "cualquier fallo... se devuelve como mensaje
-accionable"): cuando el ejecutable de Chrome/Edge no se encuentra, o cuando se encuentra pero la
-conversión falla de verdad (código de salida distinto de cero, `OSError`, tiempo agotado — p. ej. un
-guion muy largo, o un sandbox que exige `--no-sandbox` en un entorno distinto al ya contemplado),
-devuelve en ambos casos `(False, mensaje)`. `scripts/salidas.py::_generar_pdf` (el consumidor real)
-no distingue entre los dos: los dos acaban como `SalidaLatente`, exactamente el mismo contenedor que
-usa el caso "la skill de marca 480-branded-pptx no está instalada" (T-29). Eso contradice el propio
-contrato documentado de `SalidaLatente` — "nunca se confunde con un fallo: el motivo es siempre la
-falta de una dependencia externa, no un error del código" (docstring de `scripts/salidas.py`) — y
-dista de cómo se trata un fallo real en cualquier otra salida desde R-24: ni `volcar_diagnostico` ni
-`obtener_logger().error(...)` se invocan nunca en esta ruta, verificado con `grep`
-(`scripts/pdf.py` no importa `logger` ni `monitorizacion` en absoluto). Un Chrome que revienta en el
-entorno real del dueño queda así indistinguible, en el resumen final y en los registros, de "no
-tengo Chrome instalado" (que no requiere ninguna acción) — sin ningún `diagnostico-<timestamp>.log`
-que investigar, pese a que T-05/R-24 construyeron esa infraestructura precisamente para este tipo de
-consumidor.
-
-Decisiones de diseño ya tomadas para acotar el alcance:
-- **No se toca `convertir_html_a_pdf`.** Sigue sin lanzar nunca una excepción (decisión ya tomada en
-  T-28); la distinción y el diagnóstico viven solo en `_generar_pdf` (`scripts/salidas.py`), el mismo
-  sitio donde ya vive el patrón de diagnóstico de R-24 para las demás salidas.
-- **El HTML de impresión nunca se pierde de vista.** Se genera con éxito siempre, se clasifique el
-  resto como latente o como fallo real (requisito 4 de T-28: "nunca falla por la ausencia de
-  Chrome"); sigue apareciendo en `generadas` exactamente igual que hoy en los tres desenlaces.
-- **El caso "Chrome no encontrado" no cambia en absoluto.** Sigue siendo `SalidaLatente` con el mismo
-  mensaje de Ctrl+P, sin ningún diagnóstico — es exactamente la dependencia externa opcional que
-  `SalidaLatente` documenta, no un fallo.
-- **Reutilizar tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger`** (`monitorizacion.py`/
-  `logger.py`, R-24): mismo mensaje de `SalidaOmitida` ("fallo al generar: revisa el diagnóstico
-  técnico en {ruta}") que ya usan las demás salidas, para que el resumen final no tenga un formato
-  distinto para el `.pdf`.
-
-**Requisitos:**
-1. `ResultadoPdf` (`scripts/pdf.py`) gana el campo `chrome_detectado: bool`: `True` siempre que
-   `detectar_ejecutable_chrome` haya encontrado un ejecutable, con independencia de si la conversión
-   tuvo éxito; `False` solo cuando no se encontró ninguno. Cero cambio en `convertir_html_a_pdf` (sigue
-   devolviendo `(bool, str)`, nunca lanza).
-2. `_generar_pdf` distingue tres desenlaces en vez de dos: éxito (sin cambios); `chrome_detectado=False`
-   → `SalidaLatente` (sin cambios, mismo mensaje); `chrome_detectado=True` y conversión fallida →
-   fallo real: vuelca diagnóstico con `volcar_diagnostico`/`ruta_diagnostico` (con una excepción
-   construida a partir del mensaje de `convertir_html_a_pdf`, para dejar tipo+mensaje+traceback real
-   tal como exige T-05), registra en el logger con `obtener_logger().error(...)` y devuelve
-   `SalidaOmitida(TipoSalida.PDF, f"fallo al generar: revisa el diagnóstico técnico en {ruta}")` —
-   mismo mensaje exacto que usa el `except Exception` genérico de `generar_salidas_seleccionadas`
-   para las demás salidas.
-3. `_generar_pdf` cambia su firma de retorno de `(generadas, latentes)` a
-   `(generadas, latentes, omitidas)`; `generar_salidas_seleccionadas` actualiza su único punto de
-   llamada para repartir la tercera lista en `omitidas`, igual que ya hace con otras salidas de tres
-   vías.
-4. El HTML de impresión sigue apareciendo siempre en `generadas`, tanto en el caso latente como en el
-   de fallo real — nunca se pierde ni se oculta silenciosamente.
-5. Fuera de alcance, explícito: no se cambia `convertir_html_a_pdf` ni su contrato de "nunca lanza";
-   no se reintenta la conversión; no se cambia la detección de Chrome/Edge ni el flag
-   `--no-sandbox`; no se toca `verificar_salidas.py` (su propia etapa de PDF ya trata el resultado
-   como informativo, sin ninguna clasificación latente/omitida que corregir).
-
-**Criterio de aceptación:** forzando (vía monkeypatch de test, mismo patrón que R-21/R-28) que
-`convertir_html_a_pdf` devuelva éxito `False` con un ejecutable de Chrome detectado, `_generar_pdf`
-deja un `diagnostico-<timestamp>.log` en la carpeta de salida, registra el fallo en el logger y
-clasifica el `.pdf` como `SalidaOmitida` (no `SalidaLatente`), con el HTML de impresión intacto en
-`generadas`; sin Chrome detectado en absoluto, el comportamiento es idéntico al de antes de R-32
-(test de regresión): `SalidaLatente` con el mismo mensaje, sin ningún diagnóstico. Cuatro redes en
-verde.
-
----
-
-### Oleada v21 — especificada, pendiente de apertura en §1
-
-> **Nota de gobernanza:** esta ficha NO está abierta en §1 de `SEGUIMIENTO.md` (no es `PENDIENTE`
-> todavía). Se especifica completa este ciclo para no perder la observación, y queda lista para que
-> el ciclo de PM que archive R-32 la abra sin tener que re-investigarla. El dueño puede adelantarla
-> en paralelo a R-32 si lo prefiere: no hay solape de archivos (R-32 toca `scripts/pdf.py` y
-> `scripts/salidas.py`; R-33 tocaría `scripts/reproductor.py`, `scripts/config.py` y
-> `assets/reproductor/`).
+### Oleada v21 — entregada
 
 #### R-33 — Mostrar la sección "Preparación antes de grabar" del guión como checklist reabrible en el reproductor, en vez de descartar su contenido tras la validación de convención
 
@@ -374,6 +292,26 @@ después sin recargar; un guión fixture sin esa sección genera un reproductor 
 y sin ningún panel que se abra solo. `verificar_salidas.py` sigue confirmando la auto-contención a
 nivel de bytes del HTML resultante (regla dura de §0.2: ningún `http://`/`https://`/`//cdn`/`fetch`
 nuevo). Cuatro redes en verde.
+
+**Cómo se entregó:** `Configuracion` gana `titulo_seccion_preparacion` (`"Preparación antes de
+grabar"` por defecto) — campo propio en vez de asumir el índice 1 de `SECCIONES_AUXILIARES`, mismo
+criterio ya usado por `titulo_seccion_capitulos` (R-07), que esa lista es la lista negra completa de
+T-08/T-10, no un índice de "cuál es la de preparación". `reproductor.py` gana
+`_buscar_seccion_preparacion` (mismo patrón de búsqueda por prefijo que
+`capitulos_youtube._buscar_seccion_capitulos`) y `_construir_datos` incorpora el campo
+`preparacion_antes_grabar: str | None` al payload. En `guion.js`, el panel vive en el **índice de
+escenas**, no en la vista de reproducción — decisión de diseño que satisface el requisito 5 ("nunca
+se abre... durante una cuenta atrás o el registro de una toma") **por construcción**, no con una
+comprobación de estado: esas dos situaciones solo existen dentro de una escena en reproducción, a la
+que este panel no tiene acceso. Reutiliza tal cual el overlay `.ayuda-teclado`/`.ayuda-teclado-panel`
+(T-24); la tecla nueva (`preparacion_grabacion`, `P`/`p`) se gestiona en un manejador de teclado
+propio (`manejarTeclaIndice`), separado del de la vista de reproducción, activo solo con el índice
+visible; `Esc` cierra el panel desde el mismo manejador. Primera apertura automática, una sola vez,
+mediante una bandera de "primera renderización del índice" (no encadenada tras la llamada inicial a
+`renderizarIndice()`, para no alterar el invariante — ya protegido por un test existente — de que
+nada se dispara automáticamente después de esa llamada). Botón propio «Preparación antes de grabar»
+en el índice como segunda vía de reapertura. 5 tests nuevos en `tests/test_reproductor.py` (699→704).
+Cuatro redes en verde. Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md`.
 
 ---
 

@@ -35,6 +35,7 @@ hardware.
 | `nota_toma` | `N` | Nota rápida para la toma en curso (R-02), sin salir del modo de grabación |
 | `marcar_tropiezo` | `T` | Marca/desmarca el bloque EN PANTALLA como tropiezo (R-03), sin interrumpir la toma ni abrir ningún diálogo |
 | `archivo_video_toma` | `V` | Anota el archivo de vídeo real de la toma en curso (R-19), sin salir del modo de grabación. También editable desde el índice, para la toma ya marcada buena, sin volver a grabar |
+| `preparacion_grabacion` | `P` | Muestra/oculta la checklist de "Preparación antes de grabar" (R-33). **Única acción de esta tabla que actúa solo desde el índice de escenas**, nunca dentro de una escena en reproducción — por eso nunca se abre durante una cuenta atrás ni mientras se registra una toma. También reabrible con el botón del propio índice |
 
 Ninguna acción depende de un modificador (`Ctrl`/`Alt`/`Mayús`): un clicker no puede
 enviarlos, así que ningún atajo los exige.

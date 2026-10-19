@@ -43,6 +43,20 @@ Título del vídeo en pantalla.
 > Segunda escena, con su propia frase de cierre para la locución.
 """
 
+_GUION_CON_PREPARACION = """# Guion de prueba
+
+## Preparación antes de grabar
+
+- Comprueba el encuadre y el nivel de audio antes de empezar.
+- Ten a mano el attrezzo de la escena 0.
+
+## BLOQUE 0 — Arranque (0:00 – 0:10)
+
+**LOCUCIÓN**
+
+> Esta es la primera frase del bloque.
+"""
+
 _PATRON_DATOS_JSON = re.compile(
     r'<script type="application/json" id="datos-reproductor">(.*?)</script>', re.DOTALL
 )
@@ -1139,3 +1153,51 @@ def test_parte_de_rodaje_exportado_sube_a_version_2() -> None:
     coincidencia = pagina.index("function construirParteDeRodaje")
     fragmento = pagina[coincidencia : coincidencia + 200]
     assert "version: 2," in fragmento
+
+
+# --- Checklist de preparacion antes de grabar (R-33) ----------------------------------
+
+
+def test_datos_incrustados_incluyen_la_preparacion_antes_de_grabar_si_el_guion_la_trae() -> None:
+    resultado, tiempos = _pipeline(_GUION_CON_PREPARACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    assert datos["preparacion_antes_grabar"] is not None
+    assert "Comprueba el encuadre y el nivel de audio" in datos["preparacion_antes_grabar"]
+    assert "attrezzo de la escena 0" in datos["preparacion_antes_grabar"]
+
+
+def test_datos_incrustados_no_fabrican_preparacion_sin_seccion_en_el_guion() -> None:
+    """Invariante (a): nada se descarta, pero tampoco se fabrica contenido que
+    el guion de origen no trae."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert _extraer_datos(pagina)["preparacion_antes_grabar"] is None
+
+
+def test_mapa_de_teclas_incluye_preparacion_grabacion_por_defecto() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert _extraer_datos(pagina)["mapa_teclas"]["preparacion_grabacion"] == ["p", "P"]
+
+
+def test_guion_js_expone_el_panel_de_preparacion_accesible_solo_desde_el_indice() -> None:
+    resultado, tiempos = _pipeline(_GUION_CON_PREPARACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert "function alternarPreparacion" in pagina
+    assert "preparacion-grabacion-cuerpo" in pagina
+    assert "btn-preparacion-grabacion" in pagina
+    # Requisito 2/4: manejador de teclado PROPIO, separado del de la vista de
+    # reproduccion -- nunca una rama nueva dentro de `manejarTeclaReproductor`.
+    assert "function manejarTeclaIndice" in pagina
+    assert "document.addEventListener(\"keydown\", manejarTeclaIndice)" in pagina
+    # Requisito 3: primera apertura automatica, una sola vez por guion/navegador.
+    assert 'leerPreferencia("preparacion_vista") !== "1"' in pagina
+    assert 'guardarPreferencia("preparacion_vista", "1")' in pagina
+
+
+def test_estilo_define_el_cuerpo_de_la_preparacion_con_saltos_de_linea_preservados() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert ".preparacion-grabacion-cuerpo" in pagina
+    assert "white-space: pre-wrap" in pagina

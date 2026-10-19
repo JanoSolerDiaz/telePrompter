@@ -346,6 +346,18 @@ button:focus-visible {
   color: var(--color-texto-secundario);
 }
 
+/* Checklist de preparacion antes de grabar (R-33): reutiliza el overlay/panel
+   de `.ayuda-teclado`/`.ayuda-teclado-panel` tal cual (mismo "max-height" +
+   "overflow-y: auto" ya resuelven el requisito 6, "nunca se trunca en
+   silencio"); solo el cuerpo necesita su propia clase, para conservar los
+   saltos de linea del guion de origen sin interpretarlos como Markdown. */
+.preparacion-grabacion-cuerpo {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+}
+
 /* Restablecer preferencias (T-26, requisito 4), dentro del panel de ayuda. */
 .btn-restablecer-preferencias {
   display: block;

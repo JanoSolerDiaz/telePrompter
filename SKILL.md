@@ -395,6 +395,17 @@ La cue es siempre subordinada al bloque activo (principio de producto #5: nunca 
 | Prefijo de indicación de pantalla | `Pantalla:` | `prefijo_indicacion_pantalla_reproductor` |
 | Prefijo de nota interna | `Nota:` | `prefijo_indicacion_nota_reproductor`; mismo criterio "es NOTA" que `pdf.es_nota_interna` (T-28) |
 
+## Checklist de preparación antes de grabar (R-33)
+
+Un guion que trae una sección `## Preparación antes de grabar` (T-08) ya conservaba su contenido íntegro en el `.md` de origen, pero no llegaba a ningún sitio donde quien graba estuviera mirando de verdad: ni al `guion-escenas.md` de revisión, ni al reproductor. Ahora el contenido literal de esa sección (sin reescritura ninguna) viaja también al reproductor y se muestra como un panel de comprobación — mismo patrón visual que la ayuda de teclado (`?`, T-24): overlay centrado, con scroll interno si el contenido es largo, nunca bloqueante.
+
+El panel vive en el **índice de escenas**, nunca dentro de una escena en reproducción: se abre solo una vez, la primera vez que el reproductor se carga en ese navegador para ese guion (mismo mecanismo de "ya visto" de `localStorage` que el resto de preferencias, T-26), y después se reabre a mano con la tecla `P` o con el botón «Preparación antes de grabar» del propio índice — nunca durante una cuenta atrás ni mientras se registra una toma, porque esas dos situaciones solo existen dentro de una escena, fuera del alcance de este panel. Un guion sin esa sección no muestra ningún botón ni panel: no se fabrica contenido que el guion de origen no trae (invariante (a)).
+
+| Opción | Por defecto | Nota |
+|--------|-------------|------|
+| Título de la sección reconocida | `Preparación antes de grabar` | `titulo_seccion_preparacion`; mismo criterio de prefijo que `titulo_seccion_capitulos` (R-07) |
+| Tecla para abrir/cerrar el panel | `P` | Parte del mapa configurable, `mapa_teclas_reproductor`; solo actúa desde el índice |
+
 ## Precedencia de configuración (T-31)
 
 ```
@@ -563,6 +574,12 @@ de normalización más arriba.
 |-------|-------------|------|
 | `titulo_seccion_capitulos` | `Capítulos` | Prefijo con el que se reconoce la sección auxiliar (T-08) que trae la tabla de capítulos |
 | `capitulos_youtube_marca_minima_segundos` | 10 s | Mínimo de la propia plataforma YouTube entre dos marcas consecutivas; una marca más cercana a la anterior se omite |
+
+### Checklist de preparación antes de grabar (R-33)
+
+| Clave | Por defecto | Nota |
+|-------|-------------|------|
+| `titulo_seccion_preparacion` | `Preparación antes de grabar` | Prefijo con el que se reconoce la sección auxiliar (T-08) que trae la checklist |
 
 ### Comandos de montaje encadenados (R-30)
 

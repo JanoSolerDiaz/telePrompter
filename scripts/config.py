@@ -138,6 +138,15 @@ TITULO_SECCION_CAPITULOS: str = "Capítulos"
 # fijo en `capitulos_youtube.py`, mismo criterio "sin numeros magicos" que el resto
 # del proyecto aunque el numero venga impuesto por un tercero.
 CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS: float = 10.0
+
+# --- Checklist de preparacion antes de grabar en el reproductor (R-33) -------------
+# Titulo de la seccion auxiliar (T-08) que trae la checklist, tal como la reconoce
+# `parser.py` en `configuracion.secciones_auxiliares` (comparacion por prefijo, mismo
+# criterio que `_en_lista_negra`). Campo propio en vez de asumir el indice 1 de
+# `SECCIONES_AUXILIARES` -- mismo criterio ya establecido por
+# `TITULO_SECCION_CAPITULOS` (R-07): esa lista es la lista negra completa de
+# T-08/T-10, no un indice de "cual de estas es la de preparacion".
+TITULO_SECCION_PREPARACION: str = "Preparación antes de grabar"
 # Nombre del archivo de capitulos dentro de la carpeta de salida del guion.
 NOMBRE_ARCHIVO_CAPITULOS_YOUTUBE: str = "capitulos-youtube.txt"
 # Nombre del archivo de capitulos en formato FFMETADATA1 nativo de ffmpeg (R-22),
@@ -440,6 +449,13 @@ MAPA_TECLAS_REPRODUCTOR: tuple[tuple[str, tuple[str, ...]], ...] = (
     # del modo de grabacion. `V` de "video". Tambien editable desde el indice
     # para la toma ya marcada buena, sin volver a grabar (ver `guion.js`).
     ("archivo_video_toma", ("v", "V")),
+    # Checklist de preparacion antes de grabar (R-33, requisito 4): a diferencia
+    # de las demas acciones de este mapa, solo actua desde el indice de
+    # escenas -- nunca durante una cuenta atras ni mientras se registra una
+    # toma, porque esas dos solo existen dentro de la vista de reproduccion
+    # (ver justificacion completa en DECISIONES_TECNICAS.md). `P` de
+    # "preparacion".
+    ("preparacion_grabacion", ("p", "P")),
 )
 
 # --- Modo espejo (T-25) -------------------------------------------------------------
@@ -582,6 +598,7 @@ class Configuracion:
     srt_alineado_tolerancia_segundos: float = SRT_ALINEADO_TOLERANCIA_SEGUNDOS
     titulo_seccion_capitulos: str = TITULO_SECCION_CAPITULOS
     capitulos_youtube_marca_minima_segundos: float = CAPITULOS_YOUTUBE_MARCA_MINIMA_SEGUNDOS
+    titulo_seccion_preparacion: str = TITULO_SECCION_PREPARACION
     comandos_montaje_sufijo_concatenado: str = COMANDOS_MONTAJE_SUFIJO_CONCATENADO
     comandos_montaje_sufijo_con_subtitulos: str = COMANDOS_MONTAJE_SUFIJO_CON_SUBTITULOS
     comandos_montaje_sufijo_final: str = COMANDOS_MONTAJE_SUFIJO_FINAL

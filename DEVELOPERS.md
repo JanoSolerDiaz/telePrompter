@@ -3760,6 +3760,78 @@ un error del código") y sin dejar ningún `diagnostico-<timestamp>.log` ni entr
   Cuatro redes en verde. Detalle completo de las decisiones de diseño en
   `DECISIONES_TECNICAS.md`.
 
+## Checklist de preparación antes de grabar (R-33)
+
+La sección auxiliar `## Preparación antes de grabar` (T-08) se reconocía desde el primer
+día en `scripts/parser.py`/`scripts/clasificador.py` (solo para no clasificarla como
+escena) y en `scripts/convencion.py` (solo para no señalarla como desviación), pero su
+`SeccionAuxiliar.contenido` nunca llegaba a ninguna salida real: ni `guion-escenas.md`
+(T-16), ni `tarjetas.json` (T-29), ni el reproductor (T-18). Un formador en solitario que
+anota en su guion qué revisar antes de rodar (encuadre, audio, attrezzo) lo perdía justo
+en el momento en que más falta le hace: a pie de cámara.
+
+- **Búsqueda de la sección, no un índice fijo** (requisito 1). `reproductor.py` gana
+  `_buscar_seccion_preparacion`, mismo patrón que
+  `capitulos_youtube._buscar_seccion_capitulos` (R-07): busca por prefijo sobre
+  `resultado.secciones_auxiliares` usando `Configuracion.titulo_seccion_preparacion`
+  (campo nuevo, `"Preparación antes de grabar"` por defecto) — nunca asume el índice 1
+  de `config.SECCIONES_AUXILIARES`, que es la lista negra completa de T-08/T-10, no un
+  índice de "cuál de estas es la de preparación" (mismo criterio ya razonado para
+  `TITULO_SECCION_CAPITULOS` en R-07).
+- **Payload aditivo** (requisito 1). `_construir_datos` gana `preparacion_antes_grabar:
+  str | None`: el `contenido` tal cual de esa sección, o `None` si el guion no la trae —
+  nunca se fabrica contenido (invariante (a)).
+- **Panel en el ÍNDICE, no en la vista de reproducción** (requisitos 2, 3 y 5, decisión
+  de diseño de este ciclo). `guion.js` reutiliza tal cual el overlay/panel de
+  `.ayuda-teclado`/`.ayuda-teclado-panel` (T-24) para el nuevo panel
+  (`#preparacion-grabacion`, construido dentro de `renderizarIndice`, igual que
+  `elementoAyuda` se construye dentro de `renderizarReproductor`), con una clase propia
+  solo para el cuerpo (`.preparacion-grabacion-cuerpo`, `white-space: pre-wrap` para
+  conservar los saltos de línea del guion de origen). A diferencia de todas las demás
+  acciones de `mapa_teclas_reproductor`, que actúan desde `manejarTeclaReproductor`
+  (activo solo con la vista de reproducción visible), la tecla nueva
+  (`preparacion_grabacion`, `P`/`p` por defecto) se gestiona en un manejador propio,
+  `manejarTeclaIndice`, activo solo con el índice visible. Esto satisface el requisito 5
+  ("nunca se abre ni se superpone mientras hay una cuenta atrás activa o mientras se
+  registra una toma") **por construcción**, no con una comprobación de estado explícita:
+  la cuenta atrás y el registro de tomas solo existen dentro de `vistaReproductor`, a la
+  que este panel ni siquiera puede llegar. `Esc` cierra el panel desde el mismo
+  manejador; `P` lo abre o cierra (antirrebote compartido vía `pulsacionPermitida`,
+  mismo mecanismo que el resto del mapa). Detalle completo de esta decisión en
+  `DECISIONES_TECNICAS.md`.
+- **Primera apertura automática, una sola vez** (requisito 3). `renderizarIndice` solo
+  abre el panel por su cuenta cuando `primeraRenderizacionIndice` (bandera nueva, `true`
+  antes de la primera llamada) sigue en `true` y la clave `preparacion_vista` de
+  `localStorage` todavía no está puesta (mismo mecanismo de "ya visto" que el resto de
+  T-26); se abre el panel y se marca la clave, y la bandera pasa a `false` al final de la
+  función — así ninguna reconstrucción posterior del índice (volver de una escena,
+  importar preferencias, que también llaman a `renderizarIndice()`) puede reabrirlo sola.
+  Esta bandera, en vez de encadenar la comprobación después de la llamada inicial a
+  `renderizarIndice()` al cierre del script, mantiene intacto el invariante que protege
+  `test_guion_js_ofrece_un_boton_continuar_en_el_indice_sin_lanzar_solo_al_cargar`: la
+  última sentencia del script sigue siendo literalmente `renderizarIndice();`, sin nada
+  después que pudiera confundirse con un arranque automático de reproducción.
+- **Botón propio en el índice** (requisito 3, segunda vía). «Preparación antes de
+  grabar», visible solo si `datos.preparacion_antes_grabar` no es `None`, junto al botón
+  «Continuar» — antes de las acciones de preferencias, porque toca revisarlo ANTES de
+  empezar a grabar.
+- **Tecla nueva sin colisión** (requisito 4). `P`/`p` añadida a
+  `MAPA_TECLAS_REPRODUCTOR` (`scripts/config.py`); libre en el mapa existente (ninguna
+  otra acción la usa). Aparece también en la ayuda general (`?`) por ser parte del mismo
+  `mapa_teclas` que lee `construirListaAyudaTeclado`, con una nota en su etiqueta
+  ("solo desde el índice") para no sugerir que funciona dentro de una escena.
+- **Fuera de alcance, como pedía la spec** (requisito 7): `Notas de producción` sigue
+  descartada tras la validación de convención, sin cambios; no se toca
+  `scripts/convencion.py` ni la lista negra de secciones auxiliares; no se toca
+  `tarjetas.json` ni el flujo `.pptx`/`.pdf`; no se cambia la convención de marcado ni la
+  identidad visual 480.
+- **Tests.** 6 nuevos en `tests/test_reproductor.py`: contenido presente cuando el guion
+  trae la sección; `None` sin ella (regresión, invariante (a)); `P`/`p` en el mapa de
+  teclas por defecto; el panel, su manejador de teclado propio y la apertura automática
+  aparecen en la página generada; la clase CSS del cuerpo conserva los saltos de línea.
+  Cuatro redes en verde. Detalle completo de las decisiones de diseño en
+  `DECISIONES_TECNICAS.md`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

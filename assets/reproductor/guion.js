@@ -234,6 +234,12 @@
   // parrafo en el indice, reconstruido en cada `renderizarIndice`.
   var mensajePreferencias = null;
 
+  // Primera apertura automatica de la preparacion antes de grabar (R-33,
+  // requisito 3): distingue la carga inicial de la pagina de cualquier
+  // reconstruccion posterior del indice (volver de una escena, importar
+  // preferencias), que no debe reabrir el panel solo.
+  var primeraRenderizacionIndice = true;
+
   function crearBadgeEstado(indice) {
     var badge = document.createElement("span");
     badge.className = "escena-estado escena-estado--" + estadosEscena[indice];
@@ -312,6 +318,56 @@
       });
       vistaIndice.appendChild(botonContinuar);
     }
+
+    // Checklist de preparacion antes de grabar (R-33, requisitos 2 y 3):
+    // visible solo si el guion trae la seccion auxiliar correspondiente
+    // (T-08). Antes de las acciones de preferencias porque toca revisarlo
+    // ANTES de empezar a grabar, no despues. Overlay reconstruido en cada
+    // `renderizarIndice`, mismo motivo que `elementoAyuda` en
+    // `renderizarReproductor` -- es barato y asi no hay que preocuparse de
+    // que sobreviva a `vistaIndice.textContent = ""`.
+    elementoPreparacion = null;
+    if (datos.preparacion_antes_grabar) {
+      var botonPreparacion = document.createElement("button");
+      botonPreparacion.type = "button";
+      botonPreparacion.className = "btn-preferencia";
+      botonPreparacion.id = "btn-preparacion-grabacion";
+      botonPreparacion.textContent = "Preparación antes de grabar";
+      botonPreparacion.addEventListener("click", alternarPreparacion);
+      vistaIndice.appendChild(botonPreparacion);
+
+      elementoPreparacion = document.createElement("div");
+      elementoPreparacion.className = "ayuda-teclado";
+      elementoPreparacion.id = "preparacion-grabacion";
+      elementoPreparacion.hidden = true;
+      var panelPreparacion = document.createElement("div");
+      panelPreparacion.className = "ayuda-teclado-panel";
+      var tituloPreparacion = document.createElement("h2");
+      tituloPreparacion.textContent = "Preparación antes de grabar";
+      panelPreparacion.appendChild(tituloPreparacion);
+      var cuerpoPreparacion = document.createElement("pre");
+      cuerpoPreparacion.className = "preparacion-grabacion-cuerpo";
+      cuerpoPreparacion.textContent = datos.preparacion_antes_grabar;
+      panelPreparacion.appendChild(cuerpoPreparacion);
+      var cierrePreparacion = document.createElement("p");
+      cierrePreparacion.className = "ayuda-teclado-cierre";
+      cierrePreparacion.textContent =
+        "Pulsa " + primeraTeclaVisible("preparacion_grabacion") + " o Esc para cerrar.";
+      panelPreparacion.appendChild(cierrePreparacion);
+      elementoPreparacion.appendChild(panelPreparacion);
+      vistaIndice.appendChild(elementoPreparacion);
+
+      // Primera apertura automatica (requisito 3): una unica vez por
+      // guion/navegador, mismo mecanismo de "ya visto" de T-26 -- SOLO en la
+      // primera renderizacion del indice (carga inicial de la pagina), nunca
+      // en las reconstrucciones posteriores (volver de una escena, importar
+      // preferencias) que tambien llaman a `renderizarIndice()`.
+      if (primeraRenderizacionIndice && leerPreferencia("preparacion_vista") !== "1") {
+        elementoPreparacion.hidden = false;
+        guardarPreferencia("preparacion_vista", "1");
+      }
+    }
+    primeraRenderizacionIndice = false;
 
     // Aviso honesto (R-01, requisito 3): visible en el punto de entrada,
     // antes de que el dueno empiece a ajustar nada que pudiera perderse.
@@ -836,7 +892,8 @@
     marcar_toma_buena: "Marcar esta toma como la buena",
     nota_toma: "Anadir una nota a esta toma",
     marcar_tropiezo: "Marcar el bloque en pantalla como tropiezo",
-    archivo_video_toma: "Anadir el archivo de video real a esta toma"
+    archivo_video_toma: "Anadir el archivo de video real a esta toma",
+    preparacion_grabacion: "Mostrar / ocultar la preparacion antes de grabar (solo desde el indice)"
   };
 
   // Nombre legible de una tecla tal como la reporta `KeyboardEvent.key`
@@ -890,6 +947,29 @@
     if (elementoAyuda) {
       elementoAyuda.hidden = !elementoAyuda.hidden;
     }
+  }
+
+  // Checklist de preparacion antes de grabar (R-33). A diferencia de
+  // `elementoAyuda`, este panel vive en el INDICE de escenas, nunca en la
+  // vista de reproduccion -- asi queda satisfecho por construccion el
+  // requisito 5 de la ficha ("nunca se abre ni se superpone mientras hay una
+  // cuenta atras activa o mientras se esta registrando una toma"): ambas
+  // solo existen dentro de `vistaReproductor`, que este panel ni siquiera
+  // puede alcanzar (ver justificacion completa en DECISIONES_TECNICAS.md).
+  var elementoPreparacion = null;
+
+  function alternarPreparacion() {
+    if (elementoPreparacion) {
+      elementoPreparacion.hidden = !elementoPreparacion.hidden;
+    }
+  }
+
+  // Primera tecla legible de una accion del mapa vigente (p. ej. para el
+  // texto de cierre del panel), mismo `etiquetaTecla` que ya usa la ayuda
+  // general -- nunca un literal de tecla escrito a mano.
+  function primeraTeclaVisible(accion) {
+    var teclas = datos.mapa_teclas[accion] || [];
+    return teclas.length ? etiquetaTecla(teclas[0]) : "";
   }
 
   // Mapa de teclas -> accion, construido una vez a partir de `datos.mapa_teclas`
@@ -1962,6 +2042,33 @@
   }
 
   document.addEventListener("keydown", manejarTeclaReproductor);
+
+  // Checklist de preparacion antes de grabar (R-33, requisitos 2 y 4): un
+  // manejador propio, separado de `manejarTeclaReproductor`, porque esta es
+  // la UNICA accion del mapa que actua desde el INDICE en vez de la vista de
+  // reproduccion -- de ahi tambien que nunca pueda abrirse durante una
+  // cuenta atras ni mientras se registra una toma (requisito 5): ninguna de
+  // las dos existe mientras `vistaIndice` esta visible.
+  function manejarTeclaIndice(evento) {
+    if (vistaIndice.hidden) {
+      return;
+    }
+    if (evento.key === "Escape") {
+      if (elementoPreparacion && !elementoPreparacion.hidden) {
+        evento.preventDefault();
+        elementoPreparacion.hidden = true;
+      }
+      return;
+    }
+    var accion = teclaAAccion[evento.key];
+    if (accion !== "preparacion_grabacion" || !pulsacionPermitida(accion)) {
+      return;
+    }
+    evento.preventDefault();
+    alternarPreparacion();
+  }
+
+  document.addEventListener("keydown", manejarTeclaIndice);
 
   // Cursor oculto en pantalla completa tras inactividad (T-21, requisito 4):
   // "cero elementos que distraigan" incluye el propio puntero del raton

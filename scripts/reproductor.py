@@ -32,6 +32,16 @@ guion de origen -- reutiliza tal cual la clasificacion de T-09
 T-29 (`pdf.indicaciones_no_recitables`/`pdf.es_nota_interna`), sin inventar
 clasificacion nueva. `guion.js` las pinta como una cue subordinada, visible
 solo mientras su bloque ancla esta activo.
+
+Checklist de preparacion antes de grabar (R-33): si el guion trae la seccion
+auxiliar "Preparación antes de grabar" (T-08), `_buscar_seccion_preparacion`
+la localiza en `resultado.secciones_auxiliares` (mismo patron de busqueda por
+prefijo que `capitulos_youtube._buscar_seccion_capitulos`, R-07) y su
+contenido integro viaja al payload como `preparacion_antes_grabar`, o `None`
+si el guion no la trae -- nunca se fabrica contenido. `guion.js` la muestra
+como un panel reabrible, accesible solo desde el indice de escenas (nunca
+durante una cuenta atras ni mientras se registra una toma, que solo existen
+dentro de la vista de reproduccion).
 """
 
 from __future__ import annotations
@@ -43,7 +53,7 @@ from typing import Any
 
 from clasificador import BloqueClasificado, clasificar_guion
 from config import NOMBRE_ARCHIVO_REPRODUCTOR, Configuracion
-from parser import Escena, ResultadoParseo
+from parser import Escena, ResultadoParseo, SeccionAuxiliar
 from pdf import es_nota_interna, indicaciones_no_recitables
 from tiempos import BloqueConTiempo, ResultadoTiempos
 
@@ -167,6 +177,26 @@ def _indicaciones_ancladas_por_indice(
     }
 
 
+def _buscar_seccion_preparacion(
+    resultado: ResultadoParseo, configuracion: Configuracion
+) -> SeccionAuxiliar | None:
+    """La `SeccionAuxiliar` "Preparación antes de grabar" (R-33), si el guion la trae.
+
+    Mismo patron que `capitulos_youtube._buscar_seccion_capitulos` (R-07):
+    busca por prefijo sobre `resultado.secciones_auxiliares`, nunca asume un
+    indice fijo de `config.SECCIONES_AUXILIARES`.
+    """
+    objetivo = configuracion.titulo_seccion_preparacion.strip()
+    return next(
+        (
+            seccion
+            for seccion in resultado.secciones_auxiliares
+            if seccion.titulo.strip().startswith(objetivo)
+        ),
+        None,
+    )
+
+
 def _construir_datos(
     resultado: ResultadoParseo,
     resultado_tiempos: ResultadoTiempos,
@@ -257,6 +287,14 @@ def _construir_datos(
         # Modo espejo (T-25): si el volteo horizontal (requisito 1) cubre tambien
         # los indicadores o solo el texto de la escena (titulo y bloques).
         "espejo_incluye_indicadores": configuracion.espejo_incluye_indicadores,
+        # Checklist de preparacion antes de grabar (R-33, requisito 1): contenido
+        # integro de la seccion auxiliar, tal cual, o `None` si el guion no la
+        # trae -- nunca se fabrica contenido (invariante (a)).
+        "preparacion_antes_grabar": (
+            seccion.contenido
+            if (seccion := _buscar_seccion_preparacion(resultado, configuracion)) is not None
+            else None
+        ),
     }
 
 

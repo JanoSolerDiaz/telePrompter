@@ -8,6 +8,11 @@
 > El estado de cada R-XX se sigue verificando en §1 de `SEGUIMIENTO.md` (fuente autoritativa); este
 > documento no lo duplica ni lo actualiza — es una fotografía de la spec en el momento del archivo.
 
+**Movido a histórico el:** 2026-10-19 (segundo ciclo del día). Se añade la Oleada v20 (R-32),
+COMPLETADA el mismo día en que se abrió (2026-10-16) y reconfirmada en verde en tres
+reconfirmaciones sucesivas sin tarea nueva (sesiones 187, 188, 189) antes de este ciclo, que
+además abre R-33 (Oleada v21) — mismo criterio que todos los movimientos anteriores.
+
 **Movido a histórico el:** 2026-10-16, ciclo de Product Manager. Se añade la Oleada v19 (R-31),
 COMPLETADA el mismo día en que se abrió (2026-10-16, primer ciclo de Programador posterior a la
 especificación del PM) y sin ningún hito de negocio propio pendiente — mismo criterio que todos los
@@ -2206,6 +2211,52 @@ completo de las decisiones de diseño en `roadmap/DECISIONES_TECNICAS.md`.
 
 ---
 
+## Oleada v20 — Distinguir Chrome ausente de conversión `.pdf` fallida
+
+### R-32 — Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad
+
+**Migración:** No (ningún campo nuevo en `estado.json`; un campo aditivo en `ResultadoPdf` y un
+tercer elemento en la tupla de retorno de `_generar_pdf`) · **Depende de:** T-05, T-28, R-24 (todas
+`COMPLETADA`) · **Origen:** observación de arquitectura del PM (2026-10-16) — grieta de arquitectura
+verificada sobre código ya construido (mismo tercer criterio que abrió R-12 a R-31), esta vez en el
+único generador de salidas que aísla sus propios fallos reales sin pasar por el patrón de
+diagnóstico que R-24 ya construyó para el resto.
+
+**Objetivo:** `scripts/pdf.py::convertir_html_a_pdf` nunca lanza una excepción (decisión ya tomada y
+documentada en `DECISIONES_TECNICAS.md`, T-28: "cualquier fallo... se devuelve como mensaje
+accionable"): cuando el ejecutable de Chrome/Edge no se encuentra, o cuando se encuentra pero la
+conversión falla de verdad (código de salida distinto de cero, `OSError`, tiempo agotado), devuelve
+en ambos casos `(False, mensaje)`. `scripts/salidas.py::_generar_pdf` no distinguía entre los dos:
+los dos acababan como `SalidaLatente`, el mismo contenedor que usa "la skill de marca 480-branded-pptx
+no está instalada" (T-29) — contradiciendo el propio contrato documentado de `SalidaLatente` ("nunca
+se confunde con un fallo: el motivo es siempre la falta de una dependencia externa, no un error del
+código") y sin dejar ningún `diagnostico-<timestamp>.log` ni entrada en `teleprompter.log`, a
+diferencia de cualquier otra salida desde R-24.
+
+**Requisitos (resumen; ficha completa con el razonamiento íntegro en el historial de Git y en
+`DECISIONES_TECNICAS.md`):** `ResultadoPdf` gana `chrome_detectado: bool`; `_generar_pdf` distingue
+tres desenlaces (éxito, `chrome_detectado=False` → `SalidaLatente` sin cambios, `chrome_detectado=True`
+con conversión fallida → fallo real con diagnóstico completo); `_generar_pdf` cambia su firma de
+`(generadas, latentes)` a `(generadas, latentes, omitidas)`; el HTML de impresión sigue siempre en
+`generadas`; `convertir_html_a_pdf` no se toca.
+
+**Cómo se entregó:** `ResultadoPdf` gana el campo `chrome_detectado: bool`, fijado en `exportar_pdf`
+(`True` siempre que `detectar_ejecutable_chrome` encuentre un ejecutable, con independencia de si la
+conversión tiene éxito; `False` solo si no se encuentra ninguno) — cero cambio en
+`convertir_html_a_pdf`, que sigue sin lanzar nunca (T-28). `_generar_pdf` (`scripts/salidas.py`) pasa
+de dos a tres desenlaces: éxito (sin cambios); `chrome_detectado=False` → `SalidaLatente` idéntica a
+antes; `chrome_detectado=True` con conversión fallida → fallo real, construye una excepción
+(`RuntimeError(resultado_pdf.mensaje)`, capturada de inmediato para tener un traceback real, no uno
+fabricado a mano) y reutiliza tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de
+R-24, devolviendo `SalidaOmitida` con el mismo mensaje exacto que usa el `except Exception` genérico
+de `generar_salidas_seleccionadas` para las demás salidas. `_generar_pdf` cambia su firma de retorno
+de `(generadas, latentes)` a `(generadas, latentes, omitidas)`; el único punto de llamada actualizado
+para repartir la tercera lista. El HTML de impresión sigue en `generadas` en los tres casos. 3 tests
+nuevos (696→699): 2 en `tests/test_pdf.py` y 2 en `tests/test_salidas.py`. Cuatro redes en verde.
+Detalle completo en `DEVELOPERS.md` y `DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2214,4 +2265,5 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 (R-20), 2026-10-01; la de F-J (R-21), 2026-10-02; la de v10 (R-22), 2026-10-05; la de v11 (R-23),
 2026-10-06; la de v12 (R-24), 2026-10-07; la de v13 (R-25), 2026-10-08; la de v14 (R-26),
 2026-10-09; la de v15 (R-27), 2026-10-12; la de v16 (R-28), 2026-10-13; la de v17 (R-29),
-2026-10-14; la de v18 (R-30), 2026-10-15; la de v19 (R-31), 2026-10-16.)*
+2026-10-14; la de v18 (R-30), 2026-10-15; la de v19 (R-31), 2026-10-16; la de v20 (R-32),
+2026-10-16 (implementación), archivada el 2026-10-19.)*

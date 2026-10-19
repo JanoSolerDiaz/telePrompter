@@ -12,6 +12,70 @@
 
 ---
 
+### Sesión 2026-10-19 (190) — Ciclo de PM + Programador: archiva Oleada v20 (R-32), abre e implementa R-33 (Oleada v21)
+
+**Arranque.** `git checkout develop` encontró el clon local muy desincronizado de
+`origin/develop` ("diverged", 50 commits distintos a cada lado bajo el horizonte del
+`git clone --depth` de cada contenedor efímero — mismo síntoma ya normalizado en
+`auditoriacontinua.md` `#21`); árbol de trabajo limpio, sin nada sin confirmar ni ningún commit
+propio todavía, resuelto con `git checkout -B develop origin/develop`. Dependencias de desarrollo
+reinstaladas con `python3 -m pip install -r requirements-dev.txt` (el `pip`/`pip3` desnudos del
+`PATH` volvieron a resolver contra Python 3.13 en vez del intérprete real, 3.11.17 — mismo síntoma
+de `#22`/`#28`/P-06).
+
+**Elección de tarea.** Registro de hallazgos de `auditoriacontinua.md` revisado primero: solo dos
+`ABIERTO` (`#24`, baja; `#30`, media), ambos de proceso/gobernanza puro y pendientes solo de
+respuesta del dueño a las preguntas `#11`/`#12` de `SEGUIMIENTO.md` §6 — ninguno de severidad alta,
+sin ninguna P-XX urgente que anteponer. §1 de `SEGUIMIENTO.md` seguía sin ninguna fila `PENDIENTE`:
+R-32 (Oleada v20) llevaba `COMPLETADA` desde el 2026-10-16, reconfirmada en verde tres veces
+seguidas sin tarea nueva (sesiones 187-189) sin que ningún ciclo de PM la hubiera archivado
+todavía; R-33 (Oleada v21) seguía con spec completa en `ROADMAP_PRODUCTO.md` desde el ciclo de PM
+del 2026-10-18, también sin abrir. Esta sesión asume el paso de gobernanza pendiente (archivar
+R-32, abrir R-33) y la implementa acto seguido, sin dejar ninguna otra R-XX pendiente de código
+entremedias (criterio de una sola R-XX pendiente a la vez, vigente desde R-19, respetado: abrir e
+implementar ocurren en la misma sesión — razonamiento completo en la fila de
+`DECISIONES_TECNICAS.md` de hoy). `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. `roadmap/FEEDBACK.md`: sigue con su
+única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+
+**Archivada la Oleada v20 (R-32)** en `roadmap/ROADMAP_HISTORICO.md` (spec completa y "Cómo se
+entregó"). `ROADMAP_PRODUCTO.md` corregido: cabecera reescrita, sección "Oleada v20" sustituida por
+la nota de archivo.
+
+**Abierta e implementada R-33 (Oleada v21): checklist de "Preparación antes de grabar" reabrible en
+el reproductor.** `scripts/config.py` gana `TITULO_SECCION_PREPARACION`/
+`titulo_seccion_preparacion` (campo propio, mismo criterio que `titulo_seccion_capitulos` de R-07)
+y la tecla `preparacion_grabacion` (`P`/`p`) en `MAPA_TECLAS_REPRODUCTOR`. `scripts/reproductor.py`
+gana `_buscar_seccion_preparacion` (mismo patrón de búsqueda por prefijo que
+`capitulos_youtube._buscar_seccion_capitulos`) y `_construir_datos` incorpora
+`preparacion_antes_grabar: str | None` al payload — `None` sin esa sección en el guión, nunca se
+fabrica contenido (invariante (a)). En `assets/reproductor/guion.js`, decisión de diseño de este
+ciclo: el panel vive en el **índice de escenas**, nunca en la vista de reproducción, reutilizando
+tal cual el overlay `.ayuda-teclado`/`.ayuda-teclado-panel` de T-24; manejador de teclado propio
+(`manejarTeclaIndice`), separado de `manejarTeclaReproductor` — así el requisito "nunca se abre
+durante una cuenta atrás o el registro de una toma" queda satisfecho por construcción, no por una
+comprobación de estado explícita. Apertura automática una sola vez mediante una bandera de "primera
+renderización del índice", sin encadenarla tras la llamada inicial a `renderizarIndice()` al cierre
+del script, para no romper `test_guion_js_ofrece_un_boton_continuar_en_el_indice_sin_lanzar_solo_al_cargar`.
+Botón propio «Preparación antes de grabar» en el índice como segunda vía de reapertura. Verificado
+también visualmente con Playwright/Chromium real sobre `fixtures/salida/reproductor.html`: apertura
+automática la primera vez, cierre con `Esc`, sin reapertura sola tras recargar, reapertura con `P`
+y con el botón, sin ningún efecto al pulsar `P` dentro de una escena — cero errores de consola.
+
+**Tests y verificación.** 5 tests nuevos (699→704) en `tests/test_reproductor.py`. Cuatro redes en
+verde (`python3 -m mypy scripts/ tests/`, `python3 -m ruff check scripts/ tests/`, `python3 -m
+pytest` — 704 tests —, `python3 scripts/verificar_salidas.py --fixture` — diecinueve etapas `OK`).
+
+**Cambios de estado en `SEGUIMIENTO.md` §1:** `R-32` actualizada con la referencia a su archivo en
+`ROADMAP_HISTORICO.md`; `R-33` nueva, abierta y `COMPLETADA` en el mismo ciclo. Dos decisiones
+nuevas en `DECISIONES_TECNICAS.md` (archivar+abrir+implementar en la misma sesión; decisiones de
+diseño de la implementación de R-33). Sin cambios en §3, §5 ni §7. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin preguntas nuevas. `DEVELOPERS.md` y `SKILL.md`
+actualizados con la sección de R-33 y la fila de `titulo_seccion_preparacion` en la tabla completa
+de valores por defecto; `references/mapa-teclas.md` actualizado con la tecla nueva.
+
+---
+
 ### Sesión 2026-10-19 (189) — Ciclo de Programador: tercera reconfirmación del día tras R-32, sin novedad de código
 
 **Arranque.** El contenedor volvió a arrancar con `HEAD` *detached*, esta vez exactamente sobre la
