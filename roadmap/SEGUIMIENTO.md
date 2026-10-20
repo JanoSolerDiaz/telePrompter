@@ -10,12 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-20 — **Ciclo de Programador: segunda reconfirmación del día tras
+**Última actualización:** 2026-10-20 — **Ciclo de Programador: tercera reconfirmación del día tras
 R-34, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-20), segunda reconfirmación tras R-34.** Revisión de entrada
+**Ciclo de Programador (2026-10-20), tercera reconfirmación tras R-34.** Revisión de entrada
 (protocolo): `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de
-Programador de la primera reconfirmación del día (commit `4402ff7`, sin cambio de código). Árbol
+Programador de la segunda reconfirmación del día (commit `ae66718`, sin cambio de código). Árbol
 de trabajo limpio. Dependencias de desarrollo instaladas con `python3 -m pip install -r
 requirements-dev.txt` contra el intérprete real (3.11.17).
 
@@ -43,7 +43,7 @@ es el único cambio de la sesión.
 
 **Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).**
 
-**Última actualización anterior (2026-10-20, ciclo de Programador): primera reconfirmación del día
+**Última actualización anterior (2026-10-20, ciclo de Programador): segunda reconfirmación del día
 tras R-34, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-20).** Revisión de entrada (protocolo): `git checkout develop &&
