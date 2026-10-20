@@ -10,7 +10,38 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-20 — **Ciclo de Programador: implementa R-34 (instante del
+**Última actualización:** 2026-10-20 — **Ciclo de Programador: primera reconfirmación del día tras
+R-34, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-20), reconfirmación tras R-34.** Revisión de entrada (protocolo):
+`git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de Programador que
+implementó R-34 (commit `91b4c66`). Árbol de trabajo limpio. Dependencias de desarrollo instaladas
+con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (3.11.17).
+
+Registro de hallazgos revisado antes de elegir tarea: la última pasada del auditor
+(`auditoriacontinua.md`, 2026-10-20) sigue con `#24` (baja) y `#30` (media) como únicos `ABIERTO`,
+ambos de proceso/gobernanza puro pendientes de respuesta del dueño — ninguno de severidad alta que
+atender como P-XX urgente. §1 (fuente autoritativa) revisada: R-34 es la última fila y está
+**COMPLETADA**; no hay ninguna fila `PENDIENTE` ni `BLOQUEADA` que ejecutar — abrir la siguiente
+Oleada (R-35) le corresponde a un ciclo de Product Manager, no a este ciclo de Programador. Sin
+tarea de la columna vertebral disponible y sin hallazgo urgente, no se abre ninguna P-XX nueva por
+iniciativa propia en este ciclo.
+
+**Verificación completa, sin cambios de código.** Las cuatro redes de la verificación pre-push
+siguen en verde sobre el estado heredado de R-34: `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest -q`
+(713 tests en verde) y `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`,
+incluidas las dos salidas latentes esperadas — `.pptx` sin la skill `480-branded-pptx` instalada y
+`.pdf` sin Chrome/Edge en este contenedor — y las dos omisiones esperadas sin parte de rodaje).
+Nada que commitear en `scripts/`, `tests/` ni `assets/`; esta actualización de `SEGUIMIENTO.md` y
+`HISTORIAL_SESIONES.md` es el único cambio de la sesión.
+
+**Cambios de estado (§1).** Ninguno: R-34 permanece `COMPLETADA`, sin archivar todavía en
+`ROADMAP_HISTORICO.md` (ese paso sigue correspondiendo a un ciclo de PM posterior).
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).**
+
+**Última actualización anterior (2026-10-20, ciclo de Programador): implementa R-34 (instante del
 tropiezo dentro de la toma)**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-20).** Revisión de entrada (protocolo): `git checkout develop &&
