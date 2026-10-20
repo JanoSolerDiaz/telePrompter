@@ -3832,6 +3832,70 @@ en el momento en que más falta le hace: a pie de cámara.
   Cuatro redes en verde. Detalle completo de las decisiones de diseño en
   `DECISIONES_TECNICAS.md`.
 
+## Instante exacto de cada tropiezo dentro de la toma (R-34)
+
+`assets/reproductor/guion.js::finalizarTomaActual` (R-02) ya calculaba el tiempo real
+transcurrido desde el inicio de la toma en curso para `duracion_segundos`, pero
+`alternarTropiezoBloqueActual` (R-03), que vive en el mismo archivo y se dispara con la
+misma tecla `T` mientras esa toma está en marcha, descartaba ese dato: un tropiezo
+marcado solo guardaba `indice_bloque` y `texto`, nunca CUÁNDO ocurrió dentro de la toma —
+obligando al dueño, en el montaje con ffmpeg (T-33), a reproducir la toma entera para
+encontrar a ojo el segundo exacto donde se trabó.
+
+- **Una única fuente del cálculo** (requisito 1, mismo criterio que R-19/R-20: "promover
+  la función que ya existe, no duplicarla"). El cálculo `cronometroMsAcumulados` + lo
+  corrido desde `cronometroInicioMarca` si no está en pausa, que antes vivía repetido
+  dentro de `actualizarCronometro` y `finalizarTomaActual`, se extrae a
+  `tomaTranscurridoMs()`; las tres funciones que lo necesitan
+  (`actualizarCronometro`, `finalizarTomaActual`, `alternarTropiezoBloqueActual`) la
+  reutilizan tal cual.
+- **Captura al marcar, no al desmarcar** (requisito 2). La rama de
+  `alternarTropiezoBloqueActual` que añade el tropiezo (`posicion === -1`) calcula
+  `instanteSegundos` con `tomaTranscurridoMs()` y el mismo redondeo a un decimal que ya
+  usa `duracion_segundos`, y lo guarda como `instante_toma_segundos` en el objeto del
+  tropiezo. La rama de desmarcar solo recorta el array — desmarcar antes de exportar
+  pierde el tropiezo entero, igual que ya pasaba con `texto`/`indice_bloque` (sin
+  historial de tropiezos retirados, fuera de alcance).
+- **Límite documentado, no resuelto con heurística** (requisito 3). El instante describe
+  la toma que estaba en marcha al pulsar `T`; si la escena se regraba desde cero sin
+  volver a marcar el mismo tropiezo en la toma nueva, el dato no se re-ancla ni se
+  intenta adivinar a qué toma pertenece — el proyecto no inventa una asociación que el
+  dueño no dio. Documentado en `references/contrato-tropiezos.md`.
+- **Lado Python aditivo** (requisitos 4-5). `scripts/feedback.py`: `TropiezoBloque` gana
+  `instante_toma_segundos: float | None = None`; `_tropiezo_desde_dict` lo admite si es
+  numérico ≥ 0 y lo deja en `None` si falta (un `.json` de la versión 1 del contrato se
+  sigue cargando sin error, mismo criterio que R-19 con `archivo_video`). Columna nueva
+  «Instante» en `FEEDBACK.md` (carpeta de salida), formateada `mm:ss` con
+  `_formatear_instante` (minutos a dos dígitos: `00:47`, no `0:47` — distinto a
+  propósito del `M:SS` sin ceros de `capitulos_youtube._formatear_mm_ss`, que resuelve
+  otro problema y no está sujeto al criterio de aceptación de R-34), vacía si el campo
+  es `None`. El instante nunca entra en la clave de duplicado (misma
+  escena + mismo `indice_bloque` + mismo texto): es informativo.
+- **Regex de fila retrocompatible, no solo el dato** (hallazgo de este ciclo, antes de
+  verificarlo con test). Una fila de `FEEDBACK.md` escrita por una versión anterior a
+  R-34 tiene 5 columnas, no 6: `_PATRON_FILA` hace que el grupo `instante` sea opcional
+  en la propia expresión regular (no solo en el valor), para que esa fila siga
+  reconociéndose igual que una nueva — de lo contrario, `tropiezos_marcados_por_escena`
+  dejaría de encontrarla en silencio y una fila `nuevo` ya existente dejaría de
+  destacarse en la siguiente revisión sin que nadie la haya resuelto. Cubierto por
+  `test_registrar_tropiezos_sobre_un_feedback_de_la_version_1_no_duplica_filas` y por
+  `test_edicion_manual_de_una_fila_nueva_se_respeta` (ya escrito en 5 columnas antes de
+  este ciclo, sin tocar).
+- **`version` del `.json` exportado sube a 2** (`construirRegistroTropiezos`), cambio
+  aditivo — no se valida en `cargar_registro_tropiezos` (es informativo, igual que
+  `generado`).
+- **Fuera de alcance, como pedía la spec** (requisito 7): no se genera ningún comando
+  `ffmpeg` de salto automático a partir de este instante (candidata a una R-XX futura si
+  el primer rodaje real lo pide); no se toca `documento_revision.py` más allá de lo que
+  ya hace hoy; no se persiste nada en `estado.json`; no se añade ninguna tecla nueva; no
+  se cambia la convención de marcado ni la identidad visual 480.
+- **Tests.** 9 nuevos: 5 en `tests/test_feedback.py` (carga/valida
+  `instante_toma_segundos`, formateo `mm:ss`, retrocompatibilidad de la fila de 5
+  columnas) y 4 en `tests/test_reproductor.py` (función compartida reutilizada, instante
+  guardado solo al marcar con el cálculo/redondeo correcto, nada calculado al desmarcar,
+  `version: 2`), más el ajuste de 2 tests existentes al nuevo literal multilínea de
+  `lista.push` y a la columna nueva de `FEEDBACK.md`. Cuatro redes en verde.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

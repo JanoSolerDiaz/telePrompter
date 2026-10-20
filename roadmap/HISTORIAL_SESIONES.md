@@ -12,6 +12,70 @@
 
 ---
 
+### Sesión 2026-10-20 (197) — Ciclo de Programador: implementa R-34 (instante del tropiezo dentro de la toma)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo la auditoría del propio
+2026-10-20 (commit `81ad243`, sin hallazgos nuevos) ya fusionada en `origin/develop`; árbol de
+trabajo limpio, sin nada sin confirmar. Dependencias de desarrollo instaladas con
+`python3 -m pip install -r requirements-dev.txt` contra el intérprete real (3.11.17; `pip`/`pip3`
+desnudos del `PATH` resuelven contra Python 3.13, mismo síntoma ya documentado en
+`#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** Auditoría más reciente
+(`auditoriacontinua.md`, 2026-10-20): sin hallazgos nuevos, ninguno de severidad alta; solo
+`#24` (baja) y `#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro, pendientes de
+respuesta del dueño a `#11`/`#12` de `SEGUIMIENTO.md` §6. §1 confirmada como fuente autoritativa:
+R-34 (Oleada v22) es la única fila `PENDIENTE`, especificada por completo en
+`ROADMAP_PRODUCTO.md` por el ciclo de PM del 2026-10-19 — ninguna urgencia que atender como P-XX
+antes de ella.
+
+**Implementación de R-34.** `assets/reproductor/guion.js`: el cálculo de tiempo transcurrido de la
+toma en curso (`cronometroMsAcumulados` + lo corrido desde `cronometroInicioMarca` si no está en
+pausa), antes repetido dentro de `actualizarCronometro` y `finalizarTomaActual`, se extrae a la
+función compartida `tomaTranscurridoMs()`; `alternarTropiezoBloqueActual` la reutiliza tal cual
+para calcular `instante_toma_segundos` (mismo redondeo a un decimal que `duracion_segundos`),
+guardado solo al marcar el tropiezo (rama `posicion === -1`), nunca al desmarcarlo.
+`construirRegistroTropiezos` sube `version` de 1 a 2 (cambio aditivo, no validado al cargar).
+
+`scripts/feedback.py`: `TropiezoBloque` gana `instante_toma_segundos: float | None = None`;
+`_tropiezo_desde_dict` lo admite si es numérico ≥ 0, lo deja en `None` si falta (un `.json` de la
+versión 1 del contrato se sigue cargando sin error, mismo criterio que R-19 con `archivo_video`).
+Columna nueva «Instante» en `FEEDBACK.md` (carpeta de salida), formateada `mm:ss` con
+`_formatear_instante` propio (minutos a dos dígitos: `00:47`), vacía si el campo es `None` — nunca
+entra en la clave de duplicado. `_PATRON_FILA` hace el grupo «instante» opcional en la propia
+expresión regular (no solo en el valor): una fila de 5 columnas (versión 1, escrita por una sesión
+anterior a R-34) se sigue reconociendo igual que una de 6, evitando que `tropiezos_marcados_por_escena`
+deje de encontrarla en silencio tras la migración de formato de tabla. `references/contrato-tropiezos.md`
+sube a versión 2, documentando el campo nuevo y el límite ya fijado por la ficha (no se re-ancla si
+se regraba la escena desde cero sin volver a marcar el mismo tropiezo).
+
+**Verificación.** 9 tests nuevos (704→713): 5 en `tests/test_feedback.py` (carga/valida
+`instante_toma_segundos`, formateo `mm:ss`, retrocompatibilidad de la fila de 5 columnas) y 4 en
+`tests/test_reproductor.py` (función compartida reutilizada, instante guardado solo al marcar con
+el cálculo/redondeo correcto, nada calculado al desmarcar, `version: 2`); 2 tests existentes
+ajustados al nuevo literal multilínea de `lista.push` y a la columna nueva de `FEEDBACK.md`.
+`python3 -m mypy scripts/ tests/`, `python3 -m ruff check scripts/ tests/`, `python3 -m pytest`
+(713 en verde) y `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`): cuatro
+redes en verde.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-34: `PENDIENTE` → **COMPLETADA**.
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Una fila nueva: "R-34 (implementación)", con
+las alternativas consideradas para la retrocompatibilidad de `_PATRON_FILA` (migrar a mano vs.
+grupo obligatorio con pérdida silenciosa vs. grupo opcional en la propia regex, elegida) y para el
+formato `mm:ss` (reutilizar `capitulos_youtube._formatear_mm_ss` vs. una función propia, elegida
+por el criterio de aceptación exacto de la ficha).
+
+**`DEVELOPERS.md` actualizado** con sección propia "Instante exacto de cada tropiezo dentro de la
+toma (R-34)", antes de "Suite de tests (T-03)".
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones).** §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin preguntas nuevas de esta sesión. No se archiva la Oleada
+v22 en `ROADMAP_HISTORICO.md`: ese paso corresponde, como con R-32/R-33, a un ciclo de PM
+posterior.
+
+---
+
 ### Sesión 2026-10-19 (196) — Ciclo de Product Manager (tercero del día): archiva Oleada v21 (R-33) y abre R-34 (Oleada v22), sin implementarla
 
 **Arranque.** El contenedor arrancó con `HEAD` *detached* y `develop` local desincronizado de

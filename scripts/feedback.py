@@ -58,19 +58,26 @@ _ENCABEZADO_FEEDBACK = """\
 > Bloques de locución marcados como tropiezo durante la grabación (R-03):
 > «Escena»/«Bloque» identifican el mismo bloque de respiración numerado en
 > `guion-escenas.md`; el texto es el que estaba en pantalla en el momento de
-> marcarlo. Mientras una fila siga en estado `nuevo`, la siguiente revisión
-> la destaca en `guion-escenas.md` para reescribirla a mano o con propuesta
-> de la skill. Cambia la palabra `nuevo` por cualquier otra (p. ej.
-> `resuelto`) para dejar de verla destacada sin tener que reescribir el
-> texto.
+> marcarlo. «Instante» (R-34) es el segundo `mm:ss` de la toma en curso en el
+> que se marcó, vacío si el `.json` exportado no lo trae (archivo de la
+> versión 1 del contrato). Mientras una fila siga en estado `nuevo`, la
+> siguiente revisión la destaca en `guion-escenas.md` para reescribirla a
+> mano o con propuesta de la skill. Cambia la palabra `nuevo` por cualquier
+> otra (p. ej. `resuelto`) para dejar de verla destacada sin tener que
+> reescribir el texto.
 
-| Fecha | Escena | Bloque | Texto exacto | Estado |
-|-------|--------|--------|---------------|--------|
+| Fecha | Escena | Bloque | Texto exacto | Instante | Estado |
+|-------|--------|--------|---------------|----------|--------|
 """
 
+#  El grupo "instante" (columna R-34) es opcional en la propia expresion -- no
+#  solo en el valor -- para que una fila escrita por una version anterior de
+#  FEEDBACK.md (sin esa columna, 5 campos en vez de 6) se siga reconociendo
+#  igual que una fila nueva: la migracion de formato de tabla no pierde en
+#  silencio el estado de una fila ya marcada a mano por el dueno.
 _PATRON_FILA = re.compile(
     r"^\|\s*(?P<fecha>[^|]*)\|\s*(?P<escena>\d+)\s*\|\s*(?P<bloque>\d+)\s*\|"
-    r"\s*(?P<texto>.*?)\s*\|\s*(?P<estado>[^|]*)\|\s*$"
+    r"\s*(?P<texto>.*?)\s*\|\s*(?:(?P<instante>[^|]*)\|\s*)?(?P<estado>[^|]*)\|\s*$"
 )
 
 
@@ -88,6 +95,10 @@ class TropiezoBloque:
 
     indice_bloque: int
     texto: str
+    # R-34, opcional: segundos desde el inicio de la toma en curso en el
+    # instante en que se marco el tropiezo. `None` si el archivo exportado es
+    # de la version 1 del contrato (anterior a R-34) y no lo trae.
+    instante_toma_segundos: float | None = None
 
 
 @dataclass(frozen=True)
@@ -136,7 +147,19 @@ def _tropiezo_desde_dict(bruto: Any, contexto: str) -> TropiezoBloque:
             f"{contexto}: 'texto' no puede contener saltos de línea ni '|' "
             "(rompería la tabla de FEEDBACK.md)."
         )
-    return TropiezoBloque(indice_bloque=indice, texto=texto)
+    instante = bruto.get("instante_toma_segundos")
+    if instante is not None:
+        try:
+            instante = float(instante)
+        except (TypeError, ValueError) as excepcion:
+            raise RegistroFeedbackError(
+                f"{contexto}: 'instante_toma_segundos' debe ser numerico ({excepcion})."
+            ) from excepcion
+        if instante < 0:
+            raise RegistroFeedbackError(
+                f"{contexto}: 'instante_toma_segundos' no puede ser negativo ({instante})."
+            )
+    return TropiezoBloque(indice_bloque=indice, texto=texto, instante_toma_segundos=instante)
 
 
 def _escena_desde_dict(bruto: Any, indice: int) -> EscenaTropiezos:
@@ -199,10 +222,23 @@ def cargar_registro_tropiezos(ruta: Path, nombre_guion: str) -> RegistroTropiezo
     return RegistroTropiezos(guion=guion_archivo, escenas=escenas)
 
 
+def _formatear_instante(segundos: float) -> str:
+    """`mm:ss`, con minutos a dos digitos (criterio de aceptacion de R-34:
+    47,0 s se muestra como `00:47`, no `0:47`)."""
+    total_segundos = round(segundos)
+    minutos, segs = divmod(total_segundos, 60)
+    return f"{minutos:02d}:{segs:02d}"
+
+
 def _fila_feedback(fecha: str, numero_escena: int, tropiezo: TropiezoBloque) -> str:
+    instante = (
+        _formatear_instante(tropiezo.instante_toma_segundos)
+        if tropiezo.instante_toma_segundos is not None
+        else ""
+    )
     return (
         f"| {fecha} | {numero_escena} | {tropiezo.indice_bloque} | "
-        f"{tropiezo.texto} | {ESTADO_NUEVO} |"
+        f"{tropiezo.texto} | {instante} | {ESTADO_NUEVO} |"
     )
 
 

@@ -1034,22 +1034,32 @@
     }
   }
 
-  // Cronometro de la toma (requisito 2): tiempo real transcurrido frente a la
-  // duracion estimada de la escena. Cuenta tiempo de reloj, no tiempo de
-  // guion -- por eso se congela en pausa (`cronometroMsAcumulados` guarda lo
-  // ya transcurrido, `cronometroInicioMarca` se reinicia al reanudar), igual
-  // que ya hace el reloj del bloque (`bloqueMsRestantes`/`bloqueInicioMarca`).
-  function actualizarCronometro() {
-    if (!elementoCronometro || escenaActual === -1) {
-      return;
-    }
+  // Tiempo real transcurrido en la toma en curso (R-34, requisito 1): cuenta
+  // tiempo de reloj, no tiempo de guion -- por eso se congela en pausa
+  // (`cronometroMsAcumulados` guarda lo ya transcurrido, `cronometroInicioMarca`
+  // se reinicia al reanudar), igual que ya hace el reloj del bloque
+  // (`bloqueMsRestantes`/`bloqueInicioMarca`). Unica fuente de este calculo:
+  // `actualizarCronometro` (para mostrarlo), `finalizarTomaActual` (para
+  // `duracion_segundos`) y `alternarTropiezoBloqueActual` (para
+  // `instante_toma_segundos`) la reutilizan tal cual, nunca una segunda
+  // implementacion del mismo calculo.
+  function tomaTranscurridoMs() {
     var transcurridoMs = cronometroMsAcumulados;
     if (!pausado) {
       transcurridoMs += Date.now() - cronometroInicioMarca;
     }
+    return transcurridoMs;
+  }
+
+  // Cronometro de la toma (requisito 2): tiempo real transcurrido frente a la
+  // duracion estimada de la escena.
+  function actualizarCronometro() {
+    if (!elementoCronometro || escenaActual === -1) {
+      return;
+    }
     var estimado = datos.escenas[escenaActual].duracion_estimada_segundos;
     elementoCronometro.textContent =
-      formatearTiempo(transcurridoMs / 1000) + " / " + formatearTiempo(estimado);
+      formatearTiempo(tomaTranscurridoMs() / 1000) + " / " + formatearTiempo(estimado);
   }
 
   function iniciarCronometro() {
@@ -1149,7 +1159,10 @@
   // ningun dialogo -- un interruptor inmediato, mismo patron que
   // `alternarTomaBuena`, pero por BLOQUE, no por toma: no se cierra al volver
   // al indice, sobrevive a toda la sesion de grabacion hasta que se exporte o
-  // se vuelva a pulsar sobre el mismo bloque.
+  // se vuelva a pulsar sobre el mismo bloque. Al marcar (no al desmarcar,
+  // R-34 requisito 2) guarda tambien el instante dentro de la toma en curso
+  // en el que ocurre, con el mismo calculo y redondeo que `duracion_segundos`
+  // en `finalizarTomaActual`.
   function alternarTropiezoBloqueActual() {
     if (escenaActual === -1) {
       return;
@@ -1167,7 +1180,12 @@
       }
     }
     if (posicion === -1) {
-      lista.push({ indice_bloque: bloqueActual, texto: bloques[bloqueActual].texto });
+      var instanteSegundos = Math.round((tomaTranscurridoMs() / 1000) * 10) / 10;
+      lista.push({
+        indice_bloque: bloqueActual,
+        texto: bloques[bloqueActual].texto,
+        instante_toma_segundos: instanteSegundos
+      });
     } else {
       lista.splice(posicion, 1);
     }
@@ -1186,10 +1204,7 @@
       return;
     }
     var indice = escenaActual;
-    var transcurridoMs = cronometroMsAcumulados;
-    if (!pausado) {
-      transcurridoMs += Date.now() - cronometroInicioMarca;
-    }
+    var transcurridoMs = tomaTranscurridoMs();
     if (tomaBuenaEnCurso) {
       tomasEscena[indice].forEach(function (toma) {
         toma.buena = false;
@@ -1527,7 +1542,7 @@
   // aqui). Solo se incluyen escenas con al menos un tropiezo marcado.
   function construirRegistroTropiezos() {
     return {
-      version: 1,
+      version: 2,
       guion: datos.guion,
       generado: new Date().toISOString(),
       escenas: datos.escenas

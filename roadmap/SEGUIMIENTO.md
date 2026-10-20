@@ -10,7 +10,45 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-19 — **Ciclo de Product Manager (tercero del día): archiva la
+**Última actualización:** 2026-10-20 — **Ciclo de Programador: implementa R-34 (instante del
+tropiezo dentro de la toma)**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-20).** Revisión de entrada (protocolo): `git checkout develop &&
+git pull origin develop` trajo ya fusionada la auditoría del propio 2026-10-20 (`auditoriacontinua.md`,
+commit `81ad243`, sin hallazgos nuevos). Árbol de trabajo limpio. Dependencias de desarrollo
+instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (3.11.17;
+mismo síntoma de `pip`/`pip3` resolviendo contra 3.13 ya documentado en `#22`/`#28`/P-06).
+
+Registro de hallazgos revisado antes de elegir tarea: solo `#24` (baja) y `#30` (media) siguen
+`ABIERTO`, ambos de proceso/gobernanza puro, pendientes de respuesta del dueño — ninguno de
+severidad alta que atender como P-XX urgente. §1 (fuente autoritativa) traía una sola fila
+`PENDIENTE`: R-34 (Oleada v22), especificada por completo en `ROADMAP_PRODUCTO.md` por el ciclo de
+PM del 2026-10-19.
+
+**R-34 implementada.** `assets/reproductor/guion.js`: el cálculo de tiempo transcurrido de la toma
+en curso, antes repetido dentro de `actualizarCronometro` y `finalizarTomaActual`, se extrae a la
+función compartida `tomaTranscurridoMs()`; `alternarTropiezoBloqueActual` la reutiliza tal cual
+para guardar `instante_toma_segundos` solo al marcar el tropiezo (mismo redondeo a un decimal que
+`duracion_segundos`), nunca al desmarcarlo. `scripts/feedback.py`: `TropiezoBloque` gana el campo
+opcional homónimo; columna nueva «Instante» (`mm:ss`) en `FEEDBACK.md` (carpeta de salida);
+`_PATRON_FILA` hace el grupo opcional en la propia expresión regular para que una fila de la
+versión 1 del contrato (5 columnas) se siga reconociendo igual que una nueva, sin perder en
+silencio el estado de una fila ya marcada por el dueño. `references/contrato-tropiezos.md` sube a
+versión 2. 9 tests nuevos (704→713). Cuatro redes en verde (`mypy`, `ruff`, `pytest`,
+`verificar_salidas.py --fixture`, diecinueve etapas `OK`).
+
+**Cambios de estado (§1).** R-34: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` (ese paso corresponde a un ciclo de PM posterior, mismo patrón que R-32).
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Una fila nueva: "R-34 (implementación)", con
+las alternativas consideradas para la retrocompatibilidad de `_PATRON_FILA` y para el formato
+`mm:ss` de la columna nueva.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones).** §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin preguntas nuevas de esta sesión. `DEVELOPERS.md`
+actualizado con sección propia.
+
+**Última actualización anterior (2026-10-19, ciclo de Product Manager, tercero del día): archiva la
 Oleada v21 (R-33) y abre R-34 (Oleada v22), sin implementarla**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-19), tercero del día.** Revisión de entrada (protocolo): el
@@ -4499,7 +4537,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-31 | Advertir en `comandos-montaje.md` cuando el documento referencia un archivo (`concat-ffmpeg.txt`, el `.srt` elegido, `capitulos-ffmpeg.txt`) que no existe todavía en la carpeta de salida real, en vez de dar por hecho que las demás salidas de las que depende ya se generaron | **COMPLETADA** | 2026-10-16 | `comandos_montaje.calcular_comandos_montaje` gana `carpeta_salida: Path \| None = None` (comprobación de existencia en disco, nunca de contenido); cada archivo ausente se recoge en `ResultadoComandosMontaje.archivos_referenciados_faltantes` (`ArchivoReferenciadoFaltante`) y `formatear_comandos_montaje` lo vuelca como nota visible al principio del documento, nunca bloquea ni degrada la generación. Descripciones de opción centralizadas en `config.py` (`DESCRIPCION_OPCION_*`), reutilizadas tal cual por `salidas.py::DESCRIPCION_SALIDA`, sin ciclo de imports. `scripts/salidas.py::_generar_comandos_montaje` reenvía `carpeta_salida`; sin ella, comportamiento idéntico al de antes de R-31. 6 tests nuevos (690→696). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-32 | Distinguir, en el exportador `.pdf` (T-28), un fallo real de la conversión de Chrome/Edge (detectado pero la conversión revienta) de la simple ausencia de Chrome/Edge, y dejar el mismo rastro de diagnóstico que ya reciben las demás salidas cuando fallan de verdad | **COMPLETADA** | 2026-10-19 | `ResultadoPdf` (`scripts/pdf.py`) gana `chrome_detectado: bool` (fijado en `exportar_pdf`, cero cambio en `convertir_html_a_pdf`, que sigue sin lanzar nunca); `_generar_pdf` (`scripts/salidas.py`) distingue ahora tres desenlaces — éxito; `chrome_detectado=False` → `SalidaLatente` idéntica a antes; `chrome_detectado=True` con conversión fallida → fallo real, reutilizando tal cual `volcar_diagnostico`/`ruta_diagnostico`/`obtener_logger` de R-24 (misma `SalidaOmitida` que las demás salidas) — con una excepción construida y capturada en el momento para dejar traceback real. `_generar_pdf` cambia su firma a `(generadas, latentes, omitidas)`; único punto de llamada actualizado. HTML de impresión intacto en `generadas` en los tres casos. 3 tests nuevos (696→699): 2 en `tests/test_pdf.py`, 2 en `tests/test_salidas.py` (más 2 aserciones de `chrome_detectado` en tests ya existentes). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`. Archivada en `ROADMAP_HISTORICO.md` (Oleada v20) en el ciclo de PM del 2026-10-19 |
 | R-33 | Mostrar la sección "Preparación antes de grabar" del guión como checklist reabrible en el reproductor, en vez de descartar su contenido tras la validación de convención | **COMPLETADA** | 2026-10-19 | `Configuracion` gana `titulo_seccion_preparacion` (campo propio, mismo criterio que `titulo_seccion_capitulos` de R-07, en vez de asumir el índice 1 de `SECCIONES_AUXILIARES`); `reproductor.py::_buscar_seccion_preparacion` localiza la sección por prefijo (mismo patrón que `capitulos_youtube._buscar_seccion_capitulos`) y `_construir_datos` incorpora `preparacion_antes_grabar: str o None` al payload — `None` sin esa sección en el guión, nunca se fabrica contenido. `guion.js` muestra un panel nuevo en el índice de escenas (nunca en la vista de reproducción), reutilizando el overlay `.ayuda-teclado`/`.ayuda-teclado-panel` de T-24; tecla nueva `preparacion_grabacion` (`P`/`p`) gestionada por un manejador de teclado propio (`manejarTeclaIndice`), separado del de la vista de reproducción — así el requisito "nunca se abre durante una cuenta atrás o el registro de una toma" queda satisfecho por construcción, no por una comprobación de estado, porque esas dos situaciones solo existen dentro de una escena. Apertura automática una sola vez (bandera de "primera renderización", sin encadenar tras la llamada inicial a `renderizarIndice()`, para no romper el test existente que protege que nada se dispara automáticamente después de esa llamada); botón propio en el índice como segunda vía de reapertura. Verificado también visualmente con Playwright/Chromium real: apertura automática la primera vez, cierre con Esc, no reapertura tras recargar (ya "vista"), reapertura con `P` y con el botón, y sin ningún efecto al pulsar `P` dentro de una escena. 5 tests nuevos (699→704). Oleada v21, `origen: observación de arquitectura del PM (2026-10-18)` |
-| R-34 | Capturar el instante real (segundos desde el inicio de la toma) en que se marca un tropiezo durante la grabación, para saltar directo al punto de corte en el montaje con ffmpeg | PENDIENTE | — | Spec completa en `ROADMAP_PRODUCTO.md` §Oleada v22. `origen: observación de producto del PM (2026-10-19)` |
+| R-34 | Capturar el instante real (segundos desde el inicio de la toma) en que se marca un tropiezo durante la grabación, para saltar directo al punto de corte en el montaje con ffmpeg | **COMPLETADA** | 2026-10-20 | `guion.js` extrae el cálculo de transcurrido de la toma (antes repetido en `actualizarCronometro`/`finalizarTomaActual`) a `tomaTranscurridoMs()`, reutilizada también por `alternarTropiezoBloqueActual`: al marcar un tropiezo (no al desmarcarlo) guarda `instante_toma_segundos` con el mismo redondeo a un decimal que `duracion_segundos`. `scripts/feedback.py`: `TropiezoBloque.instante_toma_segundos` opcional (numérico ≥ 0 o `None`); columna nueva «Instante» en `FEEDBACK.md` (carpeta de salida), formateada `mm:ss`; `_PATRON_FILA` hace el grupo opcional en la propia expresión regular (no solo en el valor) para que una fila de la versión 1 del contrato (5 columnas) se siga reconociendo igual que una nueva — de lo contrario una fila `nuevo` ya existente dejaría de destacarse en silencio tras la migración de formato. `version` del `.json` exportado sube a 2; `references/contrato-tropiezos.md` igual, documentando el límite ya fijado por la ficha (no se re-ancla si se regraba la escena desde cero). 9 tests nuevos (704→713): 5 en `tests/test_feedback.py`, 4 en `tests/test_reproductor.py`. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`. `origen: observación de producto del PM (2026-10-19)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

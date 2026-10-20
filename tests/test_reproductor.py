@@ -930,10 +930,58 @@ def test_guion_js_registra_indice_de_bloque_y_texto_exacto_del_tropiezo() -> Non
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     # Requisito 2: "escena, bloque y texto exacto" -- el texto se lee del
     # mismo bloque activo, no se reescribe a mano en ningun sitio.
-    assert (
-        "lista.push({ indice_bloque: bloqueActual, texto: bloques[bloqueActual].texto });"
-        in pagina
+    assert "indice_bloque: bloqueActual," in pagina
+    assert "texto: bloques[bloqueActual].texto," in pagina
+
+
+# --- Instante del tropiezo dentro de la toma (R-34) -------------------------------------
+
+
+def test_guion_js_comparte_el_calculo_de_transcurrido_de_la_toma() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: una unica funcion compartida -- el calculo
+    # `cronometroMsAcumulados` + `Date.now() - cronometroInicioMarca` solo
+    # aparece una vez en toda la pagina (dentro de `tomaTranscurridoMs`);
+    # `actualizarCronometro`, `finalizarTomaActual` y
+    # `alternarTropiezoBloqueActual` la reutilizan en vez de repetirlo.
+    assert "function tomaTranscurridoMs" in pagina
+    assert pagina.count("cronometroMsAcumulados += Date.now() - cronometroInicioMarca") == 1
+    # 1 declaracion + 3 llamadas (cronometro, cierre de toma, tropiezo).
+    assert pagina.count("tomaTranscurridoMs()") == 4
+
+
+def test_guion_js_marcar_tropiezo_guarda_el_instante_de_la_toma() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    coincidencia = pagina.index("function alternarTropiezoBloqueActual")
+    fragmento = pagina[coincidencia : coincidencia + 900]
+    # Requisito 2: se captura al marcar (rama `posicion === -1`), con el mismo
+    # calculo y redondeo a un decimal que `duracion_segundos`.
+    assert "var instanteSegundos = Math.round((tomaTranscurridoMs() / 1000) * 10) / 10;" in (
+        fragmento
     )
+    assert "instante_toma_segundos: instanteSegundos" in fragmento
+
+
+def test_guion_js_desmarcar_tropiezo_no_calcula_ningun_instante() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    coincidencia = pagina.index("function alternarTropiezoBloqueActual")
+    fin = pagina.index("\n  }", coincidencia)
+    fragmento = pagina[coincidencia:fin]
+    # La rama de desmarcar (`posicion !== -1`) solo recorta el array -- no hay
+    # un segundo calculo de instante ni se toca `tomaTranscurridoMs` ahi.
+    assert "lista.splice(posicion, 1);" in fragmento
+    assert fragmento.count("tomaTranscurridoMs()") == 1
+
+
+def test_guion_js_version_del_registro_de_tropiezos_sube_a_2() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    coincidencia = pagina.index("function construirRegistroTropiezos")
+    fragmento = pagina[coincidencia : coincidencia + 200]
+    assert "version: 2," in fragmento
 
 
 def test_guion_js_indicador_de_tropiezo_sigue_al_bloque_activo() -> None:

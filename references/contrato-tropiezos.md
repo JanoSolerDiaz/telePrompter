@@ -12,7 +12,9 @@
 >
 > `version` sube solo si el JSON cambia de forma incompatible con este
 > documento; nunca decrece (mismo criterio que `version` de
-> `references/contrato-tomas.md`). Versión actual: **1**.
+> `references/contrato-tomas.md`). Versión actual: **2** (R-34 añadió
+> `instante_toma_segundos` a cada tropiezo, cambio aditivo — un archivo de
+> versión 1 se sigue cargando sin error, con el campo en `None`).
 
 ## Aviso de nombre: dos `FEEDBACK.md` distintos
 
@@ -50,7 +52,7 @@ copia en `estado.json` para que sobreviva entre sesiones, igual que
 
 ```jsonc
 {
-  "version": 1,
+  "version": 2,
   "guion": "guion-08-busqueda-investigacion",
   "generado": "2026-09-03T10:00:00.000Z",
   "escenas": [
@@ -58,7 +60,11 @@ copia en `estado.json` para que sobreviva entre sesiones, igual que
       "numero": 3,
       "titulo": "Búsqueda avanzada",
       "tropiezos": [
-        { "indice_bloque": 0, "texto": "Texto exacto del bloque marcado." },
+        {
+          "indice_bloque": 0,
+          "texto": "Texto exacto del bloque marcado.",
+          "instante_toma_segundos": 47.0
+        },
         { "indice_bloque": 2, "texto": "Otro bloque marcado en la misma escena." }
       ]
     }
@@ -67,7 +73,10 @@ copia en `estado.json` para que sobreviva entre sesiones, igual que
 ```
 
 Solo se incluyen escenas con al menos un bloque marcado (una escena sin
-tropiezos no aparece en el archivo).
+tropiezos no aparece en el archivo). `instante_toma_segundos` es opcional
+(segundo elemento del ejemplo: un archivo de la versión 1 del contrato, o un
+tropiezo marcado por una versión del reproductor anterior a R-34, no lo
+trae).
 
 ## Claves de cabecera
 
@@ -91,6 +100,7 @@ tropiezos no aparece en el archivo).
 |-------|------|-------------|
 | `indice_bloque` | `int` (≥ 0) | Índice del bloque de respiración dentro de `datos.escenas[i].bloques` en el reproductor que lo generó — el mismo orden que consume `documento_revision._bloques_de_escena`. Es una pista secundaria (ver más abajo): el emparejamiento real con `guion-escenas.md` se hace por `texto`. |
 | `texto` | `string` (no vacío, sin `\|` ni saltos de línea) | El texto EXACTO del bloque en el momento de marcarlo (requisito 2 literal, "texto exacto"). Es el criterio de verdad: `documento_revision.py` destaca un bloque cuando su texto coincide con este, no cuando su índice coincide. |
+| `instante_toma_segundos` | `float` (≥ 0, R-34, opcional) | Segundos transcurridos desde el inicio de la toma en curso en el instante en que se marcó el tropiezo — mismo cronómetro y mismo redondeo a un decimal que `duracion_segundos` de `references/contrato-tomas.md` (R-02). Ausente en un archivo de la versión 1 del contrato. **Límite documentado:** describe la toma que estaba en marcha al pulsar `T`, no se re-ancla si la escena se regraba desde cero sin volver a marcar el mismo tropiezo en la toma nueva — fiable sin más cuando se sigue grabando tras el tropiezo sin cortar, no cuando se repite la escena. |
 
 ## Por qué se casa por texto, no por índice
 
@@ -116,11 +126,16 @@ ojo en el `.json`), nunca como clave de emparejamiento.
 
 > Bloques de locución marcados como tropiezo durante la grabación (R-03): ...
 
-| Fecha | Escena | Bloque | Texto exacto | Estado |
-|-------|--------|--------|---------------|--------|
-| 2026-09-03 | 3 | 0 | Texto exacto del bloque marcado. | nuevo |
-| 2026-09-03 | 3 | 2 | Otro bloque marcado en la misma escena. | nuevo |
+| Fecha | Escena | Bloque | Texto exacto | Instante | Estado |
+|-------|--------|--------|---------------|----------|--------|
+| 2026-09-03 | 3 | 0 | Texto exacto del bloque marcado. | 00:47 | nuevo |
+| 2026-09-03 | 3 | 2 | Otro bloque marcado en la misma escena. |  | nuevo |
 ```
+
+La columna «Instante» (R-34) muestra el valor de `instante_toma_segundos`
+formateado `mm:ss` (minutos a dos dígitos), o vacía si el tropiezo no lo
+trae — nunca forma parte de la clave de duplicado (misma escena + mismo
+`indice_bloque` + mismo texto, sin el instante).
 
 **Nunca borra ni reescribe una fila existente**: solo añade filas nuevas al
 final, y solo las que no estuvieran ya (misma escena, mismo `indice_bloque`,
@@ -146,6 +161,9 @@ problema no era el texto, sino la propia lectura del locutor esa toma.
 4. Cada tropiezo tiene `indice_bloque` entero no negativo y `texto` una
    cadena no vacía, sin `\n` ni `|` (romperían la fila de la tabla de
    `FEEDBACK.md`).
+5. Si `instante_toma_segundos` está presente (R-34), es numérico y no
+   negativo; si falta, se admite igual (archivo de la versión 1 del
+   contrato) y queda en `None`.
 
 Sin `jsonschema` ni ninguna biblioteca externa (§0.2): comprobación a mano,
 mismo patrón que `tomas.cargar_parte_de_rodaje` (R-02). Cualquier archivo que
