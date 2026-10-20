@@ -12,6 +12,58 @@
 
 ---
 
+### Sesión 2026-10-20 (207) — Ciclo de Product Manager: archiva Oleada v22 (R-34) y abre R-35 (Oleada v23)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena
+reconfirmación del día del Programador (commit `e72ae37`, sin cambio de código); árbol de trabajo
+limpio. Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt`
+contra el intérprete real (3.11.17; mismo rodeo de siempre, `#22`/`#28`/P-06).
+
+**Registro de hallazgos y feedback revisados antes de proceder.** `auditoriacontinua.md` (última
+pasada, 2026-10-20): cero hallazgos nuevos; registro con los mismos dos `ABIERTO` de siempre
+(`#24`, baja; `#30`, media), ambos de proceso/gobernanza puro, ya enrutados como preguntas
+`#11`/`#12` de `SEGUIMIENTO.md` §6, pendientes solo de respuesta del dueño — ninguno convertible en
+R-XX nueva ni en deuda técnica de backlog, ninguno de severidad alta que atender como P-XX urgente.
+`roadmap/FEEDBACK.md` revisado: sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto.
+
+**Archiva la Oleada v22 (R-34).** §1 de `SEGUIMIENTO.md` confirma R-34 **COMPLETADA** desde el ciclo
+de Programador de esta misma jornada (commit `91b4c66`), reconfirmada en verde nueve veces seguidas
+sin tarea nueva. Movida a `roadmap/ROADMAP_HISTORICO.md` con su ficha completa y "Cómo se entregó";
+`ROADMAP_PRODUCTO.md` corregido en el mismo ciclo (cabecera reescrita, sección "Oleada v22"
+sustituida por la nota de archivo).
+
+**Abre R-35 (Oleada v23), sin implementarla.** Grieta de arquitectura verificada sobre código y
+documentación ya construidos, mismo criterio de apertura que R-12 en adelante:
+`references/contrato-tropiezos.md` (§"Por qué se casa por texto, no por índice") documenta que
+`indice_bloque` puede desplazarse entre la grabación y la siguiente revisión si una partición de
+respiración se acepta antes de él en la misma escena, y que por eso `scripts/feedback.py` empareja
+cada tropiezo exportado con su bloque por **texto exacto**, nunca por índice — pero
+`guion.js::cargarTropiezosGuardados`, que relee `localStorage` (clave estable por guion, nunca
+invalidada por un cambio de troceo) al abrir un reproductor regenerado, sigue comparando
+`indice_bloque` tal cual contra `bloqueActual` en
+`actualizarIndicadorTropiezo`/`alternarTropiezoBloqueActual`. Efecto: un tropiezo marcado antes de
+una revalidación que desplazó los bloques de esa escena puede encender el indicador "⚠ Tropiezo"
+sobre un bloque distinto del que el dueño marcó de verdad, en plena grabación. Ficha completa en
+`ROADMAP_PRODUCTO.md` (Oleada v23): `cargarTropiezosGuardados` revalida cada tropiezo contra el
+texto real del bloque en su índice guardado y, si no coincide, lo relocaliza por texto exacto (mismo
+criterio ya exigido del lado Python) o lo descarta si no encuentra una coincidencia única — sin
+cambio en el `.json` exportado ni en `scripts/feedback.py`, sin subir `version` del contrato. Fila
+`R-35 | ... | PENDIENTE | 2026-10-20 | ...` añadida a §1 en este mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-35 queda lista para el siguiente ciclo de
+Programador.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-34 pasa de `COMPLETADA` (ya reflejada) a
+archivada en `ROADMAP_HISTORICO.md`; R-35 añadida como `PENDIENTE`.
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §5 (P-XX) sin novedad. §6 sigue con
+`#11`/`#12` `(pendiente)` de respuesta del dueño. Dos filas nuevas en `DECISIONES_TECNICAS.md`
+(archivo de la Oleada v22, apertura de R-35).
+
+---
+
 ### Sesión 2026-10-20 (206) — Ciclo de Programador: novena reconfirmación del día tras R-34, sin novedad de código
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de

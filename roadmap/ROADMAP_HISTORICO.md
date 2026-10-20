@@ -8,6 +8,11 @@
 > El estado de cada R-XX se sigue verificando en §1 de `SEGUIMIENTO.md` (fuente autoritativa); este
 > documento no lo duplica ni lo actualiza — es una fotografía de la spec en el momento del archivo.
 
+**Movido a histórico el:** 2026-10-20, ciclo de Product Manager. Se añade la Oleada v22 (R-34),
+COMPLETADA el mismo día en que se abrió (2026-10-20, primer ciclo de Programador posterior a la
+especificación del PM) y sin ningún hito de negocio propio pendiente, que además abre R-35 (Oleada
+v23) — mismo criterio que todos los movimientos anteriores.
+
 **Movido a histórico el:** 2026-10-19 (tercer ciclo del día, PM). Se añade la Oleada v21 (R-33),
 COMPLETADA el mismo día en que se abrió (2026-10-19, ciclo combinado de PM + Programador, sesión
 190) y sin ningún hito de negocio propio pendiente, que además abre R-34 (Oleada v22) — mismo
@@ -2313,6 +2318,56 @@ en el índice como segunda vía de reapertura. 5 tests nuevos en `tests/test_rep
 
 ---
 
+## Oleada v22 — Instante exacto de cada tropiezo dentro de la toma
+
+### R-34 — Capturar el instante real (segundos desde el inicio de la toma) en que se marca un tropiezo, para saltar directo al punto de corte en el montaje con ffmpeg
+
+**Migración:** No (ningún campo nuevo en `estado.json`: los tropiezos no se persisten ahí, igual que
+fijó R-03; cambio aditivo en el `.json` exportado por "Exportar tropiezos" y en el `FEEDBACK.md` de
+la carpeta de salida — `references/contrato-tropiezos.md` sube a versión 2) · **Depende de:** T-23
+(cronómetro de la toma), R-02 (parte de rodaje), R-03 (tropiezos marcados) — todas `COMPLETADA` ·
+**Origen:** observación de producto del PM (2026-10-19), no de auditoría ni de feedback de rodaje
+(`roadmap/FEEDBACK.md` seguía vacío) — grieta de producto verificada sobre código ya construido:
+`assets/reproductor/guion.js::finalizarTomaActual` (R-02) ya calculaba el tiempo real transcurrido
+desde el inicio de la toma en curso para guardar `duracion_segundos` de la toma, pero
+`alternarTropiezoBloqueActual` (R-03), que vive en el mismo archivo y se dispara con la misma tecla
+`T` mientras esa toma está en marcha, no reutilizaba ese cálculo: un tropiezo marcado solo guardaba
+`indice_bloque` y `texto`, nunca CUÁNDO ocurrió dentro de la toma.
+
+**Objetivo:** cuando el dueño marca con `T` un bloque como tropiezo mientras graba, el reproductor ya
+sabe en qué segundo de la toma en curso ocurre (es el mismo cronómetro que ya muestra en pantalla,
+T-23) — ese dato se descartaba en el momento de marcar. Capturarlo y llevarlo hasta el `FEEDBACK.md`
+de la carpeta de salida ahorra al dueño, en la fase de montaje con ffmpeg (T-33) que viene justo
+después, tener que reproducir la toma entera para encontrar a ojo el segundo exacto del archivo de
+vídeo real donde se trabó — el mismo principio de producto que ya justificó R-19 (enlazar la toma
+con su archivo de vídeo) y R-22 (capítulos incrustables): dar al montaje datos que ya existen en
+memoria durante la grabación, en vez de obligar al dueño a reconstruirlos a mano después.
+
+**Requisitos (resumen; ficha completa con el razonamiento íntegro en el historial de Git y en
+`DECISIONES_TECNICAS.md`):** `guion.js` extrae el cálculo de tiempo transcurrido a una función
+compartida, reutilizada tal cual por `alternarTropiezoBloqueActual`; al marcar un bloque como
+tropiezo (no al desmarcarlo), el objeto guardado gana `instante_toma_segundos`; límite documentado
+sin heurística (no se re-ancla si se regraba la escena desde cero); `scripts/feedback.py` gana el
+campo opcional gemelo; `FEEDBACK.md` gana la columna «Instante» (`mm:ss`); `references/contrato-
+tropiezos.md` sube a versión 2; fuera de alcance explícito ningún comando `ffmpeg` de salto
+automático todavía (candidata a una R-XX futura si el primer rodaje real lo pide).
+
+**Cómo se entregó:** `guion.js` extrae el cálculo de transcurrido de la toma (antes repetido en
+`actualizarCronometro`/`finalizarTomaActual`) a `tomaTranscurridoMs()`, reutilizada también por
+`alternarTropiezoBloqueActual`: al marcar un tropiezo (no al desmarcarlo) guarda
+`instante_toma_segundos` con el mismo redondeo a un decimal que `duracion_segundos`.
+`scripts/feedback.py`: `TropiezoBloque.instante_toma_segundos` opcional (numérico ≥ 0 o `None`);
+columna nueva «Instante» en `FEEDBACK.md` (carpeta de salida), formateada `mm:ss`; `_PATRON_FILA`
+hace el grupo opcional en la propia expresión regular (no solo en el valor) para que una fila de la
+versión 1 del contrato (5 columnas) se siga reconociendo igual que una nueva — de lo contrario una
+fila `nuevo` ya existente dejaría de destacarse en silencio tras la migración de formato. `version`
+del `.json` exportado sube a 2; `references/contrato-tropiezos.md` igual, documentando el límite ya
+fijado por la ficha (no se re-ancla si se regraba la escena desde cero). 9 tests nuevos (704→713): 5
+en `tests/test_feedback.py`, 4 en `tests/test_reproductor.py`. Cuatro redes en verde. Detalle
+completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2323,4 +2378,4 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 2026-10-09; la de v15 (R-27), 2026-10-12; la de v16 (R-28), 2026-10-13; la de v17 (R-29),
 2026-10-14; la de v18 (R-30), 2026-10-15; la de v19 (R-31), 2026-10-16; la de v20 (R-32),
 2026-10-16 (implementación), archivada el 2026-10-19; la de v21 (R-33), 2026-10-19 (implementación),
-archivada el mismo día.)*
+archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archivada el mismo día.)*
