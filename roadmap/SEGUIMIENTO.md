@@ -10,8 +10,59 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-21 — **Ciclo de Programador: octava reconfirmación del día tras
-P-07, sin novedad de código**, detalle de la sesión más abajo.
+**Última actualización:** 2026-10-21 — **Ciclo de Product Manager: archiva Oleada v23 (R-35) y
+abre R-36 (Oleada v24)**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-21): archiva Oleada v23 (R-35) y abre R-36 (Oleada v24).**
+Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
+fusionada la décima reconfirmación del día del Programador (commit `8cf594c`, sin cambio de código),
+sin divergencia que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real (3.11.17; mismo rodeo de siempre, `#22`/`#28`/P-06).
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-21): un
+hallazgo nuevo de baja severidad (`#33`, `SKILL.md` sin actualizar tras R-34), cerrado en el propio
+día por P-07 del ciclo de Programador — pendiente solo de que el auditor lo reconfirme `RESUELTO` en
+su siguiente pasada, archivo de su escritura exclusiva. Los dos `ABIERTO` de siempre (`#24`, baja;
+`#30`, media) siguen igual, ambos de proceso/gobernanza puro, ya enrutados como preguntas `#11`/`#12`
+de §6, pendientes solo de respuesta del dueño — ninguno convertible en R-XX nueva ni en deuda técnica
+de backlog, ninguno de severidad alta que atender como P-XX urgente. `roadmap/FEEDBACK.md` revisado:
+sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar
+un curso completo) sigue abierto, así que no hay historia de rodaje real que incorporar todavía.
+
+§1 (fuente autoritativa) sin ninguna fila `PENDIENTE`: R-35 `COMPLETADA` desde el ciclo de
+Programador de esta misma jornada, reconfirmada en verde nueve veces seguidas sin tarea nueva.
+**Archivada la Oleada v23 (R-35)** en `roadmap/ROADMAP_HISTORICO.md` (sección completa con "Cómo se
+entregó"). `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo: cabecera reescrita, sección "Oleada
+v23" sustituida por la nota de archivo.
+
+**Abre R-36 (Oleada v24).** Mismo criterio de apertura ya establecido (R-12 en adelante): grieta de
+arquitectura verificada sobre código ya construido, no de auditoría ni de feedback de rodaje.
+Verificado leyendo `assets/reproductor/guion.js` y `scripts/feedback.py`: `tropiezosEscena[escena]`
+es una única lista plana por escena que se acumula a través de TODAS las tomas que el dueño grabe de
+ella — nunca se reinicia ni se separa al cerrar una toma con `finalizarTomaActual` ni al empezar la
+siguiente — mientras que `tomasEscena[escena]` (R-02) sí numera cada toma por separado y guarda cuál
+quedó marcada `buena`. El `instante_toma_segundos` que R-34 añadió para "saltar directo al punto de
+corte en el montaje con ffmpeg" se calcula siempre sobre el cronómetro de la toma en curso, pero una
+vez guardado nada dice a cuál toma pertenece: un tropiezo de una toma descartada y uno de la toma
+buena conviven en la misma lista, con instantes que pertenecen a archivos de vídeo reales distintos
+— contradice el propio motivo por el que se construyó R-34. Spec completa en `ROADMAP_PRODUCTO.md`,
+Oleada v24 — `alternarTropiezoBloqueActual` guarda también `numero_toma` al marcar (mismo cálculo que
+`actualizarIndicadorToma`); `scripts/feedback.py`/`FEEDBACK.md` ganan la columna «Toma», con el mismo
+patrón de opcionalidad en la propia regex que ya usa «Instante»; `version` del `.json` exportado sube
+a 3; fuera de alcance explícito, no se cruza automáticamente contra el registro de tomas (el dueño
+hace ese cruce a mano, mismo patrón ya aceptado para `archivo_video`). Fila
+`R-36 | ... | PENDIENTE | 2026-10-21 | ...` añadida a §1 en este mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-36 queda lista para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño. Una decisión nueva en `DECISIONES_TECNICAS.md` (apertura de
+R-36, con las alternativas consideradas); el archivo de R-35/Oleada v23 no añade ninguna decisión de
+diseño nueva — es puro movimiento de estado, ya reflejado en §1 y en `ROADMAP_HISTORICO.md`.
+
+**Última actualización anterior (2026-10-21, ciclo de Programador): octava reconfirmación del día
+tras P-07, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-21), décimo del día.** Revisión de entrada (protocolo):
 `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de Programador de la
@@ -5038,6 +5089,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-33 | Mostrar la sección "Preparación antes de grabar" del guión como checklist reabrible en el reproductor, en vez de descartar su contenido tras la validación de convención | **COMPLETADA** | 2026-10-19 | `Configuracion` gana `titulo_seccion_preparacion` (campo propio, mismo criterio que `titulo_seccion_capitulos` de R-07, en vez de asumir el índice 1 de `SECCIONES_AUXILIARES`); `reproductor.py::_buscar_seccion_preparacion` localiza la sección por prefijo (mismo patrón que `capitulos_youtube._buscar_seccion_capitulos`) y `_construir_datos` incorpora `preparacion_antes_grabar: str o None` al payload — `None` sin esa sección en el guión, nunca se fabrica contenido. `guion.js` muestra un panel nuevo en el índice de escenas (nunca en la vista de reproducción), reutilizando el overlay `.ayuda-teclado`/`.ayuda-teclado-panel` de T-24; tecla nueva `preparacion_grabacion` (`P`/`p`) gestionada por un manejador de teclado propio (`manejarTeclaIndice`), separado del de la vista de reproducción — así el requisito "nunca se abre durante una cuenta atrás o el registro de una toma" queda satisfecho por construcción, no por una comprobación de estado, porque esas dos situaciones solo existen dentro de una escena. Apertura automática una sola vez (bandera de "primera renderización", sin encadenar tras la llamada inicial a `renderizarIndice()`, para no romper el test existente que protege que nada se dispara automáticamente después de esa llamada); botón propio en el índice como segunda vía de reapertura. Verificado también visualmente con Playwright/Chromium real: apertura automática la primera vez, cierre con Esc, no reapertura tras recargar (ya "vista"), reapertura con `P` y con el botón, y sin ningún efecto al pulsar `P` dentro de una escena. 5 tests nuevos (699→704). Oleada v21, `origen: observación de arquitectura del PM (2026-10-18)` |
 | R-34 | Capturar el instante real (segundos desde el inicio de la toma) en que se marca un tropiezo durante la grabación, para saltar directo al punto de corte en el montaje con ffmpeg | **COMPLETADA** | 2026-10-20 | `guion.js` extrae el cálculo de transcurrido de la toma (antes repetido en `actualizarCronometro`/`finalizarTomaActual`) a `tomaTranscurridoMs()`, reutilizada también por `alternarTropiezoBloqueActual`: al marcar un tropiezo (no al desmarcarlo) guarda `instante_toma_segundos` con el mismo redondeo a un decimal que `duracion_segundos`. `scripts/feedback.py`: `TropiezoBloque.instante_toma_segundos` opcional (numérico ≥ 0 o `None`); columna nueva «Instante» en `FEEDBACK.md` (carpeta de salida), formateada `mm:ss`; `_PATRON_FILA` hace el grupo opcional en la propia expresión regular (no solo en el valor) para que una fila de la versión 1 del contrato (5 columnas) se siga reconociendo igual que una nueva — de lo contrario una fila `nuevo` ya existente dejaría de destacarse en silencio tras la migración de formato. `version` del `.json` exportado sube a 2; `references/contrato-tropiezos.md` igual, documentando el límite ya fijado por la ficha (no se re-ancla si se regraba la escena desde cero). 9 tests nuevos (704→713): 5 en `tests/test_feedback.py`, 4 en `tests/test_reproductor.py`. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`. `origen: observación de producto del PM (2026-10-19)` |
 | R-35 | Relocalizar por texto, no por índice, un tropiezo guardado en `localStorage` cuando el troceo de la escena cambió desde que se marcó, para que el indicador "⚠ Tropiezo" nunca señale el bloque equivocado | **COMPLETADA** | 2026-10-21 | `assets/reproductor/guion.js`: `cargarTropiezosGuardados(escena, indice)` revalida cada tropiezo crudo contra `escena.bloques[indice_bloque]` (camino feliz si el texto coincide, intacto); si no coincide, busca el mismo texto exacto entre TODOS los bloques de la escena (mismo criterio que `scripts/feedback.py`) y relocaliza solo con coincidencia única, descartando en cero o más de una. La corrección (reubicación o descarte) se fija de inmediato en `localStorage` (`_indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena)`, solo para las escenas que de verdad cambiaron). De paso corrige una pérdida silenciosa que esta misma tarea habría hecho permanente: el objeto normalizado ahora conserva `instante_toma_segundos` (R-34) en vez de descartarlo en cada recarga — antes de R-35 el campo se perdía nada más leer `localStorage` (el `.map` de `cargarTropiezosGuardados` no lo copiaba), sin llegar a persistirse mal porque nada volvía a guardar el resultado; con el requisito 3 de R-35 (guardar de inmediato) habría quedado borrado para siempre de no corregirse aquí mismo. Sin migración (`references/contrato-tropiezos.md` no sube de versión, cambio puramente interno a cómo `guion.js` interpreta `localStorage`); `cargarTomasGuardadas`/`tomasEscena` intactos (requisito 5, ninguna toma referencia `indice_bloque`); `scripts/feedback.py`/`documento_revision.py` sin cambios (ya casan por texto). 6 tests nuevos (713→719) en `tests/test_reproductor.py`. Verificado también de punta a punta con Playwright/Chromium real: un tropiezo guardado en `indice_bloque=0` cuyo texto vive ahora en el bloque 2 se relocaliza a 2 con su `instante_toma_segundos` intacto, un tropiezo con texto reescrito se descarta sin indicador fantasma, uno ya correcto no cambia, y el indicador "⚠ Tropiezo" en pantalla sigue al bloque relocalizado (2), nunca al índice viejo (0) — sin errores de consola. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
+| R-36 | Vincular cada tropiezo marcado con el número de la toma en que se marcó, para que el instante de R-34 no se confunda entre tomas distintas de la misma escena | PENDIENTE | 2026-10-21 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v24. `origen: observación de arquitectura del PM (2026-10-21)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

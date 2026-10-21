@@ -8,30 +8,36 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-20 (ciclo de Product Manager). R-34 (Oleada v22) llevaba
-`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el ciclo de Programador de esta misma jornada (commit
-`91b4c66`), reconfirmada en verde nueve veces seguidas sin que ningún ciclo de PM la archivara
-todavía. Este ciclo archiva la Oleada v22 en `ROADMAP_HISTORICO.md` y abre R-35 (Oleada v23) en §1,
-sin implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19)
-queda respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
+**Última actualización:** 2026-10-21 (ciclo de Product Manager). R-35 (Oleada v23) llevaba
+`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el ciclo de Programador de esta misma jornada,
+reconfirmada en verde nueve veces seguidas sin que ningún ciclo de PM la archivara todavía. Este
+ciclo archiva la Oleada v23 en `ROADMAP_HISTORICO.md` y abre R-36 (Oleada v24) en §1, sin
+implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda
+respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
 completo) sigue abierto. `auditoriacontinua.md` revisado antes de elegir tarea: solo dos `ABIERTO`
 (`#24`, baja; `#30`, media), ambos de proceso/gobernanza puro y pendientes solo de la respuesta del
 dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 — ninguno de severidad alta, ninguno
-convertible en R-XX nueva ni en deuda técnica de backlog.
+convertible en R-XX nueva ni en deuda técnica de backlog. (El hallazgo documental `#33`, cerrado por
+P-07 el 2026-10-21, queda pendiente solo de que el auditor lo reconfirme `RESUELTO` en su siguiente
+pasada — archivo de escritura exclusiva suya.)
 
-**Oleada v22 (R-34) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v23 (R-35) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v23 (R-35) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-producto del propio PM (2026-10-20), verificada contra `assets/reproductor/guion.js` y
-`references/contrato-tropiezos.md`: el propio contrato ya exige emparejar un tropiezo con su bloque
-"por texto, no por índice" (`indice_bloque` puede desplazarse entre la grabación y la siguiente
-revisión si una partición de respiración se acepta antes de él en la misma escena), pero ese criterio
-solo se aplica del lado Python (`scripts/feedback.py`); `cargarTropiezosGuardados` (`guion.js`), que
-relee `localStorage` al reabrir un reproductor regenerado, sigue confiando en `indice_bloque` tal
-cual.
+**Oleada v24 (R-36) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+producto del propio PM (2026-10-21), verificada contra `assets/reproductor/guion.js` y
+`scripts/feedback.py`: los tropiezos de una escena se guardan en una única lista plana por escena
+(`tropiezosEscena[escena]`), acumulada a través de TODAS las tomas que el dueño grabe de ella —
+nunca se separa por toma ni se reinicia al cerrar una y empezar la siguiente, a diferencia de
+`tomasEscena[escena]` (R-02), que sí numera cada toma por separado y guarda cuál quedó marcada
+`buena`. El `instante_toma_segundos` que R-34 añadió para "saltar directo al punto de corte en el
+montaje con ffmpeg" se calcula siempre sobre el cronómetro de la toma en curso en el momento de
+marcar, pero una vez guardado nada dice a cuál toma pertenece: en cuanto el dueño graba más de una
+toma de la misma escena (el caso de uso para el que existe el propio registro de tomas de R-02, no
+una excepción rara), un tropiezo de una toma descartada y uno de la toma buena conviven en la misma
+lista con instantes que pertenecen a archivos de vídeo reales distintos.
 
 ---
 
@@ -252,74 +258,91 @@ tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún h
 pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-20). Su spec completa y
 cómo se entregó viven ahí.
 
-### Oleada v23 — Robustez del indicador de tropiezo frente a un troceo que cambia entre grabación y revisión
+### Oleada v23 — entregada
 
-#### R-35 — Relocalizar por texto, no por índice, un tropiezo guardado en `localStorage` cuando el troceo de la escena cambió desde que se marcó, para que el indicador "⚠ Tropiezo" nunca señale el bloque equivocado
+La oleada v23 (relocalizar por texto, no por índice, un tropiezo guardado en `localStorage` cuando
+el troceo de la escena cambió desde que se marcó, para que el indicador "⚠ Tropiezo" nunca señale el
+bloque equivocado, R-35) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún
+hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-21).
+Su spec completa y cómo se entregó viven ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json` ni en el `.json` exportado por "Exportar
-tropiezos": `references/contrato-tropiezos.md` no sube de versión, el cambio es puramente interno a
-cómo `guion.js` interpreta lo que ya guarda en `localStorage`) · **Depende de:** R-03 (tropiezos
-marcados), T-15/T-17 (particiones de respiración que pueden desplazar `indice_bloque`) — todas
-`COMPLETADA` · **Origen:** observación de producto del PM (2026-10-20), no de auditoría ni de
+### Oleada v24 — Vincular cada tropiezo con la toma en que se marcó
+
+#### R-36 — Vincular cada tropiezo marcado con el número de la toma en que se marcó, para que el instante de R-34 no se confunda entre tomas distintas de la misma escena
+
+**Migración:** No (ningún campo nuevo en `estado.json`: los tropiezos nunca se han persistido ahí,
+igual que fijaron R-03/R-34; cambio aditivo en el `.json` exportado por "Exportar tropiezos" y en
+`FEEDBACK.md` — `references/contrato-tropiezos.md` sube a versión 3) · **Depende de:** R-02 (parte
+de rodaje, varias tomas por escena), R-03 (tropiezos marcados), R-34 (instante dentro de la toma) —
+todas `COMPLETADA` · **Origen:** observación de producto del PM (2026-10-21), no de auditoría ni de
 feedback de rodaje (`roadmap/FEEDBACK.md` sigue vacío) — grieta de arquitectura verificada sobre
-código y documentación ya construidos: `references/contrato-tropiezos.md` (§"Por qué se casa por
-texto, no por índice") documenta explícitamente que `indice_bloque` puede desplazarse entre la
-grabación y la siguiente revisión si una partición de respiración se acepta antes de él en la misma
-escena, y que por eso `scripts/feedback.py` empareja cada tropiezo del `.json` exportado con su
-bloque por **texto exacto**, nunca por índice. Ese mismo criterio no se aplica, sin embargo, cuando
-`guion.js::cargarTropiezosGuardados` relee `localStorage` al abrir un reproductor regenerado: la
-clave de almacenamiento es estable por guion (`teleprompter:<guion>:tropiezos_escena_N`, nunca
-invalidada por un cambio de troceo), así que un tropiezo marcado antes de una revalidación que
-desplazó los bloques de esa escena sigue leyéndose con su `indice_bloque` antiguo —
-`actualizarIndicadorTropiezo`/`alternarTropiezoBloqueActual` lo comparan tal cual contra
-`bloqueActual`, nunca contra el `texto` guardado.
+código ya construido: `tropiezosEscena[escena]` (`assets/reproductor/guion.js`) es una única lista
+plana por escena que se acumula a través de TODAS las tomas que el dueño grabe de ella — nunca se
+reinicia ni se separa al cerrar una toma con `finalizarTomaActual` ni al empezar la siguiente —
+mientras que `tomasEscena[escena]` sí numera cada toma por separado y guarda cuál quedó marcada
+`buena` (R-02). Un tropiezo marcado con `T` durante la toma 1 (descartada después) y otro marcado
+durante la toma 3 (la que el dueño termina marcando como buena, y la que de verdad llega al archivo
+de vídeo real del montaje, R-19) quedan en la misma lista, indistinguibles salvo por
+`indice_bloque`/`texto`; el `instante_toma_segundos` que R-34 guarda para cada uno (segundos desde
+el inicio de "la toma en curso" en el momento de marcar) se calcula siempre sobre el cronómetro de
+esa toma concreta, pero una vez guardado nada dice a cuál de ellas pertenece.
 
-**Objetivo:** un formador que graba en varias sesiones (la persistencia de tomas y tropiezos en
-`localStorage` existe precisamente para eso, mismo mecanismo que T-26) puede marcar un tropiezo con
-`T`, pausar, revisar y aceptar una reescritura con partición en un bloque anterior de esa misma
-escena, regenerar el reproductor y seguir grabando en el mismo navegador: hoy el indicador "⚠
-Tropiezo" de la cabecera puede entonces encenderse sobre un bloque que el dueño nunca marcó, o no
-encenderse sobre el que sí marcó — justo durante una grabación, donde la fiabilidad de lo que se ve
-en pantalla es la base de toda la skill (principio de producto 5, legibilidad por encima de todo). El
-`.json` exportado y `FEEDBACK.md` nunca llegan a mentir (`texto` siempre fue correcto y
-`scripts/feedback.py` ya empareja por texto), pero el reproductor sí puede hacerlo mientras tanto,
-contradiciendo el propio criterio que su contrato documenta.
+**Objetivo:** el propio motivo con el que se construyó R-34 era ahorrar al dueño, en el montaje con
+ffmpeg que viene justo después de grabar, tener que reproducir la toma entera para encontrar a ojo
+el segundo exacto donde se trabó. Ese ahorro solo es de fiar si el instante pertenece al ARCHIVO DE
+VÍDEO REAL que de verdad se usa en el montaje — el de la toma marcada `buena` — y hoy no hay forma
+de saberlo con el dato ya disponible: si el dueño graba dos o tres tomas de la misma escena (el caso
+para el que existe el propio registro de tomas de R-02, no una excepción rara), `FEEDBACK.md` mezcla
+instantes de tomas distintas en las mismas filas, sin avisar de cuál es cuál. Usar a ciegas el
+instante de un tropiezo de una toma descartada busca un corte en un segundo que, en el archivo de
+vídeo real de la toma buena, no significa nada — o, peor, coincide por azar con un instante distinto
+del que de verdad falló.
 
 **Requisitos:**
-1. `cargarTropiezosGuardados(escena)`: para cada tropiezo ya filtrado como estructuralmente válido
-   (como hoy), comprobar si `escena.bloques[tropiezo.indice_bloque]` existe y su `.texto` coincide
-   exactamente con el `texto` guardado. Si coincide, se conserva tal cual — camino feliz idéntico al
-   actual, sin cambio de comportamiento cuando el troceo de la escena no cambió desde que se marcó.
-2. Si no coincide (índice fuera de rango, o el bloque en ese índice tiene otro texto), buscar el
-   mismo `texto` exacto entre TODOS los bloques de la escena — mismo criterio de "texto exacto" que
-   ya aplica `scripts/feedback.py`, nunca una segunda regla de emparejamiento inventada aquí. Si hay
-   exactamente una coincidencia, relocalizar el tropiezo a ese nuevo `indice_bloque`. Si hay cero o
-   más de una coincidencia (texto reescrito, o duplicado en la escena), descartar la entrada — mismo
-   comportamiento que el contrato ya documenta para el lado Python ("si se reescribió, el tropiezo
-   marcado sobre el texto viejo ya no tiene sentido destacarlo").
-3. El resultado ya corregido (reubicado o descartado) se vuelve a guardar en `localStorage` de
-   inmediato con `guardarTropiezosEscena`, para que la corrección quede fijada en el primer reinicio
-   y no se repita el recálculo, ni queden índices obsoletos acumulándose, en cada apertura posterior.
-4. `actualizarIndicadorTropiezo`/`alternarTropiezoBloqueActual` no cambian: consumen
-   `tropiezosEscena[escena]` ya corregido en el momento de la carga, así que su comparación por
-   `indice_bloque` vuelve a ser segura sin tocar su propio código.
-5. **Fuera de alcance, explícito:** no se toca `tomasEscena` (`cargarTomasGuardadas`) — verificado
-   que ningún campo de una toma persistida referencia `indice_bloque`, así que no sufre este
-   problema; no se sube `version` de `references/contrato-tropiezos.md` (el `.json` exportado no
-   cambia de forma, solo cómo se interpreta lo ya guardado al cargar); no se toca
-   `scripts/feedback.py` ni `documento_revision.py` (ya casan por texto, intactos); no se persiste
-   ningún historial de relocalizaciones — la corrección es silenciosa y determinista, no un aviso
-   nuevo al dueño.
+1. `alternarTropiezoBloqueActual` (`guion.js`): al AÑADIR un tropiezo (no al quitarlo — mismo
+   criterio ya fijado por R-34 requisito 2), guardar también `numero_toma`: el número de la toma en
+   curso en ese instante, mismo cálculo ya usado por `actualizarIndicadorToma`
+   (`tomasEscena[escena].length + 1`), sin una segunda implementación del mismo número.
+2. `cargarTropiezosGuardados`: tolerar la ausencia de `numero_toma` en un tropiezo ya guardado de una
+   sesión anterior a esta tarea (mismo patrón de opcionalidad que ya aplica a
+   `instante_toma_segundos` desde R-34) y conservarlo al construir el objeto normalizado — mismo
+   punto de transformación que R-35 ya usa para `instante_toma_segundos`, sin tocar la lógica de
+   relocalización por texto de R-35 (ortogonal: a qué toma pertenece un tropiezo no cambia según si
+   su texto sigue siendo exacto o no).
+3. `scripts/feedback.py`: `TropiezoBloque` gana `numero_toma: int | None = None` (entero ≥ 1 o
+   `None`, mismo patrón de validación que `instante_toma_segundos`). `FEEDBACK.md` gana la columna
+   «Toma», entre «Texto exacto» e «Instante» (agrupa el contexto de grabación — qué toma, qué
+   segundo dentro de ella — en vez de intercalarlo con la identidad del bloque).
+4. Mismo patrón que `_PATRON_FILA` ya usa para «Instante» (R-34): el grupo de «Toma» también opcional
+   en la propia expresión regular, no solo en el valor, para que una fila de la versión 2 del
+   contrato (sin «Toma», 6 columnas) o de la versión 1 (sin ninguna de las dos, 5 columnas) se sigan
+   reconociendo exactamente igual que una de 7 columnas — ninguna fila ya marcada a mano por el
+   dueño (`nuevo`/`resuelto`) deja de encontrarse por el cambio de formato.
+5. Cabecera de `FEEDBACK.md` (`_ENCABEZADO_FEEDBACK`) explica la columna nueva y avisa explícitamente:
+   el instante solo es un punto de corte de fiar en el vídeo final cuando «Toma» coincide con el
+   número que el parte de rodaje (R-02) tiene marcado como la toma buena de esa escena — cruce que
+   el dueño hace a mano con el parte de rodaje que ya tiene, igual que ya hace hoy para saber qué
+   `archivo_video` corresponde a cada escena.
+6. `version` del `.json` exportado sube a 3 (aditivo); `references/contrato-tropiezos.md` documenta
+   el campo nuevo y la misma advertencia de uso del requisito 5.
+7. **Fuera de alcance, explícito:** no se cruza automáticamente «Toma» contra el registro de tomas
+   para anotar en el propio `FEEDBACK.md`, de forma automática, cuál fila pertenece a la toma buena —
+   tomas y tropiezos siguen siendo dos archivos exportados por separado (mismo diseño ya decidido
+   para R-02/R-03), y fusionarlos de verdad sería un cambio de alcance mayor, no pedido por esta
+   ficha; el dueño hace el cruce a mano con el número de toma que ya tiene en el parte de rodaje.
+   Tampoco se toca `cargarTomasGuardadas`/`tomasEscena` (R-02/R-19 intactos), ni la lógica de
+   relocalización por texto de R-35 (sigue casando por texto exacto, independiente de a qué toma
+   pertenezca cada tropiezo), ni se renumera retroactivamente ningún tropiezo ya exportado en una
+   versión anterior del contrato (sin `numero_toma`, sigue mostrando la columna vacía, igual que ya
+   hace «Instante» con los archivos de la versión 1).
 
-**Criterio de aceptación:** con un `localStorage` simulado que trae un tropiezo guardado en
-`indice_bloque=0` con un texto dado, y una escena regenerada donde ese MISMO texto vive ahora en
-`indice_bloque=1` (una partición aceptada se insertó antes de él), al cargar el reproductor el
-indicador "⚠ Tropiezo" se enciende sobre el bloque 1, nunca sobre el bloque 0; un tropiezo cuyo texto
-ya no existe en ningún bloque de la escena (reescrito) se descarta sin error y sin dejar ningún
-indicador fantasma; un tropiezo cuyo índice y texto siguen coincidiendo tal cual no cambia de
-comportamiento (camino feliz intacto, mismo resultado que antes de R-35); el `.json` exportado con
-"Exportar tropiezos" tras la relocalización sigue teniendo exactamente la misma forma que documenta
-`references/contrato-tropiezos.md` versión 2, sin cambios. Cuatro redes en verde.
+**Criterio de aceptación:** con una escena grabada dos veces (toma 1, con un tropiezo marcado en el
+bloque 0; toma 2, marcada `buena`, con un tropiezo marcado en el bloque 2), al pulsar "Exportar
+tropiezos" el `.json` trae `numero_toma: 1` en el primer tropiezo y `numero_toma: 2` en el segundo;
+`FEEDBACK.md` muestra la columna «Toma» con esos valores junto al «Instante» de cada fila; una fila
+ya existente de la versión 2 del contrato (sin «Toma») se sigue reconociendo exactamente igual que
+antes (camino feliz intacto, sin perder su estado `nuevo`/`resuelto`); `references/contrato-
+tropiezos.md` sube a versión 3 documentando el campo y la advertencia de uso. Cuatro redes en verde.
 
 ---
 

@@ -2368,6 +2368,76 @@ completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
 
 ---
 
+## Oleada v23 — Robustez del indicador de tropiezo frente a un troceo que cambia entre grabación y revisión
+
+### R-35 — Relocalizar por texto, no por índice, un tropiezo guardado en `localStorage` cuando el troceo de la escena cambió desde que se marcó, para que el indicador "⚠ Tropiezo" nunca señale el bloque equivocado
+
+**Migración:** No (ningún campo nuevo en `estado.json` ni en el `.json` exportado por "Exportar
+tropiezos": `references/contrato-tropiezos.md` no sube de versión, el cambio es puramente interno a
+cómo `guion.js` interpreta lo que ya guarda en `localStorage`) · **Depende de:** R-03 (tropiezos
+marcados), T-15/T-17 (particiones de respiración que pueden desplazar `indice_bloque`) — todas
+`COMPLETADA` · **Origen:** observación de producto del PM (2026-10-20), no de auditoría ni de
+feedback de rodaje (`roadmap/FEEDBACK.md` seguía vacío) — grieta de arquitectura verificada sobre
+código y documentación ya construidos: `references/contrato-tropiezos.md` (§"Por qué se casa por
+texto, no por índice") documenta explícitamente que `indice_bloque` puede desplazarse entre la
+grabación y la siguiente revisión si una partición de respiración se acepta antes de él en la misma
+escena, y que por eso `scripts/feedback.py` empareja cada tropiezo del `.json` exportado con su
+bloque por **texto exacto**, nunca por índice. Ese mismo criterio no se aplicaba, sin embargo, cuando
+`guion.js::cargarTropiezosGuardados` relee `localStorage` al abrir un reproductor regenerado: la
+clave de almacenamiento es estable por guion (`teleprompter:<guion>:tropiezos_escena_N`, nunca
+invalidada por un cambio de troceo), así que un tropiezo marcado antes de una revalidación que
+desplazó los bloques de esa escena seguía leyéndose con su `indice_bloque` antiguo —
+`actualizarIndicadorTropiezo`/`alternarTropiezoBloqueActual` lo comparaban tal cual contra
+`bloqueActual`, nunca contra el `texto` guardado.
+
+**Objetivo:** un formador que graba en varias sesiones (la persistencia de tomas y tropiezos en
+`localStorage` existe precisamente para eso, mismo mecanismo que T-26) puede marcar un tropiezo con
+`T`, pausar, revisar y aceptar una reescritura con partición en un bloque anterior de esa misma
+escena, regenerar el reproductor y seguir grabando en el mismo navegador: el indicador "⚠ Tropiezo"
+de la cabecera podía entonces encenderse sobre un bloque que el dueño nunca marcó, o no encenderse
+sobre el que sí marcó — justo durante una grabación, donde la fiabilidad de lo que se ve en pantalla
+es la base de toda la skill (principio de producto 5, legibilidad por encima de todo). El `.json`
+exportado y `FEEDBACK.md` nunca llegaban a mentir (`texto` siempre fue correcto y
+`scripts/feedback.py` ya empareja por texto), pero el reproductor sí podía hacerlo mientras tanto,
+contradiciendo el propio criterio que su contrato documenta.
+
+**Cómo se entregó:** `assets/reproductor/guion.js`: `cargarTropiezosGuardados(escena, indice)`
+revalida cada tropiezo recién leído de `localStorage` contra `escena.bloques[indice_bloque]` (camino
+feliz si el texto coincide exactamente, intacto, sin cambio de comportamiento); si no coincide
+(índice fuera de rango o texto distinto en ese índice), busca el mismo texto exacto entre TODOS los
+bloques de la escena — mismo criterio de "texto exacto" que ya aplica `scripts/feedback.py` del lado
+Python, sin inventar una segunda regla — y relocaliza solo con coincidencia única; cero o más de una
+coincidencia (texto reescrito o duplicado) descarta la entrada en silencio, igual que ya documenta
+`references/contrato-tropiezos.md` para el lado Python. La corrección (reubicación o descarte) se
+fija de inmediato en `localStorage` (`_indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena)`,
+solo para las escenas que de verdad cambiaron), para que el siguiente reinicio ya lea directo por el
+camino feliz sin repetir la búsqueda. `actualizarIndicadorTropiezo`/`alternarTropiezoBloqueActual`
+intactos (requisito 4): consumen `tropiezosEscena[escena]` ya corregido en el momento de la carga.
+
+De paso, corrige una pérdida silenciosa que el propio requisito 3 de esta tarea habría hecho
+permanente de no tratarse aquí: el objeto normalizado que construye `cargarTropiezosGuardados`
+copiaba hasta entonces solo `indice_bloque`/`texto`, descartando en cada recarga el campo aditivo
+`instante_toma_segundos` que R-34 guarda al marcar un tropiezo — sin consecuencia visible mientras
+nada volvía a escribir el resultado en `localStorage`, pero el requisito 3 de R-35 ("guardar de
+inmediato la corrección") lo habría convertido en un borrado permanente la primera vez que una
+escena con ese campo necesitara relocalizarse. Se corrige en el mismo punto: el objeto normalizado
+copia `instante_toma_segundos` cuando es numérico, antes de decidir si se conserva, relocaliza o
+descarta.
+
+Sin migración (`references/contrato-tropiezos.md` no sube de versión; el `.json` exportado con
+"Exportar tropiezos" no cambia de forma); `cargarTomasGuardadas`/`tomasEscena` intactos (requisito 5
+— ninguna toma referencia `indice_bloque`); `scripts/feedback.py`/`documento_revision.py` sin
+cambios (ya casan por texto). 6 tests nuevos (713→719) en `tests/test_reproductor.py`. Verificado
+también de punta a punta con Playwright/Chromium real: sobre un reproductor generado con una escena
+de 4 bloques, un tropiezo guardado en `indice_bloque=0` cuyo texto vive ahora en el bloque 2 se
+relocaliza a 2 conservando su `instante_toma_segundos` intacto, uno con texto que ya no existe en
+ningún bloque se descarta sin indicador fantasma, y uno ya correcto (índice 3) no cambia; en
+pantalla, el indicador "⚠ Tropiezo" se enciende sobre el bloque 2 (relocalizado) y no sobre el índice
+viejo (0) — sin errores de consola en ningún paso. Cuatro redes en verde. Detalle completo en
+`DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2378,4 +2448,5 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 2026-10-09; la de v15 (R-27), 2026-10-12; la de v16 (R-28), 2026-10-13; la de v17 (R-29),
 2026-10-14; la de v18 (R-30), 2026-10-15; la de v19 (R-31), 2026-10-16; la de v20 (R-32),
 2026-10-16 (implementación), archivada el 2026-10-19; la de v21 (R-33), 2026-10-19 (implementación),
-archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archivada el mismo día.)*
+archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archivada el mismo día; la de
+v23 (R-35), 2026-10-21 (implementación), archivada el mismo día.)*

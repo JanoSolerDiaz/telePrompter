@@ -12,6 +12,59 @@
 
 ---
 
+### Sesión 2026-10-21 (218) — Ciclo de Product Manager: archiva Oleada v23 (R-35) y abre R-36 (Oleada v24)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la décima
+reconfirmación del día del Programador (commit `8cf594c`, sin cambio de código), sin divergencia que
+resolver. Árbol de trabajo limpio.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-21): un
+hallazgo nuevo de baja severidad (`#33`, `SKILL.md` sin actualizar tras R-34), ya cerrado el mismo
+día por P-07 del ciclo de Programador — pendiente solo de que el auditor lo reconfirme `RESUELTO` en
+su siguiente pasada, archivo de su escritura exclusiva. Los dos `ABIERTO` de siempre (`#24`, baja;
+`#30`, media) siguen igual, ambos de proceso/gobernanza puro, ya enrutados como preguntas `#11`/`#12`
+de §6 de `SEGUIMIENTO.md`, pendientes solo de respuesta del dueño — ninguno convertible en R-XX
+nueva ni en deuda técnica de backlog. `roadmap/FEEDBACK.md` revisado: sigue con su única fila de
+plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue
+abierto, así que no hay historia de rodaje real que incorporar todavía.
+
+**Archivada la Oleada v23 (R-35).** §1 de `SEGUIMIENTO.md` (fuente autoritativa) sin ninguna fila
+`PENDIENTE`: R-35 `COMPLETADA` desde el ciclo de Programador de esta misma jornada, reconfirmada en
+verde nueve veces seguidas sin tarea nueva. Movida a `roadmap/ROADMAP_HISTORICO.md` (sección completa
+con "Cómo se entregó"); `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo: cabecera reescrita,
+sección "Oleada v23" sustituida por la nota de archivo.
+
+**Abierta R-36 (Oleada v24): vincular cada tropiezo marcado con el número de la toma en que se
+marcó.** Mismo criterio de apertura ya establecido (R-12 en adelante): grieta de arquitectura
+verificada sobre código ya construido, no de auditoría ni de feedback de rodaje. Verificado leyendo
+`assets/reproductor/guion.js` y `scripts/feedback.py`: `tropiezosEscena[escena]` es una única lista
+plana por escena, acumulada a través de TODAS las tomas que el dueño grabe de ella (nunca se reinicia
+ni se separa al cerrar una toma con `finalizarTomaActual` ni al empezar la siguiente), mientras que
+`tomasEscena[escena]` (R-02) sí numera cada toma por separado y guarda cuál quedó marcada `buena`. El
+`instante_toma_segundos` que R-34 añadió para "saltar directo al punto de corte en el montaje con
+ffmpeg" se calcula sobre el cronómetro de la toma en curso, pero una vez guardado nada dice a cuál
+toma pertenece: un tropiezo de una toma descartada y uno de la toma buena conviven en la misma lista,
+con instantes que pertenecen a archivos de vídeo reales distintos — contradice el propio motivo por
+el que se construyó R-34. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v24: `numero_toma` nuevo al
+marcar (mismo cálculo que `actualizarIndicadorToma`); columna «Toma» en `FEEDBACK.md`, mismo patrón
+de opcionalidad en la regex que ya usa «Instante»; `version` del contrato sube a 3; fuera de alcance
+explícito, el cruce contra la toma buena del parte de rodaje lo sigue haciendo el dueño a mano.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-35: permanece `COMPLETADA` (archivada). R-36:
+añadida, `PENDIENTE`.
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Dos filas nuevas: "PM (archivo de Oleada v23)" y
+"PM (apertura de R-36)", esta última con las alternativas consideradas (no fusionar los dos registros
+exportados, campo opcional con aviso de cruce manual).
+
+**Sin cambio de código.** Ciclo de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-36 queda lista para el siguiente ciclo de Programador.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones).** §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin preguntas nuevas de esta sesión.
+
+---
+
 ### Sesión 2026-10-21 (217) — Ciclo de Programador: octava reconfirmación del día tras P-07, sin novedad de código
 
 **Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` un commit por detrás;
