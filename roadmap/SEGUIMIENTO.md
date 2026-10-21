@@ -10,8 +10,40 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-21 — **Ciclo de Programador: segunda reconfirmación del día tras
+**Última actualización:** 2026-10-21 — **Ciclo de Programador: tercera reconfirmación del día tras
 P-07, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-21), quinto del día.** Revisión de entrada (protocolo):
+`git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de Programador de la
+segunda reconfirmación de esta misma jornada (commit `ed53c99`). Árbol de trabajo limpio.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el
+intérprete real (3.11.17; mismo rodeo de siempre, `#22`/`#28`/P-06).
+
+Registro de hallazgos revisado antes de elegir tarea: ninguna fila de severidad alta (pérdida de
+texto del guion, corrupción de estado, rotura del reproductor o de la auto-contención, seguridad).
+Solo quedan `#24` (baja) y `#30` (media) `ABIERTO`, ambos de proceso/gobernanza puro pendientes de
+respuesta del dueño a las preguntas `#11`/`#12` de §6 — ninguno convertible en tarea ni en P-XX
+urgente; sin hallazgo nuevo desde `#33` (ya cerrado por P-07). §1 (fuente autoritativa) sigue sin
+ninguna fila `PENDIENTE` ni `BLOQUEADA`: R-35 es la última fila y está **COMPLETADA**; abrir la
+siguiente Oleada (R-36) le sigue correspondiendo a un ciclo de Product Manager, no a este ciclo de
+Programador. Sin ningún hallazgo nuevo ni urgente que abrir como P-XX, este ciclo es de pura
+reconfirmación: sin novedad de código.
+
+Cuatro redes en verde: `mypy scripts/ tests/` (72 archivos, sin problemas), `ruff check scripts/
+tests/` (todo correcto), `pytest -q` (719 tests, mismo recuento que tras R-35/P-07), `python
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, sin cambios). Cero issues y cero PR
+abiertos en GitHub (`JanoSolerDiaz/telePrompter`). Sin cambios en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1 y §5).** Ninguno: sin tarea de código que ejecutar.
+
+**Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`** (ciclo de pura reconfirmación, sin
+ninguna decisión técnica que tomar).
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño, sin preguntas nuevas de esta sesión.
+
+**Última actualización anterior (2026-10-21, ciclo de Programador): segunda reconfirmación del día
+tras P-07, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-21), cuarto del día.** Revisión de entrada (protocolo):
 `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de Programador de la
