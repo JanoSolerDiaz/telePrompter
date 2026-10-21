@@ -238,11 +238,13 @@ El botón **"Exportar tropiezos"** del índice vuelca todos los bloques marcados
 
 Mientras una fila siga en estado `nuevo`, la siguiente vez que se regenere `guion-escenas.md` (`documento_revision.generar_documento_revision(..., tropiezos_por_escena=feedback.tropiezos_marcados_por_escena(carpeta_salida))`) ese bloque aparece destacado con una línea `🎬 **Tropiezo marcado en grabación**`, para reescribirlo a mano o pedir una propuesta a la skill. El emparejamiento es por **texto exacto del bloque**, no por índice — sobrevive a que una partición de respiración desplace los índices posteriores entre la grabación y la revisión; si el dueño reescribe el bloque, deja de coincidir y el aviso desaparece solo. Cambiar la palabra `nuevo` de una fila por cualquier otra (p. ej. `resuelto`) también apaga el aviso sin tocar el texto — útil cuando el problema era la lectura de esa toma, no el guion.
 
+Desde R-34, cada tropiezo marcado durante la grabación guarda además, de forma opcional, el instante exacto (segundos desde el inicio de la toma en curso) en que se pulsó `T`: columna «Instante» de `FEEDBACK.md`, en formato `mm:ss`, vacía si el `.json` exportado es de la versión 1 del contrato (sin ese dato). Es el punto de corte para saltar directo al tropiezo al revisar el vídeo con ffmpeg; no se reancla si la escena se regraba desde cero.
+
 | Opción | Por defecto | Nota |
 |--------|-------------|------|
 | Marcar/desmarcar tropiezo | tecla `T` | Parte del mapa configurable, `mapa_teclas_reproductor` |
 | Exportar tropiezos | botón en el índice | Descarga `teleprompter-tropiezos-<guion>.json`; mismo plan B de copiar a mano si la descarga falla |
-| Volcado a `FEEDBACK.md` | `scripts/feedback.registrar_tropiezos_en_feedback` | Añade filas `nuevo`, nunca borra ni reescribe una fila existente; copia de seguridad `.bak-<marca>` si el archivo ya existía |
+| Volcado a `FEEDBACK.md` | `scripts/feedback.registrar_tropiezos_en_feedback` | Añade filas `nuevo` con columnas `Fecha/Escena/Bloque/Texto exacto/Instante/Estado` (R-34), nunca borra ni reescribe una fila existente; copia de seguridad `.bak-<marca>` si el archivo ya existía |
 | Destacado en la siguiente revisión | `scripts/feedback.tropiezos_marcados_por_escena` + `documento_revision.generar_documento_revision(..., tropiezos_por_escena=...)` | Casa por texto exacto del bloque, no por índice; solo mientras la fila siga en `nuevo` |
 
 ## Recalibrar el ritmo con tiempos reales (R-04)

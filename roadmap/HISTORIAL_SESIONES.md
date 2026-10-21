@@ -12,6 +12,45 @@
 
 ---
 
+### Sesión 2026-10-21 (209) — Ciclo de Programador: P-07 implementada (cierre documental de `#33`)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de
+Programador de R-35 de esta misma jornada (commit `a7736a5`); árbol de trabajo limpio. Dependencias
+de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete
+real (3.11.17; mismo rodeo de siempre, `#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** `#24` (baja) y `#30` (media) siguen
+`ABIERTO`, ambos de gobernanza pura pendientes de respuesta del dueño a `#11`/`#12` de §6 — ninguno
+convertible en tarea. `#33` (baja, documental: la sección "Marcar tropiezos durante la toma (R-03)"
+de `SKILL.md` no mencionaba la columna «Instante» que R-34 añadió a `FEEDBACK.md`) sigue `ABIERTO`
+también, pero sin depender de ninguna decisión del dueño. §1 de `SEGUIMIENTO.md` sin ninguna fila
+`PENDIENTE`: R-35 es la última fila y está `COMPLETADA`; abrir la siguiente Oleada (R-36) es trabajo
+de un ciclo de Product Manager, no de este ciclo de Programador.
+
+**P-07 abierta e implementada.** Con la columna vertebral vacía (§0.3), se cierra `#33` directamente
+como P-XX en vez de esperar a que el PM lo convierta en R-XX, mismo criterio ya usado en P-06 para
+`#28`. `SKILL.md`: la sección "Marcar tropiezos durante la toma (R-03)" gana un párrafo explicando
+la columna «Instante» (R-34) de `FEEDBACK.md` — formato `mm:ss`, vacía en archivos de la versión 1
+del contrato, pensada para saltar directo al punto de corte en el montaje con ffmpeg — y su tabla de
+opciones cita ahora las seis columnas reales (`Fecha/Escena/Bloque/Texto exacto/Instante/Estado`),
+mismo patrón que ya usó la sección de "tomas" (R-02) para `archivo_video` (R-19/R-21). Cero cambio
+en `scripts/`, `tests/` ni `assets/`: no toca ningún valor de `Configuracion`, así que
+`tests/test_skill_md.py` no cubre esta tabla y no hay test nuevo que proteger. Cuatro redes en verde
+(`mypy` 72 archivos sin problemas, `ruff` todo correcto, `pytest` 719 tests — mismo recuento que
+R-35, cambio puramente de prosa —, `verificar_salidas.py --fixture` diecinueve etapas `OK`).
+
+**Cambios de estado.** §1 de `SEGUIMIENTO.md`: ninguno (R-35 permanece `COMPLETADA`, sin archivar
+todavía). §5: P-07 añadida y marcada `COMPLETADA` en el mismo commit. Una decisión nueva en
+`DECISIONES_TECNICAS.md` ("P-07 (apertura e implementación)"). El cierre de `#33` a `RESUELTO` en
+`auditoriacontinua.md` le corresponde al auditor en su siguiente pasada, verificándolo de forma
+independiente — este ciclo no escribe en ese archivo.
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño, sin preguntas nuevas de esta sesión. `DEVELOPERS.md` no requiere cambio (la
+corrección es íntegramente de `SKILL.md`, documento de cara al dueño).
+
+---
+
 ### Sesión 2026-10-21 (208) — Ciclo de Programador: R-35 implementada
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la auditoría del

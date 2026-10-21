@@ -10,8 +10,53 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-21 — **Ciclo de Programador: R-35 implementada**, detalle de la
-sesión más abajo.
+**Última actualización:** 2026-10-21 — **Ciclo de Programador: P-07 implementada** (documentación de
+R-34 en `SKILL.md`, cierre del hallazgo `#33`), detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-21), segundo del día.** Revisión de entrada (protocolo):
+`git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de Programador de
+R-35 de esta misma jornada (commit `a7736a5`). Árbol de trabajo limpio. Dependencias de desarrollo
+instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (3.11.17;
+mismo rodeo de siempre, `#22`/`#28`/P-06).
+
+Registro de hallazgos revisado antes de elegir tarea: `#24` (baja) y `#30` (media) siguen `ABIERTO`,
+ambos de proceso/gobernanza puro pendientes de respuesta del dueño a las preguntas `#11`/`#12` de
+§6 — ninguno convertible en tarea. `#33` (baja, documental: la sección "Marcar tropiezos durante la
+toma (R-03)" de `SKILL.md` no mencionaba la columna «Instante» que R-34 añadió a `FEEDBACK.md`)
+sigue `ABIERTO` también, pero a diferencia de los otros dos **no depende de ninguna decisión del
+dueño** — es un cierre trivial y de alcance puramente documental. §1 (fuente autoritativa) sin
+ninguna fila `PENDIENTE`: R-35 es la última fila y está **COMPLETADA**; abrir la siguiente Oleada
+(R-36) le corresponde a un ciclo de Product Manager, no a este ciclo de Programador. Con la columna
+vertebral vacía (§0.3: "las P-XX se ejecutan cuando la tarea en curso está terminada o bloqueada"),
+se abre **P-07** para cerrar `#33` en vez de dejarlo esperando a que el PM lo convierta en R-XX,
+mismo criterio ya usado en P-06 para `#28`.
+
+**P-07 implementada.** `SKILL.md`: la sección "Marcar tropiezos durante la toma (R-03)" gana un
+párrafo nuevo explicando la columna «Instante» (R-34) de `FEEDBACK.md` — formato `mm:ss`, vacía en
+archivos de la versión 1 del contrato, pensada para saltar directo al punto de corte en el montaje
+con ffmpeg — y su tabla de opciones cita ahora las seis columnas reales (`Fecha/Escena/Bloque/Texto
+exacto/Instante/Estado`), mismo patrón ya usado en la sección inmediatamente anterior ("tomas",
+R-02) cuando ganó su párrafo para `archivo_video` (R-19/R-21). Cero cambio en `scripts/`, `tests/`
+ni `assets/`: no afecta a ningún valor de `Configuracion`, así que `tests/test_skill_md.py` (que
+compara claves de configuración en las dos direcciones) no cubre esta tabla y no hay regresión que
+proteger con un test nuevo. Cuatro redes en verde (`mypy`, `ruff`, `pytest` — 719 tests, mismo
+recuento que R-35 —, `verificar_salidas.py --fixture`, diecinueve etapas `OK`).
+
+**Cambios de estado (§1 y §5).** Ninguno en §1 (R-35 permanece `COMPLETADA`, sin archivar todavía —
+ese paso corresponde a un ciclo de PM posterior). P-07 añadida a §5: `PENDIENTE` → **COMPLETADA** en
+el mismo commit (mismo patrón que P-06).
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Una fila nueva: "P-07 (apertura e
+implementación)", con el criterio de por qué un hallazgo documental sin dependencia del dueño se
+cierra como P-XX en vez de esperar al ciclo de PM.
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño, sin preguntas nuevas de esta sesión. El cierre de `#33` en `auditoriacontinua.md`
+(de `ABIERTO` a `RESUELTO`) le corresponde al auditor en su siguiente pasada, verificándolo de forma
+independiente — este ciclo no toca ese archivo, que es de escritura exclusiva del auditor.
+
+**Última actualización anterior (2026-10-21, ciclo de Programador): R-35 implementada**, detalle de
+la sesión más abajo.
 
 **Ciclo de Programador (2026-10-21).** Revisión de entrada (protocolo): `git checkout develop &&
 git pull origin develop` trajo ya fusionada la auditoría del propio 2026-10-21
@@ -4780,6 +4825,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | P-04 | Endurecer el cierre de `#14`: lectura tolerante de la disposición persistida, persistir solo las particiones realmente pospuestas, incidencia cuando las anclas del documento no son las previstas, y corregir el mensaje del conflicto edición/partición | `origen: auditoría #14` (ya cerrado por P-03, que es correcto). Tres grietas alrededor: (1) `estado.validacion` no se valida al cargar, así que basura en `particiones_pospuestas` tiraba la revalidación entera en vez de degradar; (2) se persistía el conjunto sin filtrar de bloques editados, no el de particiones pospuestas, dejando en `estado.json` índices que nunca tuvieron nada que posponer; (3) **un `estado.json` anterior a P-03, justo en mitad de un conflicto, reproduce el #14 tal cual y en silencio** — sin la clave persistida, la reconstrucción vuelve a ser optimista. Además el aviso del conflicto invitaba a «revalidar sin tocar ese bloque» para materializar la partición, que es justo lo que no funciona: lo hace retirar la edición, como demuestra el test que dejó P-03. | **COMPLETADA** 2026-09-03 |  |
 | P-05 | `instalar_skill.py` deja de guardar la copia de seguridad DENTRO de `~/.claude/skills/`; pasa a `~/.claude/teleprompter-copias-de-seguridad/` | **Detectado en vivo en la máquina del dueño** al reinstalar la skill en esta misma sesión: Claude Code registra como skill toda subcarpeta de `~/.claude/skills/` que tenga un `SKILL.md`, así que `teleprompter.bak-<marca>` apareció en la lista de skills disponibles **como una segunda `teleprompter`, con nombre y descripción idénticos**, compitiendo con la real en la selección. Cada reinstalación añadía una. No es cosmético: degrada la funcionalidad principal de la skill justo cuando el dueño va a usarla. La copia de la instalación de hoy se movió a mano fuera de `skills/`; el arreglo evita que vuelva a pasar. | **COMPLETADA** 2026-09-03 |  |
 | P-06 | Extender la nota de `DEVELOPERS.md`/`SKILL.md` que ya cubre el binario "pelado" de `ruff`/`mypy`/`pytest` (R-15, `origen: auditoría #22`) para que también cubra la **instalación** (`pip install -r requirements-dev.txt` sin `python3 -m`), no solo la invocación | `origen: auditoría #28` (baja, infraestructura). Formalizado tras diez sesiones consecutivas resolviendo el mismo síntoma sin que quedara documentado: el `pip` pelado de los contenedores de nube de este proyecto instala contra Python 3.13 en vez del 3.11.x real, dejando las tres redes de tipos/estilo/tests en rojo con `No module named mypy/ruff/pytest` hasta reinstalar con `python3 -m pip install -r requirements-dev.txt`. Cola de tareas vacía tras R-24 (§1), hallazgo de severidad baja con recomendación de cierre ya escrita por el propio auditor: aprovechado como P-XX de esta sesión en vez de esperar a que el PM lo convierta en R-XX. Alcance puramente documental, sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-07 |  |
+| P-07 | Actualizar la sección "Marcar tropiezos durante la toma (R-03)" de `SKILL.md` para documentar la columna «Instante» (R-34) de `FEEDBACK.md` | `origen: auditoría #33` (baja, documentación). R-34 (`91b4c66`, 2026-10-20) añadió la columna «Instante» (`mm:ss`, instante de la toma en que se marcó el tropiezo) a `FEEDBACK.md` y subió el contrato a la versión 2, documentado con detalle en `references/contrato-tropiezos.md`/`DEVELOPERS.md`/`DECISIONES_TECNICAS.md`, pero la sección de `SKILL.md` que describe esta función de cara al dueño no se tocó: su tabla de columnas seguía mostrando solo las 5 de la versión 1. Cola de tareas vacía tras R-35 (§1), hallazgo de severidad baja con cierre trivial y sin riesgo (no toca `tests/test_skill_md.py`, que no cubre esta tabla): aprovechado como P-XX de esta sesión en vez de esperar a que el PM lo convierta en R-XX. Alcance puramente documental, sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-21 |  |
 
 ---
 
