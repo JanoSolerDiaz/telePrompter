@@ -12,6 +12,46 @@
 
 ---
 
+### Sesión 2026-10-21 (214) — Ciclo de Programador: quinta reconfirmación del día tras P-07, sin novedad de código
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de
+Programador de la cuarta reconfirmación de esta misma jornada (commit `6181364`); árbol de trabajo
+limpio, sin nada sin confirmar. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real (3.11.17; mismo síntoma de `pip`/`pip3` desnudos
+resolviendo contra 3.13 ya documentado en `#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** Sin ningún hallazgo nuevo desde P-07;
+ninguno de severidad alta. Solo `#24` (baja) y `#30` (media) siguen `ABIERTO`, ambos de
+proceso/gobernanza puro, pendientes de respuesta del dueño a `#11`/`#12` de §6 — ninguno convertible
+en tarea ni en P-XX urgente. §1 confirmada como fuente autoritativa: R-35 sigue siendo la última fila
+y está **COMPLETADA**; ninguna fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada — abrir la
+siguiente Oleada (R-36) corresponde a un ciclo de Product Manager posterior.
+`mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y
+cero PR abiertos.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest`
+(719 tests en verde, mismo recuento que tras R-35/P-07) y `python3 scripts/verificar_salidas.py
+--fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes esperadas en este contenedor
+— `.pptx` sin la skill `480-branded-pptx` instalada y `.pdf` sin Chrome/Edge — y las dos omisiones
+esperadas sin parte de rodaje). Cuatro redes en verde; ningún cambio en `scripts/`, `tests/` ni
+`assets/`.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-35 permanece `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
+P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
+cerrable que justifique una.
+
+**Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`.** Ciclo de pura reconfirmación: nada
+que decidir.
+
+**Entrega.** Commit y push a `origin/develop` con la actualización de `SEGUIMIENTO.md` (cabecera y
+nueva entrada de ciclo) y esta entrada de `HISTORIAL_SESIONES.md`. Cero cambio en `scripts/`,
+`tests/`, `assets/` ni `roadmap/DECISIONES_TECNICAS.md`.
+
+---
+
 ### Sesión 2026-10-21 (213) — Ciclo de Programador: cuarta reconfirmación del día tras P-07, sin novedad de código
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de
