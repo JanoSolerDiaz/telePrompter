@@ -12,6 +12,52 @@
 
 ---
 
+### Sesión 2026-10-21 (208) — Ciclo de Programador: R-35 implementada
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la auditoría del
+propio 2026-10-21 (`auditoriacontinua.md`, commit `202cf1b`, un hallazgo nuevo de baja severidad,
+`#33`, documental); árbol de trabajo limpio. Dependencias de desarrollo instaladas con `python3 -m
+pip install -r requirements-dev.txt` contra el intérprete real (3.11.17; mismo rodeo de siempre,
+`#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** `#24` (baja), `#30` (media) y el nuevo
+`#33` (baja, `SKILL.md` sin actualizar tras R-34) siguen `ABIERTO`, los tres de
+proceso/documentación, ninguno de severidad alta (pérdida de texto del guion, corrupción de estado,
+rotura del reproductor o de la auto-contención, seguridad) que atender como P-XX urgente antes de la
+cola normal. §1 de `SEGUIMIENTO.md` traía una sola fila `PENDIENTE`: R-35 (Oleada v23), especificada
+por completo por el ciclo de PM del 2026-10-20.
+
+**R-35 implementada.** `assets/reproductor/guion.js::cargarTropiezosGuardados(escena, indice)`
+revalida cada tropiezo recién leído de `localStorage` contra `escena.bloques[indice_bloque]`: si el
+texto coincide, se conserva tal cual (camino feliz intacto); si no, busca el mismo texto exacto entre
+todos los bloques de la escena (mismo criterio que ya aplica `scripts/feedback.py`) y relocaliza solo
+con coincidencia única, descartando en cero o más de una. La corrección se fija de inmediato en
+`localStorage`, pero solo para las escenas que de verdad cambiaron
+(`_indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena)`). De paso corrige una pérdida
+silenciosa que el propio requisito 3 de esta tarea habría hecho permanente: el objeto normalizado no
+copiaba `instante_toma_segundos` (R-34) del valor crudo, perdiéndolo en cada recarga sin consecuencia
+visible hasta que esta tarea empezara a volver a guardar el resultado — corregido en el mismo punto.
+Sin migración (`references/contrato-tropiezos.md` no sube de versión); `cargarTomasGuardadas`/
+`tomasEscena` intactos; `scripts/feedback.py`/`documento_revision.py` sin cambios. 6 tests nuevos
+(713→719) en `tests/test_reproductor.py`. Verificado también de punta a punta con Playwright/Chromium
+real (paquete `playwright` instalado solo para esta comprobación, Chromium ya preinstalado vía
+`/opt/pw-browsers`, ninguno de los dos es dependencia del proyecto, desinstalados al terminar): un
+tropiezo guardado en `indice_bloque=0` cuyo texto vive ahora en el bloque 2 se relocaliza a 2
+conservando su `instante_toma_segundos`, uno con texto reescrito se descarta sin indicador fantasma,
+uno ya correcto no cambia, y el indicador "⚠ Tropiezo" en pantalla sigue al bloque relocalizado —
+sin errores de consola. Cuatro redes en verde (`mypy`, `ruff`, `pytest`, `verificar_salidas.py
+--fixture`, diecinueve etapas `OK`).
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-35: `PENDIENTE` → **COMPLETADA**. No se archiva
+todavía en `ROADMAP_HISTORICO.md` (ese paso corresponde a un ciclo de PM posterior, mismo patrón que
+R-32/R-34).
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §5 (P-XX) sin urgencia nueva. §6 sigue con
+`#11`/`#12` `(pendiente)` de respuesta del dueño. Una fila nueva en `DECISIONES_TECNICAS.md`
+("R-35 (implementación)"). `DEVELOPERS.md` actualizado con sección propia.
+
+---
+
 ### Sesión 2026-10-20 (207) — Ciclo de Product Manager: archiva Oleada v22 (R-34) y abre R-35 (Oleada v23)
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena

@@ -146,7 +146,16 @@
   // reproductor y su texto exacto en ese momento -- el lado Python (R-03,
   // `scripts/feedback.py`) casa por texto, no por indice, para sobrevivir a
   // que el troceo cambie entre la grabacion y la siguiente revision.
-  function cargarTropiezosGuardados(escena) {
+  //
+  // R-35: la clave de almacenamiento es estable por guion, nunca invalidada
+  // por un cambio de troceo -- si una reescritura con particion (T-15/T-17)
+  // desplazo los bloques de la escena desde que se marco el tropiezo,
+  // `indice_bloque` guardado ya no senala el bloque correcto. Se revalida
+  // aqui, al cargar, con el MISMO criterio que ya exige el lado Python: texto
+  // exacto manda, nunca el indice crudo. Indices que ya casan (camino feliz,
+  // la inmensa mayoria de las aperturas) no cambian.
+  var _indicesConCorreccionDeTropiezos = [];
+  function cargarTropiezosGuardados(escena, indice) {
     var guardado = leerPreferencia("tropiezos_escena_" + escena.numero);
     if (!guardado) {
       return [];
@@ -156,7 +165,9 @@
       if (!Array.isArray(lista)) {
         return [];
       }
-      return lista
+      var huboCorreccion = false;
+      var resultado = [];
+      lista
         .filter(function (tropiezo) {
           return (
             tropiezo &&
@@ -164,9 +175,35 @@
             typeof tropiezo.texto === "string"
           );
         })
-        .map(function (tropiezo) {
-          return { indice_bloque: tropiezo.indice_bloque, texto: tropiezo.texto };
+        .forEach(function (tropiezo) {
+          var normalizado = { indice_bloque: tropiezo.indice_bloque, texto: tropiezo.texto };
+          if (typeof tropiezo.instante_toma_segundos === "number") {
+            normalizado.instante_toma_segundos = tropiezo.instante_toma_segundos;
+          }
+          var bloqueEnIndice = escena.bloques[normalizado.indice_bloque];
+          if (bloqueEnIndice && bloqueEnIndice.texto === normalizado.texto) {
+            resultado.push(normalizado);
+            return;
+          }
+          huboCorreccion = true;
+          var coincidencias = [];
+          for (var i = 0; i < escena.bloques.length; i++) {
+            if (escena.bloques[i].texto === normalizado.texto) {
+              coincidencias.push(i);
+            }
+          }
+          if (coincidencias.length === 1) {
+            normalizado.indice_bloque = coincidencias[0];
+            resultado.push(normalizado);
+          }
+          // Cero o mas de una coincidencia (texto reescrito, o duplicado en
+          // la escena): se descarta, igual que ya documenta el contrato para
+          // el lado Python.
         });
+      if (huboCorreccion) {
+        _indicesConCorreccionDeTropiezos.push(indice);
+      }
+      return resultado;
     } catch (error) {
       return [];
     }
@@ -179,6 +216,11 @@
       JSON.stringify(tropiezosEscena[indice])
     );
   }
+  // Requisito 3: la correccion (reubicacion o descarte) se fija en
+  // `localStorage` de inmediato, para que el primer reinicio ya la lea
+  // directa por el camino feliz, sin repetir la busqueda por texto en cada
+  // apertura posterior.
+  _indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena);
 
   // Estado por escena (T-19, requisito 1; datos reales desde R-02, requisito 4):
   // "pendiente" sin ninguna toma registrada todavia, "grabada" con tomas pero

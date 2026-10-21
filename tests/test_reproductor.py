@@ -1017,6 +1017,100 @@ def test_guion_js_muestra_resumen_de_tropiezos_junto_a_cada_escena() -> None:
     assert "escena-tropiezos" in pagina
 
 
+# --- Relocalizar tropiezos por texto, no por indice (R-35) --------------------------
+
+
+def _fragmento_cargar_tropiezos(pagina: str) -> str:
+    inicio = pagina.index("function cargarTropiezosGuardados")
+    fin = pagina.index("\n  var tropiezosEscena =", inicio)
+    return pagina[inicio:fin]
+
+
+def test_guion_js_tropiezo_con_indice_y_texto_coincidentes_no_cambia() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_cargar_tropiezos(pagina)
+    # Requisito 1: camino feliz -- si `escena.bloques[indice_bloque]` existe y
+    # su texto coincide exactamente, se conserva tal cual, sin pasar por la
+    # busqueda por texto.
+    assert "var bloqueEnIndice = escena.bloques[normalizado.indice_bloque];" in fragmento
+    assert (
+        "if (bloqueEnIndice && bloqueEnIndice.texto === normalizado.texto) {" in fragmento
+    )
+
+
+def test_guion_js_relocaliza_tropiezo_por_texto_cuando_el_indice_no_coincide() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_cargar_tropiezos(pagina)
+    # Requisito 2: busca el MISMO texto exacto entre todos los bloques de la
+    # escena (mismo criterio que `scripts/feedback.py`), y relocaliza solo si
+    # hay exactamente una coincidencia.
+    assert "for (var i = 0; i < escena.bloques.length; i++) {" in fragmento
+    assert "if (escena.bloques[i].texto === normalizado.texto) {" in fragmento
+    assert "if (coincidencias.length === 1) {" in fragmento
+    assert "normalizado.indice_bloque = coincidencias[0];" in fragmento
+
+
+def test_guion_js_descarta_tropiezo_sin_coincidencia_unica_de_texto() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_cargar_tropiezos(pagina)
+    # Cero o mas de una coincidencia: la entrada no se añade a `resultado`
+    # (descarte silencioso, mismo criterio que ya documenta el contrato para
+    # el lado Python).
+    coincidencia_if = fragmento.index("if (coincidencias.length === 1) {")
+    fin_if = fragmento.index("\n          }", coincidencia_if)
+    cuerpo_if = fragmento[coincidencia_if:fin_if]
+    assert "resultado.push(normalizado);" in cuerpo_if
+    fuera_del_if = fragmento[fin_if:]
+    assert "resultado.push(normalizado);" not in fuera_del_if.split("});", 1)[0]
+
+
+def test_guion_js_conserva_instante_toma_segundos_al_relocalizar() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_cargar_tropiezos(pagina)
+    # El campo aditivo de R-34 (`instante_toma_segundos`) se preserva en el
+    # objeto normalizado desde el principio -- antes de R-35 se perdia en
+    # silencio en cada recarga (nunca se copiaba del valor crudo de
+    # `localStorage`), lo que esta tarea habria convertido en permanente al
+    # volver a guardar la correccion (requisito 3).
+    assert (
+        'var normalizado = { indice_bloque: tropiezo.indice_bloque, texto: tropiezo.texto };'
+        in fragmento
+    )
+    assert 'if (typeof tropiezo.instante_toma_segundos === "number") {' in fragmento
+    assert "normalizado.instante_toma_segundos = tropiezo.instante_toma_segundos;" in fragmento
+
+
+def test_guion_js_guarda_la_correccion_de_tropiezos_de_inmediato() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: el resultado ya corregido se guarda de inmediato, para que
+    # el primer reinicio ya lo lea directo por el camino feliz. Solo las
+    # escenas con una correccion real (`_indicesConCorreccionDeTropiezos`) se
+    # vuelven a escribir -- no todas, en cada apertura, sin necesidad.
+    assert "var _indicesConCorreccionDeTropiezos = [];" in pagina
+    assert "_indicesConCorreccionDeTropiezos.push(indice);" in pagina
+    coincidencia = pagina.index("function guardarTropiezosEscena")
+    fragmento = pagina[coincidencia : coincidencia + 500]
+    assert "_indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena);" in fragmento
+
+
+def test_guion_js_tomas_guardadas_no_se_tocan_por_r35() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5, fuera de alcance explicito: `cargarTomasGuardadas` sigue
+    # siendo una funcion de un solo argumento, sin ningun rastro de
+    # relocalizacion -- ninguna toma referencia `indice_bloque`.
+    coincidencia = pagina.index("function cargarTomasGuardadas")
+    fin = pagina.index("\n  var tomasEscena =", coincidencia)
+    fragmento = pagina[coincidencia:fin]
+    assert "function cargarTomasGuardadas(escena) {" in fragmento
+    assert "indice_bloque" not in fragmento
+
+
 # --- Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12) -------------------
 
 

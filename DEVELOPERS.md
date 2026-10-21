@@ -3896,6 +3896,70 @@ encontrar a ojo el segundo exacto donde se trabó.
   `version: 2`), más el ajuste de 2 tests existentes al nuevo literal multilínea de
   `lista.push` y a la columna nueva de `FEEDBACK.md`. Cuatro redes en verde.
 
+## Relocalizar tropiezos por texto, no por índice (R-35)
+
+`references/contrato-tropiezos.md` ya documentaba, desde R-03, que el lado Python
+(`scripts/feedback.py`) empareja cada tropiezo del `.json` exportado con su bloque por
+**texto exacto**, nunca por `indice_bloque` — porque una reescritura con partición
+(T-15/T-17) aceptada antes de ese bloque en la misma escena puede desplazar los índices
+entre la grabación y la siguiente revisión. Ese mismo criterio no llegaba al reproductor
+vivo: `assets/reproductor/guion.js::cargarTropiezosGuardados` releía `localStorage` (clave
+estable por guion, nunca invalidada por un cambio de troceo) comparando `indice_bloque` tal
+cual, así que el indicador "⚠ Tropiezo" podía encenderse sobre el bloque equivocado justo
+durante una grabación — el único sitio donde ese emparejamiento todavía importaba de verdad
+(el `.json` exportado y `FEEDBACK.md` nunca llegaron a mentir).
+
+- **Revalidación al cargar, no una invalidación global** (requisitos 1-2).
+  `cargarTropiezosGuardados(escena, indice)` comprueba primero el camino feliz:
+  `escena.bloques[tropiezo.indice_bloque]` existe y su `.texto` coincide exactamente con el
+  guardado → se conserva tal cual, sin tocar nada (la inmensa mayoría de las aperturas, el
+  troceo de la escena no cambió). Si no coincide, busca el mismo texto exacto entre TODOS
+  los bloques de la escena — mismo criterio que ya aplica `scripts/feedback.py`, ninguna
+  segunda regla de emparejamiento inventada aquí — y relocaliza solo si hay exactamente una
+  coincidencia; con cero o más de una (texto reescrito, o duplicado en la escena), la
+  entrada se descarta en silencio, igual que ya documenta el contrato para el lado Python.
+  Invalidar todo `localStorage` de la escena (alternativa considerada y descartada, ver
+  `DECISIONES_TECNICAS.md`) habría borrado también tropiezos que seguían siendo válidos.
+- **La corrección se fija de inmediato, solo donde hizo falta** (requisito 3). Un array de
+  módulo, `_indicesConCorreccionDeTropiezos`, acumula el índice de cada escena donde hubo
+  al menos una reubicación o un descarte (`cargarTropiezosGuardados` recibe ese índice
+  gratis del propio `Array.prototype.map`). Tras construir `tropiezosEscena`, se llama
+  `_indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena)` — solo esas escenas se
+  reescriben en `localStorage`; las que no tuvieron ninguna corrección no se tocan. Así el
+  siguiente reinicio ya lee directo por el camino feliz, sin repetir la búsqueda por texto.
+- **`actualizarIndicadorTropiezo`/`alternarTropiezoBloqueActual` intactos** (requisito 4):
+  ambos siguen comparando `indice_bloque` tal cual contra `bloqueActual`, pero ahora sobre
+  `tropiezosEscena[escena]` ya corregido en el momento de la carga — la comparación por
+  índice vuelve a ser segura sin tocar ninguna de las dos funciones.
+- **Hallazgo de este ciclo, corregido en el mismo punto**: el objeto `normalizado` que
+  construye `cargarTropiezosGuardados` copiaba hasta ahora solo `indice_bloque`/`texto`,
+  descartando en cada recarga el campo aditivo `instante_toma_segundos` (R-34) sin que
+  tuviera ninguna consecuencia visible — nada volvía a escribir el resultado en
+  `localStorage`, así que el dato seguía disponible en memoria hasta la próxima recarga.
+  El requisito 3 de esta misma tarea ("guardar de inmediato la corrección") habría
+  convertido esa pérdida en permanente la primera vez que una escena con ese campo
+  necesitara relocalizarse. Se corrige copiando `instante_toma_segundos` (si es numérico)
+  en el objeto normalizado antes de decidir si se conserva, relocaliza o descarta.
+- **Fuera de alcance, como pedía la spec** (requisito 5): `cargarTomasGuardadas`/
+  `tomasEscena` intactos (ninguna toma referencia `indice_bloque`); `version` de
+  `references/contrato-tropiezos.md` no sube (el `.json` exportado no cambia de forma,
+  solo cómo se interpreta lo ya guardado al cargar); `scripts/feedback.py`/
+  `documento_revision.py` intactos (ya casan por texto); no se persiste ningún historial de
+  relocalizaciones — la corrección es silenciosa y determinista, no un aviso nuevo al
+  dueño.
+- **Tests.** 6 nuevos en `tests/test_reproductor.py` (camino feliz intacto, relocalización
+  por texto, descarte sin coincidencia única, `instante_toma_segundos` preservado al
+  relocalizar, guardado inmediato solo de las escenas corregidas, `cargarTomasGuardadas`
+  sin tocar). Verificado también de punta a punta con Playwright/Chromium real (paquete
+  `playwright` de Python instalado solo para esta comprobación, Chromium ya preinstalado en
+  el contenedor vía `/opt/pw-browsers`, ninguno de los dos es dependencia del proyecto,
+  desinstalados al terminar): sobre una escena de 4 bloques, un tropiezo guardado en
+  `indice_bloque=0` cuyo texto vive ahora en el bloque 2 se relocaliza a 2 conservando su
+  `instante_toma_segundos`, uno con texto que ya no existe en ningún bloque se descarta sin
+  indicador fantasma, uno ya correcto (índice 3) no cambia, y en pantalla el indicador "⚠
+  Tropiezo" se enciende sobre el bloque 2 (relocalizado) y no sobre el índice viejo (0) —
+  sin errores de consola. Cuatro redes en verde.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
