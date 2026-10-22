@@ -10,14 +10,14 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-22 — **Ciclo de Programador: octava reconfirmación del día tras
+**Última actualización:** 2026-10-22 — **Ciclo de Programador: novena reconfirmación del día tras
 R-36, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-22), octavo del día.** Revisión de entrada (protocolo): el
-contenedor arrancó con `HEAD` *detached* sobre `develop` veintidós commits por detrás; `git checkout
-develop && git pull origin develop` trajo ya fusionada la séptima reconfirmación del día (commit
-`2cb7309`, sin cambio de código) por fast-forward limpio, árbol de trabajo limpio sin divergencia
-que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+**Ciclo de Programador (2026-10-22), noveno del día.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` *detached* sobre `develop` veintitrés commits por detrás; `git
+checkout develop && git pull origin develop` trajo ya fusionada la octava reconfirmación del día
+(commit `63b0413`, sin cambio de código) por fast-forward limpio, árbol de trabajo limpio sin
+divergencia que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
 requirements-dev.txt` contra el intérprete real (Python 3.11.17, `/usr/local/bin/python3`;
 confirmado con `python3 -m mypy --version`/`python3 -m ruff --version`/`python3 -m pytest
 --version`, mismo síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06).
@@ -50,7 +50,7 @@ ninguna decisión técnica que tomar).
 **Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
 respuesta del dueño, sin preguntas nuevas de esta sesión.
 
-**Última actualización anterior (2026-10-22, ciclo de Programador): séptima reconfirmación del día
+**Última actualización anterior (2026-10-22, ciclo de Programador): octava reconfirmación del día
 tras R-36, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-22), séptimo del día.** Revisión de entrada (protocolo): el
