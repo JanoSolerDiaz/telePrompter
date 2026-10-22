@@ -10,7 +10,42 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-22 — **Ciclo de Programador: implementa R-36 (Oleada v24)**,
+**Última actualización:** 2026-10-22 — **Ciclo de Programador: primera reconfirmación del día tras
+R-36, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-22), segundo del día.** Revisión de entrada (protocolo): sesión de
+nube, `git checkout develop && git pull origin develop` trajo ya fusionada la implementación de R-36
+de esta misma jornada (commit `5b8492e`) por fast-forward limpio, sin divergencia que resolver.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el
+intérprete real (Python 3.11.17; el `pip` desnudo del PATH resuelve contra otro intérprete, mismo
+síntoma ya documentado en `#22`/`#28`/P-06).
+
+Registro de hallazgos revisado antes de elegir tarea: ninguna fila de severidad alta (pérdida de
+texto del guion, corrupción de estado, rotura del reproductor o de la auto-contención, seguridad).
+Solo quedan `#24` (baja) y `#30` (media) `ABIERTO` en `auditoriacontinua.md`, ambos de
+proceso/gobernanza puro pendientes de respuesta del dueño a las preguntas `#11`/`#12` de §6 —
+ninguno convertible en tarea ni en P-XX urgente; `#33` ya `RESUELTO` desde la propia pasada de
+auditoría de esta jornada (`fec64ea`). §1 (fuente autoritativa) sigue sin ninguna fila `PENDIENTE`
+ni `BLOQUEADA`: R-36 es la última fila y está **COMPLETADA**; abrir la siguiente Oleada (R-37) le
+corresponde a un ciclo de Product Manager, no a este ciclo de Programador.
+`mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y
+cero PR abiertos. Sin ningún hallazgo nuevo ni urgente que abrir como P-XX, este ciclo es de pura
+reconfirmación: sin novedad de código.
+
+Cuatro redes en verde: `python3 -m mypy scripts/ tests/` (72 archivos, sin problemas), `python3 -m
+ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (727 tests, mismo recuento que tras
+R-36), `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, sin cambios). Sin
+cambios en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1 y §5).** Ninguno: sin tarea de código que ejecutar.
+
+**Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`** (ciclo de pura reconfirmación, sin
+ninguna decisión técnica que tomar).
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño, sin preguntas nuevas de esta sesión.
+
+**Última actualización anterior (2026-10-22, ciclo de Programador): implementa R-36 (Oleada v24)**,
 detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-22): implementa R-36 (Oleada v24).**
