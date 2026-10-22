@@ -12,6 +12,62 @@
 
 ---
 
+### Sesión 2026-10-22 (219) — Ciclo de Programador: implementa R-36 (Oleada v24)
+
+**Arranque.** Sesión de nube (programador-teleprompter), `git checkout develop && git pull origin
+develop` trajo ya fusionada la auditoría del día (commit `fec64ea`, sin cambio de código) por
+fast-forward limpio, árbol de trabajo limpio. Dependencias de desarrollo instaladas con `python -m
+pip install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17; el `pip` desnudo
+del PATH resuelve contra otro intérprete, mismo síntoma ya documentado en `#22`/`#28`/P-06).
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-22): cierra
+`#33`, reconfirma R-35 de buena calidad y verifica la grieta de arquitectura de R-36; los dos
+`ABIERTO` de siempre (`#24` baja, `#30` media) siguen siendo proceso/gobernanza puro, pendientes
+solo de la respuesta del dueño a `#11`/`#12` de §6 de `SEGUIMIENTO.md` — ninguno convertible en
+R-XX nueva ni en P-XX urgente. `roadmap/FEEDBACK.md` revisado: sigue sin ninguna entrada `nuevo`.
+
+**Implementada R-36 (Oleada v24): vincular cada tropiezo con el número de la toma en que se
+marcó.** Spec completa ya en `ROADMAP_PRODUCTO.md`. `assets/reproductor/guion.js`:
+`alternarTropiezoBloqueActual` guarda `numero_toma` (`tomasEscena[escenaActual].length + 1`,
+mismo cálculo que `actualizarIndicadorToma`, sin segunda implementación) solo al AÑADIR un
+tropiezo, nunca al quitarlo (requisito 1, mismo criterio ya fijado por R-34); `cargarTropiezosGuardados`
+copia el campo al objeto `normalizado` solo si es numérico (requisito 2, mismo patrón de
+opcionalidad y mismo punto de transformación que ya usa R-35 para `instante_toma_segundos`, sin
+tocar la relocalización por texto, ortogonal a esta tarea). `scripts/feedback.py`:
+`TropiezoBloque` gana `numero_toma: int | None = None` (entero ≥ 1, mismo patrón de validación
+que `instante_toma_segundos`); columna nueva «Toma» en `FEEDBACK.md` entre «Texto exacto» e
+«Instante» (requisito 3); `_PATRON_FILA` gana un segundo grupo opcional en la propia expresión
+regular, delante del ya existente de «Instante» (requisito 4) — reconoce sin ambigüedad filas de
+5 columnas (anteriores a R-34), 6 (R-34 sin «Toma») y 7 (R-36 completas); cabecera de
+`FEEDBACK.md` avisa explícitamente de que el instante solo es de fiar cuando «Toma» coincide con
+la toma buena del parte de rodaje (requisito 5); `version` del `.json` exportado sube a 3
+(requisito 6). Fuera de alcance respetado tal como pedía la ficha (requisito 7): no se cruza
+automáticamente «Toma» contra el registro de tomas, no se toca `cargarTomasGuardadas`/
+`tomasEscena` ni la relocalización por texto de R-35, no se renumera retroactivamente ningún
+tropiezo ya exportado.
+
+**Tests y verificación.** 8 tests nuevos (719→727): 5 en `tests/test_feedback.py` (carga/valida
+`numero_toma`, fila con la columna nueva, retrocompatibilidad de una fila de 6 columnas de la
+versión 2 del contrato) y 3 en `tests/test_reproductor.py` (número de toma guardado solo al
+marcar con el cálculo correcto, nada calculado al desmarcar, opcionalidad preservada al cargar),
+más el ajuste de 3 tests existentes al nuevo literal de `lista.push`, a la columna nueva de
+`FEEDBACK.md` y a `version: 3`. Cuatro redes en verde (`python scripts/ci.py`): mypy sin
+hallazgos, ruff sin hallazgos, 727 tests, diecinueve etapas de `verificar_salidas.py --fixture`
+en `OK`. `references/contrato-tropiezos.md` sube a versión 3; `SKILL.md` y `DEVELOPERS.md`
+actualizados.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-36: `PENDIENTE` → `COMPLETADA` (2026-10-22).
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Una fila nueva: "R-36 (implementación)", con
+la alternativa de regex considerada y descartada (restringir el grupo `toma` a solo dígitos).
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones).** §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño, sin preguntas nuevas de esta sesión. No se abre R-37 en
+este ciclo (criterio de §0.4: la apertura de la siguiente R-XX es decisión del ciclo de PM que
+archive la oleada actual, no del ciclo de Programador que la implementa).
+
+---
+
 ### Sesión 2026-10-21 (218) — Ciclo de Product Manager: archiva Oleada v23 (R-35) y abre R-36 (Oleada v24)
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la décima

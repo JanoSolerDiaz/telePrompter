@@ -178,6 +178,35 @@ def test_rechaza_instante_de_toma_que_no_es_numerico(tmp_path: Path) -> None:
         cargar_registro_tropiezos(ruta, nombre_guion="mi-guion")
 
 
+# --- numero_toma (R-36) -------------------------------------------------------------------
+
+
+def test_carga_el_numero_de_toma_cuando_esta_presente(tmp_path: Path) -> None:
+    contenido = _registro_valido()
+    contenido["escenas"][0]["tropiezos"][0]["numero_toma"] = 2
+    ruta = _escribir_registro(tmp_path, contenido)
+    registro = cargar_registro_tropiezos(ruta, nombre_guion="mi-guion")
+    assert registro.escenas[0].tropiezos[0].numero_toma == 2
+    # El segundo tropiezo del fixture no trae el campo (archivo anterior a R-36).
+    assert registro.escenas[0].tropiezos[1].numero_toma is None
+
+
+def test_rechaza_numero_de_toma_menor_que_uno(tmp_path: Path) -> None:
+    contenido = _registro_valido()
+    contenido["escenas"][0]["tropiezos"][0]["numero_toma"] = 0
+    ruta = _escribir_registro(tmp_path, contenido)
+    with pytest.raises(RegistroFeedbackError, match="al menos 1"):
+        cargar_registro_tropiezos(ruta, nombre_guion="mi-guion")
+
+
+def test_rechaza_numero_de_toma_que_no_es_numerico(tmp_path: Path) -> None:
+    contenido = _registro_valido()
+    contenido["escenas"][0]["tropiezos"][0]["numero_toma"] = "no numerico"
+    ruta = _escribir_registro(tmp_path, contenido)
+    with pytest.raises(RegistroFeedbackError, match="numero_toma"):
+        cargar_registro_tropiezos(ruta, nombre_guion="mi-guion")
+
+
 # --- registrar_tropiezos_en_feedback ----------------------------------------------------
 
 
@@ -198,9 +227,9 @@ def test_registrar_tropiezos_crea_feedback_con_cabecera(tmp_path: Path) -> None:
     assert n == 1
     contenido = (tmp_path / "FEEDBACK.md").read_text(encoding="utf-8")
     assert "# FEEDBACK — mi-guion" in contenido
-    assert "| Fecha | Escena | Bloque | Texto exacto | Instante | Estado |" in contenido
-    # Sin instante_toma_segundos (no se paso al fixture): columna vacia.
-    assert "| 2026-09-03 | 1 | 0 | Texto dificil. |  | nuevo |" in contenido
+    assert "| Fecha | Escena | Bloque | Texto exacto | Toma | Instante | Estado |" in contenido
+    # Sin numero_toma ni instante_toma_segundos (no se pasaron al fixture): columnas vacias.
+    assert "| 2026-09-03 | 1 | 0 | Texto dificil. |  |  | nuevo |" in contenido
 
 
 def test_registrar_tropiezos_formatea_el_instante_de_toma_en_mm_ss(tmp_path: Path) -> None:
@@ -222,7 +251,66 @@ def test_registrar_tropiezos_formatea_el_instante_de_toma_en_mm_ss(tmp_path: Pat
     registrar_tropiezos_en_feedback(tmp_path, registro, fecha="2026-09-03")
 
     contenido = (tmp_path / "FEEDBACK.md").read_text(encoding="utf-8")
-    assert "| 2026-09-03 | 1 | 0 | Texto dificil. | 00:47 | nuevo |" in contenido
+    # Sin numero_toma (no se paso): columna «Toma» vacia, «Instante» con el valor.
+    assert "| 2026-09-03 | 1 | 0 | Texto dificil. |  | 00:47 | nuevo |" in contenido
+
+
+def test_registrar_tropiezos_incluye_el_numero_de_toma(tmp_path: Path) -> None:
+    registro = RegistroTropiezos(
+        guion="mi-guion",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=1,
+                titulo="Apertura",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0,
+                        texto="Texto dificil.",
+                        numero_toma=2,
+                        instante_toma_segundos=47.0,
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    registrar_tropiezos_en_feedback(tmp_path, registro, fecha="2026-09-03")
+
+    contenido = (tmp_path / "FEEDBACK.md").read_text(encoding="utf-8")
+    assert "| 2026-09-03 | 1 | 0 | Texto dificil. | 2 | 00:47 | nuevo |" in contenido
+
+
+def test_registrar_tropiezos_sobre_un_feedback_de_la_version_2_no_duplica_filas(
+    tmp_path: Path,
+) -> None:
+    # FEEDBACK.md escrito por R-34, antes de R-36: con columna Instante, sin Toma.
+    ruta = tmp_path / "FEEDBACK.md"
+    ruta.write_text(
+        "# FEEDBACK — mi-guion\n\n"
+        "| Fecha | Escena | Bloque | Texto exacto | Instante | Estado |\n"
+        "|-------|--------|--------|---------------|----------|--------|\n"
+        "| 2026-09-03 | 1 | 0 | Texto dificil. | 00:47 | nuevo |\n",
+        encoding="utf-8",
+    )
+    registro = RegistroTropiezos(
+        guion="mi-guion",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=1,
+                titulo="Apertura",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0, texto="Texto dificil.", instante_toma_segundos=47.0
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    n = registrar_tropiezos_en_feedback(tmp_path, registro, fecha="2026-09-04")
+
+    assert n == 0
+    assert ruta.read_text(encoding="utf-8").count("Texto dificil.") == 1
 
 
 def test_registrar_tropiezos_sobre_un_feedback_de_la_version_1_no_duplica_filas(

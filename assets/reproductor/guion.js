@@ -177,6 +177,9 @@
         })
         .forEach(function (tropiezo) {
           var normalizado = { indice_bloque: tropiezo.indice_bloque, texto: tropiezo.texto };
+          if (typeof tropiezo.numero_toma === "number") {
+            normalizado.numero_toma = tropiezo.numero_toma;
+          }
           if (typeof tropiezo.instante_toma_segundos === "number") {
             normalizado.instante_toma_segundos = tropiezo.instante_toma_segundos;
           }
@@ -1204,7 +1207,10 @@
   // se vuelva a pulsar sobre el mismo bloque. Al marcar (no al desmarcar,
   // R-34 requisito 2) guarda tambien el instante dentro de la toma en curso
   // en el que ocurre, con el mismo calculo y redondeo que `duracion_segundos`
-  // en `finalizarTomaActual`.
+  // en `finalizarTomaActual`. R-36 requisito 1: guarda ademas el numero de la
+  // toma EN CURSO en ese instante, mismo calculo que `actualizarIndicadorToma`
+  // (`tomasEscena[escena].length + 1`), para no confundir en el montaje el
+  // instante de una toma descartada con el de la toma buena.
   function alternarTropiezoBloqueActual() {
     if (escenaActual === -1) {
       return;
@@ -1223,9 +1229,11 @@
     }
     if (posicion === -1) {
       var instanteSegundos = Math.round((tomaTranscurridoMs() / 1000) * 10) / 10;
+      var numeroToma = tomasEscena[escenaActual].length + 1;
       lista.push({
         indice_bloque: bloqueActual,
         texto: bloques[bloqueActual].texto,
+        numero_toma: numeroToma,
         instante_toma_segundos: instanteSegundos
       });
     } else {
@@ -1584,7 +1592,7 @@
   // aqui). Solo se incluyen escenas con al menos un tropiezo marcado.
   function construirRegistroTropiezos() {
     return {
-      version: 2,
+      version: 3,
       guion: datos.guion,
       generado: new Date().toISOString(),
       escenas: datos.escenas

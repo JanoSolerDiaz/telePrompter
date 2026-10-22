@@ -12,9 +12,10 @@
 >
 > `version` sube solo si el JSON cambia de forma incompatible con este
 > documento; nunca decrece (mismo criterio que `version` de
-> `references/contrato-tomas.md`). Versión actual: **2** (R-34 añadió
-> `instante_toma_segundos` a cada tropiezo, cambio aditivo — un archivo de
-> versión 1 se sigue cargando sin error, con el campo en `None`).
+> `references/contrato-tomas.md`). Versión actual: **3** (R-36 añadió
+> `numero_toma` a cada tropiezo, cambio aditivo — un archivo de versión 1 o 2
+> se sigue cargando sin error, con el campo en `None`; R-34 ya había añadido
+> `instante_toma_segundos` del mismo modo sobre la versión 1).
 
 ## Aviso de nombre: dos `FEEDBACK.md` distintos
 
@@ -52,7 +53,7 @@ copia en `estado.json` para que sobreviva entre sesiones, igual que
 
 ```jsonc
 {
-  "version": 2,
+  "version": 3,
   "guion": "guion-08-busqueda-investigacion",
   "generado": "2026-09-03T10:00:00.000Z",
   "escenas": [
@@ -63,6 +64,7 @@ copia en `estado.json` para que sobreviva entre sesiones, igual que
         {
           "indice_bloque": 0,
           "texto": "Texto exacto del bloque marcado.",
+          "numero_toma": 2,
           "instante_toma_segundos": 47.0
         },
         { "indice_bloque": 2, "texto": "Otro bloque marcado en la misma escena." }
@@ -73,10 +75,10 @@ copia en `estado.json` para que sobreviva entre sesiones, igual que
 ```
 
 Solo se incluyen escenas con al menos un bloque marcado (una escena sin
-tropiezos no aparece en el archivo). `instante_toma_segundos` es opcional
-(segundo elemento del ejemplo: un archivo de la versión 1 del contrato, o un
-tropiezo marcado por una versión del reproductor anterior a R-34, no lo
-trae).
+tropiezos no aparece en el archivo). `numero_toma` e `instante_toma_segundos`
+son opcionales (segundo elemento del ejemplo: un archivo de una versión del
+contrato anterior a la que introdujo cada campo, o un tropiezo marcado por
+una versión del reproductor anterior, no los trae).
 
 ## Claves de cabecera
 
@@ -100,7 +102,8 @@ trae).
 |-------|------|-------------|
 | `indice_bloque` | `int` (≥ 0) | Índice del bloque de respiración dentro de `datos.escenas[i].bloques` en el reproductor que lo generó — el mismo orden que consume `documento_revision._bloques_de_escena`. Es una pista secundaria (ver más abajo): el emparejamiento real con `guion-escenas.md` se hace por `texto`. |
 | `texto` | `string` (no vacío, sin `\|` ni saltos de línea) | El texto EXACTO del bloque en el momento de marcarlo (requisito 2 literal, "texto exacto"). Es el criterio de verdad: `documento_revision.py` destaca un bloque cuando su texto coincide con este, no cuando su índice coincide. |
-| `instante_toma_segundos` | `float` (≥ 0, R-34, opcional) | Segundos transcurridos desde el inicio de la toma en curso en el instante en que se marcó el tropiezo — mismo cronómetro y mismo redondeo a un decimal que `duracion_segundos` de `references/contrato-tomas.md` (R-02). Ausente en un archivo de la versión 1 del contrato. **Límite documentado:** describe la toma que estaba en marcha al pulsar `T`, no se re-ancla si la escena se regraba desde cero sin volver a marcar el mismo tropiezo en la toma nueva — fiable sin más cuando se sigue grabando tras el tropiezo sin cortar, no cuando se repite la escena. |
+| `numero_toma` | `int` (≥ 1, R-36, opcional) | Número de la toma EN CURSO (tomas ya cerradas + 1, mismo cálculo que el indicador de la cabecera del reproductor) en el instante en que se marcó el tropiezo. Ausente en un archivo de una versión anterior a R-36. Resuelve la ambigüedad de a qué archivo de vídeo real pertenece `instante_toma_segundos` cuando la escena se grabó más de una vez: solo es de fiar como punto de corte cuando coincide con la toma marcada `buena` en el parte de rodaje (R-02) — cruce que se hace a mano, ver `references/contrato-tomas.md`. |
+| `instante_toma_segundos` | `float` (≥ 0, R-34, opcional) | Segundos transcurridos desde el inicio de la toma en curso en el instante en que se marcó el tropiezo — mismo cronómetro y mismo redondeo a un decimal que `duracion_segundos` de `references/contrato-tomas.md` (R-02). Ausente en un archivo de la versión 1 del contrato. **Límite documentado:** describe la toma que estaba en marcha al pulsar `T`, no se re-ancla si la escena se regraba desde cero sin volver a marcar el mismo tropiezo en la toma nueva — fiable sin más cuando se sigue grabando tras el tropiezo sin cortar, no cuando se repite la escena. Solo es de fiar en el archivo de vídeo real de la toma buena cuando `numero_toma` (R-36) coincide con ella. |
 
 ## Por qué se casa por texto, no por índice
 
@@ -126,16 +129,21 @@ ojo en el `.json`), nunca como clave de emparejamiento.
 
 > Bloques de locución marcados como tropiezo durante la grabación (R-03): ...
 
-| Fecha | Escena | Bloque | Texto exacto | Instante | Estado |
-|-------|--------|--------|---------------|----------|--------|
-| 2026-09-03 | 3 | 0 | Texto exacto del bloque marcado. | 00:47 | nuevo |
-| 2026-09-03 | 3 | 2 | Otro bloque marcado en la misma escena. |  | nuevo |
+| Fecha | Escena | Bloque | Texto exacto | Toma | Instante | Estado |
+|-------|--------|--------|---------------|------|----------|--------|
+| 2026-09-03 | 3 | 0 | Texto exacto del bloque marcado. | 2 | 00:47 | nuevo |
+| 2026-09-03 | 3 | 2 | Otro bloque marcado en la misma escena. |  |  | nuevo |
 ```
 
-La columna «Instante» (R-34) muestra el valor de `instante_toma_segundos`
-formateado `mm:ss` (minutos a dos dígitos), o vacía si el tropiezo no lo
-trae — nunca forma parte de la clave de duplicado (misma escena + mismo
-`indice_bloque` + mismo texto, sin el instante).
+La columna «Toma» (R-36) muestra el valor de `numero_toma`, o vacía si el
+tropiezo no lo trae. La columna «Instante» (R-34) muestra el valor de
+`instante_toma_segundos` formateado `mm:ss` (minutos a dos dígitos), o vacía
+si el tropiezo no lo trae — ninguna de las dos forma parte de la clave de
+duplicado (misma escena + mismo `indice_bloque` + mismo texto, sin «Toma» ni
+«Instante»). **El instante solo es un punto de corte de fiar en el vídeo
+final cuando «Toma» coincide con el número que el parte de rodaje (R-02)
+tiene marcado como la toma buena de esa escena** — cruce que el dueño hace a
+mano con el parte de rodaje que ya tiene.
 
 **Nunca borra ni reescribe una fila existente**: solo añade filas nuevas al
 final, y solo las que no estuvieran ya (misma escena, mismo `indice_bloque`,
@@ -164,6 +172,8 @@ problema no era el texto, sino la propia lectura del locutor esa toma.
 5. Si `instante_toma_segundos` está presente (R-34), es numérico y no
    negativo; si falta, se admite igual (archivo de la versión 1 del
    contrato) y queda en `None`.
+6. Si `numero_toma` está presente (R-36), es entero y al menos 1; si falta,
+   se admite igual (archivo de una versión anterior) y queda en `None`.
 
 Sin `jsonschema` ni ninguna biblioteca externa (§0.2): comprobación a mano,
 mismo patrón que `tomas.cargar_parte_de_rodaje` (R-02). Cualquier archivo que

@@ -976,12 +976,12 @@ def test_guion_js_desmarcar_tropiezo_no_calcula_ningun_instante() -> None:
     assert fragmento.count("tomaTranscurridoMs()") == 1
 
 
-def test_guion_js_version_del_registro_de_tropiezos_sube_a_2() -> None:
+def test_guion_js_version_del_registro_de_tropiezos_sube_a_3() -> None:
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     coincidencia = pagina.index("function construirRegistroTropiezos")
     fragmento = pagina[coincidencia : coincidencia + 200]
-    assert "version: 2," in fragmento
+    assert "version: 3," in fragmento
 
 
 def test_guion_js_indicador_de_tropiezo_sigue_al_bloque_activo() -> None:
@@ -1109,6 +1109,44 @@ def test_guion_js_tomas_guardadas_no_se_tocan_por_r35() -> None:
     fragmento = pagina[coincidencia:fin]
     assert "function cargarTomasGuardadas(escena) {" in fragmento
     assert "indice_bloque" not in fragmento
+
+
+# --- Numero de la toma del tropiezo (R-36) ----------------------------------------------
+
+
+def test_guion_js_marcar_tropiezo_guarda_el_numero_de_toma() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    coincidencia = pagina.index("function alternarTropiezoBloqueActual")
+    fragmento = pagina[coincidencia : coincidencia + 1000]
+    # Requisito 1: mismo calculo que `actualizarIndicadorToma`
+    # (`tomasEscena[escena].length + 1`), sin una segunda implementacion.
+    assert "var numeroToma = tomasEscena[escenaActual].length + 1;" in fragmento
+    assert "numero_toma: numeroToma," in fragmento
+
+
+def test_guion_js_desmarcar_tropiezo_no_calcula_ningun_numero_de_toma() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    coincidencia = pagina.index("function alternarTropiezoBloqueActual")
+    fin = pagina.index("\n  }", coincidencia)
+    fragmento = pagina[coincidencia:fin]
+    # La rama de desmarcar (`posicion !== -1`) solo recorta el array -- mismo
+    # criterio que el instante de R-34 (requisito 1, "al AÑADIR, no al quitar").
+    rama_desmarcar = fragmento[fragmento.index("} else {") :]
+    assert "lista.splice(posicion, 1);" in rama_desmarcar
+    assert "numeroToma" not in rama_desmarcar
+
+
+def test_guion_js_conserva_numero_de_toma_al_cargar_tropiezos_guardados() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_cargar_tropiezos(pagina)
+    # Requisito 2: mismo patron de opcionalidad que `instante_toma_segundos`
+    # (R-34/R-35) -- tolera su ausencia en un tropiezo guardado antes de R-36,
+    # en el mismo punto de transformacion que R-35 ya usa para el instante.
+    assert 'if (typeof tropiezo.numero_toma === "number") {' in fragmento
+    assert "normalizado.numero_toma = tropiezo.numero_toma;" in fragmento
 
 
 # --- Cue de indicaciones EN PANTALLA/NOTA en el reproductor (R-12) -------------------

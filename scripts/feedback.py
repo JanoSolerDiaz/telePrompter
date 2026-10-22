@@ -58,26 +58,35 @@ _ENCABEZADO_FEEDBACK = """\
 > Bloques de locución marcados como tropiezo durante la grabación (R-03):
 > «Escena»/«Bloque» identifican el mismo bloque de respiración numerado en
 > `guion-escenas.md`; el texto es el que estaba en pantalla en el momento de
-> marcarlo. «Instante» (R-34) es el segundo `mm:ss` de la toma en curso en el
-> que se marcó, vacío si el `.json` exportado no lo trae (archivo de la
-> versión 1 del contrato). Mientras una fila siga en estado `nuevo`, la
-> siguiente revisión la destaca en `guion-escenas.md` para reescribirla a
-> mano o con propuesta de la skill. Cambia la palabra `nuevo` por cualquier
-> otra (p. ej. `resuelto`) para dejar de verla destacada sin tener que
-> reescribir el texto.
+> marcarlo. «Toma» (R-36) es el número de la toma EN CURSO en el momento de
+> marcar, vacío si el `.json` exportado no lo trae (archivo anterior a R-36).
+> «Instante» (R-34) es el segundo `mm:ss` de esa toma en el que se marcó,
+> vacío si el `.json` exportado no lo trae (archivo de la versión 1 del
+> contrato). El instante solo es un punto de corte de fiar en el vídeo final
+> cuando «Toma» coincide con el número que el parte de rodaje (R-02) tiene
+> marcado como la toma buena de esa escena — cruce que se hace a mano con el
+> parte de rodaje. Mientras una fila siga en estado `nuevo`, la siguiente
+> revisión la destaca en `guion-escenas.md` para reescribirla a mano o con
+> propuesta de la skill. Cambia la palabra `nuevo` por cualquier otra (p. ej.
+> `resuelto`) para dejar de verla destacada sin tener que reescribir el texto.
 
-| Fecha | Escena | Bloque | Texto exacto | Instante | Estado |
-|-------|--------|--------|---------------|----------|--------|
+| Fecha | Escena | Bloque | Texto exacto | Toma | Instante | Estado |
+|-------|--------|--------|---------------|------|----------|--------|
 """
 
-#  El grupo "instante" (columna R-34) es opcional en la propia expresion -- no
-#  solo en el valor -- para que una fila escrita por una version anterior de
-#  FEEDBACK.md (sin esa columna, 5 campos en vez de 6) se siga reconociendo
-#  igual que una fila nueva: la migracion de formato de tabla no pierde en
-#  silencio el estado de una fila ya marcada a mano por el dueno.
+#  Los grupos "toma" (R-36) e "instante" (R-34) son opcionales en la propia
+#  expresion -- no solo en el valor -- para que una fila escrita por una
+#  version anterior de FEEDBACK.md (sin "Toma", 6 campos; sin ninguna de las
+#  dos, 5 campos) se siga reconociendo igual que una fila de 7 campos: la
+#  migracion de formato de tabla no pierde en silencio el estado de una fila
+#  ya marcada a mano por el dueno. El contenido capturado por "toma"/
+#  "instante" no se usa aqui (solo decide cuantas columnas de relleno saltar
+#  antes de "estado"), asi que no importa a cual de los dos grupos cae en la
+#  practica cuando solo hay una columna extra.
 _PATRON_FILA = re.compile(
     r"^\|\s*(?P<fecha>[^|]*)\|\s*(?P<escena>\d+)\s*\|\s*(?P<bloque>\d+)\s*\|"
-    r"\s*(?P<texto>.*?)\s*\|\s*(?:(?P<instante>[^|]*)\|\s*)?(?P<estado>[^|]*)\|\s*$"
+    r"\s*(?P<texto>.*?)\s*\|\s*"
+    r"(?:(?P<toma>[^|]*)\|\s*)?(?:(?P<instante>[^|]*)\|\s*)?(?P<estado>[^|]*)\|\s*$"
 )
 
 
@@ -95,6 +104,10 @@ class TropiezoBloque:
 
     indice_bloque: int
     texto: str
+    # R-36, opcional: numero de la toma EN CURSO (1, 2, 3...) en el instante en
+    # que se marco el tropiezo. `None` si el archivo exportado es de una
+    # version del contrato anterior a R-36 y no lo trae.
+    numero_toma: int | None = None
     # R-34, opcional: segundos desde el inicio de la toma en curso en el
     # instante en que se marco el tropiezo. `None` si el archivo exportado es
     # de la version 1 del contrato (anterior a R-34) y no lo trae.
@@ -147,6 +160,18 @@ def _tropiezo_desde_dict(bruto: Any, contexto: str) -> TropiezoBloque:
             f"{contexto}: 'texto' no puede contener saltos de línea ni '|' "
             "(rompería la tabla de FEEDBACK.md)."
         )
+    numero_toma = bruto.get("numero_toma")
+    if numero_toma is not None:
+        try:
+            numero_toma = int(numero_toma)
+        except (TypeError, ValueError) as excepcion:
+            raise RegistroFeedbackError(
+                f"{contexto}: 'numero_toma' debe ser numerico ({excepcion})."
+            ) from excepcion
+        if numero_toma < 1:
+            raise RegistroFeedbackError(
+                f"{contexto}: 'numero_toma' debe ser al menos 1 ({numero_toma})."
+            )
     instante = bruto.get("instante_toma_segundos")
     if instante is not None:
         try:
@@ -159,7 +184,12 @@ def _tropiezo_desde_dict(bruto: Any, contexto: str) -> TropiezoBloque:
             raise RegistroFeedbackError(
                 f"{contexto}: 'instante_toma_segundos' no puede ser negativo ({instante})."
             )
-    return TropiezoBloque(indice_bloque=indice, texto=texto, instante_toma_segundos=instante)
+    return TropiezoBloque(
+        indice_bloque=indice,
+        texto=texto,
+        numero_toma=numero_toma,
+        instante_toma_segundos=instante,
+    )
 
 
 def _escena_desde_dict(bruto: Any, indice: int) -> EscenaTropiezos:
@@ -231,6 +261,7 @@ def _formatear_instante(segundos: float) -> str:
 
 
 def _fila_feedback(fecha: str, numero_escena: int, tropiezo: TropiezoBloque) -> str:
+    toma = str(tropiezo.numero_toma) if tropiezo.numero_toma is not None else ""
     instante = (
         _formatear_instante(tropiezo.instante_toma_segundos)
         if tropiezo.instante_toma_segundos is not None
@@ -238,7 +269,7 @@ def _fila_feedback(fecha: str, numero_escena: int, tropiezo: TropiezoBloque) -> 
     )
     return (
         f"| {fecha} | {numero_escena} | {tropiezo.indice_bloque} | "
-        f"{tropiezo.texto} | {instante} | {ESTADO_NUEVO} |"
+        f"{tropiezo.texto} | {toma} | {instante} | {ESTADO_NUEVO} |"
     )
 
 

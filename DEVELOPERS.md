@@ -3960,6 +3960,78 @@ durante una grabación — el único sitio donde ese emparejamiento todavía imp
   Tropiezo" se enciende sobre el bloque 2 (relocalizado) y no sobre el índice viejo (0) —
   sin errores de consola. Cuatro redes en verde.
 
+## Vincular cada tropiezo con el número de toma en que se marcó (R-36)
+
+`assets/reproductor/guion.js::tropiezosEscena[escena]` es una única lista plana por
+escena, acumulada a través de TODAS las tomas que el dueño grabe de ella — nunca se
+reinicia ni se separa al cerrar una toma con `finalizarTomaActual` ni al empezar la
+siguiente — mientras que `tomasEscena[escena]` (R-02) sí numera cada toma por separado y
+guarda cuál quedó marcada `buena`. El `instante_toma_segundos` que R-34 añadió a cada
+tropiezo se calcula sobre el cronómetro de la toma en curso, pero una vez guardado nada
+decía a cuál de ellas pertenecía: un tropiezo de una toma descartada y uno de la toma
+buena convivían en la misma lista, con instantes que pertenecen a archivos de vídeo
+reales distintos — contradiciendo el propio motivo de R-34 (saltar directo al punto de
+corte en el montaje con ffmpeg), que solo es de fiar si el instante pertenece al archivo
+de vídeo real de la toma buena.
+
+- **Mismo cálculo que el indicador de la cabecera, sin segunda implementación**
+  (requisito 1). La rama de `alternarTropiezoBloqueActual` que añade el tropiezo
+  (`posicion === -1`) calcula `numeroToma` con `tomasEscena[escenaActual].length + 1` —
+  exactamente el mismo cálculo que ya usa `actualizarIndicadorToma` — y lo guarda como
+  `numero_toma` en el objeto del tropiezo, junto a `instante_toma_segundos`. Al
+  desmarcar (`posicion !== -1`) no se calcula nada nuevo, mismo criterio ya fijado por
+  R-34 requisito 2 ("al AÑADIR, no al quitar").
+- **Opcionalidad al cargar, mismo punto de transformación que R-35** (requisito 2).
+  `cargarTropiezosGuardados` copia `numero_toma` al objeto `normalizado` solo si es
+  numérico, exactamente el mismo patrón ya usado para `instante_toma_segundos` — un
+  tropiezo guardado por una sesión anterior a R-36 simplemente no lo trae, sin romper la
+  carga. Ortogonal a la relocalización por texto de R-35: a qué toma pertenece un
+  tropiezo no cambia según si su texto sigue siendo exacto o no, así que no se toca esa
+  lógica.
+- **Lado Python aditivo** (requisito 3). `scripts/feedback.py`: `TropiezoBloque` gana
+  `numero_toma: int | None = None`; `_tropiezo_desde_dict` lo admite si es entero ≥ 1 y
+  lo deja en `None` si falta, mismo patrón de validación que `instante_toma_segundos`.
+  Columna nueva «Toma» en `FEEDBACK.md` (carpeta de salida), entre «Texto exacto» e
+  «Instante» — agrupa el contexto de grabación (qué toma, qué segundo dentro de ella) en
+  vez de intercalarlo con la identidad del bloque. Ninguna de las dos entra en la clave
+  de duplicado (misma escena + mismo `indice_bloque` + mismo texto): son informativas.
+- **Regex de fila con dos columnas opcionales, no solo una** (requisito 4). Una fila de
+  `FEEDBACK.md` escrita antes de R-36 puede tener 5 columnas (anterior a R-34, sin
+  «Toma» ni «Instante») o 6 (R-34, con «Instante» pero sin «Toma»); una escrita por
+  R-36 tiene 7. `_PATRON_FILA` añade un segundo grupo opcional (`toma`) delante del ya
+  existente (`instante`), con la misma forma — el contenido que cada uno captura no se
+  usa en ningún sitio (`_filas_existentes` solo necesita escena/bloque/texto/estado para
+  deduplicar y destacar), así que no importa a cuál de los dos cae la única columna
+  extra cuando solo hay una: el backtracking estándar de `re` ya resuelve sin
+  ambigüedad las tres anchuras de fila válidas (5, 6 y 7 columnas), igual que (c) ya
+  hizo en R-34 para 5/6. Cubierto por
+  `test_registrar_tropiezos_sobre_un_feedback_de_la_version_1_no_duplica_filas` (5
+  columnas, sin tocar) y el nuevo
+  `test_registrar_tropiezos_sobre_un_feedback_de_la_version_2_no_duplica_filas` (6
+  columnas).
+- **Advertencia de uso explícita** (requisito 5). La cabecera de `FEEDBACK.md`
+  (`_ENCABEZADO_FEEDBACK`) y `SKILL.md` explican que el instante solo es un punto de
+  corte de fiar en el vídeo final cuando «Toma» coincide con el número que el parte de
+  rodaje (R-02) tiene marcado como la toma buena de esa escena — cruce que el dueño hace
+  a mano con el parte de rodaje que ya tiene, igual que ya hace hoy para `archivo_video`.
+- **`version` del `.json` exportado sube a 3** (`construirRegistroTropiezos`), cambio
+  aditivo — no se valida en `cargar_registro_tropiezos` (es informativo, igual que
+  `generado`). `references/contrato-tropiezos.md` documenta el campo nuevo.
+- **Fuera de alcance, como pedía la spec** (requisito 7): no se cruza automáticamente
+  «Toma» contra el registro de tomas para anotar en el propio `FEEDBACK.md`, de forma
+  automática, cuál fila pertenece a la toma buena — tomas y tropiezos siguen siendo dos
+  archivos exportados por separado, mismo diseño ya decidido para R-02/R-03; el dueño
+  hace el cruce a mano. Tampoco se toca `cargarTomasGuardadas`/`tomasEscena` (R-02/R-19
+  intactos), ni la lógica de relocalización por texto de R-35, ni se renumera
+  retroactivamente ningún tropiezo ya exportado en una versión anterior del contrato.
+- **Tests.** 8 nuevos: 5 en `tests/test_feedback.py` (carga/valida `numero_toma`,
+  formato de fila con la columna nueva, retrocompatibilidad de la fila de 6 columnas de
+  la versión 2) y 3 en `tests/test_reproductor.py` (número de toma guardado solo al
+  marcar con el mismo cálculo del indicador, nada calculado al desmarcar, opcionalidad
+  preservada al cargar), más el ajuste de 3 tests existentes al nuevo literal de
+  `lista.push`, a la columna nueva de `FEEDBACK.md` y a `version: 3`. Cuatro redes en
+  verde (719→727 tests).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
