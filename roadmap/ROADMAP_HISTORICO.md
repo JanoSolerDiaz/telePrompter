@@ -2438,6 +2438,66 @@ viejo (0) — sin errores de consola en ningún paso. Cuatro redes en verde. Det
 
 ---
 
+## Oleada v24 — Vincular cada tropiezo con el número de la toma en que se marcó
+
+### R-36 — Vincular cada tropiezo marcado con el número de la toma en que se marcó, para que el instante de R-34 no se confunda entre tomas distintas de la misma escena
+
+**Migración:** No (ningún campo nuevo en `estado.json`: los tropiezos nunca se han persistido ahí,
+igual que fijaron R-03/R-34; cambio aditivo en el `.json` exportado por "Exportar tropiezos" y en
+`FEEDBACK.md` — `references/contrato-tropiezos.md` sube a versión 3) · **Depende de:** R-02 (parte
+de rodaje, varias tomas por escena), R-03 (tropiezos marcados), R-34 (instante dentro de la toma) —
+todas `COMPLETADA` · **Origen:** observación de producto del PM (2026-10-21), no de auditoría ni de
+feedback de rodaje (`roadmap/FEEDBACK.md` sigue vacío) — grieta de arquitectura verificada sobre
+código ya construido: `tropiezosEscena[escena]` (`assets/reproductor/guion.js`) es una única lista
+plana por escena que se acumula a través de TODAS las tomas que el dueño grabe de ella — nunca se
+reinicia ni se separa al cerrar una toma con `finalizarTomaActual` ni al empezar la siguiente —
+mientras que `tomasEscena[escena]` sí numera cada toma por separado y guarda cuál quedó marcada
+`buena` (R-02). Un tropiezo marcado con `T` durante la toma 1 (descartada después) y otro marcado
+durante la toma 3 (la que el dueño termina marcando como buena, y la que de verdad llega al archivo
+de vídeo real del montaje, R-19) quedan en la misma lista, indistinguibles salvo por
+`indice_bloque`/`texto`; el `instante_toma_segundos` que R-34 guarda para cada uno (segundos desde
+el inicio de "la toma en curso" en el momento de marcar) se calcula siempre sobre el cronómetro de
+esa toma concreta, pero una vez guardado nada dice a cuál de ellas pertenece.
+
+**Objetivo:** el propio motivo con el que se construyó R-34 era ahorrar al dueño, en el montaje con
+ffmpeg que viene justo después de grabar, tener que reproducir la toma entera para encontrar a ojo
+el segundo exacto donde se trabó. Ese ahorro solo es de fiar si el instante pertenece al ARCHIVO DE
+VÍDEO REAL que de verdad se usa en el montaje — el de la toma marcada `buena` — y hoy no hay forma
+de saberlo con el dato ya disponible: si el dueño graba dos o tres tomas de la misma escena (el caso
+para el que existe el propio registro de tomas de R-02, no una excepción rara), `FEEDBACK.md` mezcla
+instantes de tomas distintas en las mismas filas, sin avisar de cuál es cuál. Usar a ciegas el
+instante de un tropiezo de una toma descartada busca un corte en un segundo que, en el archivo de
+vídeo real de la toma buena, no significa nada — o, peor, coincide por azar con un instante distinto
+del que de verdad falló.
+
+**Cómo se entregó:** `alternarTropiezoBloqueActual` (`guion.js`) guarda `numero_toma`
+(`tomasEscena[escena].length + 1`, mismo cálculo que `actualizarIndicadorToma`) solo al marcar, no al
+desmarcar; `cargarTropiezosGuardados` lo conserva de forma opcional, mismo patrón que
+`instante_toma_segundos` (R-34/R-35), sin tocar la lógica de relocalización por texto de R-35.
+`scripts/feedback.py`: `TropiezoBloque` gana `numero_toma: int | None = None` (entero ≥ 1 o `None`,
+mismo patrón de validación que `instante_toma_segundos`); `FEEDBACK.md` gana la columna «Toma», entre
+«Texto exacto» e «Instante». `_PATRON_FILA` gana un segundo grupo opcional en la propia expresión
+regular (`toma`), delante del ya existente (`instante`): ninguno de los dos contenidos capturados se
+usa en `_filas_existentes` (solo decide cuántas columnas de relleno saltar antes de `estado`), así
+que el backtracking estándar de `re` basta para reconocer sin ambigüedad filas de 5, 6 o 7 columnas.
+Cabecera de `FEEDBACK.md` avisa explícitamente que el instante solo es un punto de corte de fiar en
+el vídeo final cuando «Toma» coincide con el número que el parte de rodaje (R-02) tiene marcado como
+la toma buena de esa escena — cruce que el dueño sigue haciendo a mano. `version` del `.json`
+exportado sube a 3 (aditivo); `references/contrato-tropiezos.md` documenta el campo nuevo y la misma
+advertencia de uso. Fuera de alcance, por decisión explícita: no se cruza automáticamente «Toma»
+contra el registro de tomas dentro de esta misma tarea — tomas y tropiezos siguen siendo dos
+archivos exportados por separado, y fusionarlos de verdad habría sido un cambio de alcance mayor no
+pedido por esta ficha (el hueco lo cierra R-37, Oleada v25).
+
+8 tests nuevos (719→727): 5 en `tests/test_feedback.py` (carga/valida `numero_toma`, fila con la
+columna nueva, retrocompatibilidad de la versión 2 de 6 columnas) y 3 en `tests/test_reproductor.py`
+(número de toma guardado solo al marcar con el mismo cálculo que `actualizarIndicadorToma`, nada
+calculado al desmarcar, opcionalidad preservada al cargar en el mismo punto de transformación que
+R-35 ya usa para `instante_toma_segundos`). Cuatro redes en verde. Detalle completo en
+`DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2449,4 +2509,5 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 2026-10-14; la de v18 (R-30), 2026-10-15; la de v19 (R-31), 2026-10-16; la de v20 (R-32),
 2026-10-16 (implementación), archivada el 2026-10-19; la de v21 (R-33), 2026-10-19 (implementación),
 archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archivada el mismo día; la de
-v23 (R-35), 2026-10-21 (implementación), archivada el mismo día.)*
+v23 (R-35), 2026-10-21 (implementación), archivada el mismo día; la de v24 (R-36), 2026-10-22
+(implementación), archivada el mismo día.)*

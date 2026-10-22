@@ -12,6 +12,51 @@
 
 ---
 
+### Sesión 2026-10-22 (229) — Ciclo de Product Manager: archiva Oleada v24 (R-36) y abre R-37 (Oleada v25)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena
+reconfirmación del día del Programador (commit `abe8a3b`, sin cambio de código), sin divergencia que
+resolver. Árbol de trabajo limpio.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-22): sin
+hallazgos nuevos; cierra `#33` (ya documentado por P-07 el 2026-10-21). Los dos `ABIERTO` de siempre
+(`#24`, baja; `#30`, media) siguen igual, ambos de proceso/gobernanza puro, ya enrutados como
+preguntas `#11`/`#12` de §6 de `SEGUIMIENTO.md`, pendientes solo de respuesta del dueño — ninguno
+convertible en R-XX nueva ni en deuda técnica de backlog. `roadmap/FEEDBACK.md` revisado: sigue con
+su única fila de plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso
+completo) sigue abierto, así que no hay historia de rodaje real que incorporar todavía.
+
+**Archivada la Oleada v24 (R-36).** §1 de `SEGUIMIENTO.md` (fuente autoritativa) sin ninguna fila
+`PENDIENTE`: R-36 `COMPLETADA` desde el ciclo de Programador de esta misma jornada, reconfirmada en
+verde nueve veces seguidas sin tarea nueva. Movida a `roadmap/ROADMAP_HISTORICO.md` (sección completa
+con "Cómo se entregó"); `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo: cabecera reescrita,
+sección "Oleada v24" sustituida por la nota de archivo.
+
+**Abierta R-37 (Oleada v25): cruzar automáticamente «Toma» con la toma buena registrada en el parte
+de rodaje.** Mismo criterio de apertura ya establecido (R-12 en adelante): grieta de arquitectura
+verificada sobre código ya construido, no de auditoría ni de feedback de rodaje. R-36 dejó anotado
+como fuera de alcance explícito, en su propio requisito 7, el cruce automático de «Toma» contra el
+registro de tomas para decir sin que el dueño mire el parte de rodaje aparte cuáles tropiezos
+pertenecen de verdad a la toma marcada `buena` — y ambos datos (número de toma de cada tropiezo
+desde R-36, toma marcada buena de cada escena desde R-02/R-11, ya expuesta por
+`scripts/tomas.toma_buena`) ya existen en código construido y verificado, sin que fusionarlos exija
+tocar `guion.js` ni el `.json` exportado por "Exportar tropiezos". Spec completa en
+`ROADMAP_PRODUCTO.md`, Oleada v25: `scripts/feedback.registrar_tropiezos_en_feedback` gana el
+parámetro opcional `tomas_por_escena` (mismo contenedor que `estado.tomas`, sin valor por defecto no
+rompe ninguna llamada existente); columna nueva «¿Toma buena?» en `FEEDBACK.md`
+(`sí`/`no`/vacía), calculada solo al escribir cada fila, nunca persistida en el `.json` exportado —
+`references/contrato-tropiezos.md` NO sube de versión.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-36: permanece `COMPLETADA` (archivada). R-37:
+añadida, `PENDIENTE`.
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Dos filas nuevas: "PM (archivo de Oleada v24)" y
+"PM (apertura de R-37)", esta última con las alternativas consideradas (dejarlo a la memoria del
+dueño, fusionar de verdad los dos archivos exportados, o reutilizar `toma_buena` solo al volcar a
+`FEEDBACK.md`).
+
+---
+
 ### Sesión 2026-10-22 (228) — Ciclo de Programador: novena reconfirmación del día tras R-36, sin novedad de código
 
 **Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` veintitrés commits por
