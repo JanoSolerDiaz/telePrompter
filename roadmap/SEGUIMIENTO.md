@@ -10,13 +10,62 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-22 — **Ciclo de Programador: sexta reconfirmación del día tras
+**Última actualización:** 2026-10-22 — **Ciclo de Programador: séptima reconfirmación del día tras
 R-36, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-22), séptimo del día.** Revisión de entrada (protocolo): el
-contenedor arrancó con `HEAD` sobre `develop` veinte commits por detrás; `git checkout develop &&
-git pull origin develop` trajo ya fusionada la quinta reconfirmación del día (commit `407a6ef`, sin
-cambio de código) por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+contenedor arrancó con `HEAD` *detached* sobre `develop` veintiún commits por detrás; `git checkout
+develop && git pull origin develop` trajo ya fusionada la sexta reconfirmación del día (commit
+`8d96052`, sin cambio de código) por fast-forward limpio, árbol de trabajo limpio sin divergencia
+que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real (Python 3.11.17, `/usr/local/bin/python3`;
+confirmado con `python3 -m mypy --version`/`python3 -m ruff --version`/`python3 -m pytest
+--version`, mismo síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06).
+
+Registro de hallazgos revisado antes de elegir tarea: sin ningún hallazgo nuevo desde la auditoría
+del día (`fec64ea`); ninguno de severidad alta (pérdida de texto del guion, corrupción de estado,
+rotura del reproductor o de la auto-contención, seguridad). Solo `#24` (baja) y `#30` (media) siguen
+`ABIERTO` en `auditoriacontinua.md`, ambos de proceso/gobernanza puro pendientes de respuesta del
+dueño a las preguntas `#11`/`#12` de §6 — ninguno convertible en tarea ni en P-XX urgente. §1 (fuente
+autoritativa) sigue sin ninguna fila `PENDIENTE` ni `BLOQUEADA`: R-36 es la última fila y está
+**COMPLETADA**; abrir la siguiente Oleada (R-37) le corresponde a un ciclo de Product Manager, no a
+este ciclo de Programador. `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con una
+única fila plantilla vacía, sin entradas `nuevo` reales. `list_triggers` confirma que la rutina
+"programador-teleprompter" conserva el mismo cron horario (`0 6-15 * * 1-5`) y el mismo prompt desde
+su creación (2026-08-31/2026-09-02). Sin ningún hallazgo nuevo ni urgente que abrir como P-XX, este
+ciclo es de pura reconfirmación: sin novedad de código. Aprovechando esta pasada, se corrige además
+un desliz puramente cosmético de la sesión anterior: su commit `8d96052` se tituló "sexta
+reconfirmación" pero etiquetó su propia sección como "séptimo del día"; corregido abajo a "sexto del
+día" sin tocar su narrativa, para que la numeración de cabeceras vuelva a coincidir con los commits.
+
+Cuatro redes en verde: `python3 -m mypy scripts/ tests/` (72 archivos, sin problemas), `python3 -m
+ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (727 tests —contados por puntos,
+ver nota—, mismo recuento que tras R-36), `python3 scripts/verificar_salidas.py --fixture`
+(diecinueve etapas `OK`, sin cambios). Nota de entorno: `pytest -q` en este contenedor no imprime la
+línea de resumen final ("N passed in X.XXs"); confirmado el recuento exacto contando los 727 puntos
+de progreso y el código de salida 0 (sin fallos). Sin cambios en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1 y §5).** Ninguno: sin tarea de código que ejecutar.
+
+**Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`** (ciclo de pura reconfirmación, sin
+ninguna decisión técnica que tomar; la corrección de cabecera de arriba es cosmética, no una
+decisión técnica).
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño, sin preguntas nuevas de esta sesión.
+
+**Última actualización anterior (2026-10-22, ciclo de Programador): sexta reconfirmación del día
+tras R-36, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-22), sexto del día** (cabecera corregida en este mismo commit:
+la sesión que escribió esta entrada tituló su propio commit `8d96052` "sexta reconfirmación" pero
+etiquetó por error esta sección como "séptimo del día"; el contenido coincide con la sexta — trae
+fusionada la quinta — así que se corrige aquí la etiqueta, sin tocar la narrativa). Revisión de
+entrada (protocolo): el contenedor arrancó con `HEAD` sobre `develop` veinte commits por detrás;
+`git checkout develop && git pull origin develop` trajo ya fusionada la quinta reconfirmación del
+día (commit `407a6ef`, sin cambio de código) por fast-forward limpio, árbol de trabajo limpio sin
+divergencia que resolver.
 Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el
 intérprete real (Python 3.11.17, `/usr/local/bin/python3`; el `pip`/`pip3` desnudos del PATH
 resuelven contra otro intérprete — esta vez confirmado también con `pip show mypy` apuntando a otro
