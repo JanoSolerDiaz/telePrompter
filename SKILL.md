@@ -240,13 +240,15 @@ Mientras una fila siga en estado `nuevo`, la siguiente vez que se regenere `guio
 
 Desde R-34, cada tropiezo marcado durante la grabación guarda además, de forma opcional, el instante exacto (segundos desde el inicio de la toma en curso) en que se pulsó `T`: columna «Instante» de `FEEDBACK.md`, en formato `mm:ss`, vacía si el `.json` exportado es de una versión del contrato anterior a R-34 (sin ese dato). Es el punto de corte para saltar directo al tropiezo al revisar el vídeo con ffmpeg; no se reancla si la escena se regraba desde cero.
 
-Desde R-36, cada tropiezo guarda también, de forma opcional, el número de la toma EN CURSO en el momento de marcarlo: columna «Toma» de `FEEDBACK.md`, vacía si el `.json` exportado es de una versión del contrato anterior a R-36. Resuelve la ambigüedad de a qué archivo de vídeo real pertenece el instante cuando la escena se grabó más de una vez: el instante solo es un punto de corte de fiar cuando «Toma» coincide con el número que el parte de rodaje (R-02) tiene marcado como la toma buena de esa escena — cruce que se hace a mano con el parte de rodaje.
+Desde R-36, cada tropiezo guarda también, de forma opcional, el número de la toma EN CURSO en el momento de marcarlo: columna «Toma» de `FEEDBACK.md`, vacía si el `.json` exportado es de una versión del contrato anterior a R-36. Resuelve la ambigüedad de a qué archivo de vídeo real pertenece el instante cuando la escena se grabó más de una vez.
+
+Desde R-37, `registrar_tropiezos_en_feedback` puede recibir además `tomas_por_escena` (el mismo contenedor que `EstadoProyecto.tomas`, ya fusionado por el parte de rodaje de R-02): con él, cada fila nueva calcula sola la columna «¿Toma buena?» — `"sí"` si «Toma» coincide con el número que el parte de rodaje tiene marcado como la toma buena de esa escena, `"no"` si no coincide — en vez de dejar que el dueño haga ese cruce a mano. Queda vacía cuando todavía falta algún dato para compararlo (no se pasó `tomas_por_escena`, la escena no tiene ninguna toma marcada `buena` todavía, o el tropiezo no trae «Toma» por ser de una versión anterior a R-36); en ese caso sigue haciendo falta el cruce a mano con el parte de rodaje. El instante solo es un punto de corte de fiar en el vídeo final cuando «¿Toma buena?» dice «sí».
 
 | Opción | Por defecto | Nota |
 |--------|-------------|------|
 | Marcar/desmarcar tropiezo | tecla `T` | Parte del mapa configurable, `mapa_teclas_reproductor` |
 | Exportar tropiezos | botón en el índice | Descarga `teleprompter-tropiezos-<guion>.json`; mismo plan B de copiar a mano si la descarga falla |
-| Volcado a `FEEDBACK.md` | `scripts/feedback.registrar_tropiezos_en_feedback` | Añade filas `nuevo` con columnas `Fecha/Escena/Bloque/Texto exacto/Toma/Instante/Estado` (R-34/R-36), nunca borra ni reescribe una fila existente; copia de seguridad `.bak-<marca>` si el archivo ya existía |
+| Volcado a `FEEDBACK.md` | `scripts/feedback.registrar_tropiezos_en_feedback` | Añade filas `nuevo` con columnas `Fecha/Escena/Bloque/Texto exacto/Toma/¿Toma buena?/Instante/Estado` (R-34/R-36/R-37; la columna «¿Toma buena?» solo se rellena si se pasa `tomas_por_escena`), nunca borra ni reescribe una fila existente; copia de seguridad `.bak-<marca>` si el archivo ya existía |
 | Destacado en la siguiente revisión | `scripts/feedback.tropiezos_marcados_por_escena` + `documento_revision.generar_documento_revision(..., tropiezos_por_escena=...)` | Casa por texto exacto del bloque, no por índice; solo mientras la fila siga en `nuevo` |
 
 ## Recalibrar el ritmo con tiempos reales (R-04)

@@ -129,21 +129,30 @@ ojo en el `.json`), nunca como clave de emparejamiento.
 
 > Bloques de locución marcados como tropiezo durante la grabación (R-03): ...
 
-| Fecha | Escena | Bloque | Texto exacto | Toma | Instante | Estado |
-|-------|--------|--------|---------------|------|----------|--------|
-| 2026-09-03 | 3 | 0 | Texto exacto del bloque marcado. | 2 | 00:47 | nuevo |
-| 2026-09-03 | 3 | 2 | Otro bloque marcado en la misma escena. |  |  | nuevo |
+| Fecha | Escena | Bloque | Texto exacto | Toma | ¿Toma buena? | Instante | Estado |
+|-------|--------|--------|---------------|------|---------------|----------|--------|
+| 2026-09-03 | 3 | 0 | Texto exacto del bloque marcado. | 2 | sí | 00:47 | nuevo |
+| 2026-09-03 | 3 | 2 | Otro bloque marcado en la misma escena. |  |  |  | nuevo |
 ```
 
 La columna «Toma» (R-36) muestra el valor de `numero_toma`, o vacía si el
-tropiezo no lo trae. La columna «Instante» (R-34) muestra el valor de
+tropiezo no lo trae. La columna «¿Toma buena?» (R-37) se calcula al escribir
+la fila, nunca se lee ni se guarda en el `.json` exportado: cuando
+`registrar_tropiezos_en_feedback` recibe `tomas_por_escena` (el mismo
+contenedor que `EstadoProyecto.tomas`, ya fusionado por R-02), compara
+«Toma» contra la toma marcada `buena` de esa escena (`tomas.toma_buena`,
+reutilizada tal cual, sin una segunda implementación de la regla de
+exclusividad) — `"sí"` si coinciden, `"no"` si no, vacía si falta cualquiera
+de los dos datos que hacen falta para comparar (no se pasó
+`tomas_por_escena`, la escena no tiene ninguna toma marcada `buena` todavía,
+o «Toma» está vacía). La columna «Instante» (R-34) muestra el valor de
 `instante_toma_segundos` formateado `mm:ss` (minutos a dos dígitos), o vacía
-si el tropiezo no lo trae — ninguna de las dos forma parte de la clave de
-duplicado (misma escena + mismo `indice_bloque` + mismo texto, sin «Toma» ni
-«Instante»). **El instante solo es un punto de corte de fiar en el vídeo
-final cuando «Toma» coincide con el número que el parte de rodaje (R-02)
-tiene marcado como la toma buena de esa escena** — cruce que el dueño hace a
-mano con el parte de rodaje que ya tiene.
+si el tropiezo no lo trae — ninguna de las tres forma parte de la clave de
+duplicado (misma escena + mismo `indice_bloque` + mismo texto, sin «Toma»,
+«¿Toma buena?» ni «Instante»). **El instante solo es un punto de corte de
+fiar en el vídeo final cuando «¿Toma buena?» dice «sí»** — antes de R-37 este
+cruce lo hacía el dueño a mano con el parte de rodaje; con la columna vacía
+(dato todavía insuficiente) sigue haciendo falta hacerlo a mano.
 
 **Nunca borra ni reescribe una fila existente**: solo añade filas nuevas al
 final, y solo las que no estuvieran ya (misma escena, mismo `indice_bloque`,

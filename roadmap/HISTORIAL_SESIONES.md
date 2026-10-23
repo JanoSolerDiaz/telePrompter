@@ -12,6 +12,56 @@
 
 ---
 
+### Sesión 2026-10-23 (230) — Ciclo de Programador: implementa R-37 (Oleada v25)
+
+**Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` veintiséis commits por
+detrás; `git checkout develop && git pull origin develop` trajo ya fusionada la auditoría del
+2026-10-23 (commit `859e090`, sin hallazgos nuevos) por fast-forward limpio, árbol de trabajo
+limpio sin divergencia que resolver. Dependencias de desarrollo instaladas con `python3 -m pip
+install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17,
+`/usr/local/bin/python3`; mismo síntoma del `pip`/`pip3` desnudos ya documentado en
+`#22`/`#28`/P-06).
+
+**Revisión de hallazgos.** `auditoriacontinua.md` sin ningún hallazgo nuevo desde la auditoría del
+día (`859e090`); ninguno de severidad alta. Solo `#24`/`#30` siguen `ABIERTO`, ambos de
+proceso/gobernanza puro pendientes de respuesta del dueño — ninguno convertible en P-XX urgente.
+§1 de `SEGUIMIENTO.md` traía a **R-37 como única fila `PENDIENTE`**: spec completa leída en
+`ROADMAP_PRODUCTO.md` (Oleada v25); `DECISIONES_TECNICAS.md` consultado en el área de
+`scripts/feedback.py`/`scripts/tomas.py` antes de implementar, sin contradecir ninguna decisión
+previa.
+
+**R-37 implementada: cruzar «Toma» con la toma buena del parte de rodaje.**
+`scripts/feedback.py::registrar_tropiezos_en_feedback` gana el parámetro opcional
+`tomas_por_escena` (mismo contenedor que `EstadoProyecto.tomas`, sin valor por defecto no rompe
+ninguna llamada existente). Por cada tropiezo con `numero_toma` (R-36), `_es_toma_buena` reutiliza
+tal cual `tomas.toma_buena` (R-02/R-11, sin segunda implementación de la regla de exclusividad, y
+sin interceptar `RegistroTomasError` si el parte de rodaje trae dos tomas `buena` a la vez) para
+comparar contra la toma marcada `buena` de la escena y escribir la columna nueva «¿Toma buena?»
+(`"sí"`/`"no"`/vacía) en `FEEDBACK.md`, entre «Toma» e «Instante». `_PATRON_FILA` gana un tercer
+grupo opcional en la propia expresión regular para seguir reconociendo filas de 5 a 8 columnas
+según la versión que las escribió, sin perder ninguna fila `nuevo`/`resuelto` ya marcada a mano por
+el dueño — las filas de una exportación anterior a esta tarea no se recalculan (requisito 7,
+cubierto por test dedicado). Sin migración: `references/contrato-tropiezos.md` sigue en versión 3
+(nada cambia en el `.json` exportado ni en `guion.js`). `SKILL.md` y
+`references/contrato-tropiezos.md` actualizados para documentar la columna nueva y cuándo queda
+vacía.
+
+**Verificación.** 5 tests nuevos en `tests/test_feedback.py` (comparación «sí»/«no», columna vacía
+sin `tomas_por_escena`/sin ninguna toma marcada `buena`/sin `numero_toma` en el tropiezo, y no
+recálculo de una fila de formato anterior), más el ajuste de 4 tests existentes al nuevo literal de
+fila (727→732). Cuatro redes en verde: `python3 -m mypy scripts/ tests/` (72 archivos, sin
+problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (732
+tests, código de salida 0, sin fallos), `python3 scripts/verificar_salidas.py --fixture`
+(diecinueve etapas `OK`, sin cambios).
+
+**Cambios de estado (§1).** R-37: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` (corresponde a un ciclo de PM
+posterior, mismo criterio ya aplicado tras R-30 a R-36). Decisión de implementación añadida a
+`DECISIONES_TECNICAS.md` (fila `2026-10-23 | R-37 (implementación)`). Sin novedad en §3 ni §7; §6
+sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño.
+
+---
+
 ### Sesión 2026-10-22 (229) — Ciclo de Product Manager: archiva Oleada v24 (R-36) y abre R-37 (Oleada v25)
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena

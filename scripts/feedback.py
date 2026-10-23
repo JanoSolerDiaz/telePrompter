@@ -49,6 +49,7 @@ from pathlib import Path
 from typing import Any
 
 from config import NOMBRE_ARCHIVO_FEEDBACK
+from tomas import toma_buena
 
 ESTADO_NUEVO = "nuevo"
 
@@ -60,33 +61,39 @@ _ENCABEZADO_FEEDBACK = """\
 > `guion-escenas.md`; el texto es el que estaba en pantalla en el momento de
 > marcarlo. «Toma» (R-36) es el número de la toma EN CURSO en el momento de
 > marcar, vacío si el `.json` exportado no lo trae (archivo anterior a R-36).
-> «Instante» (R-34) es el segundo `mm:ss` de esa toma en el que se marcó,
-> vacío si el `.json` exportado no lo trae (archivo de la versión 1 del
-> contrato). El instante solo es un punto de corte de fiar en el vídeo final
-> cuando «Toma» coincide con el número que el parte de rodaje (R-02) tiene
-> marcado como la toma buena de esa escena — cruce que se hace a mano con el
-> parte de rodaje. Mientras una fila siga en estado `nuevo`, la siguiente
-> revisión la destaca en `guion-escenas.md` para reescribirla a mano o con
-> propuesta de la skill. Cambia la palabra `nuevo` por cualquier otra (p. ej.
-> `resuelto`) para dejar de verla destacada sin tener que reescribir el texto.
+> «¿Toma buena?» (R-37) dice «sí»/«no» cuando esa toma coincide (o no) con la
+> que el parte de rodaje ya tiene marcada como buena para la escena —
+> reemplaza el cruce manual que hasta ahora exigía abrir el parte de rodaje
+> aparte; queda vacía cuando todavía no hay dato para compararlo (ninguna
+> toma marcada `buena` en esa escena todavía, o «Toma» vacía), caso en el que
+> sigue haciendo falta el cruce a mano. «Instante» (R-34) es el segundo
+> `mm:ss` de esa toma en el que se marcó, vacío si el `.json` exportado no lo
+> trae (archivo de la versión 1 del contrato) — solo es un punto de corte de
+> fiar en el vídeo final cuando «¿Toma buena?» dice «sí». Mientras una fila
+> siga en estado `nuevo`, la siguiente revisión la destaca en
+> `guion-escenas.md` para reescribirla a mano o con propuesta de la skill.
+> Cambia la palabra `nuevo` por cualquier otra (p. ej. `resuelto`) para dejar
+> de verla destacada sin tener que reescribir el texto.
 
-| Fecha | Escena | Bloque | Texto exacto | Toma | Instante | Estado |
-|-------|--------|--------|---------------|------|----------|--------|
+| Fecha | Escena | Bloque | Texto exacto | Toma | ¿Toma buena? | Instante | Estado |
+|-------|--------|--------|---------------|------|---------------|----------|--------|
 """
 
-#  Los grupos "toma" (R-36) e "instante" (R-34) son opcionales en la propia
-#  expresion -- no solo en el valor -- para que una fila escrita por una
-#  version anterior de FEEDBACK.md (sin "Toma", 6 campos; sin ninguna de las
-#  dos, 5 campos) se siga reconociendo igual que una fila de 7 campos: la
-#  migracion de formato de tabla no pierde en silencio el estado de una fila
-#  ya marcada a mano por el dueno. El contenido capturado por "toma"/
-#  "instante" no se usa aqui (solo decide cuantas columnas de relleno saltar
-#  antes de "estado"), asi que no importa a cual de los dos grupos cae en la
-#  practica cuando solo hay una columna extra.
+#  Los grupos "toma" (R-36), "toma_buena" (R-37) e "instante" (R-34) son
+#  opcionales en la propia expresion -- no solo en el valor -- para que una
+#  fila escrita por una version anterior de FEEDBACK.md (sin ninguna columna
+#  extra, 5 campos; con "Toma", 6; con "Toma"+"Instante", 7) se siga
+#  reconociendo igual que una fila de 8 campos: la migracion de formato de
+#  tabla no pierde en silencio el estado de una fila ya marcada a mano por el
+#  dueno. El contenido capturado por "toma"/"toma_buena"/"instante" no se usa
+#  aqui (solo decide cuantas columnas de relleno saltar antes de "estado"),
+#  asi que no importa a cual de los grupos cae en la practica cuando hay menos
+#  columnas extra que grupos.
 _PATRON_FILA = re.compile(
     r"^\|\s*(?P<fecha>[^|]*)\|\s*(?P<escena>\d+)\s*\|\s*(?P<bloque>\d+)\s*\|"
     r"\s*(?P<texto>.*?)\s*\|\s*"
-    r"(?:(?P<toma>[^|]*)\|\s*)?(?:(?P<instante>[^|]*)\|\s*)?(?P<estado>[^|]*)\|\s*$"
+    r"(?:(?P<toma>[^|]*)\|\s*)?(?:(?P<toma_buena>[^|]*)\|\s*)?"
+    r"(?:(?P<instante>[^|]*)\|\s*)?(?P<estado>[^|]*)\|\s*$"
 )
 
 
@@ -260,8 +267,31 @@ def _formatear_instante(segundos: float) -> str:
     return f"{minutos:02d}:{segs:02d}"
 
 
-def _fila_feedback(fecha: str, numero_escena: int, tropiezo: TropiezoBloque) -> str:
+def _es_toma_buena(
+    numero_escena: int, numero_toma: int | None, tomas_por_escena: dict[str, Any] | None
+) -> str:
+    """«sí»/«no»/vacio para la columna «¿Toma buena?» (R-37): compara
+    `numero_toma` del tropiezo contra la toma marcada `buena` de la escena en
+    `tomas_por_escena` (reutilizando tal cual `tomas.toma_buena`, sin una
+    segunda implementacion de la regla de exclusividad). Vacio si falta
+    cualquiera de los dos datos que hacen falta para comparar -- nunca un
+    valor inventado."""
+    if numero_toma is None or tomas_por_escena is None:
+        return ""
+    toma = toma_buena(tomas_por_escena.get(str(numero_escena)), numero_escena)
+    if toma is None:
+        return ""
+    return "sí" if toma.get("numero") == numero_toma else "no"
+
+
+def _fila_feedback(
+    fecha: str,
+    numero_escena: int,
+    tropiezo: TropiezoBloque,
+    tomas_por_escena: dict[str, Any] | None,
+) -> str:
     toma = str(tropiezo.numero_toma) if tropiezo.numero_toma is not None else ""
+    es_buena = _es_toma_buena(numero_escena, tropiezo.numero_toma, tomas_por_escena)
     instante = (
         _formatear_instante(tropiezo.instante_toma_segundos)
         if tropiezo.instante_toma_segundos is not None
@@ -269,7 +299,7 @@ def _fila_feedback(fecha: str, numero_escena: int, tropiezo: TropiezoBloque) -> 
     )
     return (
         f"| {fecha} | {numero_escena} | {tropiezo.indice_bloque} | "
-        f"{tropiezo.texto} | {toma} | {instante} | {ESTADO_NUEVO} |"
+        f"{tropiezo.texto} | {toma} | {es_buena} | {instante} | {ESTADO_NUEVO} |"
     )
 
 
@@ -277,6 +307,7 @@ def registrar_tropiezos_en_feedback(
     carpeta_salida: Path,
     registro: RegistroTropiezos,
     fecha: str | None = None,
+    tomas_por_escena: dict[str, Any] | None = None,
 ) -> int:
     """Anade a `FEEDBACK.md` (carpeta de salida del guion) una fila `nuevo`
     por cada tropiezo del `registro` que todavia no este en el archivo
@@ -286,9 +317,17 @@ def registrar_tropiezos_en_feedback(
     sin sobrescritura destructiva de un archivo que el dueno puede haber
     editado a mano, p. ej. cambiando `nuevo` por `resuelto`).
 
+    `tomas_por_escena` (R-37, opcional) es el mismo contenedor que
+    `EstadoProyecto.tomas` -- con el, cada fila nueva calcula «¿Toma buena?»
+    comparando el numero de toma del tropiezo (R-36) contra la toma marcada
+    `buena` del parte de rodaje (R-02); sin el (valor por defecto), la columna
+    queda vacia, igual que antes de esta tarea. Se consulta y se descarta en
+    el momento de formatear cada fila, nunca se persiste.
+
     Nunca borra ni reescribe una fila existente: solo anade filas nuevas al
-    final. Devuelve cuantas filas nuevas se anadieron (0 si el registro no
-    trae ningun tropiezo que no estuviera ya)."""
+    final -- las ya escritas por una ejecucion anterior no se recalculan.
+    Devuelve cuantas filas nuevas se anadieron (0 si el registro no trae
+    ningun tropiezo que no estuviera ya)."""
     fecha = fecha or datetime.now(UTC).date().isoformat()
     ruta = carpeta_salida / NOMBRE_ARCHIVO_FEEDBACK
 
@@ -309,7 +348,9 @@ def registrar_tropiezos_en_feedback(
             if clave in existentes:
                 continue
             existentes.add(clave)
-            filas_nuevas.append(_fila_feedback(fecha, escena.numero_escena, tropiezo))
+            filas_nuevas.append(
+                _fila_feedback(fecha, escena.numero_escena, tropiezo, tomas_por_escena)
+            )
 
     if not filas_nuevas:
         return 0

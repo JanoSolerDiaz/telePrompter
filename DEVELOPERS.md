@@ -4032,6 +4032,58 @@ de vídeo real de la toma buena.
   `lista.push`, a la columna nueva de `FEEDBACK.md` y a `version: 3`. Cuatro redes en
   verde (719→727 tests).
 
+## Cruzar «Toma» con la toma buena del parte de rodaje (R-37)
+
+R-36 vinculó cada tropiezo con el número de la toma en que se marcó, pero dejó sobre el
+dueño comparar a mano, fila a fila, esa columna «Toma» contra el número que el parte de
+rodaje (R-02) ya tiene marcado como la toma buena de la escena — un cruce mecánico entre
+dos archivos que la skill ya tiene en memoria al escribir `FEEDBACK.md`, exactamente el
+mismo tipo de hueco que ya cerraron R-19/R-20/R-22 para el montaje.
+
+- **Nada nuevo que calcular, solo reutilizar `tomas.toma_buena`** (requisito 2).
+  `scripts/feedback.py` importa `toma_buena` de `tomas.py` (mismo patrón ya usado por
+  `concat_ffmpeg.py` para R-19) en vez de reimplementar la regla de exclusividad "como
+  mucho una toma buena por escena" — si hay más de una marcada `buena` en la misma
+  escena, `toma_buena` ya lanza `RegistroTomasError` y la propagación no se intercepta
+  aquí: un dato corrupto en el parte de rodaje no debe silenciarse al volcar
+  `FEEDBACK.md`, mismo criterio que R-11/#16.
+- **`tomas_por_escena` opcional, mismo contenedor que `EstadoProyecto.tomas`, nunca
+  persistido** (requisitos 1 y 7). `registrar_tropiezos_en_feedback` gana
+  `tomas_por_escena: dict[str, Any] | None = None`; con el valor por defecto, el
+  comportamiento es idéntico al de antes de esta tarea (ninguna llamada ni test
+  existente se rompe). Se consulta y se descarta en `_fila_feedback` al formatear cada
+  fila nueva — no se fusiona dentro de `RegistroTropiezos` ni se guarda en ningún
+  `.json`, mismo tratamiento que ya recibe `fecha`.
+- **Columna nueva «¿Toma buena?», entre «Toma» e «Instante»** (requisito 3). `"sí"` si
+  `toma_buena(...).get("numero")` coincide con `tropiezo.numero_toma`, `"no"` si no
+  coincide, vacía si falta cualquiera de los dos datos que hacen falta para comparar (no
+  se pasó `tomas_por_escena`, la escena no tiene ninguna toma marcada `buena` todavía, o
+  el tropiezo no trae `numero_toma` por ser de una versión del contrato anterior a
+  R-36) — nunca un valor inventado cuando falta el dato, mismo criterio que ya aplican
+  «Toma» e «Instante».
+- **Regex de fila con tres columnas opcionales, no solo dos** (requisito 4). Una fila
+  puede tener de 5 a 8 columnas según la versión de `FEEDBACK.md` que la escribió;
+  `_PATRON_FILA` añade un tercer grupo opcional (`toma_buena`) entre los dos ya
+  existentes (`toma`, `instante`) — el contenido capturado tampoco se usa aquí
+  (`_filas_existentes` solo necesita escena/bloque/texto/estado), así que el
+  backtracking estándar de `re` resuelve sin ambigüedad las cuatro anchuras de fila
+  válidas, igual que (d) ya hizo en R-34/R-36 al añadir los dos grupos anteriores.
+- **Cabecera y `references/contrato-tropiezos.md` actualizados, `version` del `.json`
+  intacta** (requisitos 5 y 6). `_ENCABEZADO_FEEDBACK` explica que «¿Toma buena?»
+  reemplaza el cruce manual, conservando el aviso para cuando queda vacía. El `.json`
+  que exporta "Exportar tropiezos" no cambia de forma (`guion.js` intacto): la
+  comparación vive enteramente en Python al volcar a `FEEDBACK.md`, así que
+  `references/contrato-tropiezos.md` sigue en versión 3.
+- **Fuera de alcance, como pedía la spec** (requisito 7): no se recalculan las filas ya
+  escritas por una ejecución anterior a esta tarea — solo las filas nuevas llevan la
+  columna calculada, cubierto por
+  `test_registrar_tropiezos_no_recalcula_una_fila_de_antes_de_r37`.
+- **Tests.** 5 nuevos en `tests/test_feedback.py` (comparación «sí»/«no», columna vacía
+  sin `tomas_por_escena`, sin ninguna toma marcada `buena`, sin `numero_toma` en el
+  tropiezo, y no recálculo de una fila de formato anterior), más el ajuste de 4 tests
+  existentes al nuevo literal de fila con la columna extra. Cuatro redes en verde
+  (727→732 tests).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola
