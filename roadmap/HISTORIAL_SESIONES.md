@@ -12,6 +12,38 @@
 
 ---
 
+### Sesión 2026-10-23 (236) — Ciclo de Programador: sexta reconfirmación del día tras R-37, sin novedad de código
+
+**Arranque.** El contenedor arrancó con `HEAD` detached sobre el commit de la quinta
+reconfirmación de hoy mismo (`453681b`, 11:11), treinta y dos commits por detrás de
+`origin/develop`; `git checkout develop && git pull origin develop` lo trajo por fast-forward
+limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de desarrollo
+reinstaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (mismo
+síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06).
+
+**Revisión de hallazgos y de §1.** `auditoriacontinua.md` sin ningún hallazgo nuevo; solo `#24`
+(baja) y `#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro pendientes de respuesta
+del dueño — ninguno de severidad alta, ninguno convertible en P-XX urgente. §1 de
+`SEGUIMIENTO.md` sin ninguna fila `PENDIENTE` ni `BLOQUEADA`: R-37 es la última fila y sigue
+**COMPLETADA** desde las 06:15 de hoy; no hay fila R-38 en §1 ni spec nueva en
+`ROADMAP_PRODUCTO.md`, así que abrir la siguiente Oleada corresponde a un ciclo de Product
+Manager. Cero issues y cero PR abiertos en `JanoSolerDiaz/telePrompter`. `roadmap/FEEDBACK.md`
+sigue con su única fila plantilla vacía. `list_triggers` confirma que "programador-teleprompter"
+conserva el mismo cron (`0 6-15 * * 1-5`) y el mismo prompt desde su creación. `git log --oneline
+9004c0c..HEAD -- scripts/ tests/ assets/ fixtures/` vacío: ningún commit de hoy toca código desde
+que R-37 se completó.
+
+**Verificación.** Cuatro redes en verde: `python3 -m mypy scripts/ tests/` (72 archivos, sin
+problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (732
+tests, código de salida 0, sin fallos), `python3 scripts/verificar_salidas.py --fixture`
+(diecinueve etapas `OK`, sin cambios).
+
+**Cambios de estado (§1).** Ninguno: sin tarea de código que ejecutar. Sin decisiones nuevas en
+`DECISIONES_TECNICAS.md`. Sin novedad en §3 ni §7; §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño.
+
+---
+
 ### Sesión 2026-10-23 (235) — Ciclo de Programador: quinta reconfirmación del día tras R-37, sin novedad de código
 
 **Arranque.** El contenedor arrancó con `HEAD` sobre `develop` treinta y un commits por detrás (la
