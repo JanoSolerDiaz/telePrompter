@@ -2498,6 +2498,62 @@ R-35 ya usa para `instante_toma_segundos`). Cuatro redes en verde. Detalle compl
 
 ---
 
+## Oleada v25 — Cruzar automáticamente «Toma» con la toma buena registrada en el parte de rodaje
+
+### R-37 — Marcar en `FEEDBACK.md`, de un vistazo y sin cruce manual, qué tropiezos pertenecen a la toma que el parte de rodaje ya tiene marcada como buena
+
+**Migración:** No (ninguna clave nueva en el `.json` que exporta "Exportar tropiezos":
+`references/contrato-tropiezos.md` no sube de versión — la columna nueva de `FEEDBACK.md` se calcula
+en el momento de escribir la fila, cruzando el registro de tropiezos recién exportado contra
+`estado.tomas` ya fusionado por R-02, sin guardar el resultado en ningún `.json`) · **Depende de:**
+R-02 (parte de rodaje, toma marcada `buena`), R-03 (tropiezos marcados), R-36 (número de toma de
+cada tropiezo) — todas `COMPLETADA` · **Origen:** observación de producto del PM (2026-10-22), no de
+auditoría ni de feedback de rodaje (`roadmap/FEEDBACK.md` seguía vacío) — cierra el hueco que la
+propia R-36 dejó anotado como fuera de alcance explícito (su requisito 7: "no se cruza
+automáticamente «Toma» contra el registro de tomas para anotar en el propio `FEEDBACK.md`... el
+dueño hace el cruce a mano con el número de toma que ya tiene en el parte de rodaje"), con ambos
+datos (número de toma de cada tropiezo, toma marcada buena de cada escena) ya en código construido y
+verificado.
+
+**Objetivo:** R-36 resolvió la ambigüedad de A QUÉ TOMA pertenece cada tropiezo, pero dejó sobre el
+dueño la responsabilidad de, cada vez que abre `FEEDBACK.md`, comparar a mano la columna «Toma» de
+cada fila contra el número que el parte de rodaje tiene marcado como la toma buena de esa escena —
+un cruce mecánico, repetido por cada fila de cada guion, con la misma fuente de error que motivó
+R-34/R-35/R-36 en primer lugar: un dato que ya existe en dos archivos distintos y que nadie fusiona
+todavía. El principio de producto 1 ("nada se descarta en silencio") se extiende aquí por el mismo
+criterio que ya aplicaron R-19/R-20/R-22 al montaje: si la skill ya tiene en memoria los dos datos
+que hacen falta para la respuesta, no debe dejar que el dueño la reconstruya a mano para cada fila.
+
+**Cómo se entregó:** `scripts/feedback.py::registrar_tropiezos_en_feedback` gana
+`tomas_por_escena: dict[str, Any] | None = None` (mismo contenedor que `EstadoProyecto.tomas`, el
+valor por defecto no rompe ninguna llamada existente). Por cada fila nueva con `numero_toma`
+(R-36), `_es_toma_buena` reutiliza tal cual `tomas.toma_buena` (R-02/R-11, sin segunda
+implementación de la regla de exclusividad "como mucho una toma buena por escena") para comparar
+contra la toma marcada `buena` de la escena, sin envolver la llamada en `try`/`except`: un parte de
+rodaje corrupto (más de una toma `buena` en la misma escena) propaga `RegistroTomasError` tal cual
+hasta quien llama, igual que ya hace `concat_ffmpeg.calcular_lista_concat_ffmpeg` desde R-19 — una
+columna informativa no debe enmascarar una corrupción real de estado. Columna nueva «¿Toma buena?»
+en `FEEDBACK.md`, entre «Toma» e «Instante» (`"sí"`/`"no"`/vacía — nunca un valor inventado cuando
+falta el dato: no se pasó `tomas_por_escena`, la escena no tiene ninguna toma `buena` todavía, o el
+tropiezo no trae `numero_toma` por ser de una versión del contrato anterior a R-36). `_PATRON_FILA`
+gana un tercer grupo opcional genérico (misma forma `[^|]*` que «toma»/«instante», sin restricción:
+ninguno de los tres se usa en `_filas_existentes`, que solo necesita escena/bloque/texto/estado), así
+que sigue reconociendo sin ambigüedad filas de 5 a 8 columnas — ninguna fila `nuevo`/`resuelto` ya
+existente deja de encontrarse por el cambio de formato. Cabecera de `FEEDBACK.md` documenta la
+columna nueva y dice explícitamente que reemplaza el cruce manual, conservando el aviso ya existente
+para cuando queda vacía. `references/contrato-tropiezos.md` NO sube de versión (sigue en 3): el
+cruce vive enteramente en Python al formatear cada fila, nada nuevo en el `.json` exportado ni en
+`guion.js`. Fuera de alcance, explícito: no se recalculan ni se reescriben las filas ya existentes de
+una ejecución anterior a esta tarea; no se toca `assets/reproductor/guion.js` ni el `.json`
+exportado por "Exportar tropiezos"; no se fusiona `tomas_por_escena` dentro de `RegistroTropiezos` ni
+se persiste en ningún sitio nuevo — se consulta y se descarta en el momento de formatear cada fila,
+igual que ya hace `fecha`.
+
+5 tests nuevos (727→732). Cuatro redes en verde. Detalle completo en
+`DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2510,4 +2566,5 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 2026-10-16 (implementación), archivada el 2026-10-19; la de v21 (R-33), 2026-10-19 (implementación),
 archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archivada el mismo día; la de
 v23 (R-35), 2026-10-21 (implementación), archivada el mismo día; la de v24 (R-36), 2026-10-22
-(implementación), archivada el mismo día.)*
+(implementación), archivada el mismo día; la de v25 (R-37), 2026-10-23 (implementación), archivada
+el mismo día.)*

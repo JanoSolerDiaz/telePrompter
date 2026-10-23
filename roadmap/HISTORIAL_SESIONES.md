@@ -12,6 +12,60 @@
 
 ---
 
+### Sesión 2026-10-23 (240) — Ciclo de Product Manager: archiva Oleada v25 (R-37) y abre R-38 (Oleada v26)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena
+reconfirmación del día del Programador (commit `8d4b31e`, sin cambio de código), sin divergencia
+que resolver. Árbol de trabajo limpio.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-23 03:03): sin
+hallazgos nuevos, confirma R-37 completada y revisada línea a línea. Los dos `ABIERTO` de siempre
+(`#24`, baja; `#30`, media) siguen igual, ambos de proceso/gobernanza puro, ya enrutados como
+preguntas `#11`/`#12` de §6 de `SEGUIMIENTO.md`, pendientes solo de respuesta del dueño — ninguno
+convertible en R-XX nueva ni en deuda técnica de backlog. `roadmap/FEEDBACK.md` revisado: sigue con
+su única fila de plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar un curso
+completo) sigue abierto, así que no hay historia de rodaje real que incorporar todavía.
+
+**Archivada la Oleada v25 (R-37).** §1 de `SEGUIMIENTO.md` (fuente autoritativa) sin ninguna fila
+`PENDIENTE`: R-37 `COMPLETADA` desde el ciclo de Programador de esta misma jornada (06:15),
+reconfirmada en verde nueve veces seguidas sin tarea nueva. Movida a `roadmap/ROADMAP_HISTORICO.md`
+(sección completa con "Cómo se entregó"); `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo:
+cabecera reescrita, sección "Oleada v25" sustituida por la nota de archivo.
+
+**Abierta R-38 (Oleada v26): avisar en los comandos de montaje de los tropiezos ocurridos dentro de
+la toma buena.** Mismo criterio de apertura ya establecido (R-12 en adelante): grieta de producto
+verificada sobre código ya construido, no de auditoría ni de feedback de rodaje. R-37 deja un hueco
+simétrico al que ella misma cerró en R-36: ahora `FEEDBACK.md` dice de un vistazo qué tropiezos
+ocurrieron dentro de la toma buena (columna «¿Toma buena?»), pero esa respuesta vive en un documento
+distinto del que el dueño abre en el momento real de montar (`comandos-montaje.md`, R-30) — así que
+tendría que volver a `FEEDBACK.md`, filtrar por «¿Toma buena?» = «sí» y traducir su «Instante» a
+mano. Verificado contra el código real antes de escribir la ficha: `scripts/comandos_montaje.py::
+calcular_comandos_montaje` ya acepta `tomas_por_escena` y genera el documento sin releer nunca del
+disco (mismo patrón que usó R-31 para los avisos de archivos faltantes); `scripts/feedback.py::
+cargar_registro_tropiezos`/`RegistroTropiezos`/`TropiezoBloque` ya exponen `numero_toma`/
+`instante_toma_segundos` tal cual hacen falta, y `feedback._es_toma_buena` ya resuelve exactamente
+la comparación que conviene reutilizar contra `tomas.toma_buena`, sin reimplementar la regla de
+exclusividad. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v26: nueva sección «Puntos a revisar
+antes de concatenar» en `comandos-montaje.md`, solo con `registro_tropiezos` opcional pasado a
+`calcular_comandos_montaje`/`generar_salidas_seleccionadas` — sin él, documento idéntico al de hoy;
+nunca un comando de recorte ni ejecución de `ffmpeg` (fuera de alcance, ya fijado por R-30/R-31).
+`references/contrato-tropiezos.md` NO sube de versión.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-37: permanece `COMPLETADA` (archivada). R-38:
+añadida, `PENDIENTE`.
+
+**Decisiones añadidas (`DECISIONES_TECNICAS.md`).** Dos filas nuevas: "PM (archivo de Oleada v25)"
+y "PM (apertura de R-38)", esta última con las alternativas consideradas (dejarlo a la memoria del
+dueño, generar directamente comandos de recorte, o añadir el parámetro opcional reutilizando la
+comparación ya existente).
+
+**Sin cambio de código.** Ciclo de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-38 queda lista para el siguiente ciclo de
+Programador. Sin novedad en §3 (bloqueos) ni §7 (desviaciones). §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño.
+
+---
+
 ### Sesión 2026-10-23 (239) — Ciclo de Programador: novena reconfirmación del día tras R-37, sin novedad de código
 
 **Arranque.** El contenedor arrancó ya en `develop`, sincronizada con `origin/develop` sobre el

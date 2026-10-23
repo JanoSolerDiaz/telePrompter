@@ -10,7 +10,58 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-23 — **Ciclo de Programador: novena reconfirmación del día tras
+**Última actualización:** 2026-10-23 — **Ciclo de Product Manager: archiva Oleada v25 (R-37) y
+abre R-38 (Oleada v26)**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-23): archiva Oleada v25 (R-37) y abre R-38 (Oleada v26).**
+Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
+fusionada la novena reconfirmación del día del Programador (commit `8d4b31e`, sin cambio de
+código), sin divergencia que resolver.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-23 03:03):
+sin hallazgos nuevos, confirma R-37 completada y revisada línea a línea. Los dos `ABIERTO` de
+siempre (`#24`, baja; `#30`, media) siguen igual, ambos de proceso/gobernanza puro, ya enrutados
+como preguntas `#11`/`#12` de §6, pendientes solo de respuesta del dueño — ninguno convertible en
+R-XX nueva ni en deuda técnica de backlog, ninguno de severidad alta que atender como P-XX urgente.
+`roadmap/FEEDBACK.md` revisado: sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto, así que no hay historia de
+rodaje real que incorporar todavía.
+
+§1 (fuente autoritativa) sin ninguna fila `PENDIENTE`: R-37 `COMPLETADA` desde el ciclo de
+Programador de esta misma jornada (06:15), reconfirmada en verde nueve veces seguidas sin tarea
+nueva. **Archivada la Oleada v25 (R-37)** en `roadmap/ROADMAP_HISTORICO.md` (sección completa con
+"Cómo se entregó"). `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo: cabecera reescrita, sección
+"Oleada v25" sustituida por la nota de archivo.
+
+**Abre R-38 (Oleada v26): avisar en los comandos de montaje de los tropiezos ocurridos dentro de la
+toma buena.** Mismo criterio de apertura ya establecido (R-12 en adelante): grieta de producto
+verificada sobre código ya construido, no de auditoría ni de feedback de rodaje. R-37 deja un hueco
+simétrico al que ella misma cerró en R-36: ahora `FEEDBACK.md` dice de un vistazo qué tropiezos
+ocurrieron dentro de la toma buena (columna «¿Toma buena?»), pero esa respuesta vive en un documento
+distinto del que el dueño abre en el momento real de montar (`comandos-montaje.md`, R-30) — así que
+tendría que volver a `FEEDBACK.md`, filtrar por «¿Toma buena?» = «sí» y traducir su «Instante» a
+mano. Verificado contra el código real antes de escribir la ficha:
+`scripts/comandos_montaje.py::calcular_comandos_montaje` ya acepta `tomas_por_escena` y genera el
+documento sin releer nunca del disco (mismo patrón que R-31 usó para los avisos de archivos
+faltantes); `scripts/feedback.py::cargar_registro_tropiezos`/`RegistroTropiezos`/`TropiezoBloque` ya
+exponen `numero_toma`/`instante_toma_segundos` tal cual se necesitan, y `feedback._es_toma_buena` ya
+resuelve exactamente la comparación que hace falta reutilizar contra `tomas.toma_buena`, sin
+reimplementar la regla de exclusividad. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v26: nueva
+sección «Puntos a revisar antes de concatenar» en `comandos-montaje.md`, solo con
+`registro_tropiezos` opcional pasado a `calcular_comandos_montaje`/`generar_salidas_seleccionadas`
+— sin él, documento idéntico al de hoy; nunca un comando de recorte ni ejecución de `ffmpeg` (fuera
+de alcance, ya fijado por R-30/R-31). `references/contrato-tropiezos.md` NO sube de versión. Fila
+`R-38 | ... | PENDIENTE | 2026-10-23 | ...` añadida a §1 en este mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-38 queda lista para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño. Una decisión nueva en `DECISIONES_TECNICAS.md` (apertura de
+R-38, con las alternativas consideradas); el archivo de R-37/Oleada v25 no añade ninguna decisión de
+diseño nueva — es puro movimiento de estado, ya reflejado en §1 y en `ROADMAP_HISTORICO.md`.
+
+**Última actualización anterior (2026-10-23, ciclo de Programador): novena reconfirmación del día tras
 R-37, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-23), noveno del día.** Revisión de entrada (protocolo): el
@@ -5789,6 +5840,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-35 | Relocalizar por texto, no por índice, un tropiezo guardado en `localStorage` cuando el troceo de la escena cambió desde que se marcó, para que el indicador "⚠ Tropiezo" nunca señale el bloque equivocado | **COMPLETADA** | 2026-10-21 | `assets/reproductor/guion.js`: `cargarTropiezosGuardados(escena, indice)` revalida cada tropiezo crudo contra `escena.bloques[indice_bloque]` (camino feliz si el texto coincide, intacto); si no coincide, busca el mismo texto exacto entre TODOS los bloques de la escena (mismo criterio que `scripts/feedback.py`) y relocaliza solo con coincidencia única, descartando en cero o más de una. La corrección (reubicación o descarte) se fija de inmediato en `localStorage` (`_indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena)`, solo para las escenas que de verdad cambiaron). De paso corrige una pérdida silenciosa que esta misma tarea habría hecho permanente: el objeto normalizado ahora conserva `instante_toma_segundos` (R-34) en vez de descartarlo en cada recarga — antes de R-35 el campo se perdía nada más leer `localStorage` (el `.map` de `cargarTropiezosGuardados` no lo copiaba), sin llegar a persistirse mal porque nada volvía a guardar el resultado; con el requisito 3 de R-35 (guardar de inmediato) habría quedado borrado para siempre de no corregirse aquí mismo. Sin migración (`references/contrato-tropiezos.md` no sube de versión, cambio puramente interno a cómo `guion.js` interpreta `localStorage`); `cargarTomasGuardadas`/`tomasEscena` intactos (requisito 5, ninguna toma referencia `indice_bloque`); `scripts/feedback.py`/`documento_revision.py` sin cambios (ya casan por texto). 6 tests nuevos (713→719) en `tests/test_reproductor.py`. Verificado también de punta a punta con Playwright/Chromium real: un tropiezo guardado en `indice_bloque=0` cuyo texto vive ahora en el bloque 2 se relocaliza a 2 con su `instante_toma_segundos` intacto, un tropiezo con texto reescrito se descarta sin indicador fantasma, uno ya correcto no cambia, y el indicador "⚠ Tropiezo" en pantalla sigue al bloque relocalizado (2), nunca al índice viejo (0) — sin errores de consola. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-36 | Vincular cada tropiezo marcado con el número de la toma en que se marcó, para que el instante de R-34 no se confunda entre tomas distintas de la misma escena | **COMPLETADA** | 2026-10-22 | `alternarTropiezoBloqueActual` (`guion.js`) guarda `numero_toma` (`tomasEscena[escena].length + 1`, mismo cálculo que `actualizarIndicadorToma`) solo al marcar, no al desmarcar; `cargarTropiezosGuardados` lo conserva de forma opcional, mismo patrón que `instante_toma_segundos` (R-34/R-35). `scripts/feedback.py`: `TropiezoBloque.numero_toma` opcional (entero ≥ 1); columna nueva «Toma» en `FEEDBACK.md` entre «Texto exacto» e «Instante»; `_PATRON_FILA` reconoce filas de 5, 6 y 7 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente; cabecera avisa que el instante solo es de fiar cuando «Toma» coincide con la toma buena del parte de rodaje. `version` del `.json` exportado sube a 3. 8 tests nuevos (719→727). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-37 | Cruzar automáticamente «Toma» con la toma buena ya registrada en el parte de rodaje, para que `FEEDBACK.md` diga de un vistazo qué tropiezos son de fiar como punto de corte real, sin que el dueño tenga que mirar los dos archivos a mano | **COMPLETADA** | 2026-10-23 | `scripts/feedback.py::registrar_tropiezos_en_feedback` gana `tomas_por_escena: dict[str, Any] \| None = None` (mismo contenedor que `EstadoProyecto.tomas`, sin valor por defecto no rompe ninguna llamada existente); por cada fila nueva con `numero_toma` (R-36), reutiliza tal cual `tomas.toma_buena` (R-02/R-11, sin segunda implementación de la regla de exclusividad) para comparar contra la toma marcada `buena` de la escena. Columna nueva «¿Toma buena?» en `FEEDBACK.md`, entre «Toma» e «Instante» (`"sí"`/`"no"`/vacía); `_PATRON_FILA` gana un tercer grupo opcional para seguir reconociendo filas de 5 a 8 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente — las filas de una exportación anterior a esta tarea no se recalculan. `references/contrato-tropiezos.md` NO sube de versión (sigue en 3): el cruce vive enteramente en Python al formatear cada fila, nada nuevo en el `.json` exportado ni en `guion.js`. 5 tests nuevos (727→732). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
+| R-38 | Añadir a `comandos-montaje.md` los instantes exactos a revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena, para que el dueño no tenga que volver a `FEEDBACK.md` en el momento real de montar | **PENDIENTE** | 2026-10-23 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v26: `calcular_comandos_montaje` gana `registro_tropiezos: RegistroTropiezos \| None = None` opcional; nueva sección «Puntos a revisar antes de concatenar» solo cuando algún tropiezo cruza como de la toma buena (misma comparación que ya usa `feedback._es_toma_buena`); sin él, documento idéntico al de hoy. Nunca genera ni ejecuta ningún comando de recorte real (fuera de alcance, ya fijado por R-30/R-31) |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
