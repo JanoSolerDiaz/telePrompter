@@ -8,30 +8,44 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-23 (ciclo de Product Manager). R-37 (Oleada v25) llevaba
-`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el ciclo de Programador de esta misma jornada (06:15),
-reconfirmada en verde nueve veces seguidas sin que ningún ciclo de PM la archivara todavía. Este
-ciclo archiva la Oleada v25 en `ROADMAP_HISTORICO.md` y abre R-38 (Oleada v26) en §1, sin
+**Última actualización:** 2026-10-26 (ciclo de Product Manager). R-38 (Oleada v26) llevaba
+`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el mismo día (ciclo de Programador de la madrugada),
+reconfirmada en verde en varias pasadas sucesivas sin que ningún ciclo de PM la archivara todavía.
+Este ciclo archiva la Oleada v26 en `ROADMAP_HISTORICO.md` y abre R-39 (Oleada v27) en §1, sin
 implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda
 respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
-completo) sigue abierto. `auditoriacontinua.md` revisado antes de elegir tarea: solo dos `ABIERTO`
-(`#24`, baja; `#30`, media), ambos de proceso/gobernanza puro y pendientes solo de la respuesta del
-dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 — ninguno de severidad alta, ninguno
-convertible en R-XX nueva ni en deuda técnica de backlog.
+completo) sigue abierto, ahora más de 50 días desde que T-32 lo dejó listo para grabar (2026-09-03).
+`auditoriacontinua.md` revisado antes de elegir tarea: solo dos `ABIERTO` (`#24`, baja; `#30`,
+media), ambos de proceso/gobernanza puro y pendientes solo de la respuesta del dueño a las preguntas
+#11/#12 de `SEGUIMIENTO.md` §6 (40 y 16 días sin respuesta) — ninguno de severidad alta, ninguno
+convertible en R-XX nueva ni en deuda técnica de backlog. `#34` (docstring desactualizado) ya está
+cerrado en código por P-08 (§5 de `SEGUIMIENTO.md`); queda para la siguiente pasada del auditor
+marcarlo `RESUELTO`, no es tarea del PM.
 
-**Oleada v25 (R-37) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
+propio roadmap):** van 38 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
+máquina real del dueño (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas
+tienen `origen: auditoría #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena
+calidad (cuatro redes en verde, 740 tests, invariantes reverificados en cada auditoría), pero el
+propio principio de producto que guía este documento —"utilidad real para un formador que graba
+vídeos de curso"— solo se confirma grabando, no leyendo código. El bloqueo #7 es una acción del
+dueño, no una tarea que el equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como
+pregunta nueva; se deja constancia aquí para que quede explícito que el criterio de salida de la
+Oleada v1 ("grabar un vídeo de curso entero") sigue siendo, con diferencia, el hito de mayor valor
+pendiente del proyecto, por delante de cualquier R-XX nueva. R-39 (más abajo) se elige precisamente
+por ser la mejora más directamente útil para esa primera sesión real cuando ocurra, no otra grieta
+de arquitectura interna.
 
-**Oleada v26 (R-38) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-producto del propio PM (2026-10-23), que cierra el hueco que deja la propia R-37: ahora
-`FEEDBACK.md` dice de un vistazo qué tropiezos ocurrieron dentro de la toma que de verdad se usó
-(columna «¿Toma buena?»), pero esa respuesta vive en un documento distinto del que el dueño abre en
-el momento real de montar (`comandos-montaje.md`, R-30) — así que, antes de concatenar, tendría que
-volver a `FEEDBACK.md`, filtrar las filas con «¿Toma buena?» = «sí» y traducir su «Instante» a mano
-a un punto de revisión. Mismo tipo de cruce mecánico entre dos documentos que la skill ya genera por
-separado, y mismo criterio que ya aplicaron R-19/R-20/R-22/R-36/R-37 al mismo tipo de hueco.
+**Oleada v26 (R-38) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+
+**Oleada v27 (R-39) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+producto del propio PM (2026-10-26). A diferencia de las últimas oleadas (cierres de huecos de
+arquitectura entre salidas ya existentes), esta mejora el propio reproductor —la salida principal,
+T-18 a T-26— con algo que el dueño echará en falta en la primera sesión de grabación real: saber,
+sin entrar en ninguna escena, cuánto le queda por grabar.
 
 ---
 
@@ -275,87 +289,72 @@ tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún h
 pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-23). Su spec completa y
 cómo se entregó viven ahí.
 
-### Oleada v26 — Avisar en los comandos de montaje de los tropiezos ocurridos dentro de la toma buena
+### Oleada v26 — entregada
 
-#### R-38 — Añadir a `comandos-montaje.md` los instantes exactos que conviene revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena
+La oleada v26 (avisar en `comandos-montaje.md` de los tropiezos ocurridos dentro de la toma buena,
+R-38) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio
+propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-26). Su spec
+completa y cómo se entregó viven ahí.
 
-**Migración:** No (ningún campo nuevo en `estado.json` ni en el `.json` exportado por "Exportar
-tropiezos" — `references/contrato-tropiezos.md` sigue en la versión 3; `comandos-montaje.md` sigue
-siendo un documento calculado, nunca releído del disco, mismo patrón que R-30/R-31) · **Depende
-de:** R-30 (`comandos-montaje.md`, cadena real de comandos `ffmpeg`), R-31 (avisos de archivos
-faltantes en el mismo documento), R-34 (`instante_toma_segundos` de cada tropiezo), R-36
-(`numero_toma` de cada tropiezo), R-37 (cruce «¿Toma buena?» en `FEEDBACK.md`) — todas `COMPLETADA`
-· **Origen:** observación de producto del PM (2026-10-23), no de auditoría ni de feedback de rodaje
-(`roadmap/FEEDBACK.md` sigue vacío) — cierra el hueco que deja la propia R-37: ahora `FEEDBACK.md`
-dice de un vistazo qué tropiezos ocurrieron dentro de la toma buena, pero esa respuesta vive en un
-documento distinto del que el dueño abre para montar (`comandos-montaje.md`, R-30), así que antes de
-concatenar tendría que volver a `FEEDBACK.md`, filtrar las filas con «¿Toma buena?» = «sí» y
-traducir su «Instante» a mano a un punto de revisión — el mismo tipo de cruce mecánico y repetido,
-entre dos archivos que la skill ya genera por separado, que motivó R-19/R-20/R-22/R-36/R-37.
+### Oleada v27 — Progreso de grabación visible en el índice de escenas
 
-**Objetivo:** que `comandos-montaje.md` —el documento que el dueño abre en el momento real de
-montar, justo después de grabar— diga, sin tener que consultar `FEEDBACK.md` aparte, en qué segundo
-exacto de cada archivo de vídeo real conviene revisar antes de ejecutar el primer comando (la
-concatenación), porque ahí hubo un tropiezo marcado durante la toma que efectivamente se usó. Es una
-nota informativa, igual que el aviso de archivo referenciado ausente de R-31: nunca un comando de
-recorte, nunca una ejecución de `ffmpeg` (sigue fuera de alcance, fijado por R-30 requisito 5 y
-reafirmado por R-31).
+#### R-39 — Mostrar en el índice de escenas, sin entrar en ninguna, cuántas quedan por grabar y cuánto tiempo estimado representan
+
+**Migración:** No (dato puramente derivado para la pantalla; ningún campo nuevo en `estado.json` ni
+en el JSON embebido del reproductor — `duracion_estimada_segundos` por escena, T-12, y el estado
+grabada/revisada/pendiente por escena, R-02, ya viajan hoy) · **Depende de:** T-19 (índice de
+escenas), T-12 (motor de tiempos), R-02 (registro de tomas por escena, estado derivado) — todas
+`COMPLETADA` · **Origen:** observación de producto del PM (2026-10-26), no de auditoría ni de
+feedback de rodaje (`roadmap/FEEDBACK.md` sigue vacío). A diferencia de las últimas doce oleadas
+(cierres de huecos de arquitectura entre salidas de montaje ya existentes), esta toca el propio
+reproductor por primera vez desde R-33: el índice (`assets/reproductor/guion.js::renderizarIndice`)
+ya calcula y muestra, por escena, su estado (`calcularEstadoEscena`: `pendiente` / `grabada` /
+`revisada`, T-19/R-02) y ya tiene un párrafo de resumen global (`.resumen-guion`: "N escenas ·
+duración total estimada · ppm ponderado"), pero ninguno de los dos agrega esa información para
+responder la pregunta que de verdad importa en mitad de una sesión de grabación real: ¿cuánto me
+queda?
+
+**Objetivo:** que el dueño, parado en el índice entre dos tomas (sin volver a entrar a ninguna
+escena ni abrir `estado.json`), sepa de un vistazo cuántas escenas le quedan por grabar desde cero y
+cuánto tiempo estimado representan — para decidir si le da tiempo a terminar la sesión o conviene
+dejarlo para otro día. Es exactamente el tipo de ayuda de grabación que ya persigue T-23 (cuenta
+atrás, cronómetro, barra de progreso por bloques dentro de una escena), llevado al nivel del índice
+completo, que hoy no tiene ningún agregado de progreso entre escenas.
 
 **Requisitos:**
-1. `scripts/comandos_montaje.py::calcular_comandos_montaje` gana un parámetro opcional
-   `registro_tropiezos: RegistroTropiezos | None = None` (el mismo tipo que exporta "Exportar
-   tropiezos" y que ya carga `scripts/feedback.cargar_registro_tropiezos`). Con el valor por defecto
-   (`None`), el comportamiento y el documento generado son idénticos a los de hoy — ninguna llamada
-   existente (ni ningún test ya escrito) se rompe por no pasarlo.
-2. Por cada escena de `registro_tropiezos.escenas` con al menos un tropiezo cuyo `numero_toma`
-   (R-36) coincide con el número de la toma marcada `buena` de esa escena en `tomas_por_escena` —
-   reutilizando tal cual la misma comparación que ya hace `feedback._es_toma_buena` contra
-   `tomas.toma_buena` (R-02/R-11), sin una segunda implementación de la regla de exclusividad "como
-   mucho una toma buena por escena" — reunir los `instante_toma_segundos` (R-34) de esos tropiezos,
-   formateados `mm:ss` con el mismo criterio que `feedback._formatear_instante` (minutos a dos
-   dígitos).
-3. Nueva sección al final del documento generado por `formatear_comandos_montaje` —después de los
-   pasos numerados, después del aviso de «sin sección Capítulos» si aplica, y después de la nota de
-   «escenas todavía sin toma buena» si aplica (la nota de archivos referenciados faltantes de R-31
-   sigue yendo al principio, sin cambios; esta sección nueva es la última pieza del documento, no
-   antes de ninguna de las existentes)—: «**Puntos a revisar antes de concatenar**», con una línea
-   por escena afectada: número de escena, título y la lista de instantes `mm:ss` (ordenados),
-   citando que esos segundos corresponden a la toma que `concat-ffmpeg.txt` va a usar de verdad para
-   esa escena.
-4. Un tropiezo con `numero_toma` o `instante_toma_segundos` en `None` (archivo exportado de una
-   versión del contrato anterior a R-34/R-36) se ignora para esta sección sin avisar de nada
-   adicional — no hay instante que listar ni toma que comparar; sigue siendo el caso ya cubierto por
-   el valor vacío de «¿Toma buena?» en `FEEDBACK.md` (R-37).
-5. Sin `registro_tropiezos` (valor por defecto `None`), la sección nueva no aparece y el documento es
-   byte a byte el de antes de esta tarea. Con `registro_tropiezos` pero sin ninguna escena con un
-   tropiezo cruzado como de la toma buena, tampoco aparece la sección — nunca un encabezado vacío.
-6. `scripts/salidas.py::generar_salidas_seleccionadas` gana el mismo parámetro opcional
-   `registro_tropiezos: RegistroTropiezos | None = None`, propagado a
-   `_generar_comandos_montaje`/`generar_comandos_montaje` igual que ya se propaga
-   `tomas_por_escena` (R-18/R-30); sin valor, sin cambio de comportamiento en ninguna salida.
-7. `references/contrato-montaje.md` documenta la sección nueva de `comandos-montaje.md` y de dónde
-   sale (cruce con el registro de tropiezos exportado, cuando se aporta); `references/contrato-tropiezos.md`
-   NO sube de versión (nada cambia en el `.json` exportado ni en `guion.js`: el cruce vuelve a vivir
-   enteramente en Python, al formatear `comandos-montaje.md`, mismo patrón que R-37 fijó para
-   `FEEDBACK.md`).
-8. **Fuera de alcance, explícito:** no se genera ningún comando `ffmpeg` de recorte, silencio o
-   transición real, ni se ejecuta `ffmpeg` desde la skill (ya fuera de alcance desde R-30/R-31); no
-   se persiste `registro_tropiezos` en `estado.json` ni en ningún sitio nuevo — se consulta y se
-   descarta al formatear el documento, igual que `tomas_por_escena`; no se cambia ninguna regla de
-   `tomas.toma_buena` ni de `feedback.py`; no se extiende la carga de `registro_tropiezos` a ninguna
-   otra salida (`concat-ffmpeg.txt`, `.srt`, capítulos siguen exactamente igual); no se avisa de
-   tropiezos de tomas que NO son la buena (esos ya los puede ver el dueño en `FEEDBACK.md` con
-   «¿Toma buena?» = «no», sin que afecten al vídeo final).
+1. En `renderizarIndice()` (`assets/reproductor/guion.js`), justo debajo del párrafo
+   `.resumen-guion` ya existente, añadir una línea nueva (`.resumen-progreso-grabacion` o clase
+   equivalente, mismo criterio tipográfico y de contraste que `.resumen-guion`, T-21) con el
+   desglose de escenas por estado: nº en `pendiente`, nº en `grabada` (con tomas pero ninguna
+   marcada buena) y nº en `revisada` (con toma buena), reutilizando tal cual el array `estadosEscena`
+   que `renderizarIndice` ya calcula con `calcularEstadoEscena` — sin una segunda función que
+   reimplique el mismo criterio.
+2. En la misma línea, la duración total estimada que queda por grabar desde cero: suma de
+   `duracion_estimada_segundos` (T-12) únicamente de las escenas en estado `pendiente` — nunca de
+   las `grabada` ni `revisada`, que ya tienen al menos una toma hecha y no son tiempo pendiente de
+   grabar por primera vez. Formateada con la misma función `formatearTiempo` que ya usa el resto del
+   índice.
+3. Recalculado en cada llamada a `renderizarIndice()` (mismo punto donde ya se recalcula
+   `estadosEscena`), de modo que marcar una toma como buena (`G`) durante la grabación y volver al
+   índice actualiza el recuento y el tiempo restante sin recargar la página — ninguna lógica nueva de
+   invalidación, el mismo ciclo de recomposición que T-19/T-26 ya usan para el resto del índice.
+4. Caso "todavía no he grabado nada" (todas `pendiente`) y caso "ya grabé todo" (ninguna
+   `pendiente`, 0 minutos restantes): ambos se muestran con el mismo formato, sin ocultar la línea ni
+   añadir un mensaje especial — "0 min estimados por grabar" es información válida, no un error.
+5. Legibilidad a distancia de cámara (principio de producto 5): la línea nueva usa la paleta ya
+   existente del tema oscuro del reproductor (T-21), sin introducir ningún color nuevo; no compite en
+   jerarquía visual con el título de la escena ni con el botón "Continuar" (T-26).
+6. Sin cambio en `scripts/reproductor.py` ni en el contrato de datos embebido: `duracion_estimada_segundos`
+   por escena y las tomas por escena que alimentan `tomasEscena`/`estadosEscena` ya viajan hoy; el
+   agregado se calcula enteramente en `guion.js`, igual que `calcularEstadoEscena` ya hace.
 
-**Criterio de aceptación:** con `tomas_por_escena` trayendo, para la escena 3, una toma marcada
-`buena` con `numero: 2`, y un `registro_tropiezos` de esa escena con un tropiezo con
-`numero_toma: 2` e `instante_toma_segundos: 47.0`, y otro con `numero_toma: 1` (toma descartada) en
-la escena 5, `calcular_comandos_montaje(..., tomas_por_escena=..., registro_tropiezos=...)` produce
-un documento con la sección «Puntos a revisar antes de concatenar» citando exactamente la escena 3
-con el instante `00:47`, sin ninguna línea para la escena 5; llamando sin `registro_tropiezos` (o
-con `None`, el valor por defecto) el documento es idéntico, byte a byte, al que genera hoy la misma
-llamada; con `registro_tropiezos` pasado pero ningún tropiezo cruzando como de la toma buena en
-ninguna escena, la sección tampoco aparece. Cuatro redes en verde.
+**Criterio de aceptación:** sobre una fixture con escenas en los tres estados a la vez (al menos una
+`pendiente`, una `grabada` sin toma buena y una `revisada` con toma buena), el índice muestra el
+recuento exacto de las tres junto con la suma de `duracion_estimada_segundos` solo de las
+`pendiente`, visible sin pulsar nada; marcar una toma como buena en una escena `pendiente` durante la
+grabación y volver al índice actualiza tanto el recuento como el tiempo restante, sin recargar la
+página; con cero escenas `pendiente`, la línea sigue visible y muestra el tiempo restante como cero.
+Verificado también visualmente con Playwright/Chromium real, mismo criterio que T-19/T-22/R-33.
 
 ---
 

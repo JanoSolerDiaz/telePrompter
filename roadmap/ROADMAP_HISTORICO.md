@@ -2554,6 +2554,44 @@ igual que ya hace `fecha`.
 
 ---
 
+## Oleada v26 — Avisar en los comandos de montaje de los tropiezos ocurridos dentro de la toma buena
+
+### R-38 — Añadir a `comandos-montaje.md` los instantes exactos que conviene revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena
+
+**Migración:** No (ningún campo nuevo en `estado.json` ni en el `.json` exportado por "Exportar
+tropiezos" — `references/contrato-tropiezos.md` sigue en la versión 3; `comandos-montaje.md` sigue
+siendo un documento calculado, nunca releído del disco, mismo patrón que R-30/R-31) · **Depende
+de:** R-30 (`comandos-montaje.md`), R-31 (avisos de archivos faltantes en el mismo documento), R-34
+(`instante_toma_segundos` de cada tropiezo), R-36 (`numero_toma` de cada tropiezo), R-37 (cruce
+«¿Toma buena?» en `FEEDBACK.md`) — todas `COMPLETADA` · **Origen:** observación de producto del PM
+(2026-10-23) — cierra el hueco que deja la propia R-37: ahora `FEEDBACK.md` dice de un vistazo qué
+tropiezos ocurrieron dentro de la toma buena, pero esa respuesta vivía en un documento distinto del
+que el dueño abre en el momento real de montar (`comandos-montaje.md`, R-30).
+
+**Objetivo:** que `comandos-montaje.md` —el documento que el dueño abre en el momento real de
+montar, justo después de grabar— diga, sin tener que consultar `FEEDBACK.md` aparte, en qué segundo
+exacto de cada archivo de vídeo real conviene revisar antes de ejecutar el primer comando (la
+concatenación), porque ahí hubo un tropiezo marcado durante la toma que efectivamente se usó. Nota
+informativa, igual que el aviso de archivo referenciado ausente de R-31: nunca un comando de
+recorte, nunca una ejecución de `ffmpeg` (sigue fuera de alcance, fijado por R-30/R-31).
+
+**Cómo se entregó:** `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje` ganan
+`registro_tropiezos: RegistroTropiezos | None = None` (último parámetro opcional, reenviado tal cual
+desde `salidas.generar_salidas_seleccionadas`/`_generar_comandos_montaje`); reutiliza
+`tomas.toma_buena` (misma comparación que ya hace `feedback._es_toma_buena`, sin segunda
+implementación de la regla de exclusividad) para listar, en la sección final nueva «Puntos a revisar
+antes de concatenar», los instantes `mm:ss` (`feedback.formatear_instante`, antes
+`_formatear_instante`, promovida a pública) de los tropiezos marcados dentro de la toma que
+`concat-ffmpeg.txt` va a usar de verdad para cada escena. Sin `registro_tropiezos` (valor por
+defecto), documento idéntico byte a byte al de antes de la tarea; sin ningún tropiezo cruzando como
+de la toma buena, tampoco aparece la sección. `references/contrato-montaje.md` documenta la sección
+nueva; `references/contrato-tropiezos.md` NO sube de versión (sigue en 3).
+
+8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py`, 2 en `tests/test_salidas.py`.
+Cuatro redes en verde. `SKILL.md`/`DEVELOPERS.md` actualizados.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2567,4 +2605,5 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archivada el mismo día; la de
 v23 (R-35), 2026-10-21 (implementación), archivada el mismo día; la de v24 (R-36), 2026-10-22
 (implementación), archivada el mismo día; la de v25 (R-37), 2026-10-23 (implementación), archivada
-el mismo día.)*
+el mismo día; la de v26 (R-38), 2026-10-26 (implementación), archivada en este ciclo de PM
+(2026-10-26).)*

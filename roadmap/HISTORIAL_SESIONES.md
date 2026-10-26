@@ -12,6 +12,66 @@
 
 ---
 
+### Sesión 2026-10-26 (253) — Ciclo de Product Manager: archiva Oleada v26 (R-38) y abre R-39 (Oleada v27)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena
+reconfirmación del día del Programador (commit `1bd0150`, sin cambio de código), árbol de trabajo
+limpio sin divergencia que resolver.
+
+**Documentos de referencia leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): `HOJA_DE_RUTA.md`
+§0 completo (protocolo y límites de autonomía §0.3, solo lectura); §1/§3/§5/§6/§7 de
+`SEGUIMIENTO.md`; `ROADMAP_PRODUCTO.md` completo; `FEEDBACK.md` (única fila plantilla, sin entradas
+`nuevo`); el registro de hallazgos de `auditoriacontinua.md` y su narrativa más reciente
+(2026-10-26).
+
+**Hallazgos del auditor.** Solo tres filas sin `RESUELTO`/`ASUMIDO`: `#34` (baja, docstring
+desactualizado en `revalidacion.py`) ya cerrado en código el mismo día por el Programador como P-08
+(§5 de `SEGUIMIENTO.md`) — queda para la siguiente pasada del auditor marcarlo `RESUELTO`, nada que
+hacer aquí; `#24` (baja) y `#30` (media), ambos de proceso/gobernanza puro, ya enrutados como
+preguntas `#11`/`#12` de §6, pendientes solo de respuesta del dueño (40 y 16 días sin respuesta) —
+ninguno convertible en R-XX de producto/arquitectura ni en deuda técnica de backlog, ninguno de
+severidad alta que atender como urgente.
+
+**Feedback de rodaje.** `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía: ninguna
+entrada `nuevo` que volcar al roadmap. El bloqueo #7 de §3 (grabar un vídeo de curso completo) sigue
+abierto, más de 50 días desde que T-32 dejó la skill instalada y verificada en la máquina real del
+dueño (2026-09-03).
+
+**Archivado.** R-38 (Oleada v26) llevaba `COMPLETADA` en §1 desde la madrugada de esta misma jornada,
+reconfirmada en verde nueve veces seguidas por el Programador sin que ningún ciclo de PM la
+archivara. Movida a `roadmap/ROADMAP_HISTORICO.md` con su spec completa y "Cómo se entregó".
+`ROADMAP_PRODUCTO.md` actualizado: cabecera reescrita con fecha y resumen del ciclo, sección "Oleada
+v26" sustituida por la nota de archivo.
+
+**Nota de producto (no es una R-XX).** Añadida a la cabecera de `ROADMAP_PRODUCTO.md`: de las 38
+R-XX completadas desde que la skill quedó instalada y lista para grabar (2026-09-03), ninguna viene
+todavía de un rodaje real — todas tienen origen en auditoría u observación de arquitectura/producto
+del propio PM. El criterio de salida de la Oleada v1 ("grabar un vídeo de curso entero usando la
+skill") sigue siendo, con diferencia, el hito de mayor valor pendiente del proyecto. Es una
+constatación, no una acción: el bloqueo #7 ya registrado en §3 es una decisión del dueño que el
+equipo no puede ejecutar por su cuenta, así que no se repite como pregunta nueva en §6.
+
+**Abierta R-39 (Oleada v27): progreso de grabación visible en el índice de escenas.** Verificado
+contra el código real antes de escribir la ficha (`assets/reproductor/guion.js`): `renderizarIndice`
+ya calcula `estadosEscena` con `calcularEstadoEscena` (T-19/R-02: `pendiente`/`grabada`/`revisada`)
+y ya construye el párrafo `.resumen-guion` con el total de escenas, duración total estimada (T-12) y
+ppm, pero nada agrega esos dos datos para responder "¿cuánto me queda por grabar?" sin entrar en
+ninguna escena — justo la ayuda de grabación (en la línea de T-23) que más sirve para la primera
+sesión de grabación real cuando ocurra, en vez de otra grieta de conexión entre salidas de montaje ya
+existentes (patrón de las últimas doce oleadas). Spec completa en `ROADMAP_PRODUCTO.md`; fila
+`PENDIENTE` añadida a §1 de `SEGUIMIENTO.md` en este mismo commit, cerrando de antemano el tipo de
+hallazgo que motivó `#29` (primera apertura de R-XX sin fila de seguimiento).
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; nada en `scripts/`, `tests/` ni `assets/` se toca en esta sesión.
+La implementación de R-39 queda para el siguiente ciclo de Programador.
+
+**Cambios de estado y decisiones.** §1 de `SEGUIMIENTO.md`: R-39 añadida como `PENDIENTE`. Una
+decisión nueva en `DECISIONES_TECNICAS.md` (archivo de Oleada v26 y apertura de R-39, con las
+alternativas consideradas). Sin cambios en §3, §5 ni §7; §6 sigue con `#11`/`#12` `(pendiente)`.
+
+---
+
 ### Sesión 2026-10-26 (252) — Ciclo de Programador: novena reconfirmación del día tras R-38/P-08, sin novedad de código
 
 **Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` diecisiete commits por

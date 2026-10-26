@@ -10,7 +10,58 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-26 — **Ciclo de Programador: novena reconfirmación del día tras
+**Última actualización:** 2026-10-26 — **Ciclo de Product Manager: archiva Oleada v26 (R-38) y abre
+R-39 (Oleada v27)**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-26): archiva Oleada v26 (R-38) y abre R-39 (Oleada v27).**
+Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
+fusionada la novena reconfirmación del día del Programador (commit `1bd0150`, sin cambio de código),
+árbol de trabajo limpio sin divergencia que resolver. Dependencias de desarrollo instaladas con
+`python3 -m pip install -r requirements-dev.txt` (mismo síntoma de siempre con el `pip` desnudo,
+`#22`/`#28`/P-06).
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (última pasada, 2026-10-26 03:11):
+un hallazgo nuevo de severidad baja (`#34`, docstring desactualizado en `revalidacion.py`), ya
+cerrado en código por el Programador como P-08 el mismo día (§5) — queda para la siguiente pasada
+del auditor marcarlo `RESUELTO`, no es tarea del PM. Los dos `ABIERTO` de siempre (`#24`, baja;
+`#30`, media) siguen igual, ambos de proceso/gobernanza puro, ya enrutados como preguntas `#11`/`#12`
+de §6, pendientes solo de respuesta del dueño (40 y 16 días sin respuesta) — ninguno convertible en
+R-XX nueva ni en deuda técnica de backlog, ninguno de severidad alta que atender como P-XX urgente.
+`roadmap/FEEDBACK.md` revisado: sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo` — el bloqueo #7 de §3 (grabar un curso completo) sigue abierto, más de 50 días desde que
+T-32 dejó la skill instalada y lista para grabar (2026-09-03).
+
+§1 (fuente autoritativa) sin ninguna fila `PENDIENTE` (aparte de `T-24b`, bloqueo físico ajeno):
+R-38 `COMPLETADA` desde la madrugada de esta misma jornada, reconfirmada en verde nueve veces
+seguidas sin tarea nueva. **Archivada la Oleada v26 (R-38)** en `roadmap/ROADMAP_HISTORICO.md`
+(sección completa con "Cómo se entregó"). `ROADMAP_PRODUCTO.md` corregido en el mismo ciclo:
+cabecera reescrita, sección "Oleada v26" sustituida por la nota de archivo, y nota de producto nueva
+señalando que las últimas 38 R-XX se originan todas en auditoría u observación de arquitectura del
+propio PM, ninguna en rodaje real — el criterio de salida de la Oleada v1 (grabar un vídeo de curso
+entero) sigue siendo el hito de mayor valor pendiente, por delante de cualquier R-XX nueva.
+
+**Abre R-39 (Oleada v27): progreso de grabación visible en el índice de escenas.** A diferencia de
+las últimas doce oleadas (cierres de huecos de arquitectura entre salidas de montaje ya existentes),
+esta toca el propio reproductor por primera vez desde R-33. Verificado contra el código real antes
+de escribir la ficha (`assets/reproductor/guion.js`): `renderizarIndice` ya calcula `estadosEscena`
+con `calcularEstadoEscena` (T-19/R-02: `pendiente`/`grabada`/`revisada`) y ya construye un párrafo
+`.resumen-guion` con el total de escenas, duración total estimada (T-12) y ppm, pero ningún punto del
+código agrega esos dos datos para responder "¿cuánto me queda por grabar?" en mitad de una sesión
+real. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v27: línea nueva bajo `.resumen-guion` con el
+recuento de escenas por estado y la suma de `duracion_estimada_segundos` solo de las `pendiente`,
+recalculada en cada `renderizarIndice()`, sin ningún campo nuevo en `estado.json` ni en el JSON
+embebido (dato puramente derivado en `guion.js`, mismo patrón que `estadosEscena` ya usa hoy). Fila
+`R-39 | ... | PENDIENTE | — | ...` añadida a §1 en este mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ha ejecutado `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; la spec de R-39 queda lista para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño. Una decisión nueva en `DECISIONES_TECNICAS.md` (archivo de
+Oleada v26 y apertura de R-39, con las alternativas consideradas y la nota de producto que la
+motiva).
+
+**Última actualización anterior (2026-10-26, ciclo de Programador): novena reconfirmación del día tras
 R-38/P-08, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-26), noveno tras R-38/P-08.** Revisión de entrada (protocolo): el
@@ -6375,6 +6426,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-36 | Vincular cada tropiezo marcado con el número de la toma en que se marcó, para que el instante de R-34 no se confunda entre tomas distintas de la misma escena | **COMPLETADA** | 2026-10-22 | `alternarTropiezoBloqueActual` (`guion.js`) guarda `numero_toma` (`tomasEscena[escena].length + 1`, mismo cálculo que `actualizarIndicadorToma`) solo al marcar, no al desmarcar; `cargarTropiezosGuardados` lo conserva de forma opcional, mismo patrón que `instante_toma_segundos` (R-34/R-35). `scripts/feedback.py`: `TropiezoBloque.numero_toma` opcional (entero ≥ 1); columna nueva «Toma» en `FEEDBACK.md` entre «Texto exacto» e «Instante»; `_PATRON_FILA` reconoce filas de 5, 6 y 7 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente; cabecera avisa que el instante solo es de fiar cuando «Toma» coincide con la toma buena del parte de rodaje. `version` del `.json` exportado sube a 3. 8 tests nuevos (719→727). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-37 | Cruzar automáticamente «Toma» con la toma buena ya registrada en el parte de rodaje, para que `FEEDBACK.md` diga de un vistazo qué tropiezos son de fiar como punto de corte real, sin que el dueño tenga que mirar los dos archivos a mano | **COMPLETADA** | 2026-10-23 | `scripts/feedback.py::registrar_tropiezos_en_feedback` gana `tomas_por_escena: dict[str, Any] \| None = None` (mismo contenedor que `EstadoProyecto.tomas`, sin valor por defecto no rompe ninguna llamada existente); por cada fila nueva con `numero_toma` (R-36), reutiliza tal cual `tomas.toma_buena` (R-02/R-11, sin segunda implementación de la regla de exclusividad) para comparar contra la toma marcada `buena` de la escena. Columna nueva «¿Toma buena?» en `FEEDBACK.md`, entre «Toma» e «Instante» (`"sí"`/`"no"`/vacía); `_PATRON_FILA` gana un tercer grupo opcional para seguir reconociendo filas de 5 a 8 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente — las filas de una exportación anterior a esta tarea no se recalculan. `references/contrato-tropiezos.md` NO sube de versión (sigue en 3): el cruce vive enteramente en Python al formatear cada fila, nada nuevo en el `.json` exportado ni en `guion.js`. 5 tests nuevos (727→732). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-38 | Añadir a `comandos-montaje.md` los instantes exactos a revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena, para que el dueño no tenga que volver a `FEEDBACK.md` en el momento real de montar | **COMPLETADA** | 2026-10-26 | `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje` ganan `registro_tropiezos: RegistroTropiezos \| None = None` (último parámetro opcional, reenviado tal cual desde `salidas.generar_salidas_seleccionadas`/`_generar_comandos_montaje`); reutiliza `tomas.toma_buena` (misma comparación que ya hace `feedback._es_toma_buena`, sin segunda implementación de la regla de exclusividad) para listar, en la sección final nueva «Puntos a revisar antes de concatenar», los instantes `mm:ss` (`feedback.formatear_instante`, antes `_formatear_instante`, promovida a pública) de los tropiezos marcados dentro de la toma que `concat-ffmpeg.txt` va a usar de verdad para cada escena. Sin `registro_tropiezos` (valor por defecto), documento idéntico byte a byte al de antes de la tarea; sin ningún tropiezo cruzando como de la toma buena, tampoco aparece la sección. `references/contrato-montaje.md` documenta la sección nueva; `references/contrato-tropiezos.md` NO sube de versión (sigue en 3). 8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py`, 2 en `tests/test_salidas.py`. Cuatro redes en verde. `SKILL.md`/`DEVELOPERS.md` actualizados |
+| R-39 | Mostrar en el índice de escenas del reproductor, sin entrar en ninguna, cuántas quedan por grabar (pendiente/grabada/revisada) y cuánto tiempo estimado representan las que siguen `pendiente` | **PENDIENTE** | — | Oleada v27, ficha completa en `ROADMAP_PRODUCTO.md`. Abierta por el PM el 2026-10-26; aún sin ningún ciclo de Programador que la haya tocado |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 
