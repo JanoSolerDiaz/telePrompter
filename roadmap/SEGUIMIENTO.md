@@ -10,8 +10,51 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-26 — **Ciclo de Programador: séptima reconfirmación del día tras
+**Última actualización:** 2026-10-26 — **Ciclo de Programador: octava reconfirmación del día tras
 R-38/P-08, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-26), octavo tras R-38/P-08.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` *detached* sobre `develop` dieciséis commits por detrás; `git checkout
+develop && git pull origin develop` trajo ya fusionada la séptima reconfirmación del día (commit
+`3bfbea0`, 13:11 UTC) por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el
+intérprete real (Python 3.11.17, `/usr/local/bin/python3`; el `pip`/`pip3` desnudos del sistema
+apuntan a otro intérprete — Python 3.13 — y no ven los paquetes, mismo síntoma ya documentado en
+`#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** Sin ningún hallazgo nuevo desde la
+auditoría de hoy (`572ea01`, 2026-10-26 03:11 UTC, todavía no ha vuelto a correr en este intervalo);
+ninguno de severidad alta. `#24` (baja) y `#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza
+puro, pendientes solo de respuesta del dueño a `#11`/`#12` de §6 (40 y 16 días respectivamente) —
+ninguno convertible en tarea ni en P-XX urgente. `#34` (baja, docstring de `revalidacion.py`) sigue
+`COMPLETADA` como P-08, cerrada en una sesión anterior. `mcp__github__list_issues`/
+`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+`list_triggers`/`get_trigger` confirman el cron de "programador-teleprompter" sin cambios
+(`0 6-15 * * 1-5`, próximo disparo 15:04 UTC).
+
+§1 (fuente autoritativa) confirmada: R-38 sigue siendo la última fila y está **COMPLETADA**; ninguna
+fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de `T-24b`, bloqueo físico ajeno
+al programador) — archivar la Oleada v26 y abrir la siguiente corresponde a un ciclo de Product
+Manager posterior, mismo criterio ya aplicado tras R-30/R-36/R-37.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos, sin
+problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (740 tests,
+código de salida 0, sin fallos, mismo recuento que el ciclo anterior) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes
+esperadas en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada y `.pdf` sin
+Chrome/Edge — y las omisiones esperadas sin parte de rodaje real). Cuatro redes en verde; ningún
+cambio en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1).** Ninguno: R-38 permanece `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
+P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
+cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
+pura reconfirmación, nada que decidir.
+
+**Última actualización anterior (2026-10-26, ciclo de Programador): séptima reconfirmación del día
+tras R-38/P-08, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-26), séptimo tras R-38/P-08.** Revisión de entrada (protocolo): el
 contenedor arrancó con `HEAD` *detached* sobre `develop` quince commits por detrás; `git checkout

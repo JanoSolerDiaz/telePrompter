@@ -12,6 +12,52 @@
 
 ---
 
+### Sesión 2026-10-26 (251) — Ciclo de Programador: octava reconfirmación del día tras R-38/P-08, sin novedad de código
+
+**Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` dieciséis commits por
+detrás; `git checkout develop && git pull origin develop` trajo ya fusionada la séptima
+reconfirmación del día (commit `3bfbea0`, 13:11 UTC) por fast-forward limpio, árbol de trabajo
+limpio sin divergencia que resolver. Dependencias de desarrollo instaladas sin incidencia con
+`python3 -m pip install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17,
+`/usr/local/bin/python3`; mismo síntoma de siempre con el `pip`/`pip3` desnudos ya documentado en
+`#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** Sin ningún hallazgo nuevo desde la
+auditoría de hoy (`572ea01`, 03:11 UTC, aún no ha vuelto a correr en este intervalo); ninguno de
+severidad alta. `#24` (baja) y `#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro,
+pendientes de respuesta del dueño a `#11`/`#12` de §6 (40 y 16 días respectivamente) — ninguno
+convertible en tarea ni en P-XX urgente. `#34` sigue `COMPLETADA` como P-08, cerrada en una sesión
+anterior. §1 confirmada como fuente autoritativa: R-38 sigue siendo la última fila y está
+**COMPLETADA**; ninguna fila `PENDIENTE` ni `BLOQUEADA` que ejecutar (aparte de `T-24b`, bloqueo
+físico ajeno al programador) — abrir la siguiente Oleada corresponde a un ciclo de Product Manager
+posterior. `list_triggers`/`get_trigger` confirman el cron de "programador-teleprompter" sin cambios
+(`0 6-15 * * 1-5`, próximo disparo 15:04 UTC). `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con la
+única fila plantilla vacía (`nuevo`, sin datos), sin entradas reales que el PM deba procesar.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos, sin
+problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (740 tests
+en verde, código de salida 0, mismo recuento que el ciclo anterior) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes
+esperadas en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada y `.pdf` sin
+Chrome/Edge — y las omisiones esperadas sin parte de rodaje). Cuatro redes en verde; ningún cambio en
+`scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-38 permanece `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
+P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
+cerrable que justifique una.
+
+**Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`.** Ciclo de pura reconfirmación: nada
+que decidir.
+
+**Entrega.** Commit y push a `origin/develop` con la actualización de `SEGUIMIENTO.md` (cabecera y
+nueva entrada de ciclo) y esta entrada de `HISTORIAL_SESIONES.md`. Cero cambio en `scripts/`,
+`tests/` ni `assets/`.
+
+---
+
 ### Sesión 2026-10-26 (250) — Ciclo de Programador: séptima reconfirmación del día tras R-38/P-08, sin novedad de código
 
 **Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` quince commits por
