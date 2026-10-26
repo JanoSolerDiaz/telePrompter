@@ -31,8 +31,10 @@ solo. Cada bloque de origen (antes de cualquier particion) aporta su indice
 0-based dentro de la escena, estable mientras el `.md` de origen no cambie;
 una particion aceptada reparte ese indice en dos mitades (`'a'`/`'b'`). Esa
 tripleta -- `(numero_escena, indice_original, mitad)` -- es la clave que usa
-`_edicion_manual_de` para saber si el texto que el dueno dejo en un ancla es
-una edicion real o solo el texto que el propio sistema habria derivado, y por
+el bucle de deteccion de `revalidar_guion` (comparando, ancla a ancla, el
+texto que de verdad trae `guion-escenas.md` contra el que el sistema habria
+derivado) para saber si el texto que el dueno dejo en un ancla es una
+edicion real o solo el texto que el propio sistema habria derivado, y por
 tanto no hace falta preservar como especial.
 """
 

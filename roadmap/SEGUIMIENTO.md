@@ -10,7 +10,68 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-26 — **Ciclo de Programador: cuarta reconfirmación del día tras
+**Última actualización:** 2026-10-26 — **Ciclo de Programador: quinta reconfirmación del día tras
+R-38, cierra P-08 (hallazgo `#34`, docstring desactualizado en `revalidacion.py`)**, detalle de la
+sesión más abajo.
+
+**Ciclo de Programador (2026-10-26), quinto tras R-38.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` *detached* sobre `develop` trece commits por detrás; `git checkout
+develop && git pull origin develop` trajo ya fusionada la cuarta reconfirmación del día (commit
+`54acb79`, 10:10 UTC) por fast-forward limpio, árbol de trabajo limpio sin divergencia que
+resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real (Python 3.11.17, `/usr/local/bin/python3`; el
+`pip`/`pip3` desnudos del sistema apuntan a otro intérprete y no ven los paquetes, mismo síntoma ya
+documentado en `#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** Sin ningún hallazgo nuevo desde la
+auditoría de hoy (`572ea01`, 2026-10-26 03:11 UTC: hallazgo `#34`, baja, docstring desactualizado
+en `revalidacion.py`, cero riesgo funcional). A diferencia de las cuatro reconfirmaciones
+anteriores de hoy, que dejaron `#34` sin atender por tratarse de "ciclo de pura reconfirmación",
+esta pasada lo adopta como **P-08**: cola de tareas vacía tras R-38 (§1, sin ninguna R-39 abierta
+todavía), hallazgo trivial, de severidad baja, cierre documental sin riesgo — mismo perfil exacto
+que P-06/P-07, registrado en §5 antes de implementarlo (§0.3 de `HOJA_DE_RUTA.md`). `#24` (baja) y
+`#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro, pendientes solo de respuesta del
+dueño a `#11`/`#12` de §6 (40 y 16 días respectivamente) — ninguno convertible en P-XX, ambos
+ajenos al alcance de P-08. `mcp__github__list_issues`/`list_pull_requests` sobre
+`janosolerdiaz/teleprompter`: cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con su
+única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+
+§1 (fuente autoritativa) confirmada: R-38 sigue siendo la última fila y está **COMPLETADA**; ninguna
+fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada — archivar la Oleada v26 y abrir la
+siguiente corresponde a un ciclo de Product Manager posterior, mismo criterio ya aplicado tras
+R-30/R-36/R-37. P-08 no cambia ninguna fila de §1 (no es R-XX/T-XX).
+
+**P-08 — implementación.** `scripts/revalidacion.py` líneas 26-37 (docstring de módulo, sección
+"Identidad estable entre pases"): sustituida la cita a `_edicion_manual_de` (nunca existió con ese
+nombre, verificado con `grep -rn "_edicion_manual_de" scripts/`, que no devuelve nada en
+`scripts/`) por una descripción exacta del bucle real dentro de `revalidar_guion`
+(`scripts/revalidacion.py:499-505`: compara, ancla a ancla, `texto_editado_por_ancla` contra
+`texto_esperado_por_ancla` para decidir qué anclas llevan una edición manual real). Cero cambio de
+lógica, cero cambio de comportamiento — un párrafo de comentario. Reverificado tras el cambio que
+el invariante (c) sigue íntegro (no tocado) y que ningún test ni otro módulo citaba esa función
+inexistente fuera del propio docstring (las dos coincidencias de `_edicion_manual_de` en
+`DEVELOPERS.md`/`DECISIONES_TECNICAS.md`/`tests/test_feedback.py` son el nombre de un test de
+`feedback.py` sobre tropiezos, sin relación con `revalidacion.py`: no se tocan).
+
+**Verificación completa tras el cambio.** `python3 -m mypy scripts` (72 archivos, sin problemas),
+`python3 -m ruff check .` (todo correcto vía `scripts/ci.py`; el binario pelado sigue marcando el
+único aviso cosmético ya conocido, `UP042` en `salidas.py`, artefacto de versión de binario —
+`#22`), `python3 -m pytest` (740 tests, mismo recuento que antes del cambio: un docstring no añade
+ni quita ningún test) y `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`).
+Cuatro redes en verde.
+
+**Cambios de estado (§1).** Ninguno: R-38 permanece `COMPLETADA`. P-08 queda `COMPLETADA` en §5.
+
+**Hallazgo `#34` queda cerrable por la próxima auditoría**, que podrá verificar de forma
+independiente (como exige su propio protocolo) que el docstring ya describe la lógica real. Esta
+sesión no marca `#34` como `RESUELTO` en `auditoriacontinua.md`: ese archivo es el único que
+modifica el auditor.
+
+**Sin novedad en §3 (bloqueos), §6 (preguntas) ni §7 (desviaciones)** más allá de la fila nueva de
+P-08 en §5. Decisión añadida a `DECISIONES_TECNICAS.md` (alcance documental, sin alternativas que
+pesar más allá de citar la línea exacta).
+
+**Última actualización anterior (2026-10-26, ciclo de Programador): cuarta reconfirmación del día tras
 R-38, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-26), cuarto tras R-38.** Revisión de entrada (protocolo): el
@@ -6195,6 +6256,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | P-05 | `instalar_skill.py` deja de guardar la copia de seguridad DENTRO de `~/.claude/skills/`; pasa a `~/.claude/teleprompter-copias-de-seguridad/` | **Detectado en vivo en la máquina del dueño** al reinstalar la skill en esta misma sesión: Claude Code registra como skill toda subcarpeta de `~/.claude/skills/` que tenga un `SKILL.md`, así que `teleprompter.bak-<marca>` apareció en la lista de skills disponibles **como una segunda `teleprompter`, con nombre y descripción idénticos**, compitiendo con la real en la selección. Cada reinstalación añadía una. No es cosmético: degrada la funcionalidad principal de la skill justo cuando el dueño va a usarla. La copia de la instalación de hoy se movió a mano fuera de `skills/`; el arreglo evita que vuelva a pasar. | **COMPLETADA** 2026-09-03 |  |
 | P-06 | Extender la nota de `DEVELOPERS.md`/`SKILL.md` que ya cubre el binario "pelado" de `ruff`/`mypy`/`pytest` (R-15, `origen: auditoría #22`) para que también cubra la **instalación** (`pip install -r requirements-dev.txt` sin `python3 -m`), no solo la invocación | `origen: auditoría #28` (baja, infraestructura). Formalizado tras diez sesiones consecutivas resolviendo el mismo síntoma sin que quedara documentado: el `pip` pelado de los contenedores de nube de este proyecto instala contra Python 3.13 en vez del 3.11.x real, dejando las tres redes de tipos/estilo/tests en rojo con `No module named mypy/ruff/pytest` hasta reinstalar con `python3 -m pip install -r requirements-dev.txt`. Cola de tareas vacía tras R-24 (§1), hallazgo de severidad baja con recomendación de cierre ya escrita por el propio auditor: aprovechado como P-XX de esta sesión en vez de esperar a que el PM lo convierta en R-XX. Alcance puramente documental, sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-07 |  |
 | P-07 | Actualizar la sección "Marcar tropiezos durante la toma (R-03)" de `SKILL.md` para documentar la columna «Instante» (R-34) de `FEEDBACK.md` | `origen: auditoría #33` (baja, documentación). R-34 (`91b4c66`, 2026-10-20) añadió la columna «Instante» (`mm:ss`, instante de la toma en que se marcó el tropiezo) a `FEEDBACK.md` y subió el contrato a la versión 2, documentado con detalle en `references/contrato-tropiezos.md`/`DEVELOPERS.md`/`DECISIONES_TECNICAS.md`, pero la sección de `SKILL.md` que describe esta función de cara al dueño no se tocó: su tabla de columnas seguía mostrando solo las 5 de la versión 1. Cola de tareas vacía tras R-35 (§1), hallazgo de severidad baja con cierre trivial y sin riesgo (no toca `tests/test_skill_md.py`, que no cubre esta tabla): aprovechado como P-XX de esta sesión en vez de esperar a que el PM lo convierta en R-XX. Alcance puramente documental, sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-21 |  |
+| P-08 | Corregir el docstring del módulo `scripts/revalidacion.py` (líneas 26-37), que seguía citando una función `_edicion_manual_de` ya inexistente con ese nombre | `origen: auditoría #34` (baja, documentación). La detección de ediciones manuales vive hoy inline dentro de `revalidar_guion` (bucle que compara, ancla a ancla, el texto de `guion-escenas.md` contra el texto que el sistema habría derivado — `scripts/revalidacion.py:499-505`), no en ninguna función con ese nombre; confirmado leyendo el módulo completo, no solo el docstring. Cero riesgo funcional (el invariante (c) sigue íntegro, reverificado por la propia auditoría), pero una futura sesión podría buscar esa función, no encontrarla y perder tiempo o asumir que la lógica ya no existe. Cola de tareas vacía tras R-38 (§1), sin ninguna R-39 abierta todavía: mismo criterio que P-06/P-07, aprovechado como P-XX de esta sesión en vez de esperar al PM. Alcance puramente documental (un párrafo del docstring de módulo), sin tocar lógica, tests ni `assets/`. | **COMPLETADA** 2026-10-26 |  |
 
 ---
 

@@ -12,6 +12,53 @@
 
 ---
 
+### Sesión 2026-10-26 (248) — Ciclo de Programador: quinta reconfirmación del día tras R-38, cierra P-08 (hallazgo `#34`)
+
+**Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` trece commits por
+detrás; `git checkout develop && git pull origin develop` trajo ya fusionada la cuarta
+reconfirmación del día (commit `54acb79`) por fast-forward limpio, árbol de trabajo limpio sin
+divergencia que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real (Python 3.11.17, `/usr/local/bin/python3`; mismo
+síntoma de siempre con el `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** Sin ningún hallazgo nuevo desde la
+auditoría de hoy (`572ea01`, 03:11 UTC); ninguno de severidad alta. `#24` (baja) y `#30` (media)
+siguen `ABIERTO`, ambos de proceso/gobernanza puro, pendientes de respuesta del dueño a `#11`/`#12`
+de §6 (40 y 16 días respectivamente) — fuera de alcance de esta sesión. El hallazgo `#34` (baja,
+docstring desactualizado en `scripts/revalidacion.py`) sí se adopta esta vez como **P-08**: cola de
+tareas vacía tras R-38 (§1, sin R-39 abierta todavía), hallazgo trivial y sin riesgo, mismo perfil
+que P-06/P-07 — registrado en §5 de `SEGUIMIENTO.md` antes de implementarlo, por §0.3 de
+`HOJA_DE_RUTA.md`. §1 confirmada como fuente autoritativa: R-38 sigue siendo la última fila y está
+**COMPLETADA**; ninguna fila `PENDIENTE` ni `BLOQUEADA` de la columna vertebral que ejecutar en esta
+pasada. `mcp__github__list_issues`/`list_pull_requests` sobre `janosolerdiaz/teleprompter`: cero
+issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con la única fila plantilla vacía.
+
+**P-08 — implementación.** El docstring de módulo de `scripts/revalidacion.py` (líneas 26-37)
+citaba `_edicion_manual_de`, una función que nunca existió con ese nombre (`grep -rn
+"_edicion_manual_de" scripts/` vacío); la detección de ediciones manuales vive inline dentro de
+`revalidar_guion` (líneas 499-505, comparando `texto_editado_por_ancla` contra
+`texto_esperado_por_ancla` ancla a ancla). Corregido el párrafo para citar el bucle real por nombre
+de función y rango de línea, sin extraer ninguna función nueva (decisión razonada en
+`DECISIONES_TECNICAS.md`: extraerla solo para satisfacer el texto de un comentario sería una
+abstracción sin otro llamador). Cero cambio de lógica; confirmado que ninguna otra parte del
+proyecto citaba ese nombre inexistente (las coincidencias de `_edicion_manual_de` en
+`DEVELOPERS.md`/`DECISIONES_TECNICAS.md`/`tests/test_feedback.py` son el nombre de un test de
+`feedback.py` sobre tropiezos, sin relación).
+
+**Verificación completa tras el cambio.** `python3 -m mypy scripts` (72 archivos, sin problemas),
+`scripts/ci.py` → ruff limpio, **740/740 tests en verde** (mismo recuento que antes del cambio: un
+docstring no añade ni quita tests) y `python3 scripts/verificar_salidas.py --fixture` (diecinueve
+etapas `OK`, incluidas las dos salidas latentes esperadas en este contenedor — `.pptx` sin la skill
+`480-branded-pptx` y `.pdf` sin Chrome/Edge). Cuatro redes en verde.
+
+**Cambios de estado.** §1 de `SEGUIMIENTO.md`: sin cambios (R-38 permanece `COMPLETADA`, P-08 no es
+R-XX/T-XX). §5: fila `P-08 | ... | COMPLETADA 2026-10-26`. Decisión añadida a
+`DECISIONES_TECNICAS.md` (fila `2026-10-26 | P-08 (origen: auditoría #34)`). El hallazgo `#34` de
+`auditoriacontinua.md` queda cerrable por la próxima auditoría (el archivo lo cierra ella misma, no
+esta sesión). Commit y push a `origin/develop`.
+
+---
+
 ### Sesión 2026-10-26 (247) — Ciclo de Programador: cuarta reconfirmación del día tras R-38, sin novedad de código
 
 **Arranque.** El contenedor arrancó con `HEAD` *detached* sobre `develop` doce commits por detrás;
