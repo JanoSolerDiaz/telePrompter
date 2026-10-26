@@ -259,9 +259,12 @@ def cargar_registro_tropiezos(ruta: Path, nombre_guion: str) -> RegistroTropiezo
     return RegistroTropiezos(guion=guion_archivo, escenas=escenas)
 
 
-def _formatear_instante(segundos: float) -> str:
+def formatear_instante(segundos: float) -> str:
     """`mm:ss`, con minutos a dos digitos (criterio de aceptacion de R-34:
-    47,0 s se muestra como `00:47`, no `0:47`)."""
+    47,0 s se muestra como `00:47`, no `0:47`). Publica desde R-38:
+    `comandos_montaje.py` la reutiliza tal cual para la seccion «Puntos a
+    revisar antes de concatenar», mismo criterio de formato en los dos
+    documentos."""
     total_segundos = round(segundos)
     minutos, segs = divmod(total_segundos, 60)
     return f"{minutos:02d}:{segs:02d}"
@@ -293,7 +296,7 @@ def _fila_feedback(
     toma = str(tropiezo.numero_toma) if tropiezo.numero_toma is not None else ""
     es_buena = _es_toma_buena(numero_escena, tropiezo.numero_toma, tomas_por_escena)
     instante = (
-        _formatear_instante(tropiezo.instante_toma_segundos)
+        formatear_instante(tropiezo.instante_toma_segundos)
         if tropiezo.instante_toma_segundos is not None
         else ""
     )

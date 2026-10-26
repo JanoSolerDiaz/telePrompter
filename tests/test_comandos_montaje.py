@@ -17,6 +17,7 @@ from comandos_montaje import (
     guardar_comandos_montaje,
 )
 from config import NOMBRE_ARCHIVO_COMANDOS_MONTAJE, Configuracion
+from feedback import EscenaTropiezos, RegistroTropiezos, TropiezoBloque
 from parser import ResultadoParseo, parsear_guion
 from tiempos import ResultadoTiempos, calcular_tiempos
 
@@ -370,3 +371,245 @@ def test_sin_toma_alineada_el_archivo_faltante_es_el_srt_estimado(tmp_path: Path
     nombres_faltantes = {f.nombre_archivo for f in calculo.archivos_referenciados_faltantes}
     assert "guion.srt" in nombres_faltantes
     assert "guion-alineado.srt" not in nombres_faltantes
+
+
+# --- R-38: puntos a revisar antes de concatenar (tropiezos en la toma buena) -------
+
+# Tomas buenas de las dos escenas del guion de prueba, con numeros de toma
+# DISTINTOS (1 y 2) para que un tropiezo marcado en la toma equivocada de
+# cada escena sea un caso de prueba real, no una coincidencia.
+_TOMAS_ESCENA_0_Y_1_BUENAS = {
+    "0": {
+        "titulo": "Arranque",
+        "tomas": [
+            {
+                "numero": 1,
+                "duracion_segundos": 4.0,
+                "nota": "",
+                "buena": True,
+                "archivo_video": "CLIP0001.MP4",
+            }
+        ],
+    },
+    "1": {
+        "titulo": "Cierre",
+        "tomas": [
+            {
+                "numero": 2,
+                "duracion_segundos": 4.0,
+                "nota": "",
+                "buena": True,
+                "archivo_video": "CLIP0002.MP4",
+            }
+        ],
+    },
+}
+
+
+def test_sin_registro_tropiezos_documento_identico_byte_a_byte_a_antes_de_r38() -> None:
+    """Requisito 5 (compatibilidad): sin `registro_tropiezos` (valor por
+    defecto `None`), el documento es idéntico al que genera hoy la misma
+    llamada -- la firma explícita con `None` y la omisión total del
+    argumento deben producir exactamente el mismo texto."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    sin_argumento = calcular_comandos_montaje(
+        resultado, tiempos, "prueba", _TOMAS_ESCENA_0_Y_1_BUENAS
+    )
+    con_none_explicito = calcular_comandos_montaje(
+        resultado, tiempos, "prueba", _TOMAS_ESCENA_0_Y_1_BUENAS, registro_tropiezos=None
+    )
+    assert sin_argumento.puntos_a_revisar == ()
+    contenido_sin = formatear_comandos_montaje(sin_argumento, "prueba")
+    contenido_con_none = formatear_comandos_montaje(con_none_explicito, "prueba")
+    assert contenido_sin == contenido_con_none
+    assert contenido_sin is not None
+    assert "Puntos a revisar antes de concatenar" not in contenido_sin
+
+
+def test_tropiezo_de_la_toma_buena_aparece_en_puntos_a_revisar() -> None:
+    """Criterio de aceptación de R-38: un tropiezo con `numero_toma` igual al
+    de la toma marcada `buena` de su escena aparece con su instante `mm:ss`
+    exacto en la sección nueva."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    registro = RegistroTropiezos(
+        guion="prueba",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=0,
+                titulo="Arranque",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0,
+                        texto="Esta es la primera frase",
+                        numero_toma=1,
+                        instante_toma_segundos=47.0,
+                    ),
+                ),
+            ),
+            EscenaTropiezos(
+                numero_escena=1,
+                titulo="Cierre",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0,
+                        texto="Segunda escena",
+                        numero_toma=1,  # toma descartada: la buena es la 2
+                        instante_toma_segundos=5.0,
+                    ),
+                ),
+            ),
+        ),
+    )
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_Y_1_BUENAS,
+        registro_tropiezos=registro,
+    )
+    assert len(calculo.puntos_a_revisar) == 1
+    punto = calculo.puntos_a_revisar[0]
+    assert punto.numero_escena == 0
+    assert punto.titulo == "Arranque"
+    assert punto.instantes == ("00:47",)
+
+    contenido = formatear_comandos_montaje(calculo, "prueba")
+    assert contenido is not None
+    assert "**Puntos a revisar antes de concatenar**" in contenido
+    assert "Escena 0 (Arranque): 00:47" in contenido
+    # La escena 1 no cruza como de la toma buena: no debe aparecer ninguna línea.
+    assert "Escena 1 (Cierre)" not in contenido
+
+
+def test_registro_tropiezos_sin_ningun_cruce_no_anade_seccion() -> None:
+    """Requisito 5: con `registro_tropiezos` pasado pero ningún tropiezo
+    cruzando como de la toma buena en ninguna escena, la sección tampoco
+    aparece -- nunca un encabezado vacío."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    registro = RegistroTropiezos(
+        guion="prueba",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=0,
+                titulo="Arranque",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0,
+                        texto="Esta es la primera frase",
+                        numero_toma=9,  # ninguna toma 9 existe en el parte de rodaje
+                        instante_toma_segundos=12.0,
+                    ),
+                ),
+            ),
+        ),
+    )
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_Y_1_BUENAS,
+        registro_tropiezos=registro,
+    )
+    assert calculo.puntos_a_revisar == ()
+    contenido = formatear_comandos_montaje(calculo, "prueba")
+    assert contenido is not None
+    assert "Puntos a revisar antes de concatenar" not in contenido
+
+
+def test_tropiezo_sin_numero_toma_o_instante_se_ignora_sin_avisar() -> None:
+    """Requisito 4: un tropiezo exportado con una versión del contrato
+    anterior a R-34/R-36 (sin `numero_toma` o sin `instante_toma_segundos`)
+    se ignora para esta sección sin lanzar ni avisar de nada adicional."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    registro = RegistroTropiezos(
+        guion="prueba",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=0,
+                titulo="Arranque",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0, texto="Sin numero de toma", numero_toma=None,
+                        instante_toma_segundos=12.0,
+                    ),
+                    TropiezoBloque(
+                        indice_bloque=1, texto="Sin instante", numero_toma=1,
+                        instante_toma_segundos=None,
+                    ),
+                ),
+            ),
+        ),
+    )
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_Y_1_BUENAS,
+        registro_tropiezos=registro,
+    )
+    assert calculo.puntos_a_revisar == ()
+
+
+def test_varios_instantes_de_la_misma_escena_se_listan_ordenados() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    registro = RegistroTropiezos(
+        guion="prueba",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=0,
+                titulo="Arranque",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0, texto="Segundo tropiezo", numero_toma=1,
+                        instante_toma_segundos=90.0,
+                    ),
+                    TropiezoBloque(
+                        indice_bloque=1, texto="Primer tropiezo", numero_toma=1,
+                        instante_toma_segundos=5.0,
+                    ),
+                ),
+            ),
+        ),
+    )
+    calculo = calcular_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_Y_1_BUENAS,
+        registro_tropiezos=registro,
+    )
+    assert len(calculo.puntos_a_revisar) == 1
+    assert calculo.puntos_a_revisar[0].instantes == ("00:05", "01:30")
+
+
+def test_generar_comandos_montaje_propaga_registro_tropiezos_hasta_el_documento() -> None:
+    """Punto de entrada de alto nivel (`generar_comandos_montaje`): el
+    parámetro llega hasta el documento formateado, sin que quien llama tenga
+    que invocar `calcular_comandos_montaje`/`formatear_comandos_montaje` por
+    separado."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    registro = RegistroTropiezos(
+        guion="prueba",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=0,
+                titulo="Arranque",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0, texto="Tropiezo real", numero_toma=1,
+                        instante_toma_segundos=47.0,
+                    ),
+                ),
+            ),
+        ),
+    )
+    contenido, calculo = generar_comandos_montaje(
+        resultado,
+        tiempos,
+        "prueba",
+        _TOMAS_ESCENA_0_Y_1_BUENAS,
+        registro_tropiezos=registro,
+    )
+    assert contenido is not None
+    assert len(calculo.puntos_a_revisar) == 1
+    assert "Escena 0 (Arranque): 00:47" in contenido

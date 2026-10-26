@@ -20,6 +20,7 @@ from config import (
     Configuracion,
 )
 from estado import cargar_estado, estado_inicial, guardar_estado
+from feedback import EscenaTropiezos, RegistroTropiezos, TropiezoBloque
 from parser import ResultadoParseo, parsear_guion
 from pdf import exportar_pdf
 from pptx import exportar_pptx
@@ -776,6 +777,63 @@ def test_comandos_montaje_no_avisa_si_se_seleccionan_tambien_las_otras_tres_opci
     archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
     contenido = archivo.ruta.read_text(encoding="utf-8")
     assert "todavía no existen en esta carpeta de salida" not in contenido
+
+
+def test_comandos_montaje_propaga_registro_tropiezos_a_puntos_a_revisar(
+    tmp_path: Path,
+) -> None:
+    """Requisito 6 de R-38: `generar_salidas_seleccionadas` reenvía
+    `registro_tropiezos` tal cual hasta `comandos_montaje.py`, sin
+    reimplementar el cruce con la toma buena en `salidas.py`."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    registro = RegistroTropiezos(
+        guion="prueba",
+        escenas=(
+            EscenaTropiezos(
+                numero_escena=0,
+                titulo="Arranque",
+                tropiezos=(
+                    TropiezoBloque(
+                        indice_bloque=0,
+                        texto="Tropiezo real",
+                        numero_toma=1,
+                        instante_toma_segundos=47.0,
+                    ),
+                ),
+            ),
+        ),
+    )
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.COMANDOS_MONTAJE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+        registro_tropiezos=registro,
+    )
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
+    contenido = archivo.ruta.read_text(encoding="utf-8")
+    assert "**Puntos a revisar antes de concatenar**" in contenido
+    assert "Escena 0 (Arranque): 00:47" in contenido
+
+
+def test_comandos_montaje_sin_registro_tropiezos_no_cambia_nada(tmp_path: Path) -> None:
+    """Compatibilidad: sin `registro_tropiezos` (valor por defecto `None`),
+    el documento no trae la sección nueva -- comportamiento idéntico al de
+    antes de R-38."""
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS_CON_CAPITULOS)
+    resumen = generar_salidas_seleccionadas(
+        SeleccionSalidas((TipoSalida.COMANDOS_MONTAJE,)),
+        resultado,
+        tiempos,
+        tmp_path,
+        nombre_guion="prueba",
+        tomas_por_escena=_TOMAS_ESCENA_0_BUENA_CON_ARCHIVO,
+    )
+    archivo = next(a for a in resumen.generadas if a.tipo is TipoSalida.COMANDOS_MONTAJE)
+    contenido = archivo.ruta.read_text(encoding="utf-8")
+    assert "Puntos a revisar antes de concatenar" not in contenido
 
 
 def test_convencion_guiones_se_ofrece_siempre_sin_ningun_parte_de_rodaje(

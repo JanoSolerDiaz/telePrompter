@@ -58,6 +58,19 @@ nombre fijo aunque no existan todavia en la carpeta de salida. Con `carpeta_sali
 lo hacen los validadores propios de cada salida en su propia ruta de generacion, R-21/
 R-28), cada archivo ausente gana una nota visible al principio del documento citando la
 opcion exacta del selector que hay que marcar -- nunca bloquea ni degrada la generacion.
+
+R-38 cierra el hueco simetrico que deja la propia R-37: ahora `FEEDBACK.md` dice de
+un vistazo que tropiezos ocurrieron dentro de la toma buena (columna «Toma buena?»),
+pero esa respuesta vivia en un documento distinto del que el dueno abre en el momento
+real de montar. Con `registro_tropiezos` (parametro opcional, el mismo
+`RegistroTropiezos` que ya carga `feedback.cargar_registro_tropiezos`),
+`calcular_comandos_montaje` reutiliza tal cual la misma comparacion que ya hace
+`feedback._es_toma_buena` contra `tomas.toma_buena` -- sin una segunda implementacion
+de la regla de exclusividad -- para listar, en una seccion final nueva, los instantes
+`mm:ss` (R-34) de los tropiezos marcados dentro de la toma que `concat-ffmpeg.txt` va a
+usar de verdad para cada escena. Nunca genera ni ejecuta ningun comando de recorte real
+(fuera de alcance, ya fijado por R-30/R-31); sin `registro_tropiezos` (valor por
+defecto `None`), el documento es identico, byte a byte, al de antes de esta tarea.
 """
 
 from __future__ import annotations
@@ -79,9 +92,11 @@ from config import (
     NOMBRE_ARCHIVO_SRT_ALINEADO,
     Configuracion,
 )
+from feedback import RegistroTropiezos, formatear_instante
 from parser import ResultadoParseo
 from srt_alineado import generar_srt_alineado
 from tiempos import ResultadoTiempos
+from tomas import toma_buena
 
 _MOTIVO_SIN_RODAJE = "aún no hay ningún parte de rodaje con una toma buena."
 
@@ -96,6 +111,18 @@ class PasoComandoMontaje:
     descripcion: str
     comando: str
     comentario_alternativo: str | None = None
+
+
+@dataclass(frozen=True)
+class PuntoARevisar:
+    """Una escena con al menos un tropiezo marcado dentro de la toma que
+    `concat-ffmpeg.txt` va a usar de verdad para ella (R-38): los instantes
+    `mm:ss` (R-34) de esos tropiezos, ya formateados y ordenados, listos para
+    citar en la sección final del documento."""
+
+    numero_escena: int
+    titulo: str
+    instantes: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -123,7 +150,11 @@ class ResultadoComandosMontaje:
     (R-31) son los archivos que los pasos citan por su nombre pero que todavia
     no existen en `carpeta_salida` -- vacio si no se paso `carpeta_salida` a
     `calcular_comandos_montaje` (comportamiento identico al de antes de R-31)
-    o si los tres ya estan en disco.
+    o si los tres ya estan en disco. `puntos_a_revisar` (R-38) son las
+    escenas con al menos un tropiezo marcado dentro de la toma que de verdad
+    se va a concatenar -- vacio si no se paso `registro_tropiezos` (valor por
+    defecto `None`, comportamiento identico al de antes de R-38) o si ningun
+    tropiezo cruza como de la toma buena en ninguna escena.
     """
 
     pasos: tuple[PasoComandoMontaje, ...]
@@ -131,6 +162,49 @@ class ResultadoComandosMontaje:
     incluye_capitulos: bool
     motivo_sin_generar: str | None
     archivos_referenciados_faltantes: tuple[ArchivoReferenciadoFaltante, ...] = ()
+    puntos_a_revisar: tuple[PuntoARevisar, ...] = ()
+
+
+def _puntos_a_revisar(
+    registro_tropiezos: RegistroTropiezos | None,
+    tomas_por_escena: dict[str, Any],
+) -> tuple[PuntoARevisar, ...]:
+    """Requisitos 2 y 4 de R-38: por cada escena de `registro_tropiezos.escenas`
+    con al menos un tropiezo cuyo `numero_toma` (R-36) coincide con el numero
+    de la toma marcada `buena` de esa escena en `tomas_por_escena` --
+    reutilizando tal cual `tomas.toma_buena` (R-02/R-11), misma comparacion
+    que ya hace `feedback._es_toma_buena`, sin una segunda implementacion de
+    la regla de exclusividad --, reune los `instante_toma_segundos` (R-34) de
+    esos tropiezos, formateados `mm:ss` (`feedback.formatear_instante`) y
+    ordenados. Un tropiezo con `numero_toma` o `instante_toma_segundos` en
+    `None` se ignora (requisito 4): no hay instante que listar ni toma con la
+    que compararlo."""
+    if registro_tropiezos is None:
+        return ()
+    puntos: list[PuntoARevisar] = []
+    for escena in registro_tropiezos.escenas:
+        toma = toma_buena(
+            tomas_por_escena.get(str(escena.numero_escena)), escena.numero_escena
+        )
+        if toma is None:
+            continue
+        numero_toma_buena = toma.get("numero")
+        instantes = sorted(
+            tropiezo.instante_toma_segundos
+            for tropiezo in escena.tropiezos
+            if tropiezo.numero_toma is not None
+            and tropiezo.instante_toma_segundos is not None
+            and tropiezo.numero_toma == numero_toma_buena
+        )
+        if instantes:
+            puntos.append(
+                PuntoARevisar(
+                    numero_escena=escena.numero_escena,
+                    titulo=escena.titulo,
+                    instantes=tuple(formatear_instante(instante) for instante in instantes),
+                )
+            )
+    return tuple(puntos)
 
 
 def calcular_comandos_montaje(
@@ -140,6 +214,7 @@ def calcular_comandos_montaje(
     tomas_por_escena: dict[str, Any] | None = None,
     configuracion: Configuracion | None = None,
     carpeta_salida: Path | None = None,
+    registro_tropiezos: RegistroTropiezos | None = None,
 ) -> ResultadoComandosMontaje:
     """Construye la secuencia de 1 a 3 comandos encadenados (requisito 1).
 
@@ -155,7 +230,12 @@ def calcular_comandos_montaje(
     releer ni revalidar su contenido (eso ya lo hacen sus propios validadores
     en su propia ruta de generacion, R-21/R-28). Sin ella (`None`, valor por
     defecto), el comportamiento es identico al de antes de R-31: ningun
-    archivo se marca como faltante."""
+    archivo se marca como faltante.
+
+    `registro_tropiezos` (R-38, opcional) es el mismo `RegistroTropiezos` que
+    carga `feedback.cargar_registro_tropiezos` sobre el `.json` exportado por
+    "Exportar tropiezos". Sin el (`None`, valor por defecto), el
+    comportamiento es identico al de antes de R-38: ninguna seccion nueva."""
     configuracion = configuracion or Configuracion()
     tomas_por_escena = tomas_por_escena or {}
 
@@ -246,6 +326,7 @@ def calcular_comandos_montaje(
         incluye_capitulos=incluye_capitulos,
         motivo_sin_generar=None,
         archivos_referenciados_faltantes=tuple(archivos_referenciados_faltantes),
+        puntos_a_revisar=_puntos_a_revisar(registro_tropiezos, tomas_por_escena),
     )
 
 
@@ -319,6 +400,18 @@ def formatear_comandos_montaje(
             lineas.append(f"- Escena {pendiente.numero_escena}: {pendiente.motivo}")
         lineas.append("")
 
+    if resultado.puntos_a_revisar:
+        lineas.append(
+            "**Puntos a revisar antes de concatenar** — en estos instantes hubo un "
+            "tropiezo marcado dentro de la toma que `concat-ffmpeg.txt` va a usar de "
+            "verdad para esa escena:"
+        )
+        lineas.append("")
+        for punto in resultado.puntos_a_revisar:
+            instantes = ", ".join(punto.instantes)
+            lineas.append(f"- Escena {punto.numero_escena} ({punto.titulo}): {instantes}")
+        lineas.append("")
+
     return "\n".join(lineas).rstrip("\n") + "\n"
 
 
@@ -329,15 +422,22 @@ def generar_comandos_montaje(
     tomas_por_escena: dict[str, Any] | None = None,
     configuracion: Configuracion | None = None,
     carpeta_salida: Path | None = None,
+    registro_tropiezos: RegistroTropiezos | None = None,
 ) -> tuple[str | None, ResultadoComandosMontaje]:
     """Punto de entrada de R-30: calcula y formatea en un solo paso, mismo
     patron que `concat_ffmpeg.generar_lista_concat_ffmpeg`/
     `capitulos_youtube.generar_capitulos_youtube`. `contenido` es `None`
     cuando no hay nada que generar: no llamar a `guardar_comandos_montaje` en
-    ese caso. `carpeta_salida` (R-31, opcional) se pasa tal cual a
-    `calcular_comandos_montaje`."""
+    ese caso. `carpeta_salida` (R-31, opcional) y `registro_tropiezos` (R-38,
+    opcional) se pasan tal cual a `calcular_comandos_montaje`."""
     resultado_comandos = calcular_comandos_montaje(
-        resultado, resultado_tiempos, nombre_guion, tomas_por_escena, configuracion, carpeta_salida
+        resultado,
+        resultado_tiempos,
+        nombre_guion,
+        tomas_por_escena,
+        configuracion,
+        carpeta_salida,
+        registro_tropiezos,
     )
     contenido = formatear_comandos_montaje(resultado_comandos, nombre_guion)
     return contenido, resultado_comandos

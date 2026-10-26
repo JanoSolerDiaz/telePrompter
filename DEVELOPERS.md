@@ -4084,6 +4084,62 @@ mismo tipo de hueco que ya cerraron R-19/R-20/R-22 para el montaje.
   existentes al nuevo literal de fila con la columna extra. Cuatro redes en verde
   (727→732 tests).
 
+## Añadir a `comandos-montaje.md` los instantes a revisar antes de concatenar (R-38)
+
+R-37 cerró el cruce mecánico dentro de `FEEDBACK.md` («¿Toma buena?»), pero dejó un hueco
+simétrico: esa respuesta vive en un documento distinto del que el dueño abre en el
+momento real de montar (`comandos-montaje.md`, R-30). Antes de concatenar tendría que
+volver a `FEEDBACK.md`, filtrar las filas con «¿Toma buena?» = «sí» y traducir su
+«Instante» a mano a un punto de revisión.
+
+- **Mismo cruce que R-37, reutilizado tal cual, nunca reimplementado** (requisito 2).
+  `comandos_montaje.py` importa `toma_buena` de `tomas.py` (no `feedback._es_toma_buena`
+  en sí, que devuelve el texto «sí»/«no»/vacío para la tabla, no el booleano que aquí
+  hace falta) y compara `toma.get("numero")` contra `tropiezo.numero_toma` — la única
+  regla de exclusividad ("como mucho una toma buena por escena") sigue viviendo
+  enteramente dentro de `tomas.toma_buena`, nunca repetida.
+- **`registro_tropiezos: RegistroTropiezos | None = None`, último parámetro opcional**
+  (requisitos 1 y 6) de `calcular_comandos_montaje`/`generar_comandos_montaje`
+  (`comandos_montaje.py`) y de `generar_salidas_seleccionadas`/
+  `_generar_comandos_montaje` (`salidas.py`), reenviado sin tocarlo en ningún punto
+  intermedio. Con el valor por defecto (`None`), el documento es idéntico, byte a byte,
+  al de antes de esta tarea — ninguna llamada ni test existente se rompe.
+- **`feedback._formatear_instante` promovida a pública (`formatear_instante`)** para que
+  `comandos_montaje.py` la reutilice tal cual (mismo criterio `mm:ss`, minutos a dos
+  dígitos) en vez de reimplementar el formato — mismo patrón que R-24 promovió
+  `_volcar_diagnostico` a `volcar_diagnostico` cuando un segundo módulo necesitó la
+  misma pieza. Sin cambio de comportamiento: ningún test reference la versión privada.
+- **Dataclass nueva `PuntoARevisar`** (`numero_escena`, `titulo`, `instantes: tuple[str, ...]`
+  ya formateados y ordenados) y función privada `_puntos_a_revisar` que recorre
+  `registro_tropiezos.escenas`, descarta los tropiezos con `numero_toma` o
+  `instante_toma_segundos` en `None` (requisito 4 — archivo exportado de una versión del
+  contrato anterior a R-34/R-36) y agrupa los que sí cruzan como de la toma buena de su
+  escena. `ResultadoComandosMontaje` gana el campo aditivo `puntos_a_revisar` (vacío por
+  defecto).
+- **Sección nueva, última pieza del documento** (requisito 3): `formatear_comandos_montaje`
+  añade «**Puntos a revisar antes de concatenar**» después de los pasos, del aviso de
+  «sin sección Capítulos» y de la nota de «escenas todavía sin toma buena» — nunca antes
+  de ninguna de las existentes, y nunca con un encabezado vacío si no hay ningún punto
+  que listar (requisito 5).
+- **`references/contrato-montaje.md`** documenta la sección nueva en la entrada de
+  `comandos-montaje.md`; **`references/contrato-tropiezos.md`** gana una sección "Segundo
+  consumidor" explicando que `comandos_montaje.py` ahora también lee
+  `RegistroTropiezos`, sin subir de versión (requisito 7: nada cambia en el `.json`
+  exportado ni en `guion.js`, el cruce vive enteramente en Python al formatear
+  `comandos-montaje.md`, mismo patrón que R-37 fijó para `FEEDBACK.md`).
+- **Fuera de alcance, como pedía la spec** (requisito 8): no se genera ni ejecuta ningún
+  comando `ffmpeg` de recorte real; `registro_tropiezos` no se persiste en `estado.json`
+  ni en ningún sitio nuevo — se consulta y se descarta al formatear, igual que
+  `tomas_por_escena`; no se avisa de tropiezos de tomas que no son la buena (ya visibles
+  en `FEEDBACK.md` con «¿Toma buena?» = «no»).
+- **Tests.** 6 nuevos en `tests/test_comandos_montaje.py` (compatibilidad byte a byte sin
+  el parámetro, tropiezo cruzado aparece con su instante exacto, sin ningún cruce no
+  aparece la sección, tropiezo sin `numero_toma`/`instante_toma_segundos` se ignora,
+  varios instantes de la misma escena ordenados, y propagación a través de
+  `generar_comandos_montaje`) y 2 nuevos en `tests/test_salidas.py` (propagación a través
+  de `generar_salidas_seleccionadas`, y comportamiento idéntico sin el parámetro). Cuatro
+  redes en verde (732→740 tests).
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

@@ -305,6 +305,18 @@ a comandos ejecutables.
   `convencion-guiones.md`, ver más abajo): texto para que el dueño copie y
   pegue en su propia terminal — la skill no ejecuta `ffmpeg` ni comprueba
   que esté instalado.
+- **«Puntos a revisar antes de concatenar» (R-38), última sección del
+  documento**: con el registro de tropiezos exportado («Exportar tropiezos»,
+  R-03/`references/contrato-tropiezos.md`), `comandos-montaje.md` cruza cada
+  tropiezo marcado contra la toma que de verdad quedó `buena` de su escena
+  (misma comparación que ya hace `FEEDBACK.md` para su columna «¿Toma
+  buena?», R-37) y lista, por escena, los instantes `mm:ss` (R-34) de los
+  tropiezos que cayeron dentro de esa toma — el dueño ya no tiene que volver
+  a `FEEDBACK.md` para saber qué segundos de `concat-ffmpeg.txt` conviene
+  revisar antes de ejecutar el primer comando. Sin ese registro, o sin
+  ningún tropiezo que cruce como de la toma buena en ninguna escena, esta
+  sección no aparece. Sigue siendo informativa, igual que el resto del
+  documento: nunca un comando de recorte ni una ejecución real de `ffmpeg`.
 
 ## `convencion-guiones.md` — prevenir desviaciones futuras, no detectar las de hoy (R-25)
 

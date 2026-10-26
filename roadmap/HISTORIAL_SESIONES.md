@@ -12,6 +12,58 @@
 
 ---
 
+### Sesión 2026-10-26 (243) — Ciclo de Programador: implementa R-38 (Oleada v26)
+
+**Arranque.** El contenedor arrancó con `HEAD` fuera de cualquier rama (`detached`, ocho commits
+por detrás); `git checkout develop && git pull origin develop` trajo ya fusionada la auditoría de
+hoy (commit `572ea01`, hallazgo nuevo `#34` de severidad baja) por fast-forward limpio, árbol de
+trabajo limpio sin divergencia que resolver. `python3 -m pip install -r requirements-dev.txt`
+contra el intérprete real (Python 3.11.17; mismo síntoma del `pip`/`pip3` desnudos ya documentado
+en `#22`/`#28`/P-06).
+
+**Revisión de entrada (protocolo).** `auditoriacontinua.md` con un hallazgo nuevo (`#34`, baja —
+docstring desactualizado en `revalidacion.py`, cero riesgo funcional, invariante reverificado
+íntegro) y ninguno de severidad alta que atender como P-XX urgente; `#24` (baja) y `#30` (media)
+siguen `ABIERTO`, de proceso/gobernanza puro, pendientes de respuesta del dueño (40 y 16 días). §1
+(fuente autoritativa) traía a R-38 como única fila `PENDIENTE`, ya especificada por completo en
+`ROADMAP_PRODUCTO.md` (Oleada v26). `DECISIONES_TECNICAS.md` revisado en el área de
+`scripts/comandos_montaje.py`/`scripts/feedback.py`/`scripts/tomas.py` antes de implementar: ninguna
+decisión previa contradicha.
+
+**R-38 implementada.** `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje`
+ganan `registro_tropiezos: RegistroTropiezos | None = None` (último parámetro, reenviado desde
+`salidas.generar_salidas_seleccionadas`/`_generar_comandos_montaje`). Reutiliza `tomas.toma_buena`
+(misma comparación que `feedback._es_toma_buena`, sin segunda implementación de la regla de
+exclusividad) para agrupar, por escena, los `instante_toma_segundos` de los tropiezos cuyo
+`numero_toma` coincide con el de la toma marcada `buena` — ignorando sin avisar los que traen
+cualquiera de los dos campos en `None`. `feedback._formatear_instante` promovida a pública
+(`formatear_instante`, mismo criterio que R-24 con `_volcar_diagnostico`). Sección nueva «Puntos a
+revisar antes de concatenar» como última pieza de `comandos-montaje.md`; sin `registro_tropiezos`,
+documento idéntico byte a byte al de antes de la tarea (verificado con test dedicado); sin ningún
+cruce, tampoco aparece la sección. `references/contrato-montaje.md` documenta la sección nueva;
+`references/contrato-tropiezos.md` NO sube de versión (sigue en 3). `SKILL.md`/`DEVELOPERS.md`
+actualizados. 8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py`, 2 en
+`tests/test_salidas.py`.
+
+**Cuatro redes en verde.** `python3 -m mypy scripts/ tests/` (72 archivos, sin problemas),
+`python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (740 tests, código de
+salida 0, sin fallos), `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`,
+sin cambios).
+
+**Hallazgo `#34` no atendido en este ciclo.** Severidad baja, sin riesgo funcional ni fila
+`PENDIENTE` bloqueada — se deja para una sesión de código posterior, sin mezclarlo con la
+implementación de R-38 para mantener el commit centrado en un solo cambio verificable.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-38: `PENDIENTE` → **COMPLETADA**. No se archiva
+todavía en `ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` (corresponde a un ciclo de PM
+posterior, mismo criterio ya aplicado tras R-30/R-36/R-37). Dos decisiones nuevas en
+`DECISIONES_TECNICAS.md` (reutilizar `tomas.toma_buena` directamente en vez de importar
+`feedback._es_toma_buena`, con `_formatear_instante` promovida a pública; `registro_tropiezos` como
+último parámetro de la firma, por compatibilidad posicional). Sin cambios en §3 (bloqueos) ni §7
+(desviaciones); §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño, sin preguntas nuevas.
+
+---
+
 ### Sesión 2026-10-25 (242) — Ciclo de Product Manager: reconfirmación de cola, sin R-XX nueva abierta
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la auditoría de

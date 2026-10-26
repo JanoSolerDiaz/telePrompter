@@ -188,3 +188,17 @@ Sin `jsonschema` ni ninguna biblioteca externa (§0.2): comprobación a mano,
 mismo patrón que `tomas.cargar_parte_de_rodaje` (R-02). Cualquier archivo que
 no cumpla esto se rechaza con `RegistroFeedbackError` y un mensaje ya
 accionable en español — nunca se fusiona a medias.
+
+## Segundo consumidor: `comandos-montaje.md` (R-38)
+
+`scripts/comandos_montaje.py::calcular_comandos_montaje` acepta el mismo
+`RegistroTropiezos` que `feedback.cargar_registro_tropiezos` ya carga, como
+parámetro opcional `registro_tropiezos`, para listar en `comandos-montaje.md`
+(`references/contrato-montaje.md`) los tropiezos que cayeron dentro de la
+toma que de verdad quedó `buena` de cada escena — mismo cruce que ya hace
+`FEEDBACK.md` para su columna «¿Toma buena?» (R-37), reutilizando tal cual
+`tomas.toma_buena`, sin una segunda implementación de la regla de
+exclusividad. Este segundo consumidor no cambia nada de este contrato: no
+añade ninguna clave al `.json` exportado ni a `FEEDBACK.md`, solo lee los
+mismos campos (`numero_toma`, `instante_toma_segundos`) que R-36/R-34 ya
+documentan arriba — `version` sigue en **3**.

@@ -650,7 +650,14 @@ completa (concatenar las tomas buenas → añadir subtítulos → incrustar
 capítulos), lista para copiar y pegar en la terminal. Sin ningún parte de
 rodaje con una toma buena, no se genera (nada real que montar todavía); sin
 sección `Capítulos` en el guion, se detiene en el paso de subtítulos y lo
-dice explícitamente. Detalle completo en `references/contrato-montaje.md`.
+dice explícitamente. Desde **R-38**, pasando además el registro de
+tropiezos exportado («Exportar tropiezos», R-03), el documento gana una
+última sección «Puntos a revisar antes de concatenar»: por cada escena con
+un tropiezo marcado dentro de la toma que de verdad quedó `buena` (mismo
+cruce que ya hace «¿Toma buena?» en `FEEDBACK.md`, R-37), lista los
+instantes `mm:ss` que conviene revisar antes de ejecutar el primer comando —
+sin ese registro, o sin ningún tropiezo que cruce así, la sección no
+aparece. Detalle completo en `references/contrato-montaje.md`.
 
 **Proyectos creados antes de R-06:** si un guion ya tenía una carpeta de salida con el sufijo antiguo `-tarjetas`, la primera vez que esta versión la vuelve a procesar la renombra sola a `-teleprompter` — sin perder `estado.json`, `guion-escenas.md` ni ningún otro archivo, y dejando antes una copia de seguridad completa (`<nombre-guion>-tarjetas.bak-<marca>`, junto a la carpeta) por si hiciera falta consultar el estado previo a la migración. No hace falta ningún paso manual del dueño ni de la skill de montaje.
 

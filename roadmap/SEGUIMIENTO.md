@@ -10,7 +10,76 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-25 — **Ciclo de Product Manager: reconfirmación de cola, sin
+**Última actualización:** 2026-10-26 — **Ciclo de Programador: implementa R-38 (Oleada v26)**,
+detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-26): implementa R-38.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` fuera de cualquier rama (`detached`, ocho commits por detrás);
+`git checkout develop && git pull origin develop` trajo ya fusionada la auditoría de hoy (commit
+`572ea01`, hallazgo nuevo `#34` de severidad baja, docstring desactualizado en `revalidacion.py`,
+cero riesgo funcional) por fast-forward limpio, árbol de trabajo limpio sin divergencia que
+resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real (Python 3.11.17, `/usr/local/bin/python3`; mismo
+síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06).
+
+Registro de hallazgos revisado antes de elegir tarea: `auditoriacontinua.md` con un único hallazgo
+nuevo (`#34`, severidad baja — docstring de `revalidacion.py` cita una función ya renombrada, cero
+riesgo de producto, el invariante que describe se reverificó íntegro en la misma auditoría); ningún
+hallazgo de severidad alta (pérdida de texto del guion, corrupción de estado, rotura del
+reproductor o de la auto-contención, seguridad) que atender como P-XX urgente. `#24` (baja) y
+`#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro pendientes de respuesta del dueño
+a las preguntas `#11`/`#12` de §6 (40 y 16 días respectivamente). §1 (fuente autoritativa) traía a
+**R-38 como única fila `PENDIENTE`**: spec completa leída en `ROADMAP_PRODUCTO.md` (Oleada v26),
+sin contradecir ninguna decisión de `DECISIONES_TECNICAS.md` en el área de
+`scripts/comandos_montaje.py`/`scripts/feedback.py`/`scripts/tomas.py`.
+
+**R-38 implementada.** `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje`
+ganan el parámetro opcional `registro_tropiezos: RegistroTropiezos | None = None` (último de la
+firma, reenviado sin tocarlo desde `salidas.generar_salidas_seleccionadas`/
+`_generar_comandos_montaje`, mismo patrón que `carpeta_salida`/R-31). Función privada nueva
+`_puntos_a_revisar` recorre `registro_tropiezos.escenas` y, reutilizando tal cual `tomas.toma_buena`
+(misma comparación que ya hace `feedback._es_toma_buena`, sin una segunda implementación de la
+regla de exclusividad), agrupa por escena los `instante_toma_segundos` de los tropiezos cuyo
+`numero_toma` coincide con el de la toma marcada `buena` — un tropiezo con cualquiera de los dos
+campos en `None` (archivo exportado de una versión del contrato anterior a R-34/R-36) se ignora sin
+avisar de nada adicional. `feedback._formatear_instante` se promueve a pública
+(`formatear_instante`, mismo criterio que R-24 promovió `_volcar_diagnostico`) para que
+`comandos_montaje.py` la reutilice tal cual. Dataclass nueva `PuntoARevisar`
+(`numero_escena`/`titulo`/`instantes`); `ResultadoComandosMontaje` gana el campo aditivo
+`puntos_a_revisar` (vacío por defecto). `formatear_comandos_montaje` añade la sección «Puntos a
+revisar antes de concatenar» como última pieza del documento (después de los pasos, del aviso de
+«sin sección Capítulos» y de la nota de «escenas todavía sin toma buena»), nunca con un encabezado
+vacío. Sin `registro_tropiezos` (valor por defecto `None`), el documento es idéntico byte a byte al
+de antes de la tarea — verificado con test dedicado. `references/contrato-montaje.md` documenta la
+sección nueva; `references/contrato-tropiezos.md` NO sube de versión (sigue en 3, tal como pedía la
+spec: nada cambia en el `.json` exportado ni en `guion.js`). `SKILL.md` y `DEVELOPERS.md`
+actualizados. 8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py` (compatibilidad byte
+a byte sin el parámetro, tropiezo cruzado con su instante exacto, sin ningún cruce no aparece la
+sección, tropiezo sin `numero_toma`/`instante_toma_segundos` se ignora, varios instantes
+ordenados, propagación vía `generar_comandos_montaje`) y 2 en `tests/test_salidas.py`
+(propagación vía `generar_salidas_seleccionadas`, comportamiento idéntico sin el parámetro). Cuatro
+redes en verde: `python3 -m mypy scripts/ tests/` (72 archivos, sin problemas), `python3 -m ruff
+check scripts/ tests/` (todo correcto), `python3 -m pytest` (740 tests, código de salida 0, sin
+fallos), `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, sin cambios).
+Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+**Cambios de estado (§1).** R-38: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` (ese paso corresponde a un ciclo de PM
+posterior, mismo criterio ya aplicado tras R-30/R-36/R-37).
+
+**Hallazgo `#34` (docstring de `revalidacion.py`, baja, de la auditoría de hoy): no atendido en
+este ciclo.** Severidad baja, sin riesgo funcional, sin bloquear ninguna fila `PENDIENTE` — queda
+para una sesión de código posterior o para que el PM lo convierta en tarea de backlog si lo
+considera oportuno; no se mezcla con la implementación de R-38 para mantener el commit de esta
+tarea centrado en un solo cambio verificable.
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño, sin preguntas nuevas de esta sesión. Una decisión nueva en
+`DECISIONES_TECNICAS.md` (reutilizar `tomas.toma_buena` directamente en vez de importar
+`feedback._es_toma_buena`, y promover `_formatear_instante` a pública en vez de duplicar el
+formato).
+
+**Última actualización anterior (2026-10-25, ciclo de Product Manager): reconfirmación de cola, sin
 R-XX nueva abierta**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-25): reconfirmación de cola, sin R-XX nueva abierta.**
@@ -5917,7 +5986,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-35 | Relocalizar por texto, no por índice, un tropiezo guardado en `localStorage` cuando el troceo de la escena cambió desde que se marcó, para que el indicador "⚠ Tropiezo" nunca señale el bloque equivocado | **COMPLETADA** | 2026-10-21 | `assets/reproductor/guion.js`: `cargarTropiezosGuardados(escena, indice)` revalida cada tropiezo crudo contra `escena.bloques[indice_bloque]` (camino feliz si el texto coincide, intacto); si no coincide, busca el mismo texto exacto entre TODOS los bloques de la escena (mismo criterio que `scripts/feedback.py`) y relocaliza solo con coincidencia única, descartando en cero o más de una. La corrección (reubicación o descarte) se fija de inmediato en `localStorage` (`_indicesConCorreccionDeTropiezos.forEach(guardarTropiezosEscena)`, solo para las escenas que de verdad cambiaron). De paso corrige una pérdida silenciosa que esta misma tarea habría hecho permanente: el objeto normalizado ahora conserva `instante_toma_segundos` (R-34) en vez de descartarlo en cada recarga — antes de R-35 el campo se perdía nada más leer `localStorage` (el `.map` de `cargarTropiezosGuardados` no lo copiaba), sin llegar a persistirse mal porque nada volvía a guardar el resultado; con el requisito 3 de R-35 (guardar de inmediato) habría quedado borrado para siempre de no corregirse aquí mismo. Sin migración (`references/contrato-tropiezos.md` no sube de versión, cambio puramente interno a cómo `guion.js` interpreta `localStorage`); `cargarTomasGuardadas`/`tomasEscena` intactos (requisito 5, ninguna toma referencia `indice_bloque`); `scripts/feedback.py`/`documento_revision.py` sin cambios (ya casan por texto). 6 tests nuevos (713→719) en `tests/test_reproductor.py`. Verificado también de punta a punta con Playwright/Chromium real: un tropiezo guardado en `indice_bloque=0` cuyo texto vive ahora en el bloque 2 se relocaliza a 2 con su `instante_toma_segundos` intacto, un tropiezo con texto reescrito se descarta sin indicador fantasma, uno ya correcto no cambia, y el indicador "⚠ Tropiezo" en pantalla sigue al bloque relocalizado (2), nunca al índice viejo (0) — sin errores de consola. Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-36 | Vincular cada tropiezo marcado con el número de la toma en que se marcó, para que el instante de R-34 no se confunda entre tomas distintas de la misma escena | **COMPLETADA** | 2026-10-22 | `alternarTropiezoBloqueActual` (`guion.js`) guarda `numero_toma` (`tomasEscena[escena].length + 1`, mismo cálculo que `actualizarIndicadorToma`) solo al marcar, no al desmarcar; `cargarTropiezosGuardados` lo conserva de forma opcional, mismo patrón que `instante_toma_segundos` (R-34/R-35). `scripts/feedback.py`: `TropiezoBloque.numero_toma` opcional (entero ≥ 1); columna nueva «Toma» en `FEEDBACK.md` entre «Texto exacto» e «Instante»; `_PATRON_FILA` reconoce filas de 5, 6 y 7 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente; cabecera avisa que el instante solo es de fiar cuando «Toma» coincide con la toma buena del parte de rodaje. `version` del `.json` exportado sube a 3. 8 tests nuevos (719→727). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-37 | Cruzar automáticamente «Toma» con la toma buena ya registrada en el parte de rodaje, para que `FEEDBACK.md` diga de un vistazo qué tropiezos son de fiar como punto de corte real, sin que el dueño tenga que mirar los dos archivos a mano | **COMPLETADA** | 2026-10-23 | `scripts/feedback.py::registrar_tropiezos_en_feedback` gana `tomas_por_escena: dict[str, Any] \| None = None` (mismo contenedor que `EstadoProyecto.tomas`, sin valor por defecto no rompe ninguna llamada existente); por cada fila nueva con `numero_toma` (R-36), reutiliza tal cual `tomas.toma_buena` (R-02/R-11, sin segunda implementación de la regla de exclusividad) para comparar contra la toma marcada `buena` de la escena. Columna nueva «¿Toma buena?» en `FEEDBACK.md`, entre «Toma» e «Instante» (`"sí"`/`"no"`/vacía); `_PATRON_FILA` gana un tercer grupo opcional para seguir reconociendo filas de 5 a 8 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente — las filas de una exportación anterior a esta tarea no se recalculan. `references/contrato-tropiezos.md` NO sube de versión (sigue en 3): el cruce vive enteramente en Python al formatear cada fila, nada nuevo en el `.json` exportado ni en `guion.js`. 5 tests nuevos (727→732). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
-| R-38 | Añadir a `comandos-montaje.md` los instantes exactos a revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena, para que el dueño no tenga que volver a `FEEDBACK.md` en el momento real de montar | **PENDIENTE** | 2026-10-23 | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v26: `calcular_comandos_montaje` gana `registro_tropiezos: RegistroTropiezos \| None = None` opcional; nueva sección «Puntos a revisar antes de concatenar» solo cuando algún tropiezo cruza como de la toma buena (misma comparación que ya usa `feedback._es_toma_buena`); sin él, documento idéntico al de hoy. Nunca genera ni ejecuta ningún comando de recorte real (fuera de alcance, ya fijado por R-30/R-31) |
+| R-38 | Añadir a `comandos-montaje.md` los instantes exactos a revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena, para que el dueño no tenga que volver a `FEEDBACK.md` en el momento real de montar | **COMPLETADA** | 2026-10-26 | `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje` ganan `registro_tropiezos: RegistroTropiezos \| None = None` (último parámetro opcional, reenviado tal cual desde `salidas.generar_salidas_seleccionadas`/`_generar_comandos_montaje`); reutiliza `tomas.toma_buena` (misma comparación que ya hace `feedback._es_toma_buena`, sin segunda implementación de la regla de exclusividad) para listar, en la sección final nueva «Puntos a revisar antes de concatenar», los instantes `mm:ss` (`feedback.formatear_instante`, antes `_formatear_instante`, promovida a pública) de los tropiezos marcados dentro de la toma que `concat-ffmpeg.txt` va a usar de verdad para cada escena. Sin `registro_tropiezos` (valor por defecto), documento idéntico byte a byte al de antes de la tarea; sin ningún tropiezo cruzando como de la toma buena, tampoco aparece la sección. `references/contrato-montaje.md` documenta la sección nueva; `references/contrato-tropiezos.md` NO sube de versión (sigue en 3). 8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py`, 2 en `tests/test_salidas.py`. Cuatro redes en verde. `SKILL.md`/`DEVELOPERS.md` actualizados |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

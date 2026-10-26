@@ -110,6 +110,13 @@ fallida reutiliza tal cual `volcar_diagnostico`/`ruta_diagnostico`/
 `obtener_logger` (R-24), con el mismo mensaje de `SalidaOmitida` que las
 demas salidas. El HTML de impresion sigue apareciendo siempre en
 `generadas`, en los tres desenlaces.
+
+R-38: `generar_salidas_seleccionadas` gana un parametro opcional
+`registro_tropiezos`, reenviado tal cual a `_generar_comandos_montaje` ->
+`comandos_montaje.generar_comandos_montaje`, que lo usa para anadir la
+seccion «Puntos a revisar antes de concatenar» a `comandos-montaje.md`. Sin
+el (`None`, valor por defecto), el comportamiento es identico al de antes
+de R-38.
 """
 
 from __future__ import annotations
@@ -141,6 +148,7 @@ from config import (
 )
 from convencion import guardar_convencion_guiones
 from estado import EstadoProyecto, marca_de_tiempo
+from feedback import RegistroTropiezos
 from logger import obtener_logger
 from monitorizacion import ruta_diagnostico, volcar_diagnostico
 from parser import ResultadoParseo
@@ -548,6 +556,7 @@ def _generar_comandos_montaje(
     nombre_guion: str,
     configuracion: Configuracion,
     tomas_por_escena: dict[str, Any],
+    registro_tropiezos: RegistroTropiezos | None = None,
 ) -> tuple[list[ArchivoGenerado], list[SalidaOmitida]]:
     """R-30: entrega `comandos-montaje.md` reutilizando tal cual
     `comandos_montaje.generar_comandos_montaje` -- mismo patron que
@@ -558,9 +567,19 @@ def _generar_comandos_montaje(
     que todavia no esten en disco en el momento en que le toca el turno --
     octava y ultima opcion de `TODAS_LAS_SALIDAS`, asi que si el dueno
     selecciono tambien `CONCAT_FFMPEG`/`SRT`/`CAPITULOS_YOUTUBE` en esta misma
-    pasada, esos archivos ya estaran escritos cuando se compruebe."""
+    pasada, esos archivos ya estaran escritos cuando se compruebe.
+
+    `registro_tropiezos` (R-38, opcional) se reenvia tal cual a
+    `generar_comandos_montaje`; sin el (`None`, valor por defecto), el
+    comportamiento es identico al de antes de R-38."""
     contenido, calculo = generar_comandos_montaje(
-        resultado, resultado_tiempos, nombre_guion, tomas_por_escena, configuracion, carpeta_salida
+        resultado,
+        resultado_tiempos,
+        nombre_guion,
+        tomas_por_escena,
+        configuracion,
+        carpeta_salida,
+        registro_tropiezos,
     )
     if contenido is None:
         motivo = calculo.motivo_sin_generar or "no hay nada real que montar todavía."
@@ -589,6 +608,7 @@ def generar_salidas_seleccionadas(
     nombre_guion: str = "guion",
     configuracion: Configuracion | None = None,
     tomas_por_escena: dict[str, Any] | None = None,
+    registro_tropiezos: RegistroTropiezos | None = None,
 ) -> ResumenSalidas:
     """Genera cada salida seleccionada de forma independiente (requisito
     3): la excepcion de una nunca impide las demas -- se captura y se
@@ -599,7 +619,12 @@ def generar_salidas_seleccionadas(
     `tomas_por_escena` (R-18) es `EstadoProyecto.tomas` tal cual -- quien ya
     tiene el `EstadoProyecto` cargado se lo entrega, este modulo no abre
     `estado.json` por su cuenta. Omitido (`None`), el comportamiento de
-    `SRT`/`PPTX`/`CAPITULOS_YOUTUBE` es identico al de antes de R-18."""
+    `SRT`/`PPTX`/`CAPITULOS_YOUTUBE` es identico al de antes de R-18.
+
+    `registro_tropiezos` (R-38, opcional) es el mismo `RegistroTropiezos`
+    que carga `feedback.cargar_registro_tropiezos`, reenviado tal cual a
+    `COMANDOS_MONTAJE`; sin el (`None`, valor por defecto), el documento es
+    identico al de antes de R-38."""
     configuracion = configuracion or Configuracion()
     tomas_por_escena = tomas_por_escena or {}
     generadas: list[ArchivoGenerado] = []
@@ -678,6 +703,7 @@ def generar_salidas_seleccionadas(
                     nombre_guion,
                     configuracion,
                     tomas_por_escena,
+                    registro_tropiezos,
                 )
                 generadas.extend(nuevas)
                 omitidas.extend(nuevas_omitidas)
