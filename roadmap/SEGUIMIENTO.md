@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-27 — **Ciclo de Programador: quinta reconfirmación del día tras
+**Última actualización:** 2026-10-27 — **Ciclo de Programador: sexta reconfirmación del día tras
 R-39, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-27), cuarto tras R-39.** Revisión de entrada (protocolo): el
