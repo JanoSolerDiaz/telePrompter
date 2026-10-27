@@ -10,13 +10,14 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-27 — **Ciclo de Programador: octava reconfirmación del día tras
+**Última actualización:** 2026-10-27 — **Ciclo de Programador: novena reconfirmación del día tras
 R-39, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-27), octava tras R-39.** Revisión de entrada (protocolo): el
-contenedor arrancó con `HEAD` *detached* sobre `develop` (un commit por detrás); `git checkout
-develop && git pull origin develop` trajo ya fusionada la séptima reconfirmación del día (commit
-`7e6052a`) por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+**Ciclo de Programador (2026-10-27), novena tras R-39.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` *detached* diez commits por delante de la rama local `develop`
+(sin pérdida: los diez ya eran historia de `origin/develop`, incluida la octava reconfirmación);
+`git checkout develop && git pull origin develop` fusionó la rama local por fast-forward limpio
+hasta ese mismo commit (`d8b69e6`), árbol de trabajo limpio sin divergencia que resolver.
 Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el
 intérprete real (Python 3.11.17, `/usr/local/bin/python3`; el `pip`/`pip3` desnudos del sistema
 apuntan a otro intérprete y no ven los paquetes, mismo síntoma ya documentado en `#22`/`#28`/P-06).
@@ -25,9 +26,10 @@ apuntan a otro intérprete y no ven los paquetes, mismo síntoma ya documentado 
 hallazgo `ABIERTO` de severidad alta (pérdida de texto del guion, corrupción de estado, rotura del
 reproductor o de la auto-contención, seguridad) que atender como P-XX urgente — solo `#24` (baja) y
 `#30` (media), ambos de proceso/gobernanza puro pendientes de respuesta del dueño a las preguntas
-`#11`/`#12` de §6, sin cambio desde el ciclo anterior. `mcp__github__list_issues`/
-`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
-`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+`#11`/`#12` de §6, sin cambio desde el ciclo anterior (41 y 17 días respectivamente). `mcp__github__
+list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR
+abiertos. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada
+`nuevo`.
 
 §1 (fuente autoritativa) confirmada: R-39 sigue siendo la última fila y está **COMPLETADA**; ninguna
 fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de `T-24b`, bloqueo físico ajeno
@@ -47,9 +49,12 @@ cambio en `scripts/`, `tests/` ni `assets/`.
 **Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
 P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
 cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
-pura reconfirmación, nada que decidir.
+pura reconfirmación, nada que decidir. Esta es la novena pasada seguida de pura reconfirmación en la
+misma jornada, exactamente el patrón de coste que señala la pregunta `#12` de §6 (17 días sin
+respuesta del dueño) — sin autorización para espaciar el cron ni para saltar las cuatro redes con
+cola vacía, el protocolo vigente exige repetir la verificación completa en cada disparo.
 
-**Última actualización anterior (2026-10-27, ciclo de Programador): séptima reconfirmación del día
+**Última actualización anterior (2026-10-27, ciclo de Programador): octava reconfirmación del día
 tras R-39, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-27), quinto tras R-39.** Revisión de entrada (protocolo): el
