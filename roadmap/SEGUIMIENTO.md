@@ -10,8 +10,45 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-27 — **Ciclo de Programador: segunda reconfirmación del día tras
+**Última actualización:** 2026-10-27 — **Ciclo de Programador: tercera reconfirmación del día tras
 R-39, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-27), tercero tras R-39.** Revisión de entrada (protocolo): el
+contenedor arrancó con `HEAD` *detached* sobre `develop`; `git checkout develop && git pull origin
+develop` trajo ya fusionada la segunda reconfirmación del día (commit `b6d5c6b`) por fast-forward
+limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de desarrollo instaladas
+con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17,
+`/usr/local/bin/python3`; el `pip`/`pip3` desnudos del sistema apuntan a otro intérprete y no ven los
+paquetes, mismo síntoma ya documentado en `#22`/`#28`/P-06).
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` sin ningún
+hallazgo `ABIERTO` de severidad alta (pérdida de texto del guion, corrupción de estado, rotura del
+reproductor o de la auto-contención, seguridad) que atender como P-XX urgente — solo `#24` (baja) y
+`#30` (media), ambos de proceso/gobernanza puro pendientes de respuesta del dueño a las preguntas
+`#11`/`#12` de §6 (41 y 17 días respectivamente, sin cambio). `mcp__github__list_issues`/
+`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+§1 (fuente autoritativa) confirmada: R-39 sigue siendo la última fila y está **COMPLETADA**; ninguna
+fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de `T-24b`, bloqueo físico ajeno
+al programador) — archivar la Oleada v27 y abrir la siguiente corresponde a un ciclo de Product
+Manager posterior, mismo criterio ya aplicado tras R-30/R-36/R-37/R-38.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy .` (72 archivos, sin problemas),
+`python3 -m ruff check .` (todo correcto), `python3 -m pytest` (745 tests, código de salida 0, sin
+fallos, mismo recuento que el ciclo anterior) y `python3 scripts/verificar_salidas.py --fixture`
+(diecinueve etapas `OK`, incluidas las dos salidas latentes esperadas en este contenedor — `.pptx`
+sin la skill `480-branded-pptx` instalada y `.pdf` sin Chrome/Edge — y las omisiones esperadas sin
+parte de rodaje real). Cuatro redes en verde; ningún cambio en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1).** Ninguno: R-39 permanece `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
+P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
+cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
+pura reconfirmación, nada que decidir.
+
+**Última actualización anterior (2026-10-27, ciclo de Programador): segunda reconfirmación del día
+tras R-39, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-27), segundo tras R-39.** Revisión de entrada (protocolo): el
 contenedor arrancó con `HEAD` fuera de cualquier rama (`detached`); `git checkout develop && git
