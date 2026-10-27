@@ -342,6 +342,46 @@
       " ppm";
     vistaIndice.appendChild(resumen);
 
+    // Progreso de grabacion entre escenas (R-39): cuanto queda, sin entrar en
+    // ninguna. Reutiliza tal cual `estadosEscena` (T-19/R-02, ya recalculado
+    // en cada punto que cambia una toma antes de volver a llamar a esta misma
+    // funcion) -- ninguna segunda funcion que reimplique el mismo criterio de
+    // pendiente/grabada/revisada (requisito 1). El tiempo restante solo suma
+    // `duracion_estimada_segundos` (T-12) de las escenas `pendiente`: una
+    // escena `grabada` o `revisada` ya tiene al menos una toma hecha y no es
+    // tiempo pendiente de grabar por primera vez (requisito 2).
+    var pendientes = 0;
+    var grabadas = 0;
+    var revisadas = 0;
+    var segundosPendientes = 0;
+    datos.escenas.forEach(function (escena, indice) {
+      var estado = estadosEscena[indice];
+      if (estado === "pendiente") {
+        pendientes += 1;
+        segundosPendientes += escena.duracion_estimada_segundos;
+      } else if (estado === "grabada") {
+        grabadas += 1;
+      } else {
+        revisadas += 1;
+      }
+    });
+    var resumenProgreso = document.createElement("p");
+    resumenProgreso.className = "resumen-progreso-grabacion";
+    // Requisito 4: "0 min estimados por grabar" es informacion valida (ya
+    // grabado todo), igual que "N pendientes" con N = total (nada grabado
+    // todavia) -- mismo formato siempre, sin mensaje especial ni ocultar la
+    // linea en ningun caso.
+    resumenProgreso.textContent =
+      pendientes +
+      " pendientes · " +
+      grabadas +
+      " grabadas · " +
+      revisadas +
+      " revisadas · " +
+      formatearTiempo(segundosPendientes) +
+      " estimados por grabar";
+    vistaIndice.appendChild(resumenProgreso);
+
     // "Continuar" (T-26, requisitos 1 y 5): un boton explicito, no un salto
     // automatico al cargar la pagina. `requestFullscreen` exige un gesto de
     // usuario real -- un intento automatico en `iniciarMotor` habria fallado

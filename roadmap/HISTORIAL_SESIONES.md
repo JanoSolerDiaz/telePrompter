@@ -12,6 +12,63 @@
 
 ---
 
+### Sesión 2026-10-27 (254) — Ciclo de Programador: implementa R-39
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). El contenedor arrancó con `HEAD` fuera de cualquier rama (`detached`);
+`git checkout develop && git pull origin develop` trajo ya fusionada la auditoría del 2026-10-27
+(commit `c79f7ee`) por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra
+el intérprete real (Python 3.11.17, `/usr/local/bin/python3`; mismo síntoma del `pip`/`pip3`
+desnudos ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en este clon).
+
+**Documentos de referencia leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): §1/§3 de
+`SEGUIMIENTO.md`; la ficha completa de R-39 en `ROADMAP_PRODUCTO.md` (Oleada v27); el registro de
+hallazgos de `auditoriacontinua.md` completo y su narrativa más reciente (2026-10-27).
+
+**Hallazgos del auditor.** Ningún hallazgo `ABIERTO` de severidad alta (pérdida de texto del guion,
+corrupción de estado, rotura del reproductor o de la auto-contención, seguridad) que atender como
+P-XX urgente. Solo `#24` (baja) y `#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro
+ya enrutados como preguntas `#11`/`#12` de §6, pendientes solo de respuesta del dueño.
+
+**Tarea elegida.** §1 (fuente autoritativa) traía a R-39 como única fila `PENDIENTE` — siguiente
+tarea según el orden de §1, sin ninguna urgencia que la adelantara.
+
+**R-39 implementada.** `assets/reproductor/guion.js::renderizarIndice` gana una línea nueva
+(`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion` (T-19), con el recuento de escenas
+por estado (`pendiente`/`grabada`/`revisada`, reutilizando tal cual `estadosEscena` de T-19/R-02,
+sin segunda función) y el tiempo estimado que queda por grabar desde cero (suma de
+`duracion_estimada_segundos`, T-12, solo de las escenas `pendiente`). Recalculada sola porque
+`finalizarTomaActual` ya llama a `renderizarIndice()` al cerrar una toma — ninguna lógica nueva de
+invalidación. Los dos extremos (nada grabado / todo grabado) usan el mismo formato siempre. CSS
+nuevo en `estilo.css` reutiliza la paleta y tamaño de `.resumen-guion`, sin color nuevo. Sin cambio
+en `scripts/reproductor.py` ni en el contrato de datos embebido, sin migración de `estado.json`.
+Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+**Verificación.** Cuatro redes en verde: `python3 -m mypy .` (72 archivos), `python3 -m ruff check
+.`, `python3 -m pytest` (745 tests, 740→745 con los 5 nuevos en `tests/test_reproductor.py`),
+`python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`). Verificado además
+visualmente con Playwright/Chromium real (paquete `playwright` instalado solo para esta
+comprobación, Chromium ya preinstalado en el contenedor, desinstalado al terminar): carga en frío,
+caso mixto (una revisada/una grabada/dos pendientes), caso "todo grabado" y actualización en vivo al
+marcar una toma como buena durante la grabación sin recargar — los cinco verificados, sin errores de
+consola.
+
+**Cambios de estado (§1).** R-39: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` — corresponde a un ciclo de PM posterior.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`** (2 filas, 2026-10-27): reutilizar `estadosEscena`
+en línea dentro de `renderizarIndice` en vez de una función agregada aparte; sumar el tiempo
+restante solo sobre las escenas `pendiente`, nunca sobre las `grabada`.
+
+**Documentación.** `SKILL.md` (descripción del índice de escenas) y `DEVELOPERS.md` (sección nueva
+"Progreso de grabación visible en el índice de escenas (R-39)") actualizados. Sin cambios en §3
+(bloqueos) ni §7 (desviaciones). §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-10-26 (253) — Ciclo de Product Manager: archiva Oleada v26 (R-38) y abre R-39 (Oleada v27)
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena

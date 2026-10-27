@@ -4140,6 +4140,53 @@ volver a `FEEDBACK.md`, filtrar las filas con «¿Toma buena?» = «sí» y trad
   de `generar_salidas_seleccionadas`, y comportamiento idéntico sin el parámetro). Cuatro
   redes en verde (732→740 tests).
 
+## Progreso de grabación visible en el índice de escenas (R-39)
+
+El índice (`renderizarIndice`, T-19) ya calcula y muestra, por escena, su estado
+(`calcularEstadoEscena`: `pendiente`/`grabada`/`revisada`, T-19/R-02) y ya tiene un párrafo
+de resumen global (`.resumen-guion`: "N escenas · duración total estimada · ppm
+ponderado"), pero ninguno de los dos respondía la pregunta que de verdad importa en mitad
+de una sesión de grabación real, sin entrar en ninguna escena: ¿cuánto me queda?
+
+- **Ninguna segunda función que reimplique pendiente/grabada/revisada** (requisito 1).
+  `renderizarIndice` reutiliza tal cual el array `estadosEscena` que ya mantiene
+  actualizado cada punto que cierra una toma (`finalizarTomaActual`) antes de volver a
+  llamar a esta misma función — `calcularEstadoEscena` solo se define una vez en toda la
+  página.
+- **El tiempo restante solo suma las escenas `pendiente`** (requisito 2): acumula
+  `duracion_estimada_segundos` (T-12) únicamente de las escenas en ese estado — una
+  `grabada` o una `revisada` ya tienen al menos una toma hecha y no son tiempo pendiente de
+  grabar por primera vez. Formateado con la misma `formatearTiempo` que ya usa el resto del
+  índice.
+- **Recalculado solo porque `renderizarIndice` ya se vuelve a llamar sola** (requisito 3):
+  ninguna lógica nueva de invalidación — marcar una toma como buena (`G`) ya dispara
+  `renderizarIndice()` desde `finalizarTomaActual` (mismo ciclo que T-19/T-26 usan para el
+  resto del índice), así que el recuento y el tiempo restante se actualizan solos al volver
+  al índice.
+- **Sin caso especial para los extremos** (requisito 4): "0 pendientes" (ya grabado todo) y
+  "N pendientes" con N = total (nada grabado todavía) usan el mismo formato siempre — "0:00
+  estimados por grabar" es información válida, no un mensaje de error ni una línea oculta.
+- **Sin color nuevo** (requisito 5): `.resumen-progreso-grabacion` reutiliza la misma
+  paleta y tamaño que `.resumen-guion` (T-21), una segunda línea de contexto que no compite
+  con el título de la escena ni con el botón "Continuar" (T-26).
+- **Sin cambio en `scripts/reproductor.py` ni en el contrato de datos embebido**
+  (requisito 6): `duracion_estimada_segundos` por escena y las tomas que alimentan
+  `tomasEscena`/`estadosEscena` ya viajaban; el agregado se calcula enteramente en
+  `guion.js`, igual que `calcularEstadoEscena` ya hace. Sin migración de `estado.json`.
+- **Tests.** 5 nuevos en `tests/test_reproductor.py` (la línea nueva aparece justo después
+  de `.resumen-guion`, reutiliza `estadosEscena` sin segunda función, solo suma el tiempo de
+  las `pendiente`, mismo formato en el caso "0 min restantes", mismo color/tamaño que
+  `.resumen-guion`). Cuatro redes en verde (740→745 tests). Verificado también visualmente
+  con Playwright/Chromium real (paquete `playwright` de Python instalado solo para esta
+  comprobación, Chromium ya preinstalado en el contenedor, ninguno de los dos es
+  dependencia del proyecto, desinstalado al terminar): sobre la fixture de ejemplo (4
+  escenas), la carga en frío muestra "4 pendientes · 0 grabadas · 0 revisadas · 1:59
+  estimados por grabar"; con una escena revisada y otra grabada, "2 pendientes · 1 grabadas
+  · 1 revisadas · 1:04 estimados por grabar"; con las cuatro revisadas, "0 pendientes · 0
+  grabadas · 4 revisadas · 0:00 estimados por grabar"; y marcar una toma como buena durante
+  la grabación (sin recargar la página) actualiza el recuento y el tiempo al volver al
+  índice — sin errores de consola.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

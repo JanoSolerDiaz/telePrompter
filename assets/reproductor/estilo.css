@@ -45,6 +45,15 @@ h1 {
 .resumen-guion {
   color: var(--color-texto-secundario);
   font-size: 0.55em;
+  margin-bottom: 0.25em;
+}
+
+/* Progreso de grabacion entre escenas (R-39): misma paleta y tamano que
+   `.resumen-guion` (requisito 5) -- no compite en jerarquia visual con el
+   titulo ni con "Continuar", solo anade una segunda linea de contexto. */
+.resumen-progreso-grabacion {
+  color: var(--color-texto-secundario);
+  font-size: 0.55em;
   margin-bottom: 2em;
 }
 

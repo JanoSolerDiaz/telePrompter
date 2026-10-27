@@ -10,8 +10,69 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-26 — **Ciclo de Product Manager: archiva Oleada v26 (R-38) y abre
-R-39 (Oleada v27)**, detalle de la sesión más abajo.
+**Última actualización:** 2026-10-27 — **Ciclo de Programador: implementa R-39**, detalle de la
+sesión más abajo.
+
+**Ciclo de Programador (2026-10-27): implementa R-39.** Sesión en la nube (sin instalación local
+ni health check, T-32 no aplicable aquí). Revisión de entrada (protocolo): el contenedor arrancó
+con `HEAD` fuera de cualquier rama (`detached`); `git checkout develop && git pull origin develop`
+trajo ya fusionada la auditoría del 2026-10-27 (commit `c79f7ee`, cierra `#34` ya resuelto en código
+por P-08, R-38 revisada sin hallazgos, `#24`/`#30` reconfirmados sin novedad) por fast-forward
+limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de desarrollo instaladas
+con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17,
+`/usr/local/bin/python3`; mismo síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06).
+
+Registro de hallazgos revisado antes de elegir tarea: `auditoriacontinua.md` sin ningún hallazgo
+`ABIERTO` de severidad alta (pérdida de texto del guion, corrupción de estado, rotura del
+reproductor o de la auto-contención, seguridad) que atender como P-XX urgente — solo `#24` (baja) y
+`#30` (media), ambos de proceso/gobernanza puro pendientes de respuesta del dueño a las preguntas
+`#11`/`#12` de §6. §1 (fuente autoritativa) traía a **R-39 como única fila `PENDIENTE`**: spec
+completa leída en `ROADMAP_PRODUCTO.md` (Oleada v27), sin contradecir ninguna decisión de
+`DECISIONES_TECNICAS.md` en el área de `assets/reproductor/guion.js`/`estilo.css`.
+
+**R-39 implementada.** `renderizarIndice()` (`assets/reproductor/guion.js`) gana una línea nueva
+(`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion` ya existente (T-19), con el
+recuento de escenas por estado y el tiempo estimado que queda por grabar desde cero. Reutiliza tal
+cual el array `estadosEscena` que `renderizarIndice` ya mantiene (`calcularEstadoEscena`, T-19/R-02)
+— ninguna segunda función que reimplique pendiente/grabada/revisada (requisito 1) — y suma
+`duracion_estimada_segundos` (T-12) únicamente de las escenas `pendiente`, nunca de las `grabada` ni
+`revisada` (requisito 2), formateada con la misma `formatearTiempo` del resto del índice. Sin
+ninguna lógica nueva de invalidación (requisito 3): como `finalizarTomaActual` ya llama a
+`renderizarIndice()` al cerrar una toma (mismo ciclo que T-19/T-26 usan para el resto del índice),
+marcar una toma como buena durante la grabación y volver al índice actualiza el recuento y el
+tiempo restante solos. Los dos extremos ("nada grabado todavía" y "ya grabé todo, 0 min restantes")
+usan el mismo formato siempre, sin mensaje especial ni línea oculta (requisito 4). CSS nuevo
+(`.resumen-progreso-grabacion` en `estilo.css`) reutiliza la misma paleta y tamaño que
+`.resumen-guion` (T-21), sin introducir ningún color nuevo ni competir con el título de la escena ni
+con "Continuar" (requisito 5). Sin cambio en `scripts/reproductor.py` ni en el contrato de datos
+embebido — el agregado se calcula enteramente en `guion.js` (requisito 6), sin migración de
+`estado.json`. 5 tests nuevos (740→745) en `tests/test_reproductor.py` (la línea aparece justo
+después de `.resumen-guion`, reutiliza `estadosEscena` sin segunda función, solo suma el tiempo de
+las `pendiente`, mismo formato en "0 min restantes", mismo color/tamaño que `.resumen-guion`).
+Cuatro redes en verde: `python3 -m mypy .` (72 archivos, sin problemas), `python3 -m ruff check .`
+(todo correcto), `python3 -m pytest` (745 tests, código de salida 0, sin fallos),
+`python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, sin cambios). Verificado
+además visualmente con Playwright/Chromium real (paquete `playwright` de Python instalado solo para
+esta comprobación, Chromium ya preinstalado en el contenedor, ninguno de los dos es dependencia del
+proyecto, desinstalado al terminar): sobre la fixture de ejemplo (4 escenas), la carga en frío
+muestra "4 pendientes · 0 grabadas · 0 revisadas · 1:59 estimados por grabar"; con una escena
+revisada y otra grabada, "2 pendientes · 1 grabadas · 1 revisadas · 1:04 estimados por grabar"; con
+las cuatro revisadas, "0 pendientes · 0 grabadas · 4 revisadas · 0:00 estimados por grabar"; y
+marcar una toma como buena en vivo (sin recargar) actualiza el recuento y el tiempo al volver al
+índice — sin errores de consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle completo en
+`DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+**Cambios de estado (§1).** R-39: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` (ese paso corresponde a un ciclo de PM
+posterior, mismo criterio ya aplicado tras R-30/R-36/R-37/R-38).
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño, sin preguntas nuevas de esta sesión. Una decisión nueva en
+`DECISIONES_TECNICAS.md` (reutilizar `estadosEscena` en vez de una función agregada aparte, y sumar
+el tiempo restante solo sobre las escenas `pendiente`).
+
+**Última actualización anterior (2026-10-26, ciclo de Product Manager): archiva Oleada v26 (R-38) y
+abre R-39 (Oleada v27)**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-26): archiva Oleada v26 (R-38) y abre R-39 (Oleada v27).**
 Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
@@ -6426,7 +6487,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-36 | Vincular cada tropiezo marcado con el número de la toma en que se marcó, para que el instante de R-34 no se confunda entre tomas distintas de la misma escena | **COMPLETADA** | 2026-10-22 | `alternarTropiezoBloqueActual` (`guion.js`) guarda `numero_toma` (`tomasEscena[escena].length + 1`, mismo cálculo que `actualizarIndicadorToma`) solo al marcar, no al desmarcar; `cargarTropiezosGuardados` lo conserva de forma opcional, mismo patrón que `instante_toma_segundos` (R-34/R-35). `scripts/feedback.py`: `TropiezoBloque.numero_toma` opcional (entero ≥ 1); columna nueva «Toma» en `FEEDBACK.md` entre «Texto exacto» e «Instante»; `_PATRON_FILA` reconoce filas de 5, 6 y 7 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente; cabecera avisa que el instante solo es de fiar cuando «Toma» coincide con la toma buena del parte de rodaje. `version` del `.json` exportado sube a 3. 8 tests nuevos (719→727). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-37 | Cruzar automáticamente «Toma» con la toma buena ya registrada en el parte de rodaje, para que `FEEDBACK.md` diga de un vistazo qué tropiezos son de fiar como punto de corte real, sin que el dueño tenga que mirar los dos archivos a mano | **COMPLETADA** | 2026-10-23 | `scripts/feedback.py::registrar_tropiezos_en_feedback` gana `tomas_por_escena: dict[str, Any] \| None = None` (mismo contenedor que `EstadoProyecto.tomas`, sin valor por defecto no rompe ninguna llamada existente); por cada fila nueva con `numero_toma` (R-36), reutiliza tal cual `tomas.toma_buena` (R-02/R-11, sin segunda implementación de la regla de exclusividad) para comparar contra la toma marcada `buena` de la escena. Columna nueva «¿Toma buena?» en `FEEDBACK.md`, entre «Toma» e «Instante» (`"sí"`/`"no"`/vacía); `_PATRON_FILA` gana un tercer grupo opcional para seguir reconociendo filas de 5 a 8 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente — las filas de una exportación anterior a esta tarea no se recalculan. `references/contrato-tropiezos.md` NO sube de versión (sigue en 3): el cruce vive enteramente en Python al formatear cada fila, nada nuevo en el `.json` exportado ni en `guion.js`. 5 tests nuevos (727→732). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-38 | Añadir a `comandos-montaje.md` los instantes exactos a revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena, para que el dueño no tenga que volver a `FEEDBACK.md` en el momento real de montar | **COMPLETADA** | 2026-10-26 | `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje` ganan `registro_tropiezos: RegistroTropiezos \| None = None` (último parámetro opcional, reenviado tal cual desde `salidas.generar_salidas_seleccionadas`/`_generar_comandos_montaje`); reutiliza `tomas.toma_buena` (misma comparación que ya hace `feedback._es_toma_buena`, sin segunda implementación de la regla de exclusividad) para listar, en la sección final nueva «Puntos a revisar antes de concatenar», los instantes `mm:ss` (`feedback.formatear_instante`, antes `_formatear_instante`, promovida a pública) de los tropiezos marcados dentro de la toma que `concat-ffmpeg.txt` va a usar de verdad para cada escena. Sin `registro_tropiezos` (valor por defecto), documento idéntico byte a byte al de antes de la tarea; sin ningún tropiezo cruzando como de la toma buena, tampoco aparece la sección. `references/contrato-montaje.md` documenta la sección nueva; `references/contrato-tropiezos.md` NO sube de versión (sigue en 3). 8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py`, 2 en `tests/test_salidas.py`. Cuatro redes en verde. `SKILL.md`/`DEVELOPERS.md` actualizados |
-| R-39 | Mostrar en el índice de escenas del reproductor, sin entrar en ninguna, cuántas quedan por grabar (pendiente/grabada/revisada) y cuánto tiempo estimado representan las que siguen `pendiente` | **PENDIENTE** | — | Oleada v27, ficha completa en `ROADMAP_PRODUCTO.md`. Abierta por el PM el 2026-10-26; aún sin ningún ciclo de Programador que la haya tocado |
+| R-39 | Mostrar en el índice de escenas del reproductor, sin entrar en ninguna, cuántas quedan por grabar (pendiente/grabada/revisada) y cuánto tiempo estimado representan las que siguen `pendiente` | **COMPLETADA** | 2026-10-27 | `assets/reproductor/guion.js::renderizarIndice`: línea nueva (`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion`, reutilizando tal cual `estadosEscena` (T-19/R-02, sin segunda función) y sumando `duracion_estimada_segundos` (T-12) solo de las escenas `pendiente`; recalculada sola porque `finalizarTomaActual` ya llama a `renderizarIndice()` al cerrar una toma. Mismo color/tamaño que `.resumen-guion` (requisito 5), mismo formato en los dos extremos (0 pendientes / todas pendientes, requisito 4). Sin cambio en `scripts/reproductor.py` ni en el contrato embebido, sin migración. 5 tests nuevos (740→745). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (instalado solo para la comprobación, desinstalado al terminar). `SKILL.md`/`DEVELOPERS.md` actualizados |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

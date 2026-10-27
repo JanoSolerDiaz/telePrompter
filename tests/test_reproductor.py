@@ -1381,3 +1381,61 @@ def test_estilo_define_el_cuerpo_de_la_preparacion_con_saltos_de_linea_preservad
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     assert ".preparacion-grabacion-cuerpo" in pagina
     assert "white-space: pre-wrap" in pagina
+
+
+# --- Progreso de grabacion visible en el indice (R-39) ----------------------------------
+
+
+def test_guion_js_muestra_progreso_de_grabacion_debajo_del_resumen_del_guion() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: justo despues del `.resumen-guion` ya existente (T-19),
+    # misma funcion `renderizarIndice`, sin recargar la pagina.
+    coincidencia = pagina.index('resumen.className = "resumen-guion"')
+    fragmento = pagina[coincidencia : coincidencia + 2200]
+    assert 'resumenProgreso.className = "resumen-progreso-grabacion"' in fragmento
+    assert "vistaIndice.appendChild(resumenProgreso);" in fragmento
+
+
+def test_guion_js_progreso_de_grabacion_reutiliza_estados_escena_sin_segunda_funcion() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: ningun segundo calculo de pendiente/grabada/revisada --
+    # reutiliza tal cual el array que ya mantiene T-19/R-02.
+    assert "var estado = estadosEscena[indice];" in pagina
+    assert pagina.count("function calcularEstadoEscena") == 1
+
+
+def test_guion_js_progreso_de_grabacion_solo_suma_el_tiempo_de_escenas_pendientes() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: solo las escenas en estado "pendiente" aportan a la suma,
+    # nunca las "grabada" ni las "revisada".
+    coincidencia = pagina.index("var segundosPendientes = 0;")
+    fragmento = pagina[coincidencia : coincidencia + 500]
+    assert 'estado === "pendiente"' in fragmento
+    assert "segundosPendientes += escena.duracion_estimada_segundos;" in fragmento
+    assert '} else if (estado === "grabada") {' in fragmento
+
+
+def test_guion_js_progreso_de_grabacion_usa_formatear_tiempo_sin_caso_especial() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: "0 min estimados por grabar" es informacion valida -- mismo
+    # formato siempre, sin rama especial ni linea oculta para ningun caso.
+    assert (
+        "formatearTiempo(segundosPendientes) +\n"
+        '      " estimados por grabar";'
+    ) in pagina
+    assert "resumenProgreso.textContent =" in pagina
+
+
+def test_estilo_progreso_de_grabacion_no_introduce_color_nuevo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5: misma paleta y tamano que `.resumen-guion` -- ningun color
+    # nuevo, sin competir en jerarquia visual con el titulo ni "Continuar".
+    coincidencia = pagina.index(".resumen-progreso-grabacion")
+    fragmento = pagina[coincidencia : coincidencia + 120]
+    assert "color: var(--color-texto-secundario);" in fragmento
+    assert "font-size: 0.55em;" in fragmento
