@@ -10,12 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-27 — **Ciclo de Programador: tercera reconfirmación del día tras
+**Última actualización:** 2026-10-27 — **Ciclo de Programador: cuarta reconfirmación del día tras
 R-39, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-27), tercero tras R-39.** Revisión de entrada (protocolo): el
+**Ciclo de Programador (2026-10-27), cuarto tras R-39.** Revisión de entrada (protocolo): el
 contenedor arrancó con `HEAD` *detached* sobre `develop`; `git checkout develop && git pull origin
-develop` trajo ya fusionada la segunda reconfirmación del día (commit `b6d5c6b`) por fast-forward
+develop` trajo ya fusionada la tercera reconfirmación del día (commit `8418c0c`) por fast-forward
 limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de desarrollo instaladas
 con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (Python 3.11.17,
 `/usr/local/bin/python3`; el `pip`/`pip3` desnudos del sistema apuntan a otro intérprete y no ven los
@@ -47,7 +47,7 @@ P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin ha
 cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
 pura reconfirmación, nada que decidir.
 
-**Última actualización anterior (2026-10-27, ciclo de Programador): segunda reconfirmación del día
+**Última actualización anterior (2026-10-27, ciclo de Programador): tercera reconfirmación del día
 tras R-39, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-27), segundo tras R-39.** Revisión de entrada (protocolo): el
