@@ -10,12 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-27 — **Ciclo de Programador: primera reconfirmación del día tras
+**Última actualización:** 2026-10-27 — **Ciclo de Programador: segunda reconfirmación del día tras
 R-39, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-27), primero tras R-39.** Revisión de entrada (protocolo): el
+**Ciclo de Programador (2026-10-27), segundo tras R-39.** Revisión de entrada (protocolo): el
 contenedor arrancó con `HEAD` fuera de cualquier rama (`detached`); `git checkout develop && git
-pull origin develop` trajo ya fusionada la implementación de R-39 (commit `4d6ab02`) por
+pull origin develop` trajo ya fusionada la primera reconfirmación del día (commit `0961c3f`) por
 fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de
 desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real
 (Python 3.11.17, `/usr/local/bin/python3`; mismo síntoma del `pip`/`pip3` desnudos ya documentado en
@@ -25,9 +25,9 @@ desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contr
 hallazgo `ABIERTO` de severidad alta (pérdida de texto del guion, corrupción de estado, rotura del
 reproductor o de la auto-contención, seguridad) que atender como P-XX urgente — solo `#24` (baja) y
 `#30` (media), ambos de proceso/gobernanza puro pendientes de respuesta del dueño a las preguntas
-`#11`/`#12` de §6 (41 y 17 días respectivamente). `mcp__github__list_issues`/`list_pull_requests`
-sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con
-su única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+`#11`/`#12` de §6 (41 y 17 días respectivamente, sin cambio). `mcp__github__list_issues`/
+`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+`roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo`.
 
 §1 (fuente autoritativa) confirmada: R-39 sigue siendo la última fila y está **COMPLETADA**; ninguna
 fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de `T-24b`, bloqueo físico ajeno
@@ -48,8 +48,8 @@ P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin ha
 cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
 pura reconfirmación, nada que decidir.
 
-**Última actualización anterior (2026-10-27, ciclo de Programador): implementa R-39**, detalle de la
-sesión más abajo.
+**Última actualización anterior (2026-10-27, ciclo de Programador): primera reconfirmación del día
+tras R-39, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-27): implementa R-39.** Sesión en la nube (sin instalación local
 ni health check, T-32 no aplicable aquí). Revisión de entrada (protocolo): el contenedor arrancó
