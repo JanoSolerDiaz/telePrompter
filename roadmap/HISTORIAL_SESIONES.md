@@ -12,6 +12,63 @@
 
 ---
 
+### Sesión 2026-10-27 (264) — Ciclo de Product Manager: archiva Oleada v27 (R-39) y abre R-40 (Oleada v28)
+
+**Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena
+reconfirmación del día del Programador (commit `134e788`, sin cambio de código), árbol de trabajo
+limpio sin divergencia que resolver.
+
+**Documentos de referencia leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): `HOJA_DE_RUTA.md`
+§0 completo (protocolo y límites de autonomía §0.3, solo lectura); §1/§3/§5/§6/§7 de
+`SEGUIMIENTO.md`; `ROADMAP_PRODUCTO.md` completo; `FEEDBACK.md` (única fila plantilla, sin entradas
+`nuevo`); `DECISIONES_TECNICAS.md`; el registro completo de hallazgos de `auditoriacontinua.md`.
+
+**Hallazgos del auditor.** Registro completo revisado (no solo la narrativa más reciente): de 34
+filas, solo dos sin `RESUELTO`/`ASUMIDO` — `#24` (baja) y `#30` (media), ambas de proceso/gobernanza
+puro, ya enrutadas como preguntas `#11`/`#12` de §6, pendientes solo de respuesta del dueño (41 y 17
+días sin respuesta respectivamente) — ninguna convertible en R-XX de producto/arquitectura ni en
+deuda técnica de backlog, ninguna de severidad alta que atender como urgente.
+
+**Feedback de rodaje.** `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía: ninguna
+entrada `nuevo` que volcar al roadmap. El bloqueo #7 de §3 (grabar un vídeo de curso completo) sigue
+abierto, más de 50 días desde que T-32 dejó la skill instalada y verificada en la máquina real del
+dueño (2026-09-03).
+
+**Archivado.** R-39 (Oleada v27) llevaba `COMPLETADA` en §1 desde la madrugada de esta misma jornada,
+reconfirmada en verde nueve veces seguidas por el Programador sin que ningún ciclo de PM la
+archivara. Movida a `roadmap/ROADMAP_HISTORICO.md` con su spec completa y "Cómo se entregó".
+`ROADMAP_PRODUCTO.md` actualizado: cabecera reescrita con fecha y resumen del ciclo, sección "Oleada
+v27" sustituida por la nota de archivo.
+
+**Nota de producto (no es una R-XX).** Actualizada en la cabecera de `ROADMAP_PRODUCTO.md`: van ya 39
+R-XX completadas desde que la skill quedó instalada y lista para grabar (2026-09-03), ninguna
+todavía de un rodaje real — todas con origen en auditoría u observación de arquitectura/producto del
+propio PM. El criterio de salida de la Oleada v1 ("grabar un vídeo de curso entero usando la skill")
+sigue siendo, con diferencia, el hito de mayor valor pendiente del proyecto. Es una constatación, no
+una acción: el bloqueo #7 ya registrado en §3 es una decisión del dueño que el equipo no puede
+ejecutar por su cuenta, así que no se repite como pregunta nueva en §6.
+
+**Abierta R-40 (Oleada v28): salto directo a la siguiente escena pendiente desde el índice.**
+Continuación directa de R-39, verificada contra el código real antes de escribir la ficha
+(`assets/reproductor/guion.js`): `renderizarIndice` ya muestra, gracias a R-39, cuántas escenas
+quedan `pendiente` y cuánto tiempo representan, pero el dueño sigue teniendo que localizar a ojo
+cuál de las filas del índice es la siguiente que falta por grabar y pulsar esa fila en concreto.
+`reproducirEscena(indice)` (T-19) ya es la función que cada fila invoca para entrar en pantalla
+completa, y `estadosEscena` (T-19/R-02, agregado por R-39) ya identifica qué escenas son `pendiente`
+— R-40 añade un botón que localiza la primera y llama a esa misma función, sin lógica de entrada
+nueva, mismo patrón de botón explícito sobre gesto de usuario que "Continuar" (T-26). Spec completa
+en `ROADMAP_PRODUCTO.md`; fila `PENDIENTE` añadida a §1 de `SEGUIMIENTO.md` en este mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; nada en `scripts/`, `tests/` ni `assets/` se toca en esta sesión.
+La implementación de R-40 queda para el siguiente ciclo de Programador.
+
+**Cambios de estado y decisiones.** §1 de `SEGUIMIENTO.md`: R-40 añadida como `PENDIENTE`. Una
+decisión nueva en `DECISIONES_TECNICAS.md` (archivo de Oleada v27 y apertura de R-40, con las
+alternativas consideradas). Sin cambios en §3, §5 ni §7; §6 sigue con `#11`/`#12` `(pendiente)`.
+
+---
+
 ### Sesión 2026-10-27 (263) — Ciclo de Programador: novena reconfirmación del día tras R-39, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —

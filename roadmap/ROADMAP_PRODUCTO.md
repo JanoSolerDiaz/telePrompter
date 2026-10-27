@@ -8,10 +8,10 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-26 (ciclo de Product Manager). R-38 (Oleada v26) llevaba
+**Última actualización:** 2026-10-27 (ciclo de Product Manager). R-39 (Oleada v27) llevaba
 `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el mismo día (ciclo de Programador de la madrugada),
 reconfirmada en verde en varias pasadas sucesivas sin que ningún ciclo de PM la archivara todavía.
-Este ciclo archiva la Oleada v26 en `ROADMAP_HISTORICO.md` y abre R-39 (Oleada v27) en §1, sin
+Este ciclo archiva la Oleada v27 en `ROADMAP_HISTORICO.md` y abre R-40 (Oleada v28) en §1, sin
 implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda
 respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
 
@@ -20,32 +20,31 @@ historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3
 completo) sigue abierto, ahora más de 50 días desde que T-32 lo dejó listo para grabar (2026-09-03).
 `auditoriacontinua.md` revisado antes de elegir tarea: solo dos `ABIERTO` (`#24`, baja; `#30`,
 media), ambos de proceso/gobernanza puro y pendientes solo de la respuesta del dueño a las preguntas
-#11/#12 de `SEGUIMIENTO.md` §6 (40 y 16 días sin respuesta) — ninguno de severidad alta, ninguno
-convertible en R-XX nueva ni en deuda técnica de backlog. `#34` (docstring desactualizado) ya está
-cerrado en código por P-08 (§5 de `SEGUIMIENTO.md`); queda para la siguiente pasada del auditor
-marcarlo `RESUELTO`, no es tarea del PM.
+#11/#12 de `SEGUIMIENTO.md` §6 (41 y 17 días sin respuesta) — ninguno de severidad alta, ninguno
+convertible en R-XX nueva ni en deuda técnica de backlog.
 
 **Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
-propio roadmap):** van 38 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
+propio roadmap):** van 39 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
 máquina real del dueño (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas
 tienen `origen: auditoría #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena
-calidad (cuatro redes en verde, 740 tests, invariantes reverificados en cada auditoría), pero el
+calidad (cuatro redes en verde, 745 tests, invariantes reverificados en cada auditoría), pero el
 propio principio de producto que guía este documento —"utilidad real para un formador que graba
 vídeos de curso"— solo se confirma grabando, no leyendo código. El bloqueo #7 es una acción del
 dueño, no una tarea que el equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como
 pregunta nueva; se deja constancia aquí para que quede explícito que el criterio de salida de la
 Oleada v1 ("grabar un vídeo de curso entero") sigue siendo, con diferencia, el hito de mayor valor
-pendiente del proyecto, por delante de cualquier R-XX nueva. R-39 (más abajo) se elige precisamente
-por ser la mejora más directamente útil para esa primera sesión real cuando ocurra, no otra grieta
-de arquitectura interna.
+pendiente del proyecto, por delante de cualquier R-XX nueva. R-40 (más abajo) sigue el mismo criterio
+que R-39: una mejora pequeña y de bajo riesgo del propio reproductor, directamente útil para esa
+primera sesión real cuando ocurra, no otra grieta de arquitectura interna entre salidas de montaje.
 
-**Oleada v26 (R-38) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v27 (R-39) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v27 (R-39) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-producto del propio PM (2026-10-26). A diferencia de las últimas oleadas (cierres de huecos de
-arquitectura entre salidas ya existentes), esta mejora el propio reproductor —la salida principal,
-T-18 a T-26— con algo que el dueño echará en falta en la primera sesión de grabación real: saber,
-sin entrar en ninguna escena, cuánto le queda por grabar.
+**Oleada v28 (R-40) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+producto del propio PM (2026-10-27), continuación directa de R-39. A diferencia de las oleadas
+anteriores a R-39 (cierres de huecos de arquitectura entre salidas ya existentes), esta vuelve a
+mejorar el propio reproductor —la salida principal, T-18 a T-26— con algo que el dueño echará en
+falta en la primera sesión de grabación real: un salto directo a la siguiente escena que falta por
+grabar, sin tener que localizarla a ojo en la lista.
 
 ---
 
@@ -289,72 +288,70 @@ tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún h
 pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-23). Su spec completa y
 cómo se entregó viven ahí.
 
-### Oleada v26 — entregada
+### Oleada v27 — entregada
 
-La oleada v26 (avisar en `comandos-montaje.md` de los tropiezos ocurridos dentro de la toma buena,
-R-38) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio
-propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-26). Su spec
-completa y cómo se entregó viven ahí.
+La oleada v27 (progreso de grabación visible en el índice de escenas, R-39) tiene su única R-XX en
+**COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio pendiente. Se movió a
+`ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-27). Su spec completa y cómo se entregó viven
+ahí.
 
-### Oleada v27 — Progreso de grabación visible en el índice de escenas
+### Oleada v28 — Salto directo a la siguiente escena pendiente desde el índice
 
-#### R-39 — Mostrar en el índice de escenas, sin entrar en ninguna, cuántas quedan por grabar y cuánto tiempo estimado representan
+#### R-40 — Botón "Grabar siguiente pendiente" en el índice, que entra directamente en la primera escena sin grabar
 
 **Migración:** No (dato puramente derivado para la pantalla; ningún campo nuevo en `estado.json` ni
-en el JSON embebido del reproductor — `duracion_estimada_segundos` por escena, T-12, y el estado
-grabada/revisada/pendiente por escena, R-02, ya viajan hoy) · **Depende de:** T-19 (índice de
-escenas), T-12 (motor de tiempos), R-02 (registro de tomas por escena, estado derivado) — todas
-`COMPLETADA` · **Origen:** observación de producto del PM (2026-10-26), no de auditoría ni de
-feedback de rodaje (`roadmap/FEEDBACK.md` sigue vacío). A diferencia de las últimas doce oleadas
-(cierres de huecos de arquitectura entre salidas de montaje ya existentes), esta toca el propio
-reproductor por primera vez desde R-33: el índice (`assets/reproductor/guion.js::renderizarIndice`)
-ya calcula y muestra, por escena, su estado (`calcularEstadoEscena`: `pendiente` / `grabada` /
-`revisada`, T-19/R-02) y ya tiene un párrafo de resumen global (`.resumen-guion`: "N escenas ·
-duración total estimada · ppm ponderado"), pero ninguno de los dos agrega esa información para
-responder la pregunta que de verdad importa en mitad de una sesión de grabación real: ¿cuánto me
-queda?
+en el JSON embebido del reproductor) · **Depende de:** T-19 (índice de escenas y entrada a pantalla
+completa — `reproducirEscena`), T-26 (botón "Continuar": mismo patrón de botón de acción explícito
+sobre un gesto real de usuario, requisito que exige `requestFullscreen`), R-39 (el array
+`estadosEscena` que `renderizarIndice` ya agrega por escena) — todas `COMPLETADA` · **Origen:**
+observación de producto del PM (2026-10-27), continuación directa de R-39: ahora que el índice dice
+de un vistazo cuántas escenas quedan `pendiente` (R-39, `.resumen-progreso-grabacion`), el paso
+siguiente natural en una sesión de grabación real es seguir grabando la primera de ellas — hoy hay
+que localizarla a ojo entre todas las filas del índice, diferenciando por el color de su estado
+(T-19), y pulsar esa fila en concreto.
 
-**Objetivo:** que el dueño, parado en el índice entre dos tomas (sin volver a entrar a ninguna
-escena ni abrir `estado.json`), sepa de un vistazo cuántas escenas le quedan por grabar desde cero y
-cuánto tiempo estimado representan — para decidir si le da tiempo a terminar la sesión o conviene
-dejarlo para otro día. Es exactamente el tipo de ayuda de grabación que ya persigue T-23 (cuenta
-atrás, cronómetro, barra de progreso por bloques dentro de una escena), llevado al nivel del índice
-completo, que hoy no tiene ningún agregado de progreso entre escenas.
+**Objetivo:** que el dueño, al volver al índice después de cerrar una toma buena (`G`) o al reabrir
+el reproductor en una sesión de grabación distinta, tenga un único botón que le lleve directamente a
+la primera escena en estado `pendiente` (en el orden del guión) — el mismo gesto exacto que ya
+ofrece el botón "Continuar" de T-26 para retomar la última escena vista, pero para seguir avanzando
+en vez de retomar lo último visto —, sin tener que recorrer la lista buscando cuál es la siguiente
+que falta por grabar.
 
 **Requisitos:**
-1. En `renderizarIndice()` (`assets/reproductor/guion.js`), justo debajo del párrafo
-   `.resumen-guion` ya existente, añadir una línea nueva (`.resumen-progreso-grabacion` o clase
-   equivalente, mismo criterio tipográfico y de contraste que `.resumen-guion`, T-21) con el
-   desglose de escenas por estado: nº en `pendiente`, nº en `grabada` (con tomas pero ninguna
-   marcada buena) y nº en `revisada` (con toma buena), reutilizando tal cual el array `estadosEscena`
-   que `renderizarIndice` ya calcula con `calcularEstadoEscena` — sin una segunda función que
-   reimplique el mismo criterio.
-2. En la misma línea, la duración total estimada que queda por grabar desde cero: suma de
-   `duracion_estimada_segundos` (T-12) únicamente de las escenas en estado `pendiente` — nunca de
-   las `grabada` ni `revisada`, que ya tienen al menos una toma hecha y no son tiempo pendiente de
-   grabar por primera vez. Formateada con la misma función `formatearTiempo` que ya usa el resto del
-   índice.
-3. Recalculado en cada llamada a `renderizarIndice()` (mismo punto donde ya se recalcula
-   `estadosEscena`), de modo que marcar una toma como buena (`G`) durante la grabación y volver al
-   índice actualiza el recuento y el tiempo restante sin recargar la página — ninguna lógica nueva de
-   invalidación, el mismo ciclo de recomposición que T-19/T-26 ya usan para el resto del índice.
-4. Caso "todavía no he grabado nada" (todas `pendiente`) y caso "ya grabé todo" (ninguna
-   `pendiente`, 0 minutos restantes): ambos se muestran con el mismo formato, sin ocultar la línea ni
-   añadir un mensaje especial — "0 min estimados por grabar" es información válida, no un error.
-5. Legibilidad a distancia de cámara (principio de producto 5): la línea nueva usa la paleta ya
-   existente del tema oscuro del reproductor (T-21), sin introducir ningún color nuevo; no compite en
-   jerarquía visual con el título de la escena ni con el botón "Continuar" (T-26).
-6. Sin cambio en `scripts/reproductor.py` ni en el contrato de datos embebido: `duracion_estimada_segundos`
-   por escena y las tomas por escena que alimentan `tomasEscena`/`estadosEscena` ya viajan hoy; el
-   agregado se calcula enteramente en `guion.js`, igual que `calcularEstadoEscena` ya hace.
+1. En `renderizarIndice()` (`assets/reproductor/guion.js`), justo debajo de
+   `.resumen-progreso-grabacion` (R-39) y antes de la lista de escenas, añadir un botón nuevo
+   (p. ej. `.btn-siguiente-pendiente`) **solo si queda al menos una escena en estado `pendiente`**,
+   reutilizando tal cual el mismo array `estadosEscena` que R-39 ya recorre — sin una segunda función
+   que reimplique el criterio pendiente/grabada/revisada. Con cero escenas `pendiente`, el botón no
+   se renderiza (nada a lo que saltar), igual que "Continuar" (T-26) ya no aparece si no hay ninguna
+   escena que reanudar.
+2. El objetivo del botón es el **primer índice de escena, en el orden del guión, cuyo
+   `estadosEscena[indice] === "pendiente"`** — la misma noción de "pendiente" que ya usa el recuento
+   de R-39, nunca una heurística distinta (p. ej. nunca la escena con menos tomas, ni la más corta).
+3. Al pulsarlo, invoca `reproducirEscena(indice)` **directamente**, la misma función que ya invoca el
+   botón de cada fila (T-19) y el botón "Continuar" (T-26): mismo flujo de entrada (cuenta atrás,
+   solicitud de pantalla completa, reinicio del autoscroll), cero lógica de entrada nueva.
+4. Accesible por teclado como cualquier otro control del índice (`<button>` nativo, orden de
+   tabulación normal); colocado justo después del resumen de progreso y antes de la lista de
+   escenas, para que se alcance con `Tab` sin recorrer las N filas anteriores — relevante para el uso
+   con teclado o con el clicker Bluetooth (T-24).
+5. Sin `localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato de datos
+   embebido: el cálculo es enteramente de `guion.js` sobre datos que ya viajan hoy, mismo patrón que
+   R-39.
+6. El texto del botón nombra la escena destino (p. ej. `"▶ Grabar siguiente pendiente: escena 4 — "`
+   + título), con el mismo criterio de redacción que ya usa "Continuar: escena N — <título>" (T-26),
+   para que ambos botones, cuando coexisten, se lean de forma consistente.
+7. Legibilidad a distancia de cámara (principio de producto 5): reutiliza el estilo ya existente de
+   los botones de acción del índice (mismo criterio visual que "Continuar", T-26); sin color nuevo,
+   sin competir en jerarquía con el título de cada escena.
 
 **Criterio de aceptación:** sobre una fixture con escenas en los tres estados a la vez (al menos una
-`pendiente`, una `grabada` sin toma buena y una `revisada` con toma buena), el índice muestra el
-recuento exacto de las tres junto con la suma de `duracion_estimada_segundos` solo de las
-`pendiente`, visible sin pulsar nada; marcar una toma como buena en una escena `pendiente` durante la
-grabación y volver al índice actualiza tanto el recuento como el tiempo restante, sin recargar la
-página; con cero escenas `pendiente`, la línea sigue visible y muestra el tiempo restante como cero.
-Verificado también visualmente con Playwright/Chromium real, mismo criterio que T-19/T-22/R-33.
+`pendiente`, una `grabada` sin toma buena y una `revisada` con toma buena), el botón aparece
+nombrando la primera escena `pendiente` en el orden del guión; pulsarlo entra en pantalla completa
+directamente en esa escena, con el mismo comportamiento que pulsar su propia fila; marcar como buena
+la toma de esa escena y volver al índice actualiza el botón para que apunte a la siguiente
+`pendiente` (o lo retira si no queda ninguna), sin recargar la página. Verificado también
+visualmente con Playwright/Chromium real, mismo criterio que R-39/T-19/T-22.
 
 ---
 

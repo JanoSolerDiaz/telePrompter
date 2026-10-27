@@ -2592,6 +2592,55 @@ Cuatro redes en verde. `SKILL.md`/`DEVELOPERS.md` actualizados.
 
 ---
 
+## Oleada v27 — Progreso de grabación visible en el índice de escenas
+
+### R-39 — Mostrar en el índice de escenas, sin entrar en ninguna, cuántas quedan por grabar y cuánto tiempo estimado representan
+
+**Migración:** No (dato puramente derivado para la pantalla; ningún campo nuevo en `estado.json` ni
+en el JSON embebido del reproductor — `duracion_estimada_segundos` por escena, T-12, y el estado
+grabada/revisada/pendiente por escena, R-02, ya viajan hoy) · **Depende de:** T-19 (índice de
+escenas), T-12 (motor de tiempos), R-02 (registro de tomas por escena, estado derivado) — todas
+`COMPLETADA` · **Origen:** observación de producto del PM (2026-10-26), no de auditoría ni de
+feedback de rodaje (`roadmap/FEEDBACK.md` seguía vacío). A diferencia de las últimas doce oleadas
+(cierres de huecos de arquitectura entre salidas de montaje ya existentes), esta tocó el propio
+reproductor por primera vez desde R-33: el índice (`assets/reproductor/guion.js::renderizarIndice`)
+ya calculaba y mostraba, por escena, su estado (`calcularEstadoEscena`: `pendiente` / `grabada` /
+`revisada`, T-19/R-02) y ya tenía un párrafo de resumen global (`.resumen-guion`: "N escenas ·
+duración total estimada · ppm ponderado"), pero ninguno de los dos agregaba esa información para
+responder la pregunta que de verdad importa en mitad de una sesión de grabación real: ¿cuánto me
+queda?
+
+**Objetivo:** que el dueño, parado en el índice entre dos tomas (sin volver a entrar a ninguna
+escena ni abrir `estado.json`), sepa de un vistazo cuántas escenas le quedan por grabar desde cero y
+cuánto tiempo estimado representan — para decidir si le da tiempo a terminar la sesión o conviene
+dejarlo para otro día.
+
+**Cómo se entregó:** `renderizarIndice()` (`assets/reproductor/guion.js`) gana una línea nueva
+(`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion` ya existente (T-19), con el
+recuento de escenas por estado y el tiempo estimado que queda por grabar desde cero. Reutiliza tal
+cual el array `estadosEscena` que `renderizarIndice` ya mantiene (`calcularEstadoEscena`, T-19/R-02)
+— ninguna segunda función que reimplique pendiente/grabada/revisada (requisito 1) — y suma
+`duracion_estimada_segundos` (T-12) únicamente de las escenas `pendiente`, nunca de las `grabada` ni
+`revisada` (requisito 2), formateada con la misma `formatearTiempo` del resto del índice. Sin
+ninguna lógica nueva de invalidación (requisito 3): como `finalizarTomaActual` ya llama a
+`renderizarIndice()` al cerrar una toma (mismo ciclo que T-19/T-26 usan para el resto del índice),
+marcar una toma como buena durante la grabación y volver al índice actualiza el recuento y el
+tiempo restante solos. Los dos extremos ("nada grabado todavía" y "ya grabé todo, 0 min restantes")
+usan el mismo formato siempre, sin mensaje especial ni línea oculta (requisito 4). CSS nuevo
+(`.resumen-progreso-grabacion` en `estilo.css`) reutiliza la misma paleta y tamaño que
+`.resumen-guion` (T-21), sin introducir ningún color nuevo ni competir con el título de la escena ni
+con "Continuar" (requisito 5). Sin cambio en `scripts/reproductor.py` ni en el contrato de datos
+embebido — el agregado se calcula enteramente en `guion.js` (requisito 6), sin migración de
+`estado.json`.
+
+5 tests nuevos (740→745). Cuatro redes en verde. Verificado también visualmente con
+Playwright/Chromium real (paquete instalado solo para la comprobación, desinstalado al terminar):
+sobre la fixture de ejemplo, "4 pendientes · 0 grabadas · 0 revisadas · 1:59 estimados por grabar" en
+frío; marcar una toma como buena en vivo actualiza el recuento y el tiempo al volver al índice, sin
+recargar la página. `SKILL.md`/`DEVELOPERS.md` actualizados.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2605,5 +2654,5 @@ de F-I (R-17), 2026-09-15; la de v7 (R-18), 2026-09-17; la de v8 (R-19), 2026-09
 archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archivada el mismo día; la de
 v23 (R-35), 2026-10-21 (implementación), archivada el mismo día; la de v24 (R-36), 2026-10-22
 (implementación), archivada el mismo día; la de v25 (R-37), 2026-10-23 (implementación), archivada
-el mismo día; la de v26 (R-38), 2026-10-26 (implementación), archivada en este ciclo de PM
-(2026-10-26).)*
+el mismo día; la de v26 (R-38), 2026-10-26 (implementación), archivada el mismo ciclo de PM; la de
+v27 (R-39), 2026-10-27 (implementación), archivada en este ciclo de PM (2026-10-27).)*
