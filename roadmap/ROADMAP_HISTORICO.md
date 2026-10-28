@@ -2641,6 +2641,49 @@ recargar la página. `SKILL.md`/`DEVELOPERS.md` actualizados.
 
 ---
 
+## Oleada v28 — Salto directo a la siguiente escena pendiente desde el índice
+
+### R-40 — Botón "Grabar siguiente pendiente" en el índice, que entra directamente en la primera escena sin grabar
+
+**Migración:** No (dato puramente derivado para la pantalla; ningún campo nuevo en `estado.json` ni
+en el JSON embebido del reproductor) · **Depende de:** T-19 (índice de escenas y entrada a pantalla
+completa — `reproducirEscena`), T-26 (botón "Continuar": mismo patrón de botón de acción explícito
+sobre un gesto real de usuario, requisito que exige `requestFullscreen`), R-39 (el array
+`estadosEscena` que `renderizarIndice` ya agrega por escena) — todas `COMPLETADA` · **Origen:**
+observación de producto del PM (2026-10-27), continuación directa de R-39: ahora que el índice dice
+de un vistazo cuántas escenas quedan `pendiente` (R-39, `.resumen-progreso-grabacion`), el paso
+siguiente natural en una sesión de grabación real es seguir grabando la primera de ellas — antes había
+que localizarla a ojo entre todas las filas del índice, diferenciando por el color de su estado
+(T-19), y pulsar esa fila en concreto.
+
+**Objetivo:** que el dueño, al volver al índice después de cerrar una toma buena (`G`) o al reabrir
+el reproductor en una sesión de grabación distinta, tenga un único botón que le lleve directamente a
+la primera escena en estado `pendiente` (en el orden del guión) — el mismo gesto exacto que ya
+ofrece el botón "Continuar" de T-26 para retomar la última escena vista, pero para seguir avanzando
+en vez de retomar lo último visto —, sin tener que recorrer la lista buscando cuál es la siguiente
+que falta por grabar.
+
+**Cómo se entregó:** `renderizarIndice()` (`assets/reproductor/guion.js`) gana
+`#btn-siguiente-pendiente`, colocado justo debajo de `.resumen-progreso-grabacion` (R-39) y antes de
+la lista de escenas, visible solo si queda al menos una escena `pendiente`
+(`estadosEscena.indexOf("pendiente")`, reutilizado tal cual el mismo array que R-39 ya agrega, sin
+una segunda función que reimplique el criterio pendiente/grabada/revisada). El texto nombra la
+escena destino ("▶ Grabar siguiente pendiente: escena N — <título>"), mismo criterio de redacción
+que "Continuar: escena N — <título>" (T-26). Al pulsarlo, invoca
+`reproducirEscena(indiceSiguientePendiente)` directamente — mismo flujo de entrada (cuenta atrás,
+`requestFullscreen` sobre el gesto de clic, reinicio del autoscroll) que cualquier fila del índice o
+el propio "Continuar", cero lógica de entrada nueva. Reutiliza la clase `.btn-continuar` ya existente
+(sin CSS nuevo); accesible por teclado como `<button>` nativo en el orden de tabulación normal, justo
+después del resumen de progreso.
+
+7 tests nuevos (745→752). Cuatro redes en verde. Verificado también visualmente con
+Playwright/Chromium real (Node.js, preinstalado en el contenedor): los tres estados a la vez, salto
+directo a la primera escena `pendiente`, actualización en vivo del botón al marcar una toma buena sin
+recargar la página, y desaparición del botón al agotar las escenas pendientes. Detalle completo en
+`DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2655,4 +2698,5 @@ archivada el mismo día; la de v22 (R-34), 2026-10-20 (implementación), archiva
 v23 (R-35), 2026-10-21 (implementación), archivada el mismo día; la de v24 (R-36), 2026-10-22
 (implementación), archivada el mismo día; la de v25 (R-37), 2026-10-23 (implementación), archivada
 el mismo día; la de v26 (R-38), 2026-10-26 (implementación), archivada el mismo ciclo de PM; la de
-v27 (R-39), 2026-10-27 (implementación), archivada en este ciclo de PM (2026-10-27).)*
+v27 (R-39), 2026-10-27 (implementación), archivada el mismo ciclo de PM; la de v28 (R-40),
+2026-10-28 (implementación), archivada en este ciclo de PM (2026-10-28).)*

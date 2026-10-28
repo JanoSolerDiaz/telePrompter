@@ -12,6 +12,73 @@
 
 ---
 
+### Sesión 2026-10-28 (275) — Ciclo de Product Manager: archiva Oleada v28 (R-40) y abre R-41 (Oleada v29)
+
+**Arranque.** Sesión en la nube (clon efímero). `git checkout develop && git pull origin develop`
+trajo ya fusionada la novena reconfirmación del día del Programador (commit `dd6d86b`) por
+fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+
+**Documentos leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): `SEGUIMIENTO.md` completo (§1
+estado global, §3 bloqueos, §4 incidentes, §5 P-XX, §6 preguntas abiertas, §7 desviaciones),
+`ROADMAP_PRODUCTO.md` íntegro, el registro de hallazgos completo de `auditoriacontinua.md` (tabla +
+narrativa más reciente, 2026-10-28), `roadmap/FEEDBACK.md`, `DECISIONES_TECNICAS.md` y
+`HISTORIAL_SESIONES.md` (entradas recientes) para contexto de las últimas entregas.
+
+**Revisión de hallazgos del auditor.** Registro completo repasado, no solo la narrativa más
+reciente: solo `#24` (baja) y `#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro, ya
+enrutados como preguntas `#11`/`#12` de §6 de `SEGUIMIENTO.md`, pendientes únicamente de respuesta
+del dueño (42 y 18 días sin respuesta). Ninguno de severidad alta, ninguno convertible en R-XX de
+producto/arquitectura ni en deuda técnica de backlog — mismo diagnóstico que confirmó la propia
+auditoría del mismo día (commit `f3e9b45`) antes de que R-40 se implementara.
+
+**Revisión de feedback.** `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin
+ninguna entrada `nuevo` que volcar al roadmap. El bloqueo #7 de §3 (grabar un vídeo de curso completo
+con el teleprompter instalado) sigue abierto, más de 50 días desde que T-32 dejó la skill lista para
+grabar en la máquina real del dueño (2026-09-03) — es una acción del dueño, no repetida como pregunta
+nueva, solo constatada de nuevo en la nota de producto de `ROADMAP_PRODUCTO.md`.
+
+**Archivado.** R-40 (Oleada v28, botón "Grabar siguiente pendiente" en el índice) llevaba
+`COMPLETADA` en §1 desde el mismo día (commit `0006ffc`), reconfirmada en verde por el ciclo de
+Programador siguiente (novena reconfirmación, `dd6d86b`) sin que ningún ciclo de PM la archivara
+todavía. Movida a `roadmap/ROADMAP_HISTORICO.md` con su spec completa y "Cómo se entregó" (verificado
+contra el código real de `assets/reproductor/guion.js::renderizarIndice` antes de redactar el
+resumen). Nota de cierre de fechas archivadas actualizada al final de ese documento.
+`ROADMAP_PRODUCTO.md` actualizado: cabecera reescrita con fecha, recuento de hallazgos (42/18 días) y
+R-XX completadas (40), sección "Oleada v28" sustituida por la nota de archivo de una línea, mismo
+patrón que las 26 oleadas anteriores ya archivadas.
+
+**Abierta R-41 (Oleada v29): foco automático en "Grabar siguiente pendiente" al cerrar una toma
+buena.** Continuación directa de R-40, verificada contra el código real antes de escribir la ficha:
+`assets/reproductor/guion.js::volverAlIndice` llama a `finalizarTomaActual()` (que ya registra la
+toma recién cerrada y ya vuelve a dibujar el índice con el botón de R-40 al día) y a continuación
+enfoca siempre `botonesEscena[indice]`, la fila de la escena que se acaba de abandonar — nunca el
+botón "Grabar siguiente pendiente" que ya apunta a la siguiente escena que falta por grabar. Se
+confirmó además que `tomaBuenaEnCurso` (T-23) conserva el valor de la toma que se acaba de cerrar
+hasta que arranca la escena siguiente (`iniciarMotor`) o se reinicia a mano (`reiniciarEscenaActual`,
+tecla `R`) — exactamente la ventana en la que `volverAlIndice` decide el foco —, así que la condición
+("¿la toma que se acaba de cerrar fue la buena?") puede leerse sin ningún estado nuevo. Spec completa
+(Migración/Depende de/Origen, Objetivo, Requisitos, Criterio de aceptación) en `ROADMAP_PRODUCTO.md`,
+Oleada v29.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; nada en `scripts/`, `tests/` ni `assets/` se toca en esta sesión.
+La implementación de R-41 queda para el siguiente ciclo de Programador.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-40 permanece `COMPLETADA` (sin cambio de estado,
+solo de ubicación de su spec). R-41 añadida como fila nueva, `PENDIENTE`.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`.** Una fila: archivo de Oleada v28 y apertura de
+R-41, con las tres alternativas consideradas (seguir con cierres de huecos de montaje; encadenar
+sobre el hueco de foco que deja R-40; no abrir ninguna R-XX este ciclo) y la justificación de por qué
+se elige la segunda.
+
+**Documentación.** Sin cambios en `SKILL.md`/`DEVELOPERS.md` (sin cambio de código que documentar
+todavía). Sin cambios en §3 (bloqueos) ni §7 (desviaciones) de `SEGUIMIENTO.md`. §5 (P-XX) sin
+novedad. §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño, sin pregunta nueva este
+ciclo.
+
+---
+
 ### Sesión 2026-10-28 (274) — Ciclo de Programador: novena reconfirmación del día tras R-40, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
