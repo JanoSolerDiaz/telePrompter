@@ -10,8 +10,55 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-28 — **Ciclo de Programador: quinta reconfirmación del día tras
+**Última actualización:** 2026-10-28 — **Ciclo de Programador: sexta reconfirmación del día tras
 R-40, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-28), sexta tras R-40.** Sesión en la nube (clon efímero, sin
+instalación local de la skill ni health check — T-32 no aplicable aquí). El contenedor arrancó con
+`HEAD` *detached*; `git checkout develop && git pull origin develop` trajo ya fusionada la quinta
+reconfirmación del día (commit `f3d32ea`) por fast-forward limpio, árbol de trabajo limpio sin
+divergencia que resolver. Dependencias de desarrollo instaladas con `pip install -r
+requirements-dev.txt` contra el intérprete equivocado primero (mismo síntoma del `pip`/`pip3`
+desnudos ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en este clon: `mypy` sin encontrar
+hasta reinstalar con `python3 -m pip install -r requirements-dev.txt`).
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(tabla de registro línea a línea, no solo la narrativa más reciente): ningún hallazgo `ABIERTO` de
+severidad alta (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de la
+auto-contención, seguridad) que atender como P-XX urgente — solo `#24` (baja) y `#30` (media) siguen
+`ABIERTO`, ambos de proceso/gobernanza puro, pendientes de respuesta del dueño a las preguntas
+`#11`/`#12` de §6, sin cambio desde el ciclo anterior; el resto de la tabla está `RESUELTO`.
+`mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con su
+única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+
+§1 (fuente autoritativa) confirmada: R-40 sigue siendo la última fila y está **COMPLETADA**; ninguna
+fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de `T-24b`, bloqueo físico ajeno
+al programador) — archivar la Oleada v28 y abrir la siguiente corresponde a un ciclo de Product
+Manager posterior.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (752
+tests, código de salida 0, sin fallos, mismo recuento que el ciclo anterior) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes
+esperadas en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada y `.pdf` sin
+Chrome/Edge — y las omisiones esperadas sin parte de rodaje real). Cuatro redes en verde; ningún
+cambio en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1).** Ninguno: R-40 permanece `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
+P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
+cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
+pura reconfirmación, nada que decidir. Esta misma reconfirmación es una repetición más del patrón
+que describe el hallazgo `#30` (coste de cómputo de la cadencia horaria del cron sin tarea
+pendiente que ejecutar); no corresponde a este rol corregirlo por iniciativa propia mientras la
+pregunta `#12` siga `(pendiente)` de respuesta del dueño.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+**Última actualización anterior (2026-10-28, ciclo de Programador): quinta reconfirmación del día
+tras R-40, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-28), quinta tras R-40.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). El contenedor arrancó con
