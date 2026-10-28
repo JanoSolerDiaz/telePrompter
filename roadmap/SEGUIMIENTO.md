@@ -10,12 +10,12 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-28 — **Ciclo de Programador: segunda reconfirmación del día tras
+**Última actualización:** 2026-10-28 — **Ciclo de Programador: tercera reconfirmación del día tras
 R-40, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-28), segunda tras R-40.** Sesión en la nube (clon efímero, sin
+**Ciclo de Programador (2026-10-28), tercera tras R-40.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). `git checkout develop &&
-git pull origin develop` trajo ya fusionada la primera reconfirmación del día (commit `59cbe2d`) por
+git pull origin develop` trajo ya fusionada la segunda reconfirmación del día (commit `b8e03dd`) por
 fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de desarrollo
 instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (mismo
 síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en este
@@ -50,7 +50,7 @@ pura reconfirmación, nada que decidir.
 
 **Cierre.** Commit y push a `origin/develop` (nunca a `master`).
 
-**Última actualización anterior (2026-10-28, ciclo de Programador): primera reconfirmación del día
+**Última actualización anterior (2026-10-28, ciclo de Programador): segunda reconfirmación del día
 tras R-40, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-28), primera tras R-40.** Sesión en la nube (clon efímero, sin
