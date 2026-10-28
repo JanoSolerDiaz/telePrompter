@@ -10,13 +10,13 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-28 — **Ciclo de Programador: octava reconfirmación del día tras
+**Última actualización:** 2026-10-28 — **Ciclo de Programador: novena reconfirmación del día tras
 R-40, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-28), octava tras R-40.** Sesión en la nube (clon efímero, sin
+**Ciclo de Programador (2026-10-28), novena tras R-40.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). El contenedor arrancó con
-`HEAD` *detached*; `git checkout develop && git pull origin develop` trajo ya fusionada la séptima
-reconfirmación del día (commit `2d511e6`) por fast-forward limpio, árbol de trabajo limpio sin
+`HEAD` *detached*; `git checkout develop && git pull origin develop` trajo ya fusionada la octava
+reconfirmación del día (commit `71ce20e`) por fast-forward limpio, árbol de trabajo limpio sin
 divergencia que resolver. Dependencias de desarrollo instaladas con `pip install -r
 requirements-dev.txt` contra el intérprete equivocado primero (mismo síntoma del `pip`/`pip3`
 desnudos ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en este clon: `mypy` sin encontrar
@@ -53,13 +53,13 @@ cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECN
 pura reconfirmación, nada que decidir. Esta misma reconfirmación es una repetición más del patrón
 que describe el hallazgo `#30` (coste de cómputo de la cadencia horaria del cron sin tarea
 pendiente que ejecutar); no corresponde a este rol corregirlo por iniciativa propia mientras la
-pregunta `#12` siga `(pendiente)` de respuesta del dueño. **Van ocho reconfirmaciones hoy mismo
-(07:15 a 14:13 UTC) sin ninguna tarea que ejecutar**, el ejemplo más claro hasta ahora del coste que
+pregunta `#12` siga `(pendiente)` de respuesta del dueño. **Van nueve reconfirmaciones hoy mismo
+(07:15 a 15:11 UTC) sin ninguna tarea que ejecutar**, el ejemplo más claro hasta ahora del coste que
 señala `#30`; la decisión del dueño sigue sin llegar.
 
 **Cierre.** Commit y push a `origin/develop` (nunca a `master`).
 
-**Última actualización anterior (2026-10-28, ciclo de Programador): séptima reconfirmación del día
+**Última actualización anterior (2026-10-28, ciclo de Programador): octava reconfirmación del día
 tras R-40, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-28), séptima tras R-40.** Sesión en la nube (clon efímero, sin
