@@ -10,7 +10,50 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-28 — **Ciclo de Programador: implementa R-40**, detalle de la
+**Última actualización:** 2026-10-28 — **Ciclo de Programador: primera reconfirmación del día tras
+R-40, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-28), primera tras R-40.** Sesión en la nube (clon efímero, sin
+instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
+(protocolo): el contenedor arrancó con `HEAD` *detached*; `git checkout develop && git pull origin
+develop` trajo ya fusionada la implementación de R-40 por el ciclo de Programador anterior del mismo
+día (commit `0006ffc`, 52 minutos antes) por fast-forward limpio, árbol de trabajo limpio sin
+divergencia que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real (el `pip`/`pip3` desnudos del sistema apuntan a otro
+intérprete y no ven los paquetes, mismo síntoma ya documentado en `#22`/`#28`/P-06, reproducido de
+nuevo en este clon).
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(no solo la narrativa más reciente): ningún hallazgo `ABIERTO` de severidad alta (pérdida de texto
+del guion, corrupción de estado, rotura del reproductor o de la auto-contención, seguridad) que
+atender como P-XX urgente — solo `#24` (baja) y `#30` (media), ambos de proceso/gobernanza puro
+pendientes de respuesta del dueño a las preguntas `#11`/`#12` de §6, sin cambio desde el ciclo
+anterior (42 y 18 días respectivamente). `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con su
+única fila de plantilla vacía, sin ninguna entrada `nuevo`.
+
+§1 (fuente autoritativa) confirmada: R-40 sigue siendo la última fila y está **COMPLETADA**; ninguna
+fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de `T-24b`, bloqueo físico ajeno
+al programador) — archivar la Oleada v28 y abrir la siguiente corresponde a un ciclo de Product
+Manager posterior, mismo criterio ya aplicado tras R-30/R-36/R-37/R-38/R-39.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy .` (72 archivos, sin problemas),
+`python3 -m ruff check .` (todo correcto), `python3 -m pytest` (752 tests, código de salida 0, sin
+fallos, mismo recuento que el ciclo anterior) y `python3 scripts/verificar_salidas.py --fixture`
+(diecinueve etapas `OK`, incluidas las dos salidas latentes esperadas en este contenedor — `.pptx`
+sin la skill `480-branded-pptx` instalada y `.pdf` sin Chrome/Edge — y las omisiones esperadas sin
+parte de rodaje real). Cuatro redes en verde; ningún cambio en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1).** Ninguno: R-40 permanece `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
+P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
+cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
+pura reconfirmación, nada que decidir.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+**Última actualización anterior (2026-10-28, ciclo de Programador): implementa R-40**, detalle de la
 sesión más abajo.
 
 **Ciclo de Programador (2026-10-28): implementa R-40.** Sesión en la nube (clon efímero, sin
