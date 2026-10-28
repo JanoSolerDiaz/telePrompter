@@ -4187,6 +4187,55 @@ de una sesión de grabación real, sin entrar en ninguna escena: ¿cuánto me qu
   la grabación (sin recargar la página) actualiza el recuento y el tiempo al volver al
   índice — sin errores de consola.
 
+## Salto directo a la siguiente escena pendiente desde el índice (R-40)
+
+R-39 ya dice de un vistazo cuántas escenas quedan `pendiente`, pero localizar cuál es la
+siguiente seguía siendo manual: recorrer la lista a ojo diferenciando por el color del
+`badge` de estado (T-19) y pulsar esa fila en concreto. R-40 añade un botón que hace ese
+salto directamente.
+
+- **Un botón nuevo, solo si queda al menos una escena `pendiente`** (requisito 1):
+  `renderizarIndice` calcula `estadosEscena.indexOf("pendiente")` — reutiliza tal cual el
+  mismo array que R-39 ya recorre, ninguna segunda función que reimplique el criterio
+  pendiente/grabada/revisada (`calcularEstadoEscena` sigue definida una única vez en toda
+  la página). Con `-1` (ninguna escena pendiente) el botón no se renderiza, mismo patrón que
+  "Continuar" (T-26) cuando no hay nada que reanudar.
+- **El objetivo es el primer índice en orden del guion con ese estado** (requisito 2):
+  `Array.prototype.indexOf` ya recorre en orden, así que no hace falta ningún criterio
+  adicional (nunca "la escena con menos tomas" ni "la más corta").
+- **Cero lógica de entrada nueva** (requisito 3): el `click` invoca
+  `reproducirEscena(indiceSiguientePendiente)` directamente, la misma función que ya invoca
+  el botón de cada fila (T-19) y el botón "Continuar" (T-26) — mismo flujo de cuenta atrás,
+  solicitud de pantalla completa y reinicio del autoscroll.
+- **`<button>` nativo, orden de tabulación normal** (requisito 4): colocado justo después de
+  `.resumen-progreso-grabacion` (R-39) y antes de la lista de escenas, así que se alcanza con
+  `Tab` sin recorrer las N filas anteriores — relevante para el uso con teclado o con el
+  clicker Bluetooth (T-24).
+- **Sin `localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato
+  embebido** (requisito 5): el cálculo es enteramente de `guion.js` sobre datos que ya
+  viajaban hoy (`estadosEscena`, `datos.escenas`), mismo patrón que R-39. Sin migración.
+- **Mismo criterio de redacción que "Continuar"** (requisito 6): el texto nombra la escena
+  destino — `"▶ Grabar siguiente pendiente: escena N — <título>"`, igual que "Continuar:
+  escena N — <título>" (T-26), para que ambos botones, cuando coexisten, se lean de forma
+  consistente.
+- **Sin color nuevo** (requisito 7): reutiliza la clase CSS `.btn-continuar` ya existente
+  (misma clase, no una copia con los mismos valores) junto con `.btn-siguiente-pendiente`
+  como marcador propio sin reglas de estilo asociadas — el botón se ve exactamente como
+  "Continuar", sin competir en jerarquía con el título de cada escena.
+- **Tests.** 7 nuevos en `tests/test_reproductor.py` (posición justo después del progreso de
+  grabación y antes de la lista, reutiliza `estadosEscena.indexOf` sin heurística nueva, no
+  se renderiza con `-1`, invoca `reproducirEscena` directo, mismo criterio de redacción que
+  "Continuar", reutiliza `.btn-continuar` sin regla CSS nueva, `<button>` nativo). Cuatro
+  redes en verde (745→752 tests). Verificado también visualmente con Playwright/Chromium
+  real (paquete `playwright` de Node.js, ya preinstalado en el contenedor junto con
+  Chromium, ninguno de los dos es dependencia del proyecto): sobre la fixture de ejemplo (4
+  escenas) con los tres estados a la vez (escena 0 revisada, escena 1 grabada, escenas 2 y 3
+  pendientes), el botón nombra "escena 3 — Un ejemplo con tareas reales"; pulsarlo entra en
+  pantalla completa directamente en esa escena (`#contador-escena` → "3/4"); marcar su toma
+  como buena (`G`) y volver al índice actualiza el botón a "escena 4 — Resumen y siguiente
+  lección" sin recargar la página; repitiendo el mismo paso sobre la última pendiente, el
+  botón desaparece por completo — sin errores de consola en ningún paso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

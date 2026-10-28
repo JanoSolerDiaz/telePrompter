@@ -10,8 +10,67 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-27 — **Ciclo de Product Manager: archiva Oleada v27 (R-39) y abre
-R-40 (Oleada v28)**, detalle de la sesión más abajo.
+**Última actualización:** 2026-10-28 — **Ciclo de Programador: implementa R-40**, detalle de la
+sesión más abajo.
+
+**Ciclo de Programador (2026-10-28): implementa R-40.** Sesión en la nube (clon efímero, sin
+instalación local de la skill ni health check — T-32 no aplicable aquí). El contenedor arrancó con
+`HEAD` fuera de cualquier rama (`detached`); `git checkout develop && git pull origin develop` trajo
+ya fusionada la apertura de R-40 por el ciclo de PM del 2026-10-27 (commit `c7fb9e4`) por
+fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de
+desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real
+(mismo síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en
+este clon).
+
+**Revisión de hallazgos.** `auditoriacontinua.md` revisado completo (no solo la narrativa más
+reciente): ningún hallazgo `ABIERTO` de severidad alta (pérdida de texto del guion, corrupción de
+estado, rotura del reproductor o de la auto-contención, seguridad) que atender como P-XX urgente —
+solo `#24` (baja), proceso/gobernanza puro, ya enrutado como pregunta `#11` de §6, pendiente de
+respuesta del dueño (42 días sin respuesta).
+
+**Tarea elegida.** §1 (fuente autoritativa) traía a **R-40 como única fila `PENDIENTE`**: spec
+completa leída en `ROADMAP_PRODUCTO.md` (Oleada v28), sin contradecir ninguna decisión de
+`DECISIONES_TECNICAS.md` en el área de `assets/reproductor/guion.js`/`estilo.css`.
+
+**R-40 implementada.** `renderizarIndice()` (`assets/reproductor/guion.js`) gana un botón nuevo
+(`#btn-siguiente-pendiente`) justo debajo de `.resumen-progreso-grabacion` (R-39) y antes de la
+lista de escenas, visible solo con al menos una escena `pendiente`. El objetivo se calcula con
+`estadosEscena.indexOf("pendiente")` — reutiliza tal cual el array que R-39 ya mantiene, ninguna
+heurística ni función nueva — y el `click` invoca `reproducirEscena(indiceSiguientePendiente)`
+directamente, la misma función que ya usan cada fila (T-19) y "Continuar" (T-26): cero lógica de
+entrada nueva. Texto "▶ Grabar siguiente pendiente: escena N — <título>", mismo criterio de
+redacción que "Continuar". Estilo: reutiliza la clase `.btn-continuar` ya existente (ninguna regla
+CSS nueva), `<button>` nativo alcanzable con `Tab`. Sin `localStorage` nuevo, sin cambio en
+`scripts/reproductor.py` ni en el contrato de datos embebido, sin migración. Detalle completo en
+`DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+**Verificación.** Cuatro redes en verde: `python3 -m mypy .` (72 archivos), `python3 -m ruff check
+.`, `python3 -m pytest` (752 tests, 745→752 con los 7 nuevos en `tests/test_reproductor.py`),
+`python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`). Verificado además
+visualmente con Playwright/Chromium real (paquete `playwright` de Node.js, ya preinstalado en el
+contenedor junto con Chromium, ninguno de los dos es dependencia del proyecto): sobre la fixture de
+ejemplo (4 escenas) con los tres estados a la vez (revisada/grabada/dos pendientes), el botón nombra
+la primera pendiente ("escena 3"); pulsarlo entra en pantalla completa directamente en ella
+(`#contador-escena` → "3/4"); marcar su toma como buena y volver al índice actualiza el botón a la
+siguiente pendiente sin recargar la página; repitiendo sobre la última pendiente, el botón
+desaparece por completo — sin errores de consola en ningún paso.
+
+**Cambios de estado (§1).** R-40: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` — corresponde a un ciclo de PM posterior.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`** (2 filas, 2026-10-28): reutilizar la clase
+`.btn-continuar` ya existente en vez de una regla CSS gemela; calcular el objetivo con
+`estadosEscena.indexOf("pendiente")` en vez de un recorrido propio sobre `tomasEscena`.
+
+**Documentación.** `SKILL.md` (descripción del índice de escenas) y `DEVELOPERS.md` (sección nueva
+"Salto directo a la siguiente escena pendiente desde el índice (R-40)") actualizados. Sin cambios en
+§3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad: ningún hallazgo urgente ni cerrable que
+justifique una P-XX de iniciativa propia. §6 sigue con `#11` `(pendiente)` de respuesta del dueño.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+**Última actualización anterior (2026-10-27, ciclo de Product Manager): archiva Oleada v27 (R-39) y
+abre R-40 (Oleada v28)**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-27): archiva Oleada v27 (R-39) y abre R-40 (Oleada v28).**
 Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
@@ -6697,7 +6756,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-37 | Cruzar automáticamente «Toma» con la toma buena ya registrada en el parte de rodaje, para que `FEEDBACK.md` diga de un vistazo qué tropiezos son de fiar como punto de corte real, sin que el dueño tenga que mirar los dos archivos a mano | **COMPLETADA** | 2026-10-23 | `scripts/feedback.py::registrar_tropiezos_en_feedback` gana `tomas_por_escena: dict[str, Any] \| None = None` (mismo contenedor que `EstadoProyecto.tomas`, sin valor por defecto no rompe ninguna llamada existente); por cada fila nueva con `numero_toma` (R-36), reutiliza tal cual `tomas.toma_buena` (R-02/R-11, sin segunda implementación de la regla de exclusividad) para comparar contra la toma marcada `buena` de la escena. Columna nueva «¿Toma buena?» en `FEEDBACK.md`, entre «Toma» e «Instante» (`"sí"`/`"no"`/vacía); `_PATRON_FILA` gana un tercer grupo opcional para seguir reconociendo filas de 5 a 8 columnas sin perder ninguna fila `nuevo`/`resuelto` ya existente — las filas de una exportación anterior a esta tarea no se recalculan. `references/contrato-tropiezos.md` NO sube de versión (sigue en 3): el cruce vive enteramente en Python al formatear cada fila, nada nuevo en el `.json` exportado ni en `guion.js`. 5 tests nuevos (727→732). Cuatro redes en verde. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-38 | Añadir a `comandos-montaje.md` los instantes exactos a revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena, para que el dueño no tenga que volver a `FEEDBACK.md` en el momento real de montar | **COMPLETADA** | 2026-10-26 | `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje` ganan `registro_tropiezos: RegistroTropiezos \| None = None` (último parámetro opcional, reenviado tal cual desde `salidas.generar_salidas_seleccionadas`/`_generar_comandos_montaje`); reutiliza `tomas.toma_buena` (misma comparación que ya hace `feedback._es_toma_buena`, sin segunda implementación de la regla de exclusividad) para listar, en la sección final nueva «Puntos a revisar antes de concatenar», los instantes `mm:ss` (`feedback.formatear_instante`, antes `_formatear_instante`, promovida a pública) de los tropiezos marcados dentro de la toma que `concat-ffmpeg.txt` va a usar de verdad para cada escena. Sin `registro_tropiezos` (valor por defecto), documento idéntico byte a byte al de antes de la tarea; sin ningún tropiezo cruzando como de la toma buena, tampoco aparece la sección. `references/contrato-montaje.md` documenta la sección nueva; `references/contrato-tropiezos.md` NO sube de versión (sigue en 3). 8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py`, 2 en `tests/test_salidas.py`. Cuatro redes en verde. `SKILL.md`/`DEVELOPERS.md` actualizados |
 | R-39 | Mostrar en el índice de escenas del reproductor, sin entrar en ninguna, cuántas quedan por grabar (pendiente/grabada/revisada) y cuánto tiempo estimado representan las que siguen `pendiente` | **COMPLETADA** | 2026-10-27 | `assets/reproductor/guion.js::renderizarIndice`: línea nueva (`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion`, reutilizando tal cual `estadosEscena` (T-19/R-02, sin segunda función) y sumando `duracion_estimada_segundos` (T-12) solo de las escenas `pendiente`; recalculada sola porque `finalizarTomaActual` ya llama a `renderizarIndice()` al cerrar una toma. Mismo color/tamaño que `.resumen-guion` (requisito 5), mismo formato en los dos extremos (0 pendientes / todas pendientes, requisito 4). Sin cambio en `scripts/reproductor.py` ni en el contrato embebido, sin migración. 5 tests nuevos (740→745). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (instalado solo para la comprobación, desinstalado al terminar). `SKILL.md`/`DEVELOPERS.md` actualizados |
-| R-40 | Botón "Grabar siguiente pendiente" en el índice de escenas, que entra directamente en pantalla completa en la primera escena en estado `pendiente` (orden del guión), sin tener que buscarla en la lista | **PENDIENTE** | 2026-10-27 | Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v28). Reutiliza `estadosEscena` (T-19/R-02/R-39) para localizar el objetivo y `reproducirEscena` (T-19) para entrar en él, mismo patrón de botón explícito sobre gesto de usuario que "Continuar" (T-26). Sin migración, sin cambio en `scripts/reproductor.py` ni en el contrato embebido |
+| R-40 | Botón "Grabar siguiente pendiente" en el índice de escenas, que entra directamente en pantalla completa en la primera escena en estado `pendiente` (orden del guión), sin tener que buscarla en la lista | **COMPLETADA** | 2026-10-28 | `assets/reproductor/guion.js::renderizarIndice` gana `#btn-siguiente-pendiente`, justo debajo de `.resumen-progreso-grabacion` (R-39) y antes de la lista, visible solo con alguna escena `pendiente`. Objetivo: `estadosEscena.indexOf("pendiente")` (reutilizado tal cual, sin heurística nueva); `click` invoca `reproducirEscena(indiceSiguientePendiente)` directo (T-19/T-26, cero lógica de entrada nueva). Reutiliza la clase `.btn-continuar` ya existente (sin CSS nuevo). 7 tests nuevos (745→752). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (Node.js, preinstalado en el contenedor): tres estados a la vez, salto directo, actualización en vivo al marcar toma buena sin recargar, desaparición al agotar las pendientes. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

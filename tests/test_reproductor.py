@@ -1439,3 +1439,85 @@ def test_estilo_progreso_de_grabacion_no_introduce_color_nuevo() -> None:
     fragmento = pagina[coincidencia : coincidencia + 120]
     assert "color: var(--color-texto-secundario);" in fragmento
     assert "font-size: 0.55em;" in fragmento
+
+
+# --- Salto directo a la siguiente escena pendiente desde el indice (R-40) --------------
+
+
+def test_guion_js_siguiente_pendiente_va_despues_del_progreso_y_antes_de_la_lista() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1 y 4: justo debajo de `.resumen-progreso-grabacion` (R-39) y
+    # antes de la lista de escenas, alcanzable con Tab sin recorrer las filas.
+    inicio = pagina.index("vistaIndice.appendChild(resumenProgreso);")
+    fin = pagina.index('lista.className = "lista-escenas"')
+    fragmento = pagina[inicio:fin]
+    assert 'botonSiguientePendiente.id = "btn-siguiente-pendiente"' in fragmento
+    assert "vistaIndice.appendChild(botonSiguientePendiente);" in fragmento
+
+
+def test_guion_js_siguiente_pendiente_reutiliza_estados_escena_sin_heuristica_nueva() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: la MISMA nocion de "pendiente" que ya usa el recuento de
+    # R-39 (el propio array `estadosEscena`, nunca una funcion ni criterio
+    # nuevo como "la escena con menos tomas" o "la mas corta").
+    assert 'var indiceSiguientePendiente = estadosEscena.indexOf("pendiente");' in pagina
+    assert pagina.count("function calcularEstadoEscena") == 1
+
+
+def test_guion_js_siguiente_pendiente_no_se_renderiza_sin_ninguna_escena_pendiente() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: con 0 escenas `pendiente` el boton no se renderiza -- la
+    # misma guarda `=== -1` protege tanto el caso real (cargado desde
+    # localStorage) como la ausencia total, sin una rama de renderizado
+    # separada que pudiera divergir.
+    coincidencia = pagina.index("var indiceSiguientePendiente = estadosEscena.indexOf")
+    fragmento = pagina[coincidencia : coincidencia + 200]
+    assert "if (indiceSiguientePendiente !== -1) {" in fragmento
+
+
+def test_guion_js_siguiente_pendiente_invoca_reproducir_escena_directamente() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: mismo flujo de entrada que cada fila (T-19) y "Continuar"
+    # (T-26) -- `reproducirEscena(indice)` directo, sin bloque inicial ni
+    # ninguna logica de entrada nueva.
+    assert "reproducirEscena(indiceSiguientePendiente);" in pagina
+
+
+def test_guion_js_siguiente_pendiente_nombra_la_escena_destino_como_continuar() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 6: mismo criterio de redaccion que "Continuar: escena N — "
+    # (T-26), para que ambos botones se lean de forma consistente.
+    assert (
+        '"▶ Grabar siguiente pendiente: escena " +\n'
+        "        (indiceSiguientePendiente + 1) +\n"
+        '        " — " +\n'
+        "        escenaSiguientePendiente.titulo;"
+    ) in pagina
+
+
+def test_estilo_boton_siguiente_pendiente_reutiliza_el_de_continuar_sin_color_nuevo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 7: mismo criterio visual que "Continuar" -- la clase CSS que
+    # de verdad pinta el boton es la ya existente `.btn-continuar`, nunca una
+    # regla `.btn-siguiente-pendiente { ... }` nueva con su propio color.
+    assert (
+        'botonSiguientePendiente.className = "btn-continuar btn-siguiente-pendiente";'
+    ) in pagina
+    assert ".btn-siguiente-pendiente {" not in pagina
+
+
+def test_guion_js_siguiente_pendiente_es_accesible_con_boton_nativo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: `<button>` nativo (orden de tabulacion normal), igual que
+    # el resto de controles del indice.
+    coincidencia = pagina.index("var botonSiguientePendiente = document.createElement")
+    fragmento = pagina[coincidencia : coincidencia + 200]
+    assert 'document.createElement("button")' in fragmento
+    assert 'botonSiguientePendiente.type = "button";' in fragmento

@@ -382,6 +382,32 @@
       " estimados por grabar";
     vistaIndice.appendChild(resumenProgreso);
 
+    // "Grabar siguiente pendiente" (R-40): salto directo a la primera escena
+    // `pendiente` en el orden del guion, sin recorrer la lista a ojo.
+    // Reutiliza tal cual `estadosEscena` (T-19/R-02/R-39, requisito 2: la
+    // misma nocion de "pendiente" que ya usa el recuento de arriba, nunca una
+    // heuristica distinta) y `reproducirEscena` (T-19/T-26, requisito 3: cero
+    // logica de entrada nueva). Sin ninguna escena `pendiente`, no hay nada a
+    // lo que saltar y el boton no se renderiza (requisito 1), igual que
+    // "Continuar" no aparece sin nada que reanudar.
+    var indiceSiguientePendiente = estadosEscena.indexOf("pendiente");
+    if (indiceSiguientePendiente !== -1) {
+      var escenaSiguientePendiente = datos.escenas[indiceSiguientePendiente];
+      var botonSiguientePendiente = document.createElement("button");
+      botonSiguientePendiente.type = "button";
+      botonSiguientePendiente.className = "btn-continuar btn-siguiente-pendiente";
+      botonSiguientePendiente.id = "btn-siguiente-pendiente";
+      botonSiguientePendiente.textContent =
+        "▶ Grabar siguiente pendiente: escena " +
+        (indiceSiguientePendiente + 1) +
+        " — " +
+        escenaSiguientePendiente.titulo;
+      botonSiguientePendiente.addEventListener("click", function () {
+        reproducirEscena(indiceSiguientePendiente);
+      });
+      vistaIndice.appendChild(botonSiguientePendiente);
+    }
+
     // "Continuar" (T-26, requisitos 1 y 5): un boton explicito, no un salto
     // automatico al cargar la pagina. `requestFullscreen` exige un gesto de
     // usuario real -- un intento automatico en `iniciarMotor` habria fallado

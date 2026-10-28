@@ -12,6 +12,68 @@
 
 ---
 
+### Sesión 2026-10-28 (265) — Ciclo de Programador: implementa R-40
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). El contenedor arrancó con `HEAD` fuera de cualquier rama (`detached`);
+`git checkout develop && git pull origin develop` trajo ya fusionada la apertura de R-40 por el ciclo
+de PM del 2026-10-27 (commit `c7fb9e4`) por fast-forward limpio, árbol de trabajo limpio sin
+divergencia que resolver. Dependencias de desarrollo instaladas con
+`python3 -m pip install -r requirements-dev.txt` contra el intérprete real (mismo síntoma del
+`pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en este clon).
+
+**Documentos de referencia leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): §1/§3 de
+`SEGUIMIENTO.md`; la ficha completa de R-40 en `ROADMAP_PRODUCTO.md` (Oleada v28); el registro de
+hallazgos de `auditoriacontinua.md` completo y su narrativa más reciente (2026-10-28); la decisión de
+apertura de R-40 en `DECISIONES_TECNICAS.md` (ciclo de PM del 2026-10-27).
+
+**Hallazgos del auditor.** Ningún hallazgo `ABIERTO` de severidad alta (pérdida de texto del guion,
+corrupción de estado, rotura del reproductor o de la auto-contención, seguridad) que atender como
+P-XX urgente. Solo `#24` (baja) sigue `ABIERTO`, de proceso/gobernanza puro, ya enrutado como
+pregunta `#11` de §6, pendiente solo de respuesta del dueño (42 días sin respuesta).
+
+**Tarea elegida.** §1 (fuente autoritativa) traía a R-40 como única fila `PENDIENTE` — siguiente
+tarea según el orden de §1, sin ninguna urgencia que la adelantara.
+
+**R-40 implementada.** `assets/reproductor/guion.js::renderizarIndice` gana un botón nuevo
+(`#btn-siguiente-pendiente`), justo debajo de `.resumen-progreso-grabacion` (R-39) y antes de la
+lista de escenas, visible solo con al menos una escena `pendiente`. El objetivo se calcula con
+`estadosEscena.indexOf("pendiente")` (reutiliza tal cual el array de R-39, ninguna heurística nueva)
+y el `click` invoca `reproducirEscena(indiceSiguientePendiente)` directamente, la misma función que
+ya usan cada fila (T-19) y "Continuar" (T-26) — cero lógica de entrada nueva. Texto "▶ Grabar
+siguiente pendiente: escena N — <título>", mismo criterio de redacción que "Continuar". Reutiliza la
+clase CSS `.btn-continuar` ya existente (sin regla nueva), `<button>` nativo alcanzable con `Tab`.
+Sin `localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato de datos embebido,
+sin migración. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+**Verificación.** Cuatro redes en verde: `python3 -m mypy .` (72 archivos), `python3 -m ruff check
+.`, `python3 -m pytest` (752 tests, 745→752 con los 7 nuevos en `tests/test_reproductor.py`),
+`python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`). Verificado además
+visualmente con Playwright/Chromium real (paquete `playwright` de Node.js, ya preinstalado en el
+contenedor junto con Chromium, ninguno de los dos es dependencia del proyecto): sobre la fixture de
+ejemplo (4 escenas) con los tres estados a la vez (escena 0 revisada, escena 1 grabada, escenas 2 y 3
+pendientes), el botón nombra "escena 3 — Un ejemplo con tareas reales"; pulsarlo entra en pantalla
+completa directamente en esa escena (`#contador-escena` → "3/4"); marcar su toma como buena (`G`) y
+volver al índice actualiza el botón a "escena 4 — Resumen y siguiente lección" sin recargar la
+página; repitiendo el mismo paso sobre la última pendiente, el botón desaparece por completo — sin
+errores de consola en ningún paso.
+
+**Cambios de estado (§1).** R-40: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` — corresponde a un ciclo de PM posterior.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`** (2 filas, 2026-10-28): reutilizar la clase
+`.btn-continuar` ya existente en vez de una regla CSS gemela con los mismos valores; calcular el
+objetivo con `estadosEscena.indexOf("pendiente")` en vez de un recorrido propio sobre `tomasEscena`.
+
+**Documentación.** `SKILL.md` (descripción del índice de escenas) y `DEVELOPERS.md` (sección nueva
+"Salto directo a la siguiente escena pendiente desde el índice (R-40)") actualizados. Sin cambios en
+§3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad: ningún hallazgo urgente ni cerrable que
+justifique una P-XX de iniciativa propia. §6 sigue con `#11` `(pendiente)` de respuesta del dueño.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-10-27 (264) — Ciclo de Product Manager: archiva Oleada v27 (R-39) y abre R-40 (Oleada v28)
 
 **Arranque.** `git checkout develop && git pull origin develop` trajo ya fusionada la novena
