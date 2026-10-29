@@ -10,13 +10,13 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-29 — **Ciclo de Programador: octava reconfirmación del día tras
+**Última actualización:** 2026-10-29 — **Ciclo de Programador: novena reconfirmación del día tras
 R-41, sin novedad de código**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-29), octava tras R-41.** Sesión en la nube (clon efímero, sin
+**Ciclo de Programador (2026-10-29), novena tras R-41.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
 (protocolo): el contenedor arrancó con `HEAD` *detached*; `git checkout develop && git pull origin
-develop` trajo ya fusionada la séptima reconfirmación del día (commit `d62c7d9`) por fast-forward
+develop` trajo ya fusionada la octava reconfirmación del día (commit `2f82709`) por fast-forward
 limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de desarrollo instaladas
 con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real (el `pip`/`pip3`
 desnudos del sistema apuntan a otro intérprete y no ven los paquetes, mismo síntoma ya documentado
@@ -53,7 +53,7 @@ pura reconfirmación, nada que decidir.
 
 **Cierre.** Commit y push a `origin/develop` (nunca a `master`).
 
-**Última actualización anterior (2026-10-29, ciclo de Programador): séptima reconfirmación del día
+**Última actualización anterior (2026-10-29, ciclo de Programador): octava reconfirmación del día
 tras R-41, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Programador (2026-10-29), séptima tras R-41.** Sesión en la nube (clon efímero, sin
