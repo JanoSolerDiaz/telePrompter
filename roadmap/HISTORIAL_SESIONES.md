@@ -12,6 +12,74 @@
 
 ---
 
+### Sesión 2026-10-29 (276) — Ciclo de Programador: implementa R-41
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). El contenedor arrancó con `HEAD` *detached*; `git checkout develop && git
+pull origin develop` trajo ya fusionado el ciclo de PM del 2026-10-28 que archivó la Oleada v28
+(R-40) y abrió R-41 (commit `c0780cf`, incluye también el nuevo hallazgo `#35` de la auditoría del
+mismo día) por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el
+intérprete real (mismo síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06,
+reproducido de nuevo en este clon).
+
+**Documentos de referencia leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): §1/§3 de
+`SEGUIMIENTO.md`; la ficha completa de R-41 en `ROADMAP_PRODUCTO.md` (Oleada v29); el registro de
+hallazgos de `auditoriacontinua.md` completo (filtrado por `ABIERTO`, no solo la narrativa más
+reciente); la decisión de apertura de R-41 en `DECISIONES_TECNICAS.md` (ciclo de PM del 2026-10-28).
+
+**Hallazgos del auditor.** Ningún hallazgo `ABIERTO` de severidad alta (pérdida de texto del guion,
+corrupción de estado, rotura del reproductor o de la auto-contención, seguridad) que atender como
+P-XX urgente. Solo `#24` (baja), `#30` (media) y el nuevo `#35` (baja) siguen `ABIERTO`, todos de
+proceso/gobernanza puro, ya enrutados como preguntas de §6, pendientes solo de respuesta del dueño.
+
+**Tarea elegida.** §1 (fuente autoritativa) traía a R-41 como única fila `PENDIENTE` — siguiente
+tarea según el orden de §1, sin ninguna urgencia que la adelantara.
+
+**R-41 implementada.** `assets/reproductor/guion.js::volverAlIndice` decide ahora el destino del
+foco justo tras volver a mostrar el índice: con `tomaBuenaEnCurso` (T-23) a `true` y
+`#btn-siguiente-pendiente` (R-40) presente en el DOM, el foco va a ese botón y la función retorna
+sin tocar `botonesEscena[indice]`; en cualquier otro caso (sin toma marcada como buena en esa visita,
+o sin ninguna escena `pendiente` restante), comportamiento idéntico al de antes de R-41. Cero
+heurística nueva de "siguiente escena" (requisito 3): el destino lo sigue decidiendo solo
+`estadosEscena.indexOf("pendiente")` de R-40. Sin migración, sin cambio en `scripts/reproductor.py`
+ni en el contrato embebido. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+**Verificación.** Cuatro redes en verde: `python3 -m mypy scripts/ tests/` (72 archivos),
+`python3 -m ruff check scripts/ tests/`, `python3 -m pytest` (756 tests, 752→756 con los 4 nuevos en
+`tests/test_reproductor.py`), `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas
+`OK`, mismo recuento — R-41 no añade ninguna salida nueva). Verificado además visualmente con
+Playwright/Chromium real (paquete `playwright` de Node.js, ya preinstalado en el contenedor junto con
+Chromium, ninguno de los dos es dependencia del proyecto): sobre una fixture de 3 escenas (2
+`pendiente` + 1 marcada `revisada` de antemano), los cuatro criterios de aceptación de la ficha pasan
+uno a uno — foco en `#btn-siguiente-pendiente` tras marcar la primera pendiente como buena y volver
+al índice; un `Intro` inmediato entra directo en la segunda pendiente, sin `Tab`; al marcar también
+esa última como buena el botón desaparece del DOM y el foco cae en la fila de esa misma escena, sin
+excepción de script ni foco perdido en `<body>`; entrar y salir sin marcar ninguna toma como buena
+mantiene el foco en la fila. Nota de proceso: la verificación usó el botón "Volver al índice"
+(`#btn-volver-indice`) en vez de la tecla `Escape` para disparar `volverAlIndice` — `Escape`
+(`salir_pantalla_completa`) solo llama a `document.exitFullscreen()` en el código actual, sin
+navegar de vuelta al índice por sí sola; no afecta a ningún requisito de la ficha, que especifica la
+decisión de foco dentro de `volverAlIndice` sin importar qué camino la invoque.
+
+**Cambios de estado (§1).** R-41: `PENDIENTE` → **COMPLETADA**. No se archiva todavía en
+`ROADMAP_HISTORICO.md` ni se corrige `ROADMAP_PRODUCTO.md` — corresponde a un ciclo de PM posterior.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`** (2 filas, 2026-10-29): consultar el botón de R-40
+en el DOM en el momento de decidir el foco en vez de guardar una referencia de módulo nueva;
+cortocircuitar esa consulta con `tomaBuenaEnCurso` en vez de comprobar ambas condiciones por
+separado.
+
+**Documentación.** `SKILL.md` (línea del índice de escenas, descripción del salto de foco) y
+`DEVELOPERS.md` (sección nueva "Foco automático en 'Grabar siguiente pendiente' al cerrar una toma
+buena (R-41)") actualizados. Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin
+novedad: ningún hallazgo urgente ni cerrable que justifique una P-XX de iniciativa propia. §6 sigue
+con las preguntas pendientes de respuesta del dueño.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-10-28 (275) — Ciclo de Product Manager: archiva Oleada v28 (R-40) y abre R-41 (Oleada v29)
 
 **Arranque.** Sesión en la nube (clon efímero). `git checkout develop && git pull origin develop`

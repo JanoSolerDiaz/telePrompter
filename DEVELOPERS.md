@@ -4236,6 +4236,42 @@ salto directamente.
   lección" sin recargar la página; repitiendo el mismo paso sobre la última pendiente, el
   botón desaparece por completo — sin errores de consola en ningún paso.
 
+## Foco automático en "Grabar siguiente pendiente" al cerrar una toma buena (R-41)
+
+R-40 ya pone el botón que salta directo a la siguiente escena `pendiente`, pero tras volver
+al índice (`volverAlIndice`) el foco de teclado seguía cayendo siempre en la fila de la
+escena que se acaba de abandonar — un `Tab` manual obligatorio justo en el momento en que más
+prisa corre seguir grabando. R-41 mueve ese foco al botón cuando tiene sentido hacerlo.
+
+- **Decisión de foco solo dentro de `volverAlIndice`** (requisito 1): justo después de volver
+  a mostrar el índice (`vistaIndice.hidden = false`), antes de la asignación de foco que ya
+  existía. `finalizarTomaActual()` (llamada un poco antes, sin cambios) ya ha vuelto a
+  renderizar el índice con el botón de R-40 al día.
+- **Condición exacta** (requisito 2): `tomaBuenaEnCurso` (T-23) a `true` **y**
+  `#btn-siguiente-pendiente` (R-40) presente en el DOM — su sola presencia ya implica que
+  queda alguna escena `pendiente`, ninguna comprobación adicional. Cualquier otro caso (salir
+  a mitad de una toma, reiniciar con `R` y salir sin volver a marcar, o no quedar ninguna
+  `pendiente`) deja el foco exactamente como antes de R-41: `botonesEscena[indice]`.
+- **Cero heurística nueva de "siguiente escena"** (requisito 3): el botón de R-40 ya decide
+  ese destino por su cuenta (`estadosEscena.indexOf("pendiente")`, una única aparición en todo
+  el archivo); R-41 solo mueve el foco de teclado hacia un control que ya existe.
+- **Mismo mecanismo de foco que T-19/T-26/R-40** (requisito 4): `.focus()` sobre un
+  `<button>` nativo ya renderizado — sin `tabindex` nuevo, sin región `aria-live`, sin tocar
+  `requestFullscreen` (la pantalla completa ya se ha abandonado antes de decidir el foco).
+- **Sin `localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato
+  embebido** (requisito 5): la decisión vive enteramente en `guion.js`, sobre
+  `tomaBuenaEnCurso` (ya en memoria) y el propio DOM que R-40 ya mantiene. Sin migración.
+- **Tests.** 4 nuevos en `tests/test_reproductor.py` (la consulta al botón ocurre después de
+  `vistaIndice.hidden = false` dentro de `volverAlIndice`; el fallback a la fila sigue
+  presente y se ejecuta después; `estadosEscena.indexOf("pendiente")` solo aparece una vez en
+  toda la página; sin `tabindex` ni `aria-live` nuevos). Cuatro redes en verde (752→756
+  tests). Verificado también visualmente con Playwright/Chromium real sobre una fixture de 3
+  escenas (2 `pendiente` + 1 ya `revisada` de antemano): marcar la primera `pendiente` como
+  buena y volver al índice deja el foco en `#btn-siguiente-pendiente`; un `Intro` inmediato
+  entra directo en la segunda `pendiente`, sin `Tab`; marcar también esa última como buena
+  hace desaparecer el botón y el foco cae en la fila de esa misma escena, sin excepción de
+  script; entrar y salir sin marcar ninguna toma como buena mantiene el foco en la fila.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

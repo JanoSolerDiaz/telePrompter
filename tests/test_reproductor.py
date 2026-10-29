@@ -1521,3 +1521,57 @@ def test_guion_js_siguiente_pendiente_es_accesible_con_boton_nativo() -> None:
     fragmento = pagina[coincidencia : coincidencia + 200]
     assert 'document.createElement("button")' in fragmento
     assert 'botonSiguientePendiente.type = "button";' in fragmento
+
+
+# --- Foco automatico en "Grabar siguiente pendiente" al volver al indice (R-41) --------
+
+
+def test_guion_js_volver_al_indice_enfoca_siguiente_pendiente_si_toma_buena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1 y 2: la decision de foco vive dentro de `volverAlIndice`,
+    # justo tras volver a mostrar el indice, y solo si la toma recien cerrada
+    # quedo marcada como la buena (`tomaBuenaEnCurso`).
+    inicio = pagina.index("function volverAlIndice(indice) {")
+    fin = pagina.index("\n  }\n", inicio)
+    cuerpo = pagina[inicio:fin]
+    assert "vistaIndice.hidden = false;" in cuerpo
+    orden_vista = cuerpo.index("vistaIndice.hidden = false;")
+    orden_foco = cuerpo.index("tomaBuenaEnCurso")
+    assert orden_foco > orden_vista
+    assert (
+        'document.getElementById("btn-siguiente-pendiente")'
+    ) in cuerpo
+    assert "botonSiguientePendiente.focus();" in cuerpo
+
+
+def test_guion_js_volver_al_indice_sin_toma_buena_mantiene_foco_en_la_fila() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: fuera del caso "toma buena + boton presente" el foco se
+    # mantiene exactamente como antes de R-41 -- la fila de la propia escena.
+    inicio = pagina.index("function volverAlIndice(indice) {")
+    fin = pagina.index("\n  }\n", inicio)
+    cuerpo = pagina[inicio:fin]
+    assert "var boton = botonesEscena[indice];" in cuerpo
+    assert cuerpo.index("var boton = botonesEscena[indice];") > cuerpo.index(
+        "botonSiguientePendiente.focus();"
+    )
+
+
+def test_guion_js_volver_al_indice_no_anade_heuristica_nueva_de_escena_destino() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: el destino del botón lo sigue decidiendo solo R-40
+    # (`estadosEscena.indexOf("pendiente")`, una unica aparicion en todo el
+    # archivo); R-41 solo mueve el foco hacia un control que ya existe.
+    assert pagina.count('estadosEscena.indexOf("pendiente")') == 1
+
+
+def test_guion_js_volver_al_indice_no_usa_tabindex_ni_aria_live_nuevos() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: mismo mecanismo de foco que T-19/T-26/R-40 (`.focus()`
+    # sobre un `<button>` ya renderizado), sin `tabindex` ni `aria-live`.
+    assert "tabindex" not in pagina.lower()
+    assert "aria-live" not in pagina.lower()

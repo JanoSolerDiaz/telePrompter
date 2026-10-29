@@ -10,8 +10,66 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-28 — **Ciclo de Product Manager: archiva Oleada v28 (R-40) y abre
-R-41 (Oleada v29)**, detalle de la sesión más abajo.
+**Última actualización:** 2026-10-29 — **Ciclo de Programador: implementa R-41 (Oleada v29) —
+foco automático en "Grabar siguiente pendiente" al cerrar una toma buena**, detalle de la sesión
+más abajo.
+
+**Ciclo de Programador (2026-10-29): implementa R-41.** Sesión en la nube (clon efímero, sin
+instalación local de la skill ni health check — T-32 no aplicable aquí). El contenedor arrancó con
+`HEAD` *detached*; `git checkout develop && git pull origin develop` trajo ya fusionado el ciclo de
+PM que archivó la Oleada v28 y abrió R-41 (commit `c0780cf`, incluye también el nuevo hallazgo `#35`
+de la auditoría) por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` (mismo
+síntoma de siempre con el `pip` desnudo, `#22`/`#28`/P-06, reproducido de nuevo en este clon).
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(tabla de registro línea a línea, filtrando por estado `ABIERTO`, no solo la narrativa más
+reciente): solo `#24` (baja), `#30` (media) y el nuevo `#35` (baja, cabecera "PARA EL DUEÑO" de este
+mismo documento desactualizada) siguen `ABIERTO` — ninguno de severidad alta ni convertible en P-XX
+urgente, todos de proceso/gobernanza puro. §1 (fuente autoritativa) confirmada: R-41 es la última
+fila y estaba `PENDIENTE`, sin ninguna `BLOQUEADA` por delante en la cola (aparte de `T-24b`, bloqueo
+físico ajeno al programador) — la siguiente tarea a ejecutar.
+
+**Implementación de R-41.** Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v29). `volverAlIndice`
+(`assets/reproductor/guion.js`) decide ahora el destino del foco justo tras volver a mostrar el
+índice: con `tomaBuenaEnCurso` a `true` y `#btn-siguiente-pendiente` (R-40) presente en el DOM, el
+foco va a ese botón y la función retorna; en cualquier otro caso, comportamiento idéntico al de
+antes de R-41 (foco en `botonesEscena[indice]`). Cero heurística nueva de "siguiente escena": el
+destino lo sigue decidiendo solo `estadosEscena.indexOf("pendiente")` de R-40, verificado con un
+test que cuenta una única aparición de esa expresión en todo el archivo. Sin migración, sin cambio
+en `scripts/reproductor.py` ni en el contrato embebido (requisito 5), tal como pedía la ficha.
+
+**Verificación.** `python3 -m mypy scripts/ tests/` (72 archivos, sin problemas), `python3 -m ruff
+check scripts/ tests/` (todo correcto), `python3 -m pytest` (756 tests, código de salida 0, 4 nuevos
+sobre el recuento anterior) y `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas
+`OK`, mismo recuento que antes — R-41 no añade ninguna salida nueva). Cuatro redes en verde.
+Verificado además visualmente con Playwright/Chromium real (Node.js, preinstalado en el contenedor):
+fixture de 3 escenas (2 `pendiente` + 1 `revisada` de antemano vía `G`+"Volver al índice"). Los
+cuatro criterios de aceptación de la ficha pasan uno a uno: (1) tras marcar la toma de la primera
+escena `pendiente` como buena y volver al índice, el foco cae exactamente en
+`#btn-siguiente-pendiente`; (2) un `Intro` inmediato entra directo en la segunda escena `pendiente`,
+sin ningún `Tab`; (3) al marcar también esa última pendiente como buena, con el botón ya ausente del
+DOM, el foco cae en la fila de esa misma escena sin excepción de script ni foco perdido en `<body>`;
+(4) entrando en una escena y saliendo sin haber marcado ninguna toma como buena en esa visita
+(`R` + volver), el foco se mantiene en la fila, nunca salta al botón de R-40. Nota de proceso: el
+atajo de teclado `Escape` (`salir_pantalla_completa`) solo sale de pantalla completa
+(`document.exitFullscreen()`); la navegación real de vuelta al índice la dispara el botón "Volver al
+índice" (`#btn-volver-indice`) — la verificación usó ese botón en vez de la tecla `Escape` para
+igualar el camino real del código, sin que afecte a ningún requisito de la ficha (que especifica la
+decisión de foco dentro de `volverAlIndice`, invocada por ambos caminos indistintamente).
+
+**Cambios de estado (§1).** R-41: `PENDIENTE` → `COMPLETADA`.
+
+**Decisiones nuevas en `DECISIONES_TECNICAS.md`:** tres filas (consulta directa al DOM del botón en
+vez de una variable de módulo nueva; cortocircuito de esa consulta con `tomaBuenaEnCurso`).
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** Archivar la Oleada
+v29 y abrir la siguiente corresponde a un ciclo de Product Manager posterior.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+**Última actualización anterior (2026-10-28, ciclo de Product Manager): archiva Oleada v28 (R-40) y
+abre R-41 (Oleada v29)**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-28): archiva Oleada v28 (R-40) y abre R-41 (Oleada v29).**
 Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
@@ -7130,7 +7188,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-38 | Añadir a `comandos-montaje.md` los instantes exactos a revisar antes de concatenar, cuando un tropiezo marcado cayó dentro de la toma que se usó como buena, para que el dueño no tenga que volver a `FEEDBACK.md` en el momento real de montar | **COMPLETADA** | 2026-10-26 | `comandos_montaje.calcular_comandos_montaje`/`generar_comandos_montaje` ganan `registro_tropiezos: RegistroTropiezos \| None = None` (último parámetro opcional, reenviado tal cual desde `salidas.generar_salidas_seleccionadas`/`_generar_comandos_montaje`); reutiliza `tomas.toma_buena` (misma comparación que ya hace `feedback._es_toma_buena`, sin segunda implementación de la regla de exclusividad) para listar, en la sección final nueva «Puntos a revisar antes de concatenar», los instantes `mm:ss` (`feedback.formatear_instante`, antes `_formatear_instante`, promovida a pública) de los tropiezos marcados dentro de la toma que `concat-ffmpeg.txt` va a usar de verdad para cada escena. Sin `registro_tropiezos` (valor por defecto), documento idéntico byte a byte al de antes de la tarea; sin ningún tropiezo cruzando como de la toma buena, tampoco aparece la sección. `references/contrato-montaje.md` documenta la sección nueva; `references/contrato-tropiezos.md` NO sube de versión (sigue en 3). 8 tests nuevos (732→740): 6 en `tests/test_comandos_montaje.py`, 2 en `tests/test_salidas.py`. Cuatro redes en verde. `SKILL.md`/`DEVELOPERS.md` actualizados |
 | R-39 | Mostrar en el índice de escenas del reproductor, sin entrar en ninguna, cuántas quedan por grabar (pendiente/grabada/revisada) y cuánto tiempo estimado representan las que siguen `pendiente` | **COMPLETADA** | 2026-10-27 | `assets/reproductor/guion.js::renderizarIndice`: línea nueva (`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion`, reutilizando tal cual `estadosEscena` (T-19/R-02, sin segunda función) y sumando `duracion_estimada_segundos` (T-12) solo de las escenas `pendiente`; recalculada sola porque `finalizarTomaActual` ya llama a `renderizarIndice()` al cerrar una toma. Mismo color/tamaño que `.resumen-guion` (requisito 5), mismo formato en los dos extremos (0 pendientes / todas pendientes, requisito 4). Sin cambio en `scripts/reproductor.py` ni en el contrato embebido, sin migración. 5 tests nuevos (740→745). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (instalado solo para la comprobación, desinstalado al terminar). `SKILL.md`/`DEVELOPERS.md` actualizados |
 | R-40 | Botón "Grabar siguiente pendiente" en el índice de escenas, que entra directamente en pantalla completa en la primera escena en estado `pendiente` (orden del guión), sin tener que buscarla en la lista | **COMPLETADA** | 2026-10-28 | `assets/reproductor/guion.js::renderizarIndice` gana `#btn-siguiente-pendiente`, justo debajo de `.resumen-progreso-grabacion` (R-39) y antes de la lista, visible solo con alguna escena `pendiente`. Objetivo: `estadosEscena.indexOf("pendiente")` (reutilizado tal cual, sin heurística nueva); `click` invoca `reproducirEscena(indiceSiguientePendiente)` directo (T-19/T-26, cero lógica de entrada nueva). Reutiliza la clase `.btn-continuar` ya existente (sin CSS nuevo). 7 tests nuevos (745→752). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (Node.js, preinstalado en el contenedor): tres estados a la vez, salto directo, actualización en vivo al marcar toma buena sin recargar, desaparición al agotar las pendientes. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
-| R-41 | Al volver al índice tras marcar una toma como buena (`G`+`Esc`), el foco de teclado pasa directo al botón "Grabar siguiente pendiente" (R-40) si queda alguna escena `pendiente`, en vez de caer en la fila de la escena que se acaba de abandonar | **PENDIENTE** | 2026-10-28 | Spec completa en `ROADMAP_PRODUCTO.md` (Oleada v29). Reutiliza `tomaBuenaEnCurso` (T-23, ya indica si la toma recién cerrada fue la buena) y el botón `#btn-siguiente-pendiente` que `renderizarIndice` ya construye (R-40); decisión de foco únicamente en `volverAlIndice` (T-19), sin heurística nueva de qué escena es la siguiente. Sin migración, sin cambio en `scripts/reproductor.py` ni en el contrato embebido |
+| R-41 | Al volver al índice tras marcar una toma como buena (`G`+`Esc`), el foco de teclado pasa directo al botón "Grabar siguiente pendiente" (R-40) si queda alguna escena `pendiente`, en vez de caer en la fila de la escena que se acaba de abandonar | **COMPLETADA** | 2026-10-29 | `assets/reproductor/guion.js::volverAlIndice` consulta `document.getElementById("btn-siguiente-pendiente")` solo si `tomaBuenaEnCurso` es `true` (cortocircuito, sin consulta al DOM en el caso contrario); con el botón presente, `.focus()` sobre él y `return` inmediato, sin tocar `botonesEscena[indice]`; en cualquier otro caso, comportamiento idéntico al de antes de R-41. Cero heurística nueva de "siguiente escena" (requisito 3): el destino lo sigue decidiendo solo `estadosEscena.indexOf("pendiente")` de R-40. 4 tests nuevos (752→756): orden de las instrucciones dentro de `volverAlIndice`, fallback a la fila sin toma buena, ausencia de una segunda aparición de `indexOf("pendiente")`, ausencia de `tabindex`/`aria-live` nuevos. Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también con Playwright/Chromium real sobre una fixture de 3 escenas (2 `pendiente` + 1 `revisada` de antemano): los cuatro criterios de aceptación de la ficha pasan — foco en el botón tras marcar buena con pendientes restantes, `Intro` inmediato entra en la segunda pendiente sin `Tab`, foco cae en la fila al agotar las pendientes (botón ya no existe, sin excepción), y foco se mantiene en la fila si se sale sin marcar ninguna toma como buena. Detalle completo en `DECISIONES_TECNICAS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

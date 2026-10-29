@@ -907,6 +907,18 @@
     salirPantallaCompleta();
     vistaReproductor.hidden = true;
     vistaIndice.hidden = false;
+    // R-41: si la toma que se acaba de cerrar quedo marcada como la buena
+    // y queda alguna escena `pendiente` (el boton de R-40 solo existe en ese
+    // caso), el foco salta directo a "Grabar siguiente pendiente" en vez de
+    // caer en la fila de la escena que se abandona -- asi un Intro inmediato
+    // encadena con la siguiente grabacion sin Tab de por medio.
+    var botonSiguientePendiente = tomaBuenaEnCurso
+      ? document.getElementById("btn-siguiente-pendiente")
+      : null;
+    if (botonSiguientePendiente) {
+      botonSiguientePendiente.focus();
+      return;
+    }
     var boton = botonesEscena[indice];
     if (boton) {
       boton.focus();
