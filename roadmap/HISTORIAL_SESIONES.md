@@ -12,6 +12,51 @@
 
 ---
 
+### Sesión 2026-10-29 (284) — Ciclo de Programador: octava reconfirmación del día tras R-41, sin novedad de código
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). El contenedor arrancó con `HEAD` *detached*; `git checkout develop && git
+pull origin develop` trajo ya fusionada la sesión (283) inmediatamente anterior (commit `d62c7d9`)
+por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de
+desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real
+(mismo síntoma del `pip`/`pip3` desnudos ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en
+este clon).
+
+**Documentos de referencia leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): §1/§3/§5/§6 de
+`SEGUIMIENTO.md`; el registro de hallazgos de `auditoriacontinua.md` (tabla completa, línea a línea);
+`ROADMAP_PRODUCTO.md` (prosa de cabecera, aún sin archivar la Oleada v29/R-41 — tarea de un ciclo de
+PM posterior, no de este rol).
+
+**Hallazgos del auditor.** Ningún hallazgo `ABIERTO` de severidad alta (confirmado con el recuento
+completo del registro). Solo `#24` (baja), `#30` (media) y `#35` (baja) siguen `ABIERTO`, los tres de
+proceso/gobernanza puro, pendientes de respuesta del dueño a `#11`/`#12` de §6, sin cambio desde el
+ciclo anterior. `mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`:
+cero issues y cero PR abiertos. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin
+ninguna entrada `nuevo`.
+
+**Tarea elegida.** Ninguna: §1 (fuente autoritativa) confirma que R-41 sigue siendo la última fila
+y está `COMPLETADA`; ninguna fila `PENDIENTE` ni `BLOQUEADA` que ejecutar (aparte de `T-24b`,
+bloqueo físico ajeno al programador) — archivar la Oleada v29 y abrir la siguiente corresponde a un
+ciclo de Product Manager posterior.
+
+**Verificación completa, sin cambios de código.** Cuatro redes en verde: `python3 -m mypy scripts/
+tests/` (72 archivos, sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto),
+`python3 -m pytest` (756 tests, código de salida 0, mismo recuento que el ciclo anterior) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes
+esperadas en este contenedor — `.pptx` sin la skill de marca, `.pdf` sin Chrome/Edge — y las
+omisiones esperadas sin parte de rodaje real). Ningún cambio en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1).** Ninguno: R-41 permanece `COMPLETADA`.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`.** Ninguna: ciclo de pura reconfirmación, nada que
+decidir.
+
+**Documentación.** Sin cambios en `SKILL.md`/`DEVELOPERS.md` (sin cambio de código que documentar).
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §6 sigue con `#11`/`#12` `(pendiente)` de
+respuesta del dueño.
+
+---
+
 ### Sesión 2026-10-29 (283) — Ciclo de Programador: séptima reconfirmación del día tras R-41, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
