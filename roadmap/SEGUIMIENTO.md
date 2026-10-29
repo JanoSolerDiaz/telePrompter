@@ -10,8 +10,59 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-29 — **Ciclo de Programador: novena reconfirmación del día tras
+**Última actualización:** 2026-10-29 — **Ciclo de Product Manager: archiva Oleada v29 (R-41) y abre
+R-42 (Oleada v30)**, detalle de la sesión más abajo.
+
+**Ciclo de Product Manager (2026-10-29): archiva Oleada v29 (R-41) y abre R-42 (Oleada v30).**
+Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
+fusionada la novena reconfirmación del día del Programador (commit `fd4bd0b`, sin cambio de código),
+árbol de trabajo limpio sin divergencia que resolver.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (registro completo revisado, no solo la
+narrativa más reciente): solo tres filas sin `RESUELTO`/`ASUMIDO`, `#24` (baja), `#30` (media) y
+`#35` (baja), las tres de proceso/gobernanza puro, ya enrutadas como preguntas `#11`/`#12` de §6,
+pendientes solo de respuesta del dueño — ninguna convertible en R-XX de producto/arquitectura ni en
+deuda técnica de backlog, ninguna de severidad alta que atender como urgente. `roadmap/FEEDBACK.md`
+sigue con su única fila de plantilla vacía, sin ninguna entrada `nuevo` que volcar al roadmap — el
+bloqueo #7 de §3 (grabar un vídeo de curso completo) sigue abierto, más de 50 días desde que T-32
+dejó la skill instalada y verificada en la máquina real del dueño (2026-09-03).
+
+**Archivado.** R-41 (Oleada v29, foco automático en "Grabar siguiente pendiente" al cerrar una toma
+buena) llevaba `COMPLETADA` en §1 desde el mismo día, reconfirmada en verde por el Programador en
+nueve pasadas sucesivas sin que ningún ciclo de PM la archivara. Movida a
+`roadmap/ROADMAP_HISTORICO.md` con su spec completa y "Cómo se entregó". `ROADMAP_PRODUCTO.md`
+actualizado: cabecera reescrita con fecha y resumen del ciclo, sección "Oleada v29" sustituida por la
+nota de archivo.
+
+**Nota de producto (no es una R-XX), actualizada.** Van ya 41 R-XX completadas desde que la skill
+quedó instalada y lista para grabar (2026-09-03), ninguna todavía de un rodaje real. El criterio de
+salida de la Oleada v1 ("grabar un vídeo de curso entero usando la skill") sigue siendo, con
+diferencia, el hito de mayor valor pendiente del proyecto; es una constatación, no una acción nueva
+— el bloqueo #7 ya registrado en §3 es una decisión del dueño que el equipo no puede ejecutar por su
+cuenta, así que no se repite como pregunta nueva en §6.
+
+**Abierta R-42 (Oleada v30): resumen de indicaciones EN PANTALLA visible en el índice, antes de
+entrar a grabar una escena.** Mismo principio "de un vistazo" que ya aplican en el índice el resumen
+de tomas (R-02) y el de tropiezos (R-03), verificado contra el código real antes de escribir la
+ficha: `renderizarIndice` (`assets/reproductor/guion.js`) ya recibe, por cada bloque de cada escena,
+el campo `indicaciones` que R-12 embebe (lista de cues `Pantalla:`/`Nota:`, hoy solo leída durante la
+reproducción para la cue en vivo), pero el índice no agrega ni muestra ese dato — una escena con una
+indicación `EN PANTALLA` (cambiar de ventana, compartir un documento) solo se descubre al entrar a
+grabarla, ya con la cuenta atrás en marcha. Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v30; fila
+`PENDIENTE` añadida a §1 de `SEGUIMIENTO.md` en este mismo commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; nada en `scripts/`, `tests/` ni `assets/` se toca en esta sesión.
+La implementación de R-42 queda para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad. §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño. Una decisión nueva en `DECISIONES_TECNICAS.md` (archivo de
+Oleada v29 y apertura de R-42, con las alternativas consideradas).
+
+**Última actualización anterior (2026-10-29, ciclo de Programador): novena reconfirmación del día tras
 R-41, sin novedad de código**, detalle de la sesión más abajo.
+
+---
 
 **Ciclo de Programador (2026-10-29), novena tras R-41.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
@@ -7519,6 +7570,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-39 | Mostrar en el índice de escenas del reproductor, sin entrar en ninguna, cuántas quedan por grabar (pendiente/grabada/revisada) y cuánto tiempo estimado representan las que siguen `pendiente` | **COMPLETADA** | 2026-10-27 | `assets/reproductor/guion.js::renderizarIndice`: línea nueva (`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion`, reutilizando tal cual `estadosEscena` (T-19/R-02, sin segunda función) y sumando `duracion_estimada_segundos` (T-12) solo de las escenas `pendiente`; recalculada sola porque `finalizarTomaActual` ya llama a `renderizarIndice()` al cerrar una toma. Mismo color/tamaño que `.resumen-guion` (requisito 5), mismo formato en los dos extremos (0 pendientes / todas pendientes, requisito 4). Sin cambio en `scripts/reproductor.py` ni en el contrato embebido, sin migración. 5 tests nuevos (740→745). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (instalado solo para la comprobación, desinstalado al terminar). `SKILL.md`/`DEVELOPERS.md` actualizados |
 | R-40 | Botón "Grabar siguiente pendiente" en el índice de escenas, que entra directamente en pantalla completa en la primera escena en estado `pendiente` (orden del guión), sin tener que buscarla en la lista | **COMPLETADA** | 2026-10-28 | `assets/reproductor/guion.js::renderizarIndice` gana `#btn-siguiente-pendiente`, justo debajo de `.resumen-progreso-grabacion` (R-39) y antes de la lista, visible solo con alguna escena `pendiente`. Objetivo: `estadosEscena.indexOf("pendiente")` (reutilizado tal cual, sin heurística nueva); `click` invoca `reproducirEscena(indiceSiguientePendiente)` directo (T-19/T-26, cero lógica de entrada nueva). Reutiliza la clase `.btn-continuar` ya existente (sin CSS nuevo). 7 tests nuevos (745→752). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (Node.js, preinstalado en el contenedor): tres estados a la vez, salto directo, actualización en vivo al marcar toma buena sin recargar, desaparición al agotar las pendientes. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-41 | Al volver al índice tras marcar una toma como buena (`G`+`Esc`), el foco de teclado pasa directo al botón "Grabar siguiente pendiente" (R-40) si queda alguna escena `pendiente`, en vez de caer en la fila de la escena que se acaba de abandonar | **COMPLETADA** | 2026-10-29 | `assets/reproductor/guion.js::volverAlIndice` consulta `document.getElementById("btn-siguiente-pendiente")` solo si `tomaBuenaEnCurso` es `true` (cortocircuito, sin consulta al DOM en el caso contrario); con el botón presente, `.focus()` sobre él y `return` inmediato, sin tocar `botonesEscena[indice]`; en cualquier otro caso, comportamiento idéntico al de antes de R-41. Cero heurística nueva de "siguiente escena" (requisito 3): el destino lo sigue decidiendo solo `estadosEscena.indexOf("pendiente")` de R-40. 4 tests nuevos (752→756): orden de las instrucciones dentro de `volverAlIndice`, fallback a la fila sin toma buena, ausencia de una segunda aparición de `indexOf("pendiente")`, ausencia de `tabindex`/`aria-live` nuevos. Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también con Playwright/Chromium real sobre una fixture de 3 escenas (2 `pendiente` + 1 `revisada` de antemano): los cuatro criterios de aceptación de la ficha pasan — foco en el botón tras marcar buena con pendientes restantes, `Intro` inmediato entra en la segunda pendiente sin `Tab`, foco cae en la fila al agotar las pendientes (botón ya no existe, sin excepción), y foco se mantiene en la fila si se sale sin marcar ninguna toma como buena. Detalle completo en `DECISIONES_TECNICAS.md` |
+| R-42 | Mostrar en el índice de escenas, de un vistazo y sin entrar en ninguna, cuántas indicaciones `EN PANTALLA`/`NOTA` (R-12) trae cada escena, para que el dueño sepa qué preparar en pantalla antes de grabarla | **PENDIENTE** | — | Spec completa (Migración/Depende de/Origen, Objetivo, Requisitos, Criterio de aceptación) en `ROADMAP_PRODUCTO.md`, Oleada v30. Abierta por el ciclo de PM del 2026-10-29, sin implementar — queda para un ciclo de Programador posterior |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

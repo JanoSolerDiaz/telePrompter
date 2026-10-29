@@ -8,43 +8,44 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-28 (ciclo de Product Manager). R-40 (Oleada v28) llevaba
+**Última actualización:** 2026-10-29 (ciclo de Product Manager). R-41 (Oleada v29) llevaba
 `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el mismo día (ciclo de Programador), reconfirmada en
-verde en pasadas sucesivas sin que ningún ciclo de PM la archivara todavía. Este ciclo archiva la
-Oleada v28 en `ROADMAP_HISTORICO.md` y abre R-41 (Oleada v29) en §1, sin implementarla: el criterio
-de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda respetado porque no había
-ninguna otra R-XX pendiente antes de abrir esta.
+verde en nueve pasadas sucesivas sin que ningún ciclo de PM la archivara todavía. Este ciclo archiva
+la Oleada v29 en `ROADMAP_HISTORICO.md` y abre R-42 (Oleada v30) en §1, sin implementarla: el
+criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda respetado porque no
+había ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
 completo) sigue abierto, ahora más de 50 días desde que T-32 lo dejó listo para grabar (2026-09-03).
-`auditoriacontinua.md` revisado antes de elegir tarea: solo dos `ABIERTO` (`#24`, baja; `#30`,
-media), ambos de proceso/gobernanza puro y pendientes solo de la respuesta del dueño a las preguntas
-#11/#12 de `SEGUIMIENTO.md` §6 (42 y 18 días sin respuesta) — ninguno de severidad alta, ninguno
-convertible en R-XX nueva ni en deuda técnica de backlog.
+`auditoriacontinua.md` revisado antes de elegir tarea: solo tres `ABIERTO` (`#24`, baja; `#30`,
+media; `#35`, baja), todos de proceso/gobernanza puro y pendientes solo de la respuesta del dueño a
+las preguntas #11/#12 de `SEGUIMIENTO.md` §6 (42 y 18 días sin respuesta cuando se registraron) —
+ninguno de severidad alta, ninguno convertible en R-XX nueva ni en deuda técnica de backlog.
 
 **Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
-propio roadmap):** van 40 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
+propio roadmap):** van 41 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
 máquina real del dueño (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas
 tienen `origen: auditoría #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena
-calidad (cuatro redes en verde, 752 tests, invariantes reverificados en cada auditoría), pero el
+calidad (cuatro redes en verde, 756 tests, invariantes reverificados en cada auditoría), pero el
 propio principio de producto que guía este documento —"utilidad real para un formador que graba
 vídeos de curso"— solo se confirma grabando, no leyendo código. El bloqueo #7 es una acción del
 dueño, no una tarea que el equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como
 pregunta nueva; se deja constancia aquí para que quede explícito que el criterio de salida de la
 Oleada v1 ("grabar un vídeo de curso entero") sigue siendo, con diferencia, el hito de mayor valor
-pendiente del proyecto, por delante de cualquier R-XX nueva. R-41 (más abajo) sigue el mismo criterio
-que R-39/R-40: una mejora pequeña y de bajo riesgo del propio reproductor, directamente útil para esa
-primera sesión real cuando ocurra, no otra grieta de arquitectura interna entre salidas de montaje.
+pendiente del proyecto, por delante de cualquier R-XX nueva. R-42 (más abajo) sigue el mismo criterio
+que R-39/R-40/R-41: una mejora pequeña y de bajo riesgo del propio reproductor, directamente útil
+para esa primera sesión real cuando ocurra, no otra grieta de arquitectura interna entre salidas de
+montaje.
 
-**Oleada v28 (R-40) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v29 (R-41) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v29 (R-41) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-producto del propio PM (2026-10-28), continuación directa de R-40: el botón "Grabar siguiente
-pendiente" ya lleva al dueño a la siguiente escena que falta por grabar, pero solo si lo alcanza con
-`Tab` desde el principio del índice o con el ratón; en el momento real en que más se usa —acabar de
-cerrar una toma buena y querer seguir encadenando sin pausa— el foco de teclado sigue cayendo por
-defecto en la fila de la escena que se acaba de abandonar.
+**Oleada v30 (R-42) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+producto del propio PM (2026-10-29), mismo principio "de un vistazo" que R-02 (resumen de tomas) y
+R-03 (resumen de tropiezos) en el índice, aplicado ahora no al resultado de grabar sino a la
+preparación previa: hoy el índice no dice nada sobre qué escenas traen indicaciones `EN PANTALLA`/
+`NOTA` (R-12) hasta que el dueño entra a grabarlas, así que una escena que exige cambiar de ventana,
+compartir pantalla o tener algo abierto de antemano se descubre tarde, ya en plena cuenta atrás.
 
 ---
 
@@ -302,64 +303,65 @@ en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio
 `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-28). Su spec completa y cómo se entregó viven
 ahí.
 
-### Oleada v29 — Foco automático en "Grabar siguiente pendiente" al cerrar una toma buena
+### Oleada v29 — entregada
 
-#### R-41 — Al volver al índice tras marcar una toma como buena, el foco de teclado pasa directo al botón "Grabar siguiente pendiente" (si lo hay)
+La oleada v29 (foco automático en "Grabar siguiente pendiente" al cerrar una toma buena, R-41) tiene
+su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de negocio propio
+pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-29). Su spec completa y
+cómo se entregó viven ahí.
 
-**Migración:** No (decisión de foco puramente en memoria; ningún campo nuevo en `estado.json` ni en
-el JSON embebido del reproductor, ningún `localStorage` nuevo) · **Depende de:** T-19
-(`volverAlIndice`, `reproducirEscena`), T-23 (marcar la toma como buena con `G`, variable
-`tomaBuenaEnCurso`), R-02 (estado `grabada`/`revisada` derivado de las tomas reales), R-40 (botón
-`#btn-siguiente-pendiente` que `renderizarIndice` ya construye) — todas `COMPLETADA` · **Origen:**
-observación de producto del PM (2026-10-28), continuación directa de R-40: verificado contra el
-código real (`assets/reproductor/guion.js::volverAlIndice`) que, tras `finalizarTomaActual()` (que
-ya deja registrada la toma recién cerrada y ya ha vuelto a dibujar el índice con el botón de R-40 al
-día), el foco se asigna siempre a `botonesEscena[indice]` — la fila de la escena que se acaba de
-abandonar —, nunca al botón que ya apunta a la siguiente pendiente, obligando a un `Tab` manual justo
-en el momento en que más prisa corre seguir grabando.
+### Oleada v30 — Resumen de indicaciones EN PANTALLA visible en el índice, antes de entrar a grabar una escena
 
-**Objetivo:** que, en el instante exacto en que más se usa —acabar de grabar una toma buena (`G`) y
-pulsar `Esc` para volver al índice con intención de seguir encadenando escenas sin pausa—, un único
-`Intro`/`Espacio` (o la pulsación del clicker Bluetooth, T-24) entre directamente en la siguiente
-escena `pendiente`, sin `Tab` de por medio y sin tener que soltar el teclado para hacer clic con el
-ratón.
+#### R-42 — El índice de escenas muestra, de un vistazo y sin entrar en ninguna, cuántas indicaciones `EN PANTALLA`/`NOTA` trae cada escena
+
+**Migración:** No (dato puramente derivado para la pantalla a partir de `bloque.indicaciones`, ya
+embebido por R-12; ningún campo nuevo en `estado.json` ni en el JSON embebido del reproductor,
+ningún `localStorage` nuevo) · **Depende de:** T-19 (índice de escenas, `renderizarIndice`), R-12
+(`indicaciones` ya embebida en cada bloque del JSON del reproductor, formateada con el prefijo
+`Pantalla:`/`Nota:` por `_formatear_indicacion_reproductor`) — todas `COMPLETADA` · **Origen:**
+observación de producto del PM (2026-10-29), mismo principio "de un vistazo" que ya aplican en el
+índice el resumen de tomas (R-02) y el de tropiezos (R-03): hoy esos dos resúmenes dicen cómo fue la
+grabación de una escena, pero nada en el índice anticipa su preparación — una escena con una
+indicación `EN PANTALLA` (p. ej. "cambia a la ventana del navegador", "comparte este documento") solo
+se descubre al entrar a grabarla, ya con la cuenta atrás en marcha o a mitad de toma, cuando cambiar
+de ventana o tener algo abierto de antemano ya no se puede resolver con calma.
+
+**Objetivo:** que el dueño, repasando el índice antes de empezar una sesión de grabación (o entre una
+escena y la siguiente), sepa qué escenas requieren preparar algo en pantalla antes de pulsar grabar,
+sin tener que entrar en cada una para comprobarlo ni volver al `guion-escenas.md` original.
 
 **Requisitos:**
-1. En `volverAlIndice(indice)` (`assets/reproductor/guion.js`), justo después de la llamada ya
-   existente a `finalizarTomaActual()` (que deja `tomaBuenaEnCurso` con el valor de la toma que se
-   acaba de cerrar — no se reinicia hasta `iniciarMotor`/`reiniciarEscenaActual`, en una escena
-   posterior — y que ya ha vuelto a renderizar el índice con el botón de R-40 actualizado), decidir
-   el destino del foco en vez de asignarlo siempre a `botonesEscena[indice]`.
-2. Si `tomaBuenaEnCurso` es `true` (la toma que se acaba de cerrar quedó marcada como la buena) **y**
-   existe en el DOM `#btn-siguiente-pendiente` (R-40; su sola presencia ya significa que queda al
-   menos una escena `pendiente`), el foco va a ese botón. En cualquier otro caso —no se marcó
-   ninguna toma como buena antes de salir (p. ej. salir a mitad de una toma para descansar, o
-   reiniciarla con `R` y salir sin volver a marcar) o no queda ninguna escena `pendiente`— el foco se
-   mantiene exactamente como hoy: la fila de la propia escena (`botonesEscena[indice]`), para
-   revisar o retomar donde se dejó.
-3. Sin heurística nueva de qué escena es "la siguiente": el botón de R-40 ya decide ese destino por
-   su cuenta (`estadosEscena.indexOf("pendiente")`); este requisito solo mueve el foco de teclado
-   hacia un control que ya existe, nunca cambia a qué escena apunta ni añade una segunda forma de
-   calcularlo.
-4. `.focus()` sobre un `<button>` nativo ya renderizado, mismo mecanismo que usan hoy T-19/T-26/R-40
-   para enfocar sus propios botones — sin `tabindex` nuevo, sin región `aria-live`, sin cambio de
-   `requestFullscreen` (ya se ha abandonado la pantalla completa en `volverAlIndice` antes de decidir
-   el foco, igual que hoy).
-5. Sin `localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato de datos
-   embebido: la decisión es enteramente de `guion.js` sobre estado que ya existe en memoria
-   (`tomaBuenaEnCurso`) y el propio DOM que R-40 ya mantiene.
+1. En `renderizarIndice` (`assets/reproductor/guion.js`), por cada `escena`, calcular el total de
+   indicaciones de la escena sumando `bloque.indicaciones.length` sobre todo `escena.bloques` — el
+   mismo campo que R-12 ya embebe por bloque y que hoy solo se lee durante la reproducción
+   (`.cue-indicacion`), sin leer ni inferir nada del texto de las indicaciones ni distinguir
+   `Pantalla:` de `Nota:` (el prefijo es configurable por el dueño, `Configuracion`, y la cue en
+   directo tampoco distingue entre ambas al mostrarlas: mismo criterio, no una clasificación nueva).
+2. Si el total es mayor que 0, añadir un `<span class="escena-indicaciones">` en la fila de la
+   escena (mismo patrón de marcado que `.escena-tomas`/`.escena-tropiezos`, justo después de
+   `.escena-duracion` y antes del resumen de tomas), con el texto "N indicación en pantalla" (singular,
+   `N=1`) o "N indicaciones en pantalla" (plural) — mismo criterio singular/plural que ya usan los
+   resúmenes de tomas y tropiezos. Con el total en 0, no se añade ningún `<span>` (sin "0
+   indicaciones" visible, igual que las escenas sin tomas no muestran "0 tomas").
+3. Sin elemento interactivo nuevo: `<span>`, nunca un control — `fila` ya es un `<button>` y anidar
+   controles dentro rompe la semántica, mismo criterio ya documentado para `.escena-tomas`/
+   `.escena-tropiezos`.
+4. CSS nuevo en `assets/reproductor/estilo.css` para `.escena-indicaciones` con el mismo peso visual
+   (tamaño, opacidad/color atenuado) que `.escena-tomas`/`.escena-tropiezos` — información de apoyo
+   para quien prepara la grabación, nunca debe competir visualmente con el título de la escena ni con
+   el color de su estado pendiente/grabada/revisada (principio de producto 5: legibilidad por encima
+   de todo, aquí aplicado a la propia pantalla de preparación del dueño).
+5. Sin cambio en `scripts/reproductor.py` ni en el contrato de datos embebido (`indicaciones` ya
+   viaja por bloque desde R-12): el cálculo es enteramente de `guion.js` sobre datos que el JSON ya
+   trae. Sin `localStorage` nuevo.
 
-**Criterio de aceptación:** sobre una fixture con al menos dos escenas `pendiente` y una tercera ya
-`revisada`, entrar en la primera `pendiente`, marcar la toma como buena (`G`) y volver al índice
-(`Esc`) deja el foco directamente en `#btn-siguiente-pendiente`, ya apuntando a la segunda escena
-`pendiente`; un `Intro` inmediato, sin ningún `Tab`, entra en esa segunda escena. Repitiendo sobre la
-última escena `pendiente` de la fixture (de modo que, al marcarla buena, no quede ninguna pendiente),
-el foco al volver al índice cae en la fila de esa misma escena (el botón ya no existe), sin excepción
-de script ni foco perdido en `<body>`. Entrando en una escena y saliendo con `Esc` sin haber marcado
-ninguna toma como buena en esa visita (por ejemplo, reiniciar con `R` y salir sin volver a marcar)
-mantiene el comportamiento actual: el foco vuelve a la fila de esa misma escena, nunca al botón de
-R-40, aunque queden escenas `pendiente`. Verificado también visualmente con Playwright/Chromium
-real, mismo criterio que R-39/R-40.
+**Criterio de aceptación:** sobre una fixture con tres escenas — una sin ninguna indicación, una con
+exactamente un bloque con una indicación y otra con varios bloques con varias indicaciones en total —
+el índice no muestra ningún resumen en la primera, muestra "1 indicación en pantalla" en la segunda y
+el total exacto en plural en la tercera, sumado correctamente a través de todos sus bloques. El JSON
+embebido por `scripts/reproductor.py` no gana ningún campo nuevo (mismo contrato que antes de R-42,
+verificado por diff contra la salida de referencia). Verificado también visualmente con
+Playwright/Chromium real, mismo criterio que R-39/R-40/R-41.
 
 ---
 

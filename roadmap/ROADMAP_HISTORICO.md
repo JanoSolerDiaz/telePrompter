@@ -2684,6 +2684,82 @@ recargar la página, y desaparición del botón al agotar las escenas pendientes
 
 ---
 
+## Oleada v29 — Foco automático en "Grabar siguiente pendiente" al cerrar una toma buena
+
+### R-41 — Al volver al índice tras marcar una toma como buena, el foco de teclado pasa directo al botón "Grabar siguiente pendiente" (si lo hay)
+
+**Migración:** No (decisión de foco puramente en memoria; ningún campo nuevo en `estado.json` ni en
+el JSON embebido del reproductor, ningún `localStorage` nuevo) · **Depende de:** T-19
+(`volverAlIndice`, `reproducirEscena`), T-23 (marcar la toma como buena con `G`, variable
+`tomaBuenaEnCurso`), R-02 (estado `grabada`/`revisada` derivado de las tomas reales), R-40 (botón
+`#btn-siguiente-pendiente` que `renderizarIndice` ya construye) — todas `COMPLETADA` · **Origen:**
+observación de producto del PM (2026-10-28), continuación directa de R-40: verificado contra el
+código real (`assets/reproductor/guion.js::volverAlIndice`) que, tras `finalizarTomaActual()` (que
+ya deja registrada la toma recién cerrada y ya ha vuelto a dibujar el índice con el botón de R-40 al
+día), el foco se asigna siempre a `botonesEscena[indice]` — la fila de la escena que se acaba de
+abandonar —, nunca al botón que ya apunta a la siguiente pendiente, obligando a un `Tab` manual justo
+en el momento en que más prisa corre seguir grabando.
+
+**Objetivo:** que, en el instante exacto en que más se usa —acabar de grabar una toma buena (`G`) y
+pulsar `Esc` para volver al índice con intención de seguir encadenando escenas sin pausa—, un único
+`Intro`/`Espacio` (o la pulsación del clicker Bluetooth, T-24) entre directamente en la siguiente
+escena `pendiente`, sin `Tab` de por medio y sin tener que soltar el teclado para hacer clic con el
+ratón.
+
+**Requisitos:**
+1. En `volverAlIndice(indice)` (`assets/reproductor/guion.js`), justo después de la llamada ya
+   existente a `finalizarTomaActual()` (que deja `tomaBuenaEnCurso` con el valor de la toma que se
+   acaba de cerrar — no se reinicia hasta `iniciarMotor`/`reiniciarEscenaActual`, en una escena
+   posterior — y que ya ha vuelto a renderizar el índice con el botón de R-40 actualizado), decidir
+   el destino del foco en vez de asignarlo siempre a `botonesEscena[indice]`.
+2. Si `tomaBuenaEnCurso` es `true` (la toma que se acaba de cerrar quedó marcada como la buena) **y**
+   existe en el DOM `#btn-siguiente-pendiente` (R-40; su sola presencia ya significa que queda al
+   menos una escena `pendiente`), el foco va a ese botón. En cualquier otro caso —no se marcó
+   ninguna toma como buena antes de salir (p. ej. salir a mitad de una toma para descansar, o
+   reiniciarla con `R` y salir sin volver a marcar) o no queda ninguna escena `pendiente`— el foco se
+   mantiene exactamente como hoy: la fila de la propia escena (`botonesEscena[indice]`), para
+   revisar o retomar donde se dejó.
+3. Sin heurística nueva de qué escena es "la siguiente": el botón de R-40 ya decide ese destino por
+   su cuenta (`estadosEscena.indexOf("pendiente")`); este requisito solo mueve el foco de teclado
+   hacia un control que ya existe, nunca cambia a qué escena apunta ni añade una segunda forma de
+   calcularlo.
+4. `.focus()` sobre un `<button>` nativo ya renderizado, mismo mecanismo que usan hoy T-19/T-26/R-40
+   para enfocar sus propios botones — sin `tabindex` nuevo, sin región `aria-live`, sin cambio de
+   `requestFullscreen` (ya se ha abandonado la pantalla completa en `volverAlIndice` antes de decidir
+   el foco, igual que hoy).
+5. Sin `localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato de datos
+   embebido: la decisión es enteramente de `guion.js` sobre estado que ya existe en memoria
+   (`tomaBuenaEnCurso`) y el propio DOM que R-40 ya mantiene.
+
+**Criterio de aceptación:** sobre una fixture con al menos dos escenas `pendiente` y una tercera ya
+`revisada`, entrar en la primera `pendiente`, marcar la toma como buena (`G`) y volver al índice
+(`Esc`) deja el foco directamente en `#btn-siguiente-pendiente`, ya apuntando a la segunda escena
+`pendiente`; un `Intro` inmediato, sin ningún `Tab`, entra en esa segunda escena. Repitiendo sobre la
+última escena `pendiente` de la fixture (de modo que, al marcarla buena, no quede ninguna pendiente),
+el foco al volver al índice cae en la fila de esa misma escena (el botón ya no existe), sin excepción
+de script ni foco perdido en `<body>`. Entrando en una escena y saliendo con `Esc` sin haber marcado
+ninguna toma como buena en esa visita (por ejemplo, reiniciar con `R` y salir sin volver a marcar)
+mantiene el comportamiento actual: el foco vuelve a la fila de esa misma escena, nunca al botón de
+R-40, aunque queden escenas `pendiente`. Verificado también visualmente con Playwright/Chromium
+real, mismo criterio que R-39/R-40.
+
+**Cómo se entregó:** `assets/reproductor/guion.js::volverAlIndice` consulta
+`document.getElementById("btn-siguiente-pendiente")` solo si `tomaBuenaEnCurso` es `true`
+(cortocircuito, sin consulta al DOM en el caso contrario); con el botón presente, `.focus()` sobre él
+y `return` inmediato, sin tocar `botonesEscena[indice]`; en cualquier otro caso, comportamiento
+idéntico al de antes de R-41. Cero heurística nueva de "siguiente escena" (requisito 3): el destino lo
+sigue decidiendo solo `estadosEscena.indexOf("pendiente")` de R-40. 4 tests nuevos (752→756): orden de
+las instrucciones dentro de `volverAlIndice`, fallback a la fila sin toma buena, ausencia de una
+segunda aparición de `indexOf("pendiente")`, ausencia de `tabindex`/`aria-live` nuevos. Cuatro redes
+en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también con
+Playwright/Chromium real sobre una fixture de 3 escenas (2 `pendiente` + 1 `revisada` de antemano):
+los cuatro criterios de aceptación de la ficha pasan — foco en el botón tras marcar buena con
+pendientes restantes, `Intro` inmediato entra en la segunda pendiente sin `Tab`, foco cae en la fila
+al agotar las pendientes (botón ya no existe, sin excepción), y foco se mantiene en la fila si se sale
+sin marcar ninguna toma como buena. Detalle completo en `DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2699,4 +2775,5 @@ v23 (R-35), 2026-10-21 (implementación), archivada el mismo día; la de v24 (R-
 (implementación), archivada el mismo día; la de v25 (R-37), 2026-10-23 (implementación), archivada
 el mismo día; la de v26 (R-38), 2026-10-26 (implementación), archivada el mismo ciclo de PM; la de
 v27 (R-39), 2026-10-27 (implementación), archivada el mismo ciclo de PM; la de v28 (R-40),
-2026-10-28 (implementación), archivada en este ciclo de PM (2026-10-28).)*
+2026-10-28 (implementación), archivada el ciclo de PM del mismo día; la de v29 (R-41), 2026-10-29
+(implementación), archivada en este ciclo de PM (2026-10-29).)*
