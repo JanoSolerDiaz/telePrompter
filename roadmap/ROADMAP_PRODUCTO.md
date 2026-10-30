@@ -8,44 +8,53 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-29 (ciclo de Product Manager). R-41 (Oleada v29) llevaba
+**Última actualización:** 2026-10-30 (ciclo de Product Manager). R-42 (Oleada v30) llevaba
 `COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el mismo día (ciclo de Programador), reconfirmada en
-verde en nueve pasadas sucesivas sin que ningún ciclo de PM la archivara todavía. Este ciclo archiva
-la Oleada v29 en `ROADMAP_HISTORICO.md` y abre R-42 (Oleada v30) en §1, sin implementarla: el
-criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda respetado porque no
-había ninguna otra R-XX pendiente antes de abrir esta.
+verde en varias pasadas sucesivas del Programador (incluida la que cerró P-09, hallazgo `#35`) sin
+que ningún ciclo de PM la archivara todavía. Este ciclo archiva la Oleada v30 en
+`ROADMAP_HISTORICO.md` y abre R-43 (Oleada v31) en §1, sin implementarla: el criterio de una sola
+R-XX pendiente de código a la vez (vigente desde R-19) queda respetado porque no había ninguna otra
+R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
-completo) sigue abierto, ahora más de 50 días desde que T-32 lo dejó listo para grabar (2026-09-03).
-`auditoriacontinua.md` revisado antes de elegir tarea: solo tres `ABIERTO` (`#24`, baja; `#30`,
-media; `#35`, baja), todos de proceso/gobernanza puro y pendientes solo de la respuesta del dueño a
-las preguntas #11/#12 de `SEGUIMIENTO.md` §6 (42 y 18 días sin respuesta cuando se registraron) —
-ninguno de severidad alta, ninguno convertible en R-XX nueva ni en deuda técnica de backlog.
+completo) sigue abierto, ahora más de 57 días desde que T-32 lo dejó listo para grabar (2026-09-03).
+`auditoriacontinua.md` revisado antes de elegir tarea: `#24` (baja) y `#30` (media) siguen `ABIERTO`
+de proceso/gobernanza puro, pendientes solo de la respuesta del dueño a las preguntas #11/#12 de
+`SEGUIMIENTO.md` §6 (44 y 20 días sin respuesta cuando se registraron); `#35` (baja, cabecera "PARA
+EL DUEÑO") ya tiene su remedio aplicado por P-09 (2026-10-30), pendiente solo de que el Auditor lo
+verifique y lo cierre (escritura exclusiva suya); `#36` (baja, apertura en inglés de un commit) es
+puramente observacional, sin remedio retroactivo razonable. Ninguno de severidad alta, ninguno
+convertible en R-XX nueva ni en deuda técnica de backlog.
 
 **Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
-propio roadmap):** van 41 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
+propio roadmap):** van 42 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
 máquina real del dueño (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas
 tienen `origen: auditoría #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena
-calidad (cuatro redes en verde, 756 tests, invariantes reverificados en cada auditoría), pero el
+calidad (cuatro redes en verde, 763 tests, invariantes reverificados en cada auditoría), pero el
 propio principio de producto que guía este documento —"utilidad real para un formador que graba
 vídeos de curso"— solo se confirma grabando, no leyendo código. El bloqueo #7 es una acción del
 dueño, no una tarea que el equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como
 pregunta nueva; se deja constancia aquí para que quede explícito que el criterio de salida de la
 Oleada v1 ("grabar un vídeo de curso entero") sigue siendo, con diferencia, el hito de mayor valor
-pendiente del proyecto, por delante de cualquier R-XX nueva. R-42 (más abajo) sigue el mismo criterio
-que R-39/R-40/R-41: una mejora pequeña y de bajo riesgo del propio reproductor, directamente útil
-para esa primera sesión real cuando ocurra, no otra grieta de arquitectura interna entre salidas de
-montaje.
+pendiente del proyecto, por delante de cualquier R-XX nueva. R-43 (más abajo) sigue el mismo criterio
+que R-39/R-40/R-41/R-42: una mejora pequeña y de bajo riesgo del propio reproductor, directamente útil
+para esa primera sesión real cuando ocurra — y además cierra un hueco real entre dos piezas ya
+construidas (R-37/R-38) que resuelven el mismo cruce de datos pero solo lo muestran al exportar, no
+durante la propia grabación, que es el momento en que la decisión de repetir una toma todavía es
+barata.
 
-**Oleada v29 (R-41) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v30 (R-42) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v30 (R-42) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-producto del propio PM (2026-10-29), mismo principio "de un vistazo" que R-02 (resumen de tomas) y
-R-03 (resumen de tropiezos) en el índice, aplicado ahora no al resultado de grabar sino a la
-preparación previa: hoy el índice no dice nada sobre qué escenas traen indicaciones `EN PANTALLA`/
-`NOTA` (R-12) hasta que el dueño entra a grabarlas, así que una escena que exige cambiar de ventana,
-compartir pantalla o tener algo abierto de antemano se descubre tarde, ya en plena cuenta atrás.
+**Oleada v31 (R-43) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+arquitectura del PM (2026-10-30): R-37 (`scripts/feedback.py`) y R-38 (`scripts/comandos_montaje.py`)
+ya resuelven, del lado de Python, el cruce "¿el tropiezo marcado cayó dentro de la toma que se usó
+como buena?" — pero los dos solo se ven al exportar (`FEEDBACK.md`, `comandos-montaje.md`),
+normalmente al final de la sesión de rodaje o incluso del guión entero. El propio `assets/
+reproductor/guion.js` ya tiene en memoria, en el índice de escenas, los mismos dos datos que hacen
+falta para el mismo cruce (tomas con `buena`/`numero` de R-02, tropiezos con `numero_toma` ya
+persistido desde R-36), así que mostrar el aviso ahí mismo, sin exportar nada, adelanta la decisión
+al momento en que el dueño todavía puede volver a grabar la toma con el resto del material fresco.
 
 ---
 
@@ -310,58 +319,69 @@ su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de
 pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-29). Su spec completa y
 cómo se entregó viven ahí.
 
-### Oleada v30 — Resumen de indicaciones EN PANTALLA visible en el índice, antes de entrar a grabar una escena
+### Oleada v31 — Avisar en el índice cuando la toma buena de una escena trae un tropiezo marcado dentro
 
-#### R-42 — El índice de escenas muestra, de un vistazo y sin entrar en ninguna, cuántas indicaciones `EN PANTALLA`/`NOTA` trae cada escena
+#### R-43 — El índice de escenas avisa, de un vistazo, cuando la toma marcada como buena de una escena tiene uno o más tropiezos marcados dentro de ella
 
-**Migración:** No (dato puramente derivado para la pantalla a partir de `bloque.indicaciones`, ya
-embebido por R-12; ningún campo nuevo en `estado.json` ni en el JSON embebido del reproductor,
-ningún `localStorage` nuevo) · **Depende de:** T-19 (índice de escenas, `renderizarIndice`), R-12
-(`indicaciones` ya embebida en cada bloque del JSON del reproductor, formateada con el prefijo
-`Pantalla:`/`Nota:` por `_formatear_indicacion_reproductor`) — todas `COMPLETADA` · **Origen:**
-observación de producto del PM (2026-10-29), mismo principio "de un vistazo" que ya aplican en el
-índice el resumen de tomas (R-02) y el de tropiezos (R-03): hoy esos dos resúmenes dicen cómo fue la
-grabación de una escena, pero nada en el índice anticipa su preparación — una escena con una
-indicación `EN PANTALLA` (p. ej. "cambia a la ventana del navegador", "comparte este documento") solo
-se descubre al entrar a grabarla, ya con la cuenta atrás en marcha o a mitad de toma, cuando cambiar
-de ventana o tener algo abierto de antemano ya no se puede resolver con calma.
+**Migración:** No (lectura pura de datos que ya existen en `localStorage`: `tomasEscena[indice]`
+con `buena`/`numero` de R-02, `tropiezosEscena[indice]` con `numero_toma` ya persistido desde R-36;
+ningún campo nuevo, ninguna escritura nueva, sin cambio en `scripts/reproductor.py` ni en el
+contrato embebido) · **Depende de:** T-19 (índice de escenas, `renderizarIndice`), R-02 (registro de
+tomas, campo `buena`), R-03 (marcar tropiezos), R-34 (instante de toma del tropiezo), R-36 (número
+de toma asociado a cada tropiezo, ya persistido en el propio `localStorage` del reproductor, no solo
+en `FEEDBACK.md`), R-37 y R-38 (mismo cruce «¿cayó dentro de la toma buena?» ya resuelto del lado de
+Python, en `scripts/feedback.py` y `scripts/comandos_montaje.py` respectivamente) — todas
+`COMPLETADA` · **Origen:** observación de arquitectura del PM (2026-10-30). R-37 y R-38 resuelven el
+mismo cruce dos veces, en dos documentos de salida distintos, pero los dos se generan al exportar —
+normalmente al final de toda la sesión de rodaje. `guion.js` ya tiene en memoria, en el momento
+exacto en que el dueño marca una toma como buena (o revisa el índice más tarde), los dos datos que
+hacen falta para el mismo cruce, sin tocar ningún archivo ni esperar a exportar nada; hoy esa
+coincidencia queda invisible en el propio índice, el sitio donde el dueño decide, escena a escena, si
+seguir grabando o volver atrás.
 
-**Objetivo:** que el dueño, repasando el índice antes de empezar una sesión de grabación (o entre una
-escena y la siguiente), sepa qué escenas requieren preparar algo en pantalla antes de pulsar grabar,
-sin tener que entrar en cada una para comprobarlo ni volver al `guion-escenas.md` original.
+**Objetivo:** que el dueño vea, sin salir del índice y sin exportar nada, que la toma que acaba de
+marcar (o ya tenía marcada) como buena de una escena contiene un tropiezo señalado dentro de ella —
+para decidir en el momento, con el resto del material todavía fresco, si volver a grabar esa toma o
+aceptarla sabiendo que el montaje con ffmpeg tendrá que cortar en ese instante exacto (ya calculado
+por R-34 y ya citado en `comandos-montaje.md` por R-38).
 
 **Requisitos:**
-1. En `renderizarIndice` (`assets/reproductor/guion.js`), por cada `escena`, calcular el total de
-   indicaciones de la escena sumando `bloque.indicaciones.length` sobre todo `escena.bloques` — el
-   mismo campo que R-12 ya embebe por bloque y que hoy solo se lee durante la reproducción
-   (`.cue-indicacion`), sin leer ni inferir nada del texto de las indicaciones ni distinguir
-   `Pantalla:` de `Nota:` (el prefijo es configurable por el dueño, `Configuracion`, y la cue en
-   directo tampoco distingue entre ambas al mostrarlas: mismo criterio, no una clasificación nueva).
-2. Si el total es mayor que 0, añadir un `<span class="escena-indicaciones">` en la fila de la
-   escena (mismo patrón de marcado que `.escena-tomas`/`.escena-tropiezos`, justo después de
-   `.escena-duracion` y antes del resumen de tomas), con el texto "N indicación en pantalla" (singular,
-   `N=1`) o "N indicaciones en pantalla" (plural) — mismo criterio singular/plural que ya usan los
-   resúmenes de tomas y tropiezos. Con el total en 0, no se añade ningún `<span>` (sin "0
-   indicaciones" visible, igual que las escenas sin tomas no muestran "0 tomas").
-3. Sin elemento interactivo nuevo: `<span>`, nunca un control — `fila` ya es un `<button>` y anidar
-   controles dentro rompe la semántica, mismo criterio ya documentado para `.escena-tomas`/
-   `.escena-tropiezos`.
-4. CSS nuevo en `assets/reproductor/estilo.css` para `.escena-indicaciones` con el mismo peso visual
-   (tamaño, opacidad/color atenuado) que `.escena-tomas`/`.escena-tropiezos` — información de apoyo
-   para quien prepara la grabación, nunca debe competir visualmente con el título de la escena ni con
-   el color de su estado pendiente/grabada/revisada (principio de producto 5: legibilidad por encima
-   de todo, aquí aplicado a la propia pantalla de preparación del dueño).
-5. Sin cambio en `scripts/reproductor.py` ni en el contrato de datos embebido (`indicaciones` ya
-   viaja por bloque desde R-12): el cálculo es enteramente de `guion.js` sobre datos que el JSON ya
-   trae. Sin `localStorage` nuevo.
+1. En `renderizarIndice` (`assets/reproductor/guion.js`), en el bloque donde ya se calcula
+   `resumenTropiezos`, reutilizar tal cual las variables `tomaBuena` y `tropiezosDeEscena` ya
+   calculadas más arriba en la misma función (sin segunda consulta a `localStorage`) para filtrar los
+   tropiezos cuyo `numero_toma` coincida con `tomaBuena.numero` — solo cuando `tomaBuena` existe; sin
+   toma buena, ningún tropiezo puede estar "dentro" de ella por definición y el requisito no se
+   activa. Mismo criterio de comparación que ya usan `scripts/feedback.py` (R-37) y
+   `scripts/comandos_montaje.py` (R-38), ahora reflejado del lado del cliente.
+2. Si ese filtrado da uno o más tropiezos, añadir al `<span class="escena-tropiezos">` ya existente
+   (o un `<span>` hermano inmediato, `escena-tropiezos-en-buena`) el aviso "⚠ N en la toma buena"
+   (singular "⚠ 1 en la toma buena", mismo criterio singular/plural que el resto de resúmenes de la
+   fila) — nunca sustituyendo el recuento total de tropiezos de la escena que R-03 ya muestra, solo
+   añadiendo el matiz de cuáles caen dentro de la toma que de verdad se usaría en el montaje.
+3. CSS nuevo en `assets/reproductor/estilo.css`, reutilizando el lenguaje visual de aviso que ya usa
+   `.indicador-tropiezo` (R-03: color de acento, negrita) en vez del gris discreto de
+   `.escena-tropiezos`/`.escena-tomas`/`.escena-indicaciones` — es la única de las líneas de resumen
+   de la fila que puede exigir una decisión del dueño, no solo informar, así que merece distinguirse
+   sin llegar a competir con el título de la escena ni con la insignia de estado (principio de
+   producto 5: legibilidad por encima de todo).
+4. Sin elemento interactivo nuevo (`<span>`, nunca un control — `fila` ya es un `<button>`, mismo
+   criterio que R-02/R-03/R-42); sin `localStorage` nuevo; sin cambio en `scripts/reproductor.py`,
+   `scripts/feedback.py`, `scripts/comandos_montaje.py` ni en el contrato embebido — mejora
+   enteramente de lectura y presentación sobre datos que ya existen en el propio `guion.js`.
+5. El aviso se recalcula solo (mismo patrón que R-39/R-40/R-41/R-42, sin heurística de refresco
+   nueva): `finalizarTomaActual`/`alternarTropiezoBloqueActual` ya llaman a `renderizarIndice()`, así
+   que la siguiente vuelta al índice recalcula el filtrado sin cableado adicional.
 
-**Criterio de aceptación:** sobre una fixture con tres escenas — una sin ninguna indicación, una con
-exactamente un bloque con una indicación y otra con varios bloques con varias indicaciones en total —
-el índice no muestra ningún resumen en la primera, muestra "1 indicación en pantalla" en la segunda y
-el total exacto en plural en la tercera, sumado correctamente a través de todos sus bloques. El JSON
-embebido por `scripts/reproductor.py` no gana ningún campo nuevo (mismo contrato que antes de R-42,
-verificado por diff contra la salida de referencia). Verificado también visualmente con
-Playwright/Chromium real, mismo criterio que R-39/R-40/R-41.
+**Criterio de aceptación:** sobre una fixture con al menos tres escenas de prueba — (a) una sin
+ninguna toma, (b) una con una toma buena y ningún tropiezo marcado con ese mismo `numero_toma`
+(puede tener tropiezos de tomas anteriores descartadas), y (c) una con una toma buena que sí tiene
+uno o más tropiezos marcados con ese `numero_toma` — el índice no muestra ningún aviso en (a) ni en
+(b) (en (b), el resumen de tropiezos sigue mostrando su recuento total si lo hay, simplemente sin el
+añadido de aviso) y muestra "⚠ 1 en la toma buena" (o el plural correspondiente) en (c), con el
+estilo de `.indicador-tropiezo` reutilizado. El JSON embebido por `scripts/reproductor.py` no gana
+ningún campo nuevo (mismo contrato que antes de R-43, verificado por diff contra la salida de
+referencia). Verificado también visualmente con Playwright/Chromium real, mismo criterio que
+R-37/R-38/R-39/R-40/R-41/R-42.
 
 ---
 

@@ -2760,6 +2760,74 @@ sin marcar ninguna toma como buena. Detalle completo en `DECISIONES_TECNICAS.md`
 
 ---
 
+## Oleada v30 — Resumen de indicaciones EN PANTALLA visible en el índice, antes de entrar a grabar una escena
+
+### R-42 — El índice de escenas muestra, de un vistazo y sin entrar en ninguna, cuántas indicaciones `EN PANTALLA`/`NOTA` trae cada escena
+
+**Migración:** No (dato puramente derivado para la pantalla a partir de `bloque.indicaciones`, ya
+embebido por R-12; ningún campo nuevo en `estado.json` ni en el JSON embebido del reproductor,
+ningún `localStorage` nuevo) · **Depende de:** T-19 (índice de escenas, `renderizarIndice`), R-12
+(`indicaciones` ya embebida en cada bloque del JSON del reproductor, formateada con el prefijo
+`Pantalla:`/`Nota:` por `_formatear_indicacion_reproductor`) — todas `COMPLETADA` · **Origen:**
+observación de producto del PM (2026-10-29), mismo principio "de un vistazo" que ya aplican en el
+índice el resumen de tomas (R-02) y el de tropiezos (R-03): hoy esos dos resúmenes dicen cómo fue la
+grabación de una escena, pero nada en el índice anticipa su preparación — una escena con una
+indicación `EN PANTALLA` (p. ej. "cambia a la ventana del navegador", "comparte este documento") solo
+se descubre al entrar a grabarla, ya con la cuenta atrás en marcha o a mitad de toma, cuando cambiar
+de ventana o tener algo abierto de antemano ya no se puede resolver con calma.
+
+**Objetivo:** que el dueño, repasando el índice antes de empezar una sesión de grabación (o entre una
+escena y la siguiente), sepa qué escenas requieren preparar algo en pantalla antes de pulsar grabar,
+sin tener que entrar en cada una para comprobarlo ni volver al `guion-escenas.md` original.
+
+**Requisitos:**
+1. En `renderizarIndice` (`assets/reproductor/guion.js`), por cada `escena`, calcular el total de
+   indicaciones de la escena sumando `bloque.indicaciones.length` sobre todo `escena.bloques` — el
+   mismo campo que R-12 ya embebe por bloque y que hoy solo se lee durante la reproducción
+   (`.cue-indicacion`), sin leer ni inferir nada del texto de las indicaciones ni distinguir
+   `Pantalla:` de `Nota:` (el prefijo es configurable por el dueño, `Configuracion`, y la cue en
+   directo tampoco distingue entre ambas al mostrarlas: mismo criterio, no una clasificación nueva).
+2. Si el total es mayor que 0, añadir un `<span class="escena-indicaciones">` en la fila de la
+   escena (mismo patrón de marcado que `.escena-tomas`/`.escena-tropiezos`, justo después de
+   `.escena-duracion` y antes del resumen de tomas), con el texto "N indicación en pantalla" (singular,
+   `N=1`) o "N indicaciones en pantalla" (plural) — mismo criterio singular/plural que ya usan los
+   resúmenes de tomas y tropiezos. Con el total en 0, no se añade ningún `<span>` (sin "0
+   indicaciones" visible, igual que las escenas sin tomas no muestran "0 tomas").
+3. Sin elemento interactivo nuevo: `<span>`, nunca un control — `fila` ya es un `<button>` y anidar
+   controles dentro rompe la semántica, mismo criterio ya documentado para `.escena-tomas`/
+   `.escena-tropiezos`.
+4. CSS nuevo en `assets/reproductor/estilo.css` para `.escena-indicaciones` con el mismo peso visual
+   (tamaño, opacidad/color atenuado) que `.escena-tomas`/`.escena-tropiezos` — información de apoyo
+   para quien prepara la grabación, nunca debe competir visualmente con el título de la escena ni con
+   el color de su estado pendiente/grabada/revisada (principio de producto 5: legibilidad por encima
+   de todo, aquí aplicado a la propia pantalla de preparación del dueño).
+5. Sin cambio en `scripts/reproductor.py` ni en el contrato de datos embebido (`indicaciones` ya
+   viaja por bloque desde R-12): el cálculo es enteramente de `guion.js` sobre datos que el JSON ya
+   trae. Sin `localStorage` nuevo.
+
+**Criterio de aceptación:** sobre una fixture con tres escenas — una sin ninguna indicación, una con
+exactamente un bloque con una indicación y otra con varios bloques con varias indicaciones en total —
+el índice no muestra ningún resumen en la primera, muestra "1 indicación en pantalla" en la segunda y
+el total exacto en plural en la tercera, sumado correctamente a través de todos sus bloques. El JSON
+embebido por `scripts/reproductor.py` no gana ningún campo nuevo (mismo contrato que antes de R-42,
+verificado por diff contra la salida de referencia). Verificado también visualmente con
+Playwright/Chromium real, mismo criterio que R-39/R-40/R-41.
+
+**Cómo se entregó:** `assets/reproductor/guion.js::renderizarIndice` suma `bloque.indicaciones.length`
+sobre todos los bloques de cada escena (`reduce` inline, sin función agregada aparte, mismo criterio
+que `segundosPendientes` de R-39) y añade un `<span class="escena-indicaciones">` justo después de
+`.escena-duracion` y antes del resumen de tomas (R-02), con "N indicación/indicaciones en pantalla" y
+sin ningún `<span>` si el total es 0. CSS nuevo en `estilo.css` con el mismo peso visual que
+`.escena-tomas`/`.escena-tropiezos`. Sin cambio en `scripts/reproductor.py` ni en el contrato embebido
+(campo `indicaciones` ya viajaba desde R-12), sin `localStorage` nuevo, sin migración. 7 tests nuevos
+(756→763). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio.
+Verificado también visualmente con Playwright/Chromium real sobre una fixture de 3 escenas (sin
+indicaciones, con una, con tres repartidas en dos bloques): singular/plural correctos, ausencia de
+resumen en la escena sin indicaciones, orden de los `<span>` conforme al requisito 2, sin errores de
+consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle completo en `DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2776,4 +2844,5 @@ v23 (R-35), 2026-10-21 (implementación), archivada el mismo día; la de v24 (R-
 el mismo día; la de v26 (R-38), 2026-10-26 (implementación), archivada el mismo ciclo de PM; la de
 v27 (R-39), 2026-10-27 (implementación), archivada el mismo ciclo de PM; la de v28 (R-40),
 2026-10-28 (implementación), archivada el ciclo de PM del mismo día; la de v29 (R-41), 2026-10-29
-(implementación), archivada en este ciclo de PM (2026-10-29).)*
+(implementación), archivada en el ciclo de PM del mismo día; la de v30 (R-42), 2026-10-30
+(implementación), archivada en este ciclo de PM (2026-10-30).)*

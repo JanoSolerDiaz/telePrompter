@@ -12,6 +12,65 @@
 
 ---
 
+### Sesión 2026-10-30 (297) — Ciclo de Product Manager: archiva Oleada v30 (R-42) y abre R-43 (Oleada v31)
+
+**Arranque.** Sesión en la nube (clon efímero). `git checkout develop && git pull origin develop`
+trajo ya fusionada la novena reconfirmación del día del Programador (commit `632b1f2`, sin cambio de
+código), árbol de trabajo limpio sin divergencia que resolver. `python3 -m pip install -r
+requirements-dev.txt` instalado directamente contra el intérprete correcto.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (registro completo revisado): `#24`
+(baja) y `#30` (media) siguen `ABIERTO`, de proceso/gobernanza puro, ya enrutadas como preguntas
+`#11`/`#12` de §6, pendientes solo de respuesta del dueño; `#35` (baja, cabecera "PARA EL DUEÑO" de
+`SEGUIMIENTO.md`) ya tiene su remedio aplicado por el propio Programador en P-09 (commit `21297f7`,
+2026-10-30), pendiente solo de que el Auditor lo verifique y lo cierre a `RESUELTO` (escritura
+exclusiva suya); `#36` (baja, apertura en inglés de un commit ya publicado) es puramente
+observacional, sin remedio retroactivo razonable. Ninguno convertible en R-XX de producto/
+arquitectura ni en deuda técnica de backlog, ninguno de severidad alta. `roadmap/FEEDBACK.md` sigue
+con su única fila de plantilla vacía, sin ninguna entrada `nuevo` — el bloqueo #7 de §3 (grabar un
+vídeo de curso completo) sigue abierto, más de 57 días desde que T-32 dejó la skill lista para grabar
+en la máquina real del dueño (2026-09-03).
+
+**Archivado.** R-42 (Oleada v30, resumen de indicaciones `EN PANTALLA`/`NOTA` en el índice) llevaba
+`COMPLETADA` en §1 desde el mismo día, reconfirmada en verde por el Programador en varias pasadas
+sucesivas (incluida la que cerró P-09) sin que ningún ciclo de PM la archivara. Movida a
+`roadmap/ROADMAP_HISTORICO.md` con su spec completa y "Cómo se entregó". `ROADMAP_PRODUCTO.md`
+actualizado: cabecera reescrita con fecha y resumen del ciclo, sección "Oleada v30" sustituida por la
+nota de archivo.
+
+**Nota de producto (no es una R-XX), actualizada.** Van ya 42 R-XX completadas desde que la skill
+quedó instalada y lista para grabar (2026-09-03), ninguna todavía de un rodaje real. El criterio de
+salida de la Oleada v1 ("grabar un vídeo de curso entero usando la skill") sigue siendo, con
+diferencia, el hito de mayor valor pendiente del proyecto; es una constatación, no una acción nueva
+— el bloqueo #7 ya registrado en §3 es una decisión del dueño que el equipo no puede ejecutar por su
+cuenta, así que no se repite como pregunta nueva en §6.
+
+**Abierta R-43 (Oleada v31): avisar en el índice cuando la toma buena de una escena trae un tropiezo
+marcado dentro.** Verificado contra el código real antes de escribir la ficha: `scripts/feedback.py`
+(R-37) y `scripts/comandos_montaje.py` (R-38) ya cruzan "¿el tropiezo cayó dentro de la toma marcada
+buena?", pero los dos solo se ven al exportar (`FEEDBACK.md`, `comandos-montaje.md`), normalmente al
+final de la sesión de rodaje. `assets/reproductor/guion.js::renderizarIndice` ya tiene en memoria,
+en el propio índice de escenas, los mismos dos datos que hace falta cruzar — `tomasEscena[indice]`
+(`buena`/`numero`, R-02) y `tropiezosEscena[indice]` (`numero_toma`, ya persistido desde R-36) —
+así que mostrar el aviso ahí mismo, sin exportar nada, adelanta la decisión de repetir la toma al
+momento en que todavía es barata, con el resto del material fresco. Spec completa en
+`ROADMAP_PRODUCTO.md`, Oleada v31; fila `PENDIENTE` añadida a §1 de `SEGUIMIENTO.md` en este mismo
+commit.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; nada en `scripts/`, `tests/` ni `assets/` se toca en esta sesión.
+La implementación de R-43 queda para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad nueva (P-09 ya la registró
+el propio Programador). §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño. Una decisión
+nueva en `DECISIONES_TECNICAS.md` (archivo de Oleada v30 y apertura de R-43, con las alternativas
+consideradas).
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-42 permanece `COMPLETADA` (sin cambio de estado,
+solo de ubicación de su spec). R-43 añadida como fila nueva, `PENDIENTE`.
+
+---
+
 ### Sesión 2026-10-30 (296) — Ciclo de Programador: novena reconfirmación del día tras R-42/P-09, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
