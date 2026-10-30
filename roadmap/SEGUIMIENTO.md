@@ -10,8 +10,68 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-29 — **Ciclo de Product Manager: archiva Oleada v29 (R-41) y abre
-R-42 (Oleada v30)**, detalle de la sesión más abajo.
+**Última actualización:** 2026-10-30 — **Ciclo de Programador: implementa R-42 (Oleada v30,
+resumen de indicaciones EN PANTALLA/NOTA en el índice)**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-30): implementa R-42.** Sesión en la nube (clon efímero, sin
+instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
+(protocolo): el contenedor arrancó con `HEAD` *detached*; `git checkout develop && git pull origin
+develop` trajo ya fusionada la apertura de R-42 por el ciclo de PM anterior (commit `fbc9312`) por
+fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver. Dependencias de
+desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real
+(el `pip`/`pip3` desnudos del sistema apuntan a otro intérprete y no ven los paquetes, mismo síntoma
+ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en este clon).
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(tabla de registro línea a línea, no solo la narrativa más reciente): ningún hallazgo `ABIERTO` de
+severidad alta (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de la
+auto-contención, seguridad) que atender como P-XX urgente — `#24` (baja), `#30` (media) y `#35`
+(baja) siguen `ABIERTO`, los tres de proceso/gobernanza puro pendientes de respuesta del dueño a las
+preguntas `#11`/`#12` de §6, sin novedad que atender aquí.
+
+**Tarea elegida: R-42, única fila `PENDIENTE` de §1** (aparte de `T-24b`, bloqueo físico ajeno al
+programador). Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v30. Implementada siguiendo
+estrictamente los cinco requisitos de la ficha: `assets/reproductor/guion.js::renderizarIndice` suma
+`bloque.indicaciones.length` sobre todos los bloques de la escena (`reduce` inline, mismo criterio
+que `segundosPendientes` de R-39, sin función agregada aparte) y añade un
+`<span class="escena-indicaciones">` justo después de `.escena-duracion` y antes del resumen de
+tomas (R-02) — nunca un elemento interactivo, mismo criterio que `.escena-tomas`/`.escena-tropiezos`
+— con "N indicación en pantalla"/"N indicaciones en pantalla" y sin ningún `<span>` con el total en
+0. CSS nuevo en `assets/reproductor/estilo.css` para `.escena-indicaciones`, mismo peso visual
+(`color: var(--color-texto-secundario)`, `font-size: 0.7em`) que sus dos gemelos. Cero cambio en
+`scripts/reproductor.py` ni en el contrato de datos embebido (el campo `indicaciones` ya viajaba por
+bloque desde R-12), sin `localStorage` nuevo, sin migración — confirmado también con un test que
+verifica las claves exactas de cada bloque del JSON embebido.
+
+**Verificación.** 7 tests nuevos en `tests/test_reproductor.py` (756→763): orden del `<span>` tras
+`.escena-duracion` y antes del resumen de tomas, suma sobre todos los bloques de la escena, singular
+con una sola indicación, ausencia de resumen con el total en 0, plural sumando varios bloques (dos
+indicaciones en el mismo bloque), cero cambio en las claves del contrato de datos y mismo tratamiento
+visual que `.escena-tomas`. `python3 -m mypy scripts/ tests/` (72 archivos, sin problemas), `python3
+-m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (763 tests, código de salida 0) y
+`python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, mismo recuento que antes,
+incluidas las dos salidas latentes esperadas en este contenedor). Cuatro redes en verde. Verificado
+también visualmente con Playwright/Chromium real (instalado con `python3 -m pip install playwright`,
+binario ya cacheado en `/opt/pw-browsers/chromium-1243`, desinstalado el paquete al terminar) sobre
+una fixture de 3 escenas (sin indicaciones, con una, con tres repartidas en dos bloques): la primera
+no muestra ningún resumen, la segunda muestra "1 indicación en pantalla", la tercera "3 indicaciones
+en pantalla", el orden de los `<span>` de la fila coincide con el requisito 2 (`escena-duracion` antes
+que `escena-indicaciones`) y no se registró ningún error de consola.
+
+**Cambios de estado (§1).** `R-42` pasa de `PENDIENTE` a `COMPLETADA` (2026-10-30).
+
+**Sin novedad en §3 (bloqueos) ni §7 (desviaciones).** §5 (P-XX) sin novedad: ninguna P-XX de
+iniciativa propia, la tarea de la columna vertebral (R-42) ya cubría la sesión. §6 sigue con
+`#11`/`#12` `(pendiente)` de respuesta del dueño. Dos decisiones nuevas en `DECISIONES_TECNICAS.md`
+(cálculo inline sin función agregada aparte; orden del `<span>` dentro de la fila).
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`). Archivar la Oleada v30 y abrir la
+siguiente corresponde a un ciclo de Product Manager posterior.
+
+**Última actualización anterior (2026-10-29, ciclo de Product Manager): archiva Oleada v29 (R-41) y
+abre R-42 (Oleada v30)**, detalle de la sesión más abajo.
+
+---
 
 **Ciclo de Product Manager (2026-10-29): archiva Oleada v29 (R-41) y abre R-42 (Oleada v30).**
 Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
@@ -7570,7 +7630,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-39 | Mostrar en el índice de escenas del reproductor, sin entrar en ninguna, cuántas quedan por grabar (pendiente/grabada/revisada) y cuánto tiempo estimado representan las que siguen `pendiente` | **COMPLETADA** | 2026-10-27 | `assets/reproductor/guion.js::renderizarIndice`: línea nueva (`.resumen-progreso-grabacion`) justo debajo de `.resumen-guion`, reutilizando tal cual `estadosEscena` (T-19/R-02, sin segunda función) y sumando `duracion_estimada_segundos` (T-12) solo de las escenas `pendiente`; recalculada sola porque `finalizarTomaActual` ya llama a `renderizarIndice()` al cerrar una toma. Mismo color/tamaño que `.resumen-guion` (requisito 5), mismo formato en los dos extremos (0 pendientes / todas pendientes, requisito 4). Sin cambio en `scripts/reproductor.py` ni en el contrato embebido, sin migración. 5 tests nuevos (740→745). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (instalado solo para la comprobación, desinstalado al terminar). `SKILL.md`/`DEVELOPERS.md` actualizados |
 | R-40 | Botón "Grabar siguiente pendiente" en el índice de escenas, que entra directamente en pantalla completa en la primera escena en estado `pendiente` (orden del guión), sin tener que buscarla en la lista | **COMPLETADA** | 2026-10-28 | `assets/reproductor/guion.js::renderizarIndice` gana `#btn-siguiente-pendiente`, justo debajo de `.resumen-progreso-grabacion` (R-39) y antes de la lista, visible solo con alguna escena `pendiente`. Objetivo: `estadosEscena.indexOf("pendiente")` (reutilizado tal cual, sin heurística nueva); `click` invoca `reproducirEscena(indiceSiguientePendiente)` directo (T-19/T-26, cero lógica de entrada nueva). Reutiliza la clase `.btn-continuar` ya existente (sin CSS nuevo). 7 tests nuevos (745→752). Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real (Node.js, preinstalado en el contenedor): tres estados a la vez, salto directo, actualización en vivo al marcar toma buena sin recargar, desaparición al agotar las pendientes. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md` |
 | R-41 | Al volver al índice tras marcar una toma como buena (`G`+`Esc`), el foco de teclado pasa directo al botón "Grabar siguiente pendiente" (R-40) si queda alguna escena `pendiente`, en vez de caer en la fila de la escena que se acaba de abandonar | **COMPLETADA** | 2026-10-29 | `assets/reproductor/guion.js::volverAlIndice` consulta `document.getElementById("btn-siguiente-pendiente")` solo si `tomaBuenaEnCurso` es `true` (cortocircuito, sin consulta al DOM en el caso contrario); con el botón presente, `.focus()` sobre él y `return` inmediato, sin tocar `botonesEscena[indice]`; en cualquier otro caso, comportamiento idéntico al de antes de R-41. Cero heurística nueva de "siguiente escena" (requisito 3): el destino lo sigue decidiendo solo `estadosEscena.indexOf("pendiente")` de R-40. 4 tests nuevos (752→756): orden de las instrucciones dentro de `volverAlIndice`, fallback a la fila sin toma buena, ausencia de una segunda aparición de `indexOf("pendiente")`, ausencia de `tabindex`/`aria-live` nuevos. Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también con Playwright/Chromium real sobre una fixture de 3 escenas (2 `pendiente` + 1 `revisada` de antemano): los cuatro criterios de aceptación de la ficha pasan — foco en el botón tras marcar buena con pendientes restantes, `Intro` inmediato entra en la segunda pendiente sin `Tab`, foco cae en la fila al agotar las pendientes (botón ya no existe, sin excepción), y foco se mantiene en la fila si se sale sin marcar ninguna toma como buena. Detalle completo en `DECISIONES_TECNICAS.md` |
-| R-42 | Mostrar en el índice de escenas, de un vistazo y sin entrar en ninguna, cuántas indicaciones `EN PANTALLA`/`NOTA` (R-12) trae cada escena, para que el dueño sepa qué preparar en pantalla antes de grabarla | **PENDIENTE** | — | Spec completa (Migración/Depende de/Origen, Objetivo, Requisitos, Criterio de aceptación) en `ROADMAP_PRODUCTO.md`, Oleada v30. Abierta por el ciclo de PM del 2026-10-29, sin implementar — queda para un ciclo de Programador posterior |
+| R-42 | Mostrar en el índice de escenas, de un vistazo y sin entrar en ninguna, cuántas indicaciones `EN PANTALLA`/`NOTA` (R-12) trae cada escena, para que el dueño sepa qué preparar en pantalla antes de grabarla | **COMPLETADA** | 2026-10-30 | `assets/reproductor/guion.js::renderizarIndice` suma `bloque.indicaciones.length` sobre todos los bloques de cada escena (`reduce` inline, sin función agregada aparte, mismo criterio que `segundosPendientes` de R-39) y añade un `<span class="escena-indicaciones">` justo después de `.escena-duracion` y antes del resumen de tomas (R-02), con "N indicación/indicaciones en pantalla" y sin ningún `<span>` si el total es 0. CSS nuevo en `estilo.css` con el mismo peso visual que `.escena-tomas`/`.escena-tropiezos`. Sin cambio en `scripts/reproductor.py` ni en el contrato embebido (campo `indicaciones` ya viajaba desde R-12), sin `localStorage` nuevo, sin migración. 7 tests nuevos (756→763). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también visualmente con Playwright/Chromium real sobre una fixture de 3 escenas (sin indicaciones, con una, con tres repartidas en dos bloques): singular/plural correctos, ausencia de resumen en la escena sin indicaciones, orden de los `<span>` conforme al requisito 2, sin errores de consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle completo en `DECISIONES_TECNICAS.md` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

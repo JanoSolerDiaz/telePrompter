@@ -598,6 +598,24 @@
       duracion.textContent = formatearTiempo(escena.duracion_estimada_segundos);
       fila.appendChild(duracion);
 
+      // Resumen de indicaciones EN PANTALLA/NOTA (R-42): mismo "de un vistazo"
+      // que los resumenes de tomas/tropiezos de mas abajo, para saber que
+      // preparar en pantalla antes de grabar sin entrar en la escena. Suma
+      // `bloque.indicaciones` ya embebido por R-12 (hoy solo leido durante la
+      // reproduccion, `.cue-indicacion`), sin distinguir "Pantalla:" de
+      // "Nota:" -- mismo criterio que la propia cue en directo.
+      var totalIndicaciones = escena.bloques.reduce(function (total, bloque) {
+        return total + bloque.indicaciones.length;
+      }, 0);
+      if (totalIndicaciones > 0) {
+        var resumenIndicaciones = document.createElement("span");
+        resumenIndicaciones.className = "escena-indicaciones";
+        resumenIndicaciones.textContent =
+          totalIndicaciones +
+          (totalIndicaciones === 1 ? " indicación en pantalla" : " indicaciones en pantalla");
+        fila.appendChild(resumenIndicaciones);
+      }
+
       // Resumen de tomas (R-02, requisito 4: "el indice muestra de un vistazo
       // que esta grabado, que se repitio y que falta"). Un `<span>`, nunca un
       // elemento interactivo -- `fila` ya es un `<button>` y anidar controles

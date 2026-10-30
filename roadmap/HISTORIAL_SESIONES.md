@@ -12,6 +12,75 @@
 
 ---
 
+### Sesión 2026-10-30 (287) — Ciclo de Programador: implementa R-42 (Oleada v30, resumen de indicaciones EN PANTALLA/NOTA en el índice)
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). El contenedor arrancó con `HEAD` *detached*; `git checkout develop && git
+pull origin develop` trajo ya fusionada la apertura de R-42 del ciclo de PM anterior (commit
+`fbc9312`) por fast-forward limpio, árbol de trabajo limpio sin divergencia que resolver.
+Dependencias de desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el
+intérprete real (el `pip`/`pip3` desnudos del sistema apuntan a otro intérprete y no ven los
+paquetes, mismo síntoma ya documentado en `#22`/`#28`/P-06, reproducido de nuevo en este clon).
+
+**Documentos leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): `SEGUIMIENTO.md` completo (§1
+estado global, §3 bloqueos, §5 P-XX, §6 preguntas abiertas), registro de hallazgos completo de
+`auditoriacontinua.md` (tabla revisada, no solo la narrativa más reciente), ficha de R-42 en
+`ROADMAP_PRODUCTO.md` (Oleada v30), las filas finales de `DECISIONES_TECNICAS.md` del área a tocar
+(índice de escenas, resúmenes de tomas/tropiezos de R-02/R-03/R-39/R-40/R-41), y el código real de
+`assets/reproductor/guion.js`/`estilo.css` y `tests/test_reproductor.py` antes de escribir una sola
+línea.
+
+**Revisión de hallazgos del auditor.** Registro completo repasado: solo `#24` (baja), `#30` (media)
+y `#35` (baja) siguen `ABIERTO`, las tres de proceso/gobernanza puro, ya enrutadas como preguntas
+`#11`/`#12` de §6, pendientes únicamente de respuesta del dueño. Ninguna de severidad alta que
+atender como P-XX urgente antes de elegir tarea.
+
+**Tarea elegida: R-42, única fila `PENDIENTE` de §1** (aparte de `T-24b`, bloqueo físico ajeno al
+programador). Implementada siguiendo estrictamente los cinco requisitos de la ficha:
+`assets/reproductor/guion.js::renderizarIndice` suma `bloque.indicaciones.length` sobre todos los
+bloques de la escena (`reduce` inline, mismo criterio que `segundosPendientes` de R-39, sin función
+agregada aparte) y añade un `<span class="escena-indicaciones">` justo después de
+`.escena-duracion` y antes del resumen de tomas (R-02) — nunca un elemento interactivo, mismo
+criterio que `.escena-tomas`/`.escena-tropiezos` — con "N indicación en pantalla"/"N indicaciones en
+pantalla" y sin ningún `<span>` con el total en 0. CSS nuevo en
+`assets/reproductor/estilo.css` para `.escena-indicaciones`, mismo peso visual que sus dos gemelos.
+Cero cambio en `scripts/reproductor.py` ni en el contrato de datos embebido (el campo `indicaciones`
+ya viajaba por bloque desde R-12), sin `localStorage` nuevo, sin migración.
+
+**Verificación.** 7 tests nuevos en `tests/test_reproductor.py` (756→763): orden del `<span>` tras
+`.escena-duracion` y antes del resumen de tomas, suma sobre todos los bloques de la escena, singular
+con una sola indicación, ausencia de resumen con el total en 0, plural sumando varios bloques (dos
+indicaciones en el mismo bloque), cero cambio en las claves del contrato de datos y mismo tratamiento
+visual que `.escena-tomas`. Cuatro redes en verde: `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (763
+tests, código de salida 0) y `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas
+`OK`, mismo recuento que antes, incluidas las dos salidas latentes esperadas en este contenedor).
+Verificado también visualmente con Playwright/Chromium real (instalado con `python3 -m pip install
+playwright`, binario ya cacheado en `/opt/pw-browsers/chromium-1243`, desinstalado el paquete al
+terminar) sobre una fixture de 3 escenas (sin indicaciones, con una, con tres repartidas en dos
+bloques): la primera no muestra ningún resumen, la segunda muestra "1 indicación en pantalla", la
+tercera "3 indicaciones en pantalla", el orden de los `<span>` de la fila coincide con el requisito 2
+y no se registró ningún error de consola.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** `R-42` pasa de `PENDIENTE` a `COMPLETADA`
+(2026-10-30).
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`.** Dos filas: (1) cálculo del total con `reduce`
+inline dentro de `renderizarIndice`, sin función agregada aparte, mismo criterio que R-39; (2) orden
+del `<span>` dentro de la fila (justo después de `.escena-duracion`, antes de tomas/tropiezos),
+siguiendo el orden cronológico de preparación-antes-de-grabar vs. resultado-ya-grabado.
+
+**Documentación.** `SKILL.md` (párrafo del índice de escenas gana la mención de R-42) y
+`DEVELOPERS.md` (sección nueva "Resumen de indicaciones EN PANTALLA/NOTA en el índice de escenas
+(R-42)") actualizados. Sin cambios en §3 (bloqueos) ni §7 (desviaciones) de `SEGUIMIENTO.md`. §5
+(P-XX) sin novedad: ninguna P-XX de iniciativa propia, la tarea de la columna vertebral (R-42) ya
+cubría la sesión. §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`). Archivar la Oleada v30 y abrir la
+siguiente corresponde a un ciclo de Product Manager posterior.
+
+---
+
 ### Sesión 2026-10-29 (286) — Ciclo de Product Manager: archiva Oleada v29 (R-41) y abre R-42 (Oleada v30)
 
 **Arranque.** Sesión en la nube (clon efímero). `git checkout develop && git pull origin develop`

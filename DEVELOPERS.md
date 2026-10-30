@@ -4272,6 +4272,40 @@ prisa corre seguir grabando. R-41 mueve ese foco al botón cuando tiene sentido 
   hace desaparecer el botón y el foco cae en la fila de esa misma escena, sin excepción de
   script; entrar y salir sin marcar ninguna toma como buena mantiene el foco en la fila.
 
+## Resumen de indicaciones EN PANTALLA/NOTA en el índice de escenas (R-42)
+
+R-12 ya embebe, por cada bloque, sus indicaciones `Pantalla:`/`Nota:` formateadas — hoy solo
+leídas durante la reproducción (`.cue-indicacion`). El índice (T-19) no agregaba ese dato en
+ningún sitio: una escena con un cambio de ventana o un documento que compartir solo se
+descubría al entrar a grabarla. R-42 añade ese resumen "de un vistazo", mismo principio que
+R-02 (tomas) y R-03 (tropiezos).
+
+- **Cálculo enteramente en `renderizarIndice`** (requisito 1): `escena.bloques.reduce(...)`
+  suma `bloque.indicaciones.length` sobre todos los bloques de la escena — el mismo campo que
+  R-12 ya embebe, sin leer ni clasificar el texto de cada indicación (no distingue `Pantalla:`
+  de `Nota:`, igual que la propia cue en directo).
+- **Un `<span class="escena-indicaciones">`, nunca un control** (requisito 3): `fila` ya es un
+  `<button>`, mismo criterio que `.escena-tomas`/`.escena-tropiezos`. Se añade justo después de
+  `.escena-duracion` y antes del resumen de tomas (requisito 2), con singular/plural ("1
+  indicación en pantalla" / "N indicaciones en pantalla") y sin ningún `<span>` cuando el total
+  es 0 (sin "0 indicaciones" visible).
+- **CSS nuevo en `assets/reproductor/estilo.css`** (requisito 4): `.escena-indicaciones` con el
+  mismo peso visual (`color: var(--color-texto-secundario)`, `font-size: 0.7em`) que
+  `.escena-tomas`/`.escena-tropiezos` — información de apoyo, nunca compite con el título ni con
+  la insignia de estado.
+- **Sin cambio en `scripts/reproductor.py` ni en el contrato embebido** (requisito 5):
+  `indicaciones` ya viaja por bloque desde R-12; el cálculo es enteramente de `guion.js` sobre
+  datos que el JSON ya trae. Sin `localStorage` nuevo, sin migración.
+- **Tests.** 7 nuevos en `tests/test_reproductor.py` (orden tras `.escena-duracion` y antes del
+  resumen de tomas, suma sobre todos los bloques, singular con una sola indicación, ausencia de
+  `<span>` con el total en 0, plural sumando varios bloques, cero cambio en las claves del
+  contrato de datos, mismo tratamiento visual que `.escena-tomas`). Cuatro redes en verde
+  (756→763 tests). Verificado también visualmente con Playwright/Chromium real sobre una
+  fixture de 3 escenas (sin indicaciones, con una, con tres repartidas en dos bloques): la
+  primera no muestra ningún resumen, la segunda muestra "1 indicación en pantalla", la tercera
+  "3 indicaciones en pantalla", el orden de los `<span>` de la fila coincide con el requisito 2
+  y no se registró ningún error de consola.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

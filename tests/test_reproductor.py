@@ -895,6 +895,96 @@ def test_guion_js_muestra_resumen_de_tomas_junto_a_cada_escena() -> None:
     assert '" · buena: " + tomaBuena.numero' in pagina
 
 
+# --- Resumen de indicaciones EN PANTALLA/NOTA en el indice (R-42) ----------------------
+
+
+def test_guion_js_resumen_de_indicaciones_va_antes_del_resumen_de_tomas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: justo despues de `.escena-duracion` y antes del resumen de
+    # tomas, mismo orden de columnas que describe la ficha.
+    inicio = pagina.index('duracion.className = "escena-duracion";')
+    fin = pagina.index('resumenTomas.className = "escena-tomas";')
+    fragmento = pagina[inicio:fin]
+    assert 'resumenIndicaciones.className = "escena-indicaciones";' in fragmento
+    assert "fila.appendChild(resumenIndicaciones);" in fragmento
+
+
+def test_guion_js_resumen_de_indicaciones_suma_todos_los_bloques_de_la_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: suma `bloque.indicaciones.length` sobre TODOS los bloques de
+    # la escena (el mismo campo que R-12 ya embebe), sin leer ni clasificar el
+    # texto de las indicaciones.
+    coincidencia = pagina.index("var totalIndicaciones = escena.bloques.reduce")
+    fragmento = pagina[coincidencia : coincidencia + 200]
+    assert "total + bloque.indicaciones.length;" in fragmento
+
+
+def test_guion_js_resumen_de_indicaciones_en_singular_con_una_sola() -> None:
+    # `_GUION_DOS_ESCENAS`: la escena 0 trae exactamente una indicacion EN
+    # PANTALLA (ver `test_indicacion_en_pantalla_se_ancla_al_ultimo_bloque...`),
+    # la escena 1 no trae ninguna.
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    assert '" indicación en pantalla"' in pagina
+    assert '" indicaciones en pantalla"' in pagina
+
+
+def test_guion_js_resumen_de_indicaciones_no_se_renderiza_sin_ninguna() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: el `if (totalIndicaciones > 0)` es la UNICA guarda -- sin
+    # ella no se fabrica ningun "0 indicaciones" visible, igual que las
+    # escenas sin tomas no muestran "0 tomas".
+    coincidencia = pagina.index("var totalIndicaciones = escena.bloques.reduce")
+    fragmento = pagina[coincidencia : coincidencia + 400]
+    assert "if (totalIndicaciones > 0) {" in fragmento
+
+
+def test_guion_js_resumen_de_indicaciones_suma_varios_bloques_en_plural() -> None:
+    # Dos indicaciones en el MISMO bloque (Pantalla + Nota) para comprobar que
+    # el total se acumula (requisito 1) y que a partir de 2 el texto sale en
+    # plural (requisito 2).
+    guion = _GUION_DOS_ESCENAS.replace(
+        "Título del vídeo en pantalla.",
+        "Título del vídeo en pantalla.\n\n**NOTA**\n\nRecordatorio interno para el montaje.",
+    )
+    resultado, tiempos = _pipeline(guion)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    assert len(datos["escenas"][0]["bloques"][-1]["indicaciones"]) == 2
+
+
+def test_guion_js_resumen_de_indicaciones_no_cambia_el_contrato_de_datos() -> None:
+    # Requisito 5: cero cambio en `scripts/reproductor.py` ni en el JSON
+    # embebido -- el calculo es enteramente de `guion.js` sobre datos que el
+    # contrato ya trae desde R-12, sin ningun campo nuevo.
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    for escena in datos["escenas"]:
+        for bloque in escena["bloques"]:
+            assert set(bloque.keys()) == {
+                "texto",
+                "num_palabras",
+                "inicio_segundos",
+                "fin_segundos",
+                "indicaciones",
+            }
+
+
+def test_estilo_resumen_de_indicaciones_reutiliza_el_tratamiento_de_tomas() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: mismo peso visual (tamano, color atenuado) que
+    # `.escena-tomas`/`.escena-tropiezos`, nunca un color nuevo.
+    coincidencia = pagina.index(".escena-indicaciones {")
+    fragmento = pagina[coincidencia : coincidencia + 150]
+    assert "color: var(--color-texto-secundario);" in fragmento
+    assert "font-size: 0.7em;" in fragmento
+
+
 # --- Marcar tropiezos durante la toma (R-03) -------------------------------------------
 
 

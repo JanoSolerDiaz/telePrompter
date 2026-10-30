@@ -154,6 +154,16 @@ button:focus-visible {
   color: var(--color-estado-revisada);
 }
 
+/* Resumen de indicaciones EN PANTALLA/NOTA (R-42): mismo tratamiento discreto
+   que el resto de metadatos de la fila -- informacion de apoyo para preparar
+   la grabacion, nunca compite con el titulo ni con la insignia de estado. */
+.escena-indicaciones {
+  color: var(--color-texto-secundario);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7em;
+  white-space: nowrap;
+}
+
 /* Resumen de tomas (R-02, requisito 4): mismo tratamiento discreto que el
    resto de metadatos de la fila, sin competir con el titulo ni con la
    insignia de estado. */
