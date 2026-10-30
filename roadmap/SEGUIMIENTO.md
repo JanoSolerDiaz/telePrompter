@@ -10,8 +10,59 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-30 — **Ciclo de Programador: octava reconfirmación del día tras
+**Última actualización:** 2026-10-30 — **Ciclo de Programador: novena reconfirmación del día tras
 R-42/P-09, sin novedad de código**, detalle de la sesión más abajo.
+
+**Ciclo de Programador (2026-10-30), novena tras R-42/P-09.** Sesión en la nube (clon efímero, sin
+instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
+(protocolo): el contenedor arrancó con `HEAD` *detached* sobre el commit de la octava
+reconfirmación de hoy (`dc124f9`); `git checkout develop && git pull origin develop` no trajo
+ningún commit nuevo (ya al día), árbol de trabajo limpio sin divergencia que resolver. Dependencias
+de desarrollo: `python3 -m pip install -r requirements-dev.txt` instalado directamente contra el
+intérprete correcto, sin el síntoma de `pip` desnudo (`#22`/`#28`/P-06) en esta pasada.
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(tabla de registro línea a línea, no solo la narrativa más reciente): ningún hallazgo `ABIERTO` de
+severidad alta (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de la
+auto-contención, seguridad) que atender como P-XX urgente — `#24` (baja) y `#30` (media) siguen
+`ABIERTO`, de gobernanza pura, pendientes de respuesta del dueño a las preguntas `#11`/`#12` de §6,
+sin cambio desde el ciclo anterior; `#36` (baja) sigue `ABIERTO`, puramente observacional sobre un
+commit ya publicado; `#35` (baja, cabecera "PARA EL DUEÑO") sigue técnicamente `ABIERTO` en
+`auditoriacontinua.md` a la espera de que el Auditor verifique el commit de P-09 (escritura
+exclusiva del Auditor, §0.4), sin ningún cambio nuevo que ejecutar al respecto. `mcp__github__
+list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+§1 (fuente autoritativa) confirmada: R-42 sigue siendo la última fila y está **COMPLETADA**; P-09
+(§5) también **COMPLETADA**; ninguna fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada
+(aparte de `T-24b`, bloqueo físico ajeno al programador) — archivar la Oleada v30 y abrir la
+siguiente corresponde a un ciclo de Product Manager posterior, mismo criterio ya aplicado tras
+R-30/R-36 a R-41. §6 revisada: las preguntas `#11`/`#12` siguen `(pendiente)` de respuesta del
+dueño, sin cambio — la `#12` señala precisamente el coste de esta cadencia horaria de
+reconfirmación sin tarea nueva que ejecutar; sigue sin respuesta del dueño, así que el protocolo
+vigente (`HOJA_DE_RUTA.md` §0.1, inmutable para el programador) se sigue tal cual.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (763
+tests, código de salida 0, sin fallos, mismo recuento que el ciclo anterior) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes
+esperadas en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada y `.pdf` sin
+Chrome/Edge — y las omisiones esperadas sin parte de rodaje real). Cuatro redes en verde; ningún
+cambio en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1).** Ninguno: R-42 y P-09 permanecen `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX, sin ningún hallazgo nuevo cerrable ni urgente que lo
+justifique), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna P-XX de iniciativa propia:
+sin tarea de la columna vertebral disponible y sin hallazgo urgente ni cerrable que la justifique.
+Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de pura reconfirmación, nada que
+decidir.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+**Última actualización anterior (2026-10-30, ciclo de Programador): octava reconfirmación del día
+tras R-42/P-09, sin novedad de código**, detalle de la sesión más abajo.
+
+---
 
 **Ciclo de Programador (2026-10-30), octava tras R-42/P-09.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
