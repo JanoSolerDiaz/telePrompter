@@ -10,50 +10,65 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-10-30 — **Ciclo de Programador: sexta reconfirmación del día tras
-R-42, sin novedad de código**, detalle de la sesión más abajo.
+**Última actualización:** 2026-10-30 — **Ciclo de Programador: séptima reconfirmación del día tras
+R-42, cierra P-09 (`#35`, cabecera "PARA EL DUEÑO" desactualizada)**, detalle de la sesión más abajo.
 
-**Ciclo de Programador (2026-10-30), sexta tras R-42.** Sesión en la nube (clon efímero, sin
+**Ciclo de Programador (2026-10-30), séptima tras R-42.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
-(protocolo): el contenedor arrancó con `HEAD` *detached* sobre el commit de la quinta
-reconfirmación de hoy (`ff97007`); `git checkout develop && git pull origin develop` no trajo
+(protocolo): el contenedor arrancó con `HEAD` *detached* sobre el commit de la sexta
+reconfirmación de hoy (`a60aebd`); `git checkout develop && git pull origin develop` no trajo
 ningún commit nuevo (ya al día), árbol de trabajo limpio sin divergencia que resolver. Dependencias
-de desarrollo: el primer intento con `pip install` (sin `-I`) se hizo ya con `python3 -m pip
-install -r requirements-dev.txt` directamente, sin el síntoma del binario pelado (`#22`/`#28`/P-06)
-en esta ocasión.
+de desarrollo: el primer intento con `pip install` (binario `pip` desnudo) reprodujo de nuevo el
+síntoma ya documentado en `#22`/`#28`/P-06 («No module named mypy»); reinstalado con `python3 -m pip
+install -r requirements-dev.txt` contra el intérprete correcto, sin este problema en ninguna
+verificación posterior.
 
 **Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
 (tabla de registro línea a línea, no solo la narrativa más reciente): ningún hallazgo `ABIERTO` de
 severidad alta (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de la
-auto-contención, seguridad) que atender como P-XX urgente — `#24` (baja), `#30` (media), `#35`
-(baja) y `#36` (baja) siguen `ABIERTO`, todos de proceso/gobernanza o puramente observacionales,
-pendientes de respuesta del dueño a las preguntas `#11`/`#12` de §6, sin cambio desde el ciclo
-anterior. `mcp__github__list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero
-issues y cero PR abiertos.
+auto-contención, seguridad) que atender como P-XX urgente — `#24` (baja) y `#30` (media) siguen
+`ABIERTO`, de gobernanza pura, pendientes de respuesta del dueño a las preguntas `#11`/`#12` de §6;
+`#36` (baja) sigue `ABIERTO`, puramente observacional sobre un commit ya publicado. `#35` (baja,
+cabecera "PARA EL DUEÑO" de este mismo documento desactualizada) sigue técnicamente `ABIERTO` en
+`auditoriacontinua.md` (su cierre a `RESUELTO` es escritura exclusiva del Auditor, §0.4), pero la
+propia fila ya lo califica como "cerrable como P-XX sin esperar a una R-XX ni a ninguna decisión del
+dueño — mismo perfil que `#29`/`#31`/`#32`/`#33`": se abre y ejecuta como **P-09** en esta misma
+sesión (ver §5), en vez de esperar otra pasada de reconfirmación. `mcp__github__list_issues`/
+`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
 
 §1 (fuente autoritativa) confirmada: R-42 sigue siendo la última fila y está **COMPLETADA**; ninguna
 fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de `T-24b`, bloqueo físico ajeno
 al programador) — archivar la Oleada v30 y abrir la siguiente corresponde a un ciclo de Product
 Manager posterior, mismo criterio ya aplicado tras R-30/R-36 a R-41.
 
-**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos, sin
+**P-09 (`origen: auditoría #35`).** La cabecera "⚑ PARA EL DUEÑO — empieza por aquí" (§6) decía
+"Una pendiente: la #11" desde el 2026-10-10 (commit `845e2d9`, que añadió la pregunta `#12` a la
+tabla de §6 sin tocar este resumen) pese a que la tabla real ya listaba ambas correctamente.
+Corregida a "Dos pendientes: la #11 y la #12", con una frase breve describiendo cada una (ver diff
+de este mismo commit). Alcance puramente documental: una línea de la cabecera de §6, sin tocar
+`scripts/`, `tests/` ni `assets/`. Decisión razonada en `DECISIONES_TECNICAS.md` (2026-10-30, P-09).
+No se toca `auditoriacontinua.md` (escritura exclusiva del Auditor, §0.4): el cierre de la fila `#35`
+a `RESUELTO` queda para la siguiente pasada de auditoría, que puede verificar el commit de forma
+independiente.
+
+**Verificación completa, previa al push.** `python3 -m mypy scripts/ tests/` (72 archivos, sin
 problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (763 tests,
-código de salida 0, sin fallos, mismo recuento que el ciclo anterior) y `python3
-scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes
-esperadas en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada y `.pdf` sin
-Chrome/Edge — y las omisiones esperadas sin parte de rodaje real). Cuatro redes en verde; ningún
-cambio en `scripts/`, `tests/` ni `assets/`.
+código de salida 0, sin fallos, mismo recuento que el ciclo anterior — P-09 no toca `scripts/` ni
+`tests/`) y `python3 scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las
+dos salidas latentes esperadas en este contenedor — `.pptx` sin la skill `480-branded-pptx`
+instalada y `.pdf` sin Chrome/Edge — y las omisiones esperadas sin parte de rodaje real). Cuatro
+redes en verde; único cambio de código en `roadmap/` (documentación), ninguno en `scripts/`,
+`tests/` ni `assets/`.
 
 **Cambios de estado (§1).** Ninguno: R-42 permanece `COMPLETADA`.
 
-**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna
-P-XX de iniciativa propia: sin tarea de la columna vertebral disponible y sin hallazgo urgente ni
-cerrable que la justifique. Sin decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de
-pura reconfirmación, nada que decidir.
+**§5 gana P-09 (COMPLETADA).** Sin novedad en §3 (bloqueos), §6 (preguntas, salvo la propia cabecera
+corregida) ni §7 (desviaciones). Decisión nueva añadida a `DECISIONES_TECNICAS.md` (P-09,
+2026-10-30): no es norma permanente, no se promueve a §0.2.
 
 **Cierre.** Commit y push a `origin/develop` (nunca a `master`).
 
-**Última actualización anterior (2026-10-30, ciclo de Programador): quinta reconfirmación del día
+**Última actualización anterior (2026-10-30, ciclo de Programador): sexta reconfirmación del día
 tras R-42, sin novedad de código**, detalle de la sesión más abajo.
 
 ---
@@ -7728,9 +7743,12 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 > ## ⚑ PARA EL DUEÑO — empieza por aquí
 > Lo único que el proyecto necesita de ti está en dos sitios de este documento:
 > - **§3 Bloqueos** = tu lista de tareas. **El #8 (rutinas "duplicadas") era una falsa alarma: corregido hoy (2026-09-10).** Ninguna sesión anterior había comparado el repositorio real de cada rutina, solo el nombre; el trío sin sufijo (`Auditor`/`Product manager`/`Programador`) resulta pertenecer a otro proyecto tuyo (`centro-estudios-sw`/GestorAcademia), no a teleprompter — su prompt lo dice explícitamente. Las tres rutinas de *este* proyecto (`auditor-teleprompter`, `product-manager-teleprompter`, `programador-teleprompter`) están cada una sola, sin solape: no hay coste doble que resolver aquí. Si quieres, revisa por tu cuenta si el trío de `centro-estudios-sw` tiene un problema similar, pero eso es asunto de ese otro repositorio. Los tres bloqueos que quedan siguen **sin urgencia** (aportar el paquete de `480-branded-pptx` cuando lo tengas, probar el clicker Bluetooth real contra el mapa de teclas ya implementado en T-24 cuando lo consigas, y grabar un curso completo con la skill instalada, que es lo que arrancaría el primer feedback real de rodaje) — **ninguno frena el desarrollo**. La instalación de la skill (T-32) ya la hiciste y quedó resuelta.
-> - **§6 Preguntas abiertas** = tus decisiones. **Una pendiente: la #11** (2026-09-16, sin urgencia)
->   — si el ciclo de reconfirmación del Programador puede corregir por sí solo la prosa de "Cola de
->   producto" cuando solo refleja un estado que §1 ya registra como `COMPLETADA`. Las otras diez ya
+> - **§6 Preguntas abiertas** = tus decisiones. **Dos pendientes: la #11 y la #12** (2026-09-16 y
+>   2026-10-10, ambas sin urgencia) — la #11 pregunta si el ciclo de reconfirmación del Programador
+>   puede corregir por sí solo la prosa de "Cola de producto" cuando solo refleja un estado que §1 ya
+>   registra como `COMPLETADA`; la #12 pregunta si espaciar el cron horario de la rutina
+>   "Programador" o añadir al protocolo una comprobación barata de "cola vacía" que evite repetir las
+>   cuatro redes de verificación cuando §1 no tiene ninguna tarea `PENDIENTE`. Las otras diez ya
 >   están resueltas.
 >
 > Para control (no exige acción): `DECISIONES_TECNICAS.md` (qué decidió el agente y por qué — sustituye a leer código), `auditoriacontinua.md` (hallazgos abiertos), y aquí §7 (desviaciones) y §5 (P-XX; veta escribiendo `REVERTIR`).
@@ -7866,6 +7884,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | P-06 | Extender la nota de `DEVELOPERS.md`/`SKILL.md` que ya cubre el binario "pelado" de `ruff`/`mypy`/`pytest` (R-15, `origen: auditoría #22`) para que también cubra la **instalación** (`pip install -r requirements-dev.txt` sin `python3 -m`), no solo la invocación | `origen: auditoría #28` (baja, infraestructura). Formalizado tras diez sesiones consecutivas resolviendo el mismo síntoma sin que quedara documentado: el `pip` pelado de los contenedores de nube de este proyecto instala contra Python 3.13 en vez del 3.11.x real, dejando las tres redes de tipos/estilo/tests en rojo con `No module named mypy/ruff/pytest` hasta reinstalar con `python3 -m pip install -r requirements-dev.txt`. Cola de tareas vacía tras R-24 (§1), hallazgo de severidad baja con recomendación de cierre ya escrita por el propio auditor: aprovechado como P-XX de esta sesión en vez de esperar a que el PM lo convierta en R-XX. Alcance puramente documental, sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-07 |  |
 | P-07 | Actualizar la sección "Marcar tropiezos durante la toma (R-03)" de `SKILL.md` para documentar la columna «Instante» (R-34) de `FEEDBACK.md` | `origen: auditoría #33` (baja, documentación). R-34 (`91b4c66`, 2026-10-20) añadió la columna «Instante» (`mm:ss`, instante de la toma en que se marcó el tropiezo) a `FEEDBACK.md` y subió el contrato a la versión 2, documentado con detalle en `references/contrato-tropiezos.md`/`DEVELOPERS.md`/`DECISIONES_TECNICAS.md`, pero la sección de `SKILL.md` que describe esta función de cara al dueño no se tocó: su tabla de columnas seguía mostrando solo las 5 de la versión 1. Cola de tareas vacía tras R-35 (§1), hallazgo de severidad baja con cierre trivial y sin riesgo (no toca `tests/test_skill_md.py`, que no cubre esta tabla): aprovechado como P-XX de esta sesión en vez de esperar a que el PM lo convierta en R-XX. Alcance puramente documental, sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-21 |  |
 | P-08 | Corregir el docstring del módulo `scripts/revalidacion.py` (líneas 26-37), que seguía citando una función `_edicion_manual_de` ya inexistente con ese nombre | `origen: auditoría #34` (baja, documentación). La detección de ediciones manuales vive hoy inline dentro de `revalidar_guion` (bucle que compara, ancla a ancla, el texto de `guion-escenas.md` contra el texto que el sistema habría derivado — `scripts/revalidacion.py:499-505`), no en ninguna función con ese nombre; confirmado leyendo el módulo completo, no solo el docstring. Cero riesgo funcional (el invariante (c) sigue íntegro, reverificado por la propia auditoría), pero una futura sesión podría buscar esa función, no encontrarla y perder tiempo o asumir que la lógica ya no existe. Cola de tareas vacía tras R-38 (§1), sin ninguna R-39 abierta todavía: mismo criterio que P-06/P-07, aprovechado como P-XX de esta sesión en vez de esperar al PM. Alcance puramente documental (un párrafo del docstring de módulo), sin tocar lógica, tests ni `assets/`. | **COMPLETADA** 2026-10-26 |  |
+| P-09 | Corregir la cabecera "⚑ PARA EL DUEÑO" de este mismo documento (§6), que seguía diciendo "Una pendiente: la #11" 20 días después de que la pregunta `#12` se añadiera a la tabla de §6 sin tocar el resumen | `origen: auditoría #35` (baja, documentación/gobernanza). La propia auditoría califica el remedio como "cerrable como P-XX sin esperar a una R-XX ni a ninguna decisión del dueño — mismo perfil que #29/#31/#32/#33": un desajuste puramente de prosa de resumen contra una tabla real que ya estaba correcta, sin ninguna decisión de producto de por medio. Cola de tareas vacía tras R-42 (§1), séptima reconfirmación del día sin ninguna R-XX/T-XX `PENDIENTE` ni hallazgo de severidad alta: aprovechado como P-XX de esta sesión en vez de esperar al PM. Alcance puramente documental (una línea de la cabecera de §6), sin tocar `scripts/`, `tests/` ni `assets/`. | **COMPLETADA** 2026-10-30 |  |
 
 ---
 

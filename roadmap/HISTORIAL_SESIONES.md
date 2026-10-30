@@ -12,6 +12,51 @@
 
 ---
 
+### Sesión 2026-10-30 (294) — Ciclo de Programador: séptima reconfirmación del día tras R-42, cierra P-09 (`#35`)
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). El contenedor arrancó con `HEAD` *detached* sobre el commit de la
+reconfirmación anterior (`a60aebd`); `git checkout develop && git pull origin develop` no trajo
+ningún commit nuevo (ya al día), árbol de trabajo limpio sin divergencia que resolver. El primer
+intento con `pip install -r requirements-dev.txt` (binario `pip` desnudo) reprodujo de nuevo el
+síntoma ya documentado en `#22`/`#28`/P-06 («No module named mypy»); reinstalado con `python3 -m pip
+install -r requirements-dev.txt` contra el intérprete correcto, sin este problema en ninguna
+verificación posterior.
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(tabla de registro línea a línea): ningún hallazgo `ABIERTO` de severidad alta — `#24` (baja) y
+`#30` (media) siguen `ABIERTO`, de gobernanza pura, pendientes de respuesta del dueño a `#11`/`#12`
+de §6; `#36` (baja) sigue `ABIERTO`, observacional. `#35` (baja, cabecera "PARA EL DUEÑO" de
+`SEGUIMIENTO.md` desactualizada) sigue `ABIERTO` en el registro (su cierre a `RESUELTO` es
+escritura exclusiva del Auditor), pero la propia fila lo califica como cerrable sin decisión del
+dueño, mismo perfil que `#29`/`#31`/`#32`/`#33` ya cerrados como P-XX. `mcp__github__list_issues`/
+`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+**Tarea elegida: P-09 (`origen: auditoría #35`).** §1 confirmada: R-42 sigue `COMPLETADA`, ninguna
+fila `PENDIENTE`/`BLOQUEADA` ejecutable (aparte de `T-24b`). Con la cola de la columna vertebral
+vacía y un hallazgo baja/cerrable en mano, se registra y ejecuta P-09 en `SEGUIMIENTO.md` §5: la
+cabecera "⚑ PARA EL DUEÑO — empieza por aquí" (§6) decía "Una pendiente: la #11" desde el
+2026-10-10 (commit `845e2d9`, que añadió `#12` a la tabla de §6 sin tocar este resumen) pese a que
+la tabla ya listaba ambas preguntas correctamente. Corregida a "Dos pendientes: la #11 y la #12",
+con una frase breve describiendo cada una. Alcance puramente documental: una línea de la cabecera
+de §6, sin tocar `scripts/`, `tests/` ni `assets/`. No se toca `auditoriacontinua.md` (escritura
+exclusiva del Auditor): el cierre de `#35` a `RESUELTO` queda para la siguiente pasada de auditoría.
+
+**Verificación completa, previa al push.** `python3 -m mypy scripts/ tests/` (72 archivos, sin
+problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (763 tests,
+mismo recuento que el ciclo anterior — P-09 no toca `scripts/` ni `tests/`) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluidas las dos salidas latentes
+esperadas en este contenedor). Cuatro redes en verde; único cambio de código en `roadmap/`
+(documentación), ninguno en `scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-42 permanece `COMPLETADA`. `SEGUIMIENTO.md`
+§5 gana P-09 (`COMPLETADA`). Decisión nueva en `DECISIONES_TECNICAS.md` (2026-10-30, P-09): no es
+norma permanente, no se promueve a §0.2.
+
+**Cierre.** Commit y push a `origin/develop`.
+
+---
+
 ### Sesión 2026-10-30 (293) — Ciclo de Programador: sexta reconfirmación del día tras R-42, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
