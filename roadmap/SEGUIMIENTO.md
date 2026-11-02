@@ -10,7 +10,7 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-11-02 — **Ciclo de Programador: primera reconfirmación del día tras
+**Última actualización:** 2026-11-02 — **Ciclo de Programador: segunda reconfirmación del día tras
 R-43, sin novedad de código**, detalle completo en `HISTORIAL_SESIONES.md`.
 
 **Ciclo de Product Manager (2026-10-30): archiva Oleada v30 (R-42) y abre R-43 (Oleada v31).**
