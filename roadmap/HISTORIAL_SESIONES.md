@@ -12,6 +12,48 @@
 
 ---
 
+### Sesión 2026-11-02 (304) — Ciclo de Programador: cuarta reconfirmación del día tras R-43, sin novedad de código
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). `git checkout develop && git pull origin develop` trajo ya fusionada la
+tercera reconfirmación de hoy (commit `d5e8f38`, sin cambio de código), árbol de trabajo limpio sin
+divergencia que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real, sin el síntoma de `pip` desnudo (`#22`/`#28`/P-06)
+en esta pasada.
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(tabla de registro línea a línea, no solo la narrativa más reciente): ningún hallazgo `ABIERTO` de
+severidad alta (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de la
+auto-contención, seguridad) que atender como P-XX urgente — `#24` (baja) y `#30` (media) siguen
+`ABIERTO`, de gobernanza pura, pendientes de respuesta del dueño a las preguntas `#11`/`#12` de §6,
+sin cambio desde el ciclo anterior; `#36` (baja) sigue `ABIERTO`, puramente observacional sobre un
+commit ya publicado, sin novedad. `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+**Ninguna tarea elegida.** §1 confirmada de punta a punta: todas las T-00 a T-33 y R-01 a R-43 están
+`COMPLETADA` (salvo `T-24b`, bloqueo físico ajeno al programador, §3.5); todas las P-01 a P-09 (§5)
+también `COMPLETADA`. Ninguna fila `PENDIENTE` ni `BLOQUEADA` ejecutable, ningún hallazgo nuevo
+cerrable ni urgente que justifique abrir una P-XX de iniciativa propia. Archivar la Oleada v31 (R-43)
+y abrir la siguiente corresponde a un ciclo de Product Manager posterior. Ciclo de pura
+reconfirmación.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (770
+tests, código de salida 0, sin fallos, mismo recuento que el ciclo anterior) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluida la salida latente esperada
+en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada — y las omisiones esperadas
+sin parte de rodaje real; el `.pdf` sí se generó de verdad, Chrome/Edge headless disponible en este
+contenedor, mismo comportamiento que en la pasada anterior). Cuatro redes en verde; ningún cambio en
+`scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-43 permanece `COMPLETADA`. Sin decisiones
+nuevas en `DECISIONES_TECNICAS.md`. Sin novedad en §3 (bloqueos), §6 (preguntas, `#11`/`#12` siguen
+`(pendiente)`) ni §7 (desviaciones).
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-11-02 (303) — Ciclo de Programador: tercera reconfirmación del día tras R-43, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
