@@ -8,53 +8,51 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-10-30 (ciclo de Product Manager). R-42 (Oleada v30) llevaba
-`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el mismo día (ciclo de Programador), reconfirmada en
-verde en varias pasadas sucesivas del Programador (incluida la que cerró P-09, hallazgo `#35`) sin
-que ningún ciclo de PM la archivara todavía. Este ciclo archiva la Oleada v30 en
-`ROADMAP_HISTORICO.md` y abre R-43 (Oleada v31) en §1, sin implementarla: el criterio de una sola
-R-XX pendiente de código a la vez (vigente desde R-19) queda respetado porque no había ninguna otra
-R-XX pendiente antes de abrir esta.
+**Última actualización:** 2026-11-02 (ciclo de Product Manager). R-43 (Oleada v31) llevaba
+`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-11-02 (ciclo de Programador), reconfirmada en
+verde en varias pasadas sucesivas del Programador sin que ningún ciclo de PM la archivara todavía.
+Este ciclo archiva la Oleada v31 en `ROADMAP_HISTORICO.md` y abre R-44 (Oleada v32) en §1, sin
+implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda
+respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
-completo) sigue abierto, ahora más de 57 días desde que T-32 lo dejó listo para grabar (2026-09-03).
-`auditoriacontinua.md` revisado antes de elegir tarea: `#24` (baja) y `#30` (media) siguen `ABIERTO`
-de proceso/gobernanza puro, pendientes solo de la respuesta del dueño a las preguntas #11/#12 de
-`SEGUIMIENTO.md` §6 (44 y 20 días sin respuesta cuando se registraron); `#35` (baja, cabecera "PARA
-EL DUEÑO") ya tiene su remedio aplicado por P-09 (2026-10-30), pendiente solo de que el Auditor lo
-verifique y lo cierre (escritura exclusiva suya); `#36` (baja, apertura en inglés de un commit) es
+completo) sigue abierto, ahora más de 60 días desde que T-32 lo dejó listo para grabar (2026-09-03).
+`auditoriacontinua.md` revisado antes de elegir tarea (registro completo, no solo la narrativa más
+reciente): `#24` (baja) y `#30` (media) siguen `ABIERTO` de proceso/gobernanza puro, pendientes solo
+de la respuesta del dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 (47 y 23 días sin respuesta
+desde que se registraron); `#36` (baja, apertura en inglés de un commit ya publicado) sigue
 puramente observacional, sin remedio retroactivo razonable. Ninguno de severidad alta, ninguno
-convertible en R-XX nueva ni en deuda técnica de backlog.
+convertible en R-XX nueva ni en deuda técnica de backlog — el propio registro de hallazgos y el PM
+coinciden en que los tres son de proceso puro.
 
 **Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
-propio roadmap):** van 42 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la
-máquina real del dueño (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas
-tienen `origen: auditoría #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena
-calidad (cuatro redes en verde, 763 tests, invariantes reverificados en cada auditoría), pero el
-propio principio de producto que guía este documento —"utilidad real para un formador que graba
-vídeos de curso"— solo se confirma grabando, no leyendo código. El bloqueo #7 es una acción del
-dueño, no una tarea que el equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como
-pregunta nueva; se deja constancia aquí para que quede explícito que el criterio de salida de la
-Oleada v1 ("grabar un vídeo de curso entero") sigue siendo, con diferencia, el hito de mayor valor
-pendiente del proyecto, por delante de cualquier R-XX nueva. R-43 (más abajo) sigue el mismo criterio
-que R-39/R-40/R-41/R-42: una mejora pequeña y de bajo riesgo del propio reproductor, directamente útil
-para esa primera sesión real cuando ocurra — y además cierra un hueco real entre dos piezas ya
-construidas (R-37/R-38) que resuelven el mismo cruce de datos pero solo lo muestran al exportar, no
-durante la propia grabación, que es el momento en que la decisión de repetir una toma todavía es
-barata.
+propio roadmap, repetida desde el ciclo anterior porque el hecho que la motiva no ha cambiado):** van
+43 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la máquina real del dueño
+(2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas tienen `origen: auditoría
+#N` o `observación de arquitectura/producto del PM`. Es trabajo de buena calidad (cuatro redes en
+verde, 770 tests, invariantes reverificados en cada auditoría), pero el propio principio de producto
+que guía este documento —"utilidad real para un formador que graba vídeos de curso"— solo se
+confirma grabando, no leyendo código. El bloqueo #7 es una acción del dueño, no una tarea que el
+equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como pregunta nueva; se deja
+constancia aquí para que quede explícito que el criterio de salida de la Oleada v1 ("grabar un vídeo
+de curso entero") sigue siendo, con diferencia, el hito de mayor valor pendiente del proyecto, por
+delante de cualquier R-XX nueva. R-44 (más abajo) sigue el mismo criterio que R-39 a R-43: una mejora
+pequeña y de bajo riesgo del propio reproductor, directamente útil para esa primera sesión real
+cuando ocurra — y además agrega, en la cabecera del índice (junto al resto de resúmenes "de un
+vistazo" ya entregados), el mismo aviso que R-43 ya muestra fila a fila, para que un guión de muchas
+escenas no obligue a recorrerlas todas para saber si hay algo que revisar antes de cerrar la sesión.
 
-**Oleada v30 (R-42) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v31 (R-43) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v31 (R-43) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-arquitectura del PM (2026-10-30): R-37 (`scripts/feedback.py`) y R-38 (`scripts/comandos_montaje.py`)
-ya resuelven, del lado de Python, el cruce "¿el tropiezo marcado cayó dentro de la toma que se usó
-como buena?" — pero los dos solo se ven al exportar (`FEEDBACK.md`, `comandos-montaje.md`),
-normalmente al final de la sesión de rodaje o incluso del guión entero. El propio `assets/
-reproductor/guion.js` ya tiene en memoria, en el índice de escenas, los mismos dos datos que hacen
-falta para el mismo cruce (tomas con `buena`/`numero` de R-02, tropiezos con `numero_toma` ya
-persistido desde R-36), así que mostrar el aviso ahí mismo, sin exportar nada, adelanta la decisión
-al momento en que el dueño todavía puede volver a grabar la toma con el resto del material fresco.
+**Oleada v32 (R-44) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+arquitectura del PM (2026-11-02): R-43 ya avisa, fila a fila, cuando la toma buena de una escena
+trae un tropiezo marcado dentro, pero ese aviso solo se ve recorriendo la lista completa de escenas
+— exactamente el mismo problema que R-39 ya resolvió para "cuánto queda por grabar" con una línea
+agregada en la cabecera del índice, antes de la lista. R-44 aplica el mismo principio al aviso de
+R-43: una línea agregada en la cabecera, junto a `.resumen-progreso-grabacion`, que diga cuántas
+escenas en total tienen ese aviso, para que el dueño sepa de un vistazo si merece la pena revisar
+antes de cerrar la sesión de grabación o pasar al montaje con ffmpeg.
 
 ---
 
@@ -319,69 +317,79 @@ su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de
 pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-10-29). Su spec completa y
 cómo se entregó viven ahí.
 
-### Oleada v31 — Avisar en el índice cuando la toma buena de una escena trae un tropiezo marcado dentro
+### Oleada v31 — entregada
 
-#### R-43 — El índice de escenas avisa, de un vistazo, cuando la toma marcada como buena de una escena tiene uno o más tropiezos marcados dentro de ella
+La oleada v31 (avisar en el índice cuando la toma buena de una escena trae un tropiezo marcado
+dentro, R-43) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de
+negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-11-02). Su spec
+completa y cómo se entregó viven ahí.
 
-**Migración:** No (lectura pura de datos que ya existen en `localStorage`: `tomasEscena[indice]`
-con `buena`/`numero` de R-02, `tropiezosEscena[indice]` con `numero_toma` ya persistido desde R-36;
-ningún campo nuevo, ninguna escritura nueva, sin cambio en `scripts/reproductor.py` ni en el
-contrato embebido) · **Depende de:** T-19 (índice de escenas, `renderizarIndice`), R-02 (registro de
-tomas, campo `buena`), R-03 (marcar tropiezos), R-34 (instante de toma del tropiezo), R-36 (número
-de toma asociado a cada tropiezo, ya persistido en el propio `localStorage` del reproductor, no solo
-en `FEEDBACK.md`), R-37 y R-38 (mismo cruce «¿cayó dentro de la toma buena?» ya resuelto del lado de
-Python, en `scripts/feedback.py` y `scripts/comandos_montaje.py` respectivamente) — todas
-`COMPLETADA` · **Origen:** observación de arquitectura del PM (2026-10-30). R-37 y R-38 resuelven el
-mismo cruce dos veces, en dos documentos de salida distintos, pero los dos se generan al exportar —
-normalmente al final de toda la sesión de rodaje. `guion.js` ya tiene en memoria, en el momento
-exacto en que el dueño marca una toma como buena (o revisa el índice más tarde), los dos datos que
-hacen falta para el mismo cruce, sin tocar ningún archivo ni esperar a exportar nada; hoy esa
-coincidencia queda invisible en el propio índice, el sitio donde el dueño decide, escena a escena, si
-seguir grabando o volver atrás.
+### Oleada v32 — Resumen agregado, en la cabecera del índice, de cuántas escenas tienen la toma buena con un tropiezo dentro
 
-**Objetivo:** que el dueño vea, sin salir del índice y sin exportar nada, que la toma que acaba de
-marcar (o ya tenía marcada) como buena de una escena contiene un tropiezo señalado dentro de ella —
-para decidir en el momento, con el resto del material todavía fresco, si volver a grabar esa toma o
-aceptarla sabiendo que el montaje con ffmpeg tendrá que cortar en ese instante exacto (ya calculado
-por R-34 y ya citado en `comandos-montaje.md` por R-38).
+#### R-44 — Mostrar en la cabecera del índice, junto al resto de resúmenes agregados, cuántas escenas en total tienen la toma buena con uno o más tropiezos marcados dentro
+
+**Migración:** No (agregado puro, en memoria, sobre datos que ya calcula `guion.js` por escena desde
+R-43: `tomasEscena[indice]` con `buena`/`numero` de R-02, `tropiezosEscena[indice]` con
+`numero_toma` ya persistido desde R-36; ningún campo nuevo, ninguna escritura nueva, sin cambio en
+`scripts/reproductor.py` ni en el contrato embebido) · **Depende de:** T-19 (índice de escenas,
+`renderizarIndice`), R-39 (`.resumen-progreso-grabacion`, el mismo bloque agregado en la cabecera del
+índice antes de la lista de escenas, mismo patrón a seguir), R-43 (criterio exacto del cruce «¿la
+toma buena tiene un tropiezo con su mismo `numero_toma`?», ya implementado fila a fila) — todas
+`COMPLETADA` · **Origen:** observación de arquitectura del PM (2026-11-02). R-43 ya resuelve el aviso
+por escena, pero solo es visible recorriendo la lista completa; es exactamente el mismo problema que
+motivó R-39 para "cuánto queda por grabar" (antes solo visible recorriendo `estadosEscena` escena a
+escena) y que R-39 resolvió con una línea agregada en la cabecera, antes de la lista. R-44 aplica el
+mismo principio al aviso de R-43.
+
+**Objetivo:** que el dueño, con una sola mirada a la cabecera del índice y sin desplazarse por la
+lista completa de escenas, sepa si existe algún tropiezo marcado dentro de alguna toma buena en todo
+el guión, y cuántas escenas concretas lo tienen, para decidir si merece la pena revisar antes de dar
+la sesión de grabación por cerrada o pasar al montaje con ffmpeg.
 
 **Requisitos:**
-1. En `renderizarIndice` (`assets/reproductor/guion.js`), en el bloque donde ya se calcula
-   `resumenTropiezos`, reutilizar tal cual las variables `tomaBuena` y `tropiezosDeEscena` ya
-   calculadas más arriba en la misma función (sin segunda consulta a `localStorage`) para filtrar los
-   tropiezos cuyo `numero_toma` coincida con `tomaBuena.numero` — solo cuando `tomaBuena` existe; sin
-   toma buena, ningún tropiezo puede estar "dentro" de ella por definición y el requisito no se
-   activa. Mismo criterio de comparación que ya usan `scripts/feedback.py` (R-37) y
-   `scripts/comandos_montaje.py` (R-38), ahora reflejado del lado del cliente.
-2. Si ese filtrado da uno o más tropiezos, añadir al `<span class="escena-tropiezos">` ya existente
-   (o un `<span>` hermano inmediato, `escena-tropiezos-en-buena`) el aviso "⚠ N en la toma buena"
-   (singular "⚠ 1 en la toma buena", mismo criterio singular/plural que el resto de resúmenes de la
-   fila) — nunca sustituyendo el recuento total de tropiezos de la escena que R-03 ya muestra, solo
-   añadiendo el matiz de cuáles caen dentro de la toma que de verdad se usaría en el montaje.
-3. CSS nuevo en `assets/reproductor/estilo.css`, reutilizando el lenguaje visual de aviso que ya usa
-   `.indicador-tropiezo` (R-03: color de acento, negrita) en vez del gris discreto de
-   `.escena-tropiezos`/`.escena-tomas`/`.escena-indicaciones` — es la única de las líneas de resumen
-   de la fila que puede exigir una decisión del dueño, no solo informar, así que merece distinguirse
-   sin llegar a competir con el título de la escena ni con la insignia de estado (principio de
+1. Extraer el cálculo que R-43 ya hace inline en el bloque por fila de `renderizarIndice`
+   (`tropiezosDeEscena.filter(function (tropiezo) { return tropiezo.numero_toma === tomaBuena.numero;
+   })`, solo cuando `tomaBuena` existe) a una función pequeña reutilizable, p. ej.
+   `tropiezosEnTomaBuena(indice)`, que reciba el índice de escena y devuelva la lista filtrada (array
+   vacío si no hay toma buena) — misma lógica exacta que hoy vive solo en el bloque de R-43, ahora en
+   un único sitio para que el bloque de R-43 y el nuevo resumen agregado la llamen igual, sin segunda
+   implementación del mismo criterio.
+2. En el mismo `forEach` sobre `datos.escenas` donde R-39 ya calcula `pendientes`/`grabadas`/
+   `revisadas`/`segundosPendientes` (el bloque previo al listado de escenas, no el bloque por fila),
+   sumar un contador nuevo, `escenasConTropiezoEnBuena`, incrementado por cada escena cuyo
+   `tropiezosEnTomaBuena(indice).length` sea mayor que 0 — mismo bucle ya existente, sin segundo
+   recorrido de `datos.escenas`.
+3. Si `escenasConTropiezoEnBuena` es mayor que 0, añadir un `<p>` nuevo (`.resumen-tropiezos-en-buena`)
+   inmediatamente después de `.resumen-progreso-grabacion` y antes del botón "Grabar siguiente
+   pendiente" (R-40) cuando este exista, con el texto "⚠ 1 escena tiene la toma buena con un tropiezo
+   dentro" (singular) o "⚠ N escenas tienen la toma buena con uno o más tropiezos dentro" (plural,
+   N = número de escenas, no de tropiezos) — mismo criterio singular/plural que el resto de resúmenes.
+   Con el contador en 0, no se añade ningún elemento, igual que `.escena-tropiezos-en-buena` (R-43) no
+   aparece en una fila sin tropiezos en su toma buena.
+4. CSS nuevo en `assets/reproductor/estilo.css` para `.resumen-tropiezos-en-buena`, reutilizando el
+   mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena` (R-43: color de acento, negrita) en
+   vez del tono neutro de `.resumen-guion`/`.resumen-progreso-grabacion` — es un aviso que puede exigir
+   una decisión del dueño antes de cerrar la sesión, no solo informar de progreso (principio de
    producto 5: legibilidad por encima de todo).
-4. Sin elemento interactivo nuevo (`<span>`, nunca un control — `fila` ya es un `<button>`, mismo
-   criterio que R-02/R-03/R-42); sin `localStorage` nuevo; sin cambio en `scripts/reproductor.py`,
-   `scripts/feedback.py`, `scripts/comandos_montaje.py` ni en el contrato embebido — mejora
-   enteramente de lectura y presentación sobre datos que ya existen en el propio `guion.js`.
-5. El aviso se recalcula solo (mismo patrón que R-39/R-40/R-41/R-42, sin heurística de refresco
-   nueva): `finalizarTomaActual`/`alternarTropiezoBloqueActual` ya llaman a `renderizarIndice()`, así
-   que la siguiente vuelta al índice recalcula el filtrado sin cableado adicional.
+5. Sin elemento interactivo nuevo (`<p>`, igual que `.resumen-guion`/`.resumen-progreso-grabacion`);
+   sin `localStorage` nuevo; sin cambio en `scripts/reproductor.py`, `scripts/feedback.py`,
+   `scripts/comandos_montaje.py` ni en el contrato embebido — mejora enteramente de lectura y
+   presentación agregada sobre datos que ya calcula `guion.js` por escena desde R-43.
+6. El resumen se recalcula solo (mismo patrón que R-39/R-43, sin heurística de refresco nueva):
+   cualquier llamada ya existente a `renderizarIndice()` (al marcar una toma buena, al alternar un
+   tropiezo, al volver al índice) reconstruye el contador desde cero sin cableado adicional.
 
-**Criterio de aceptación:** sobre una fixture con al menos tres escenas de prueba — (a) una sin
-ninguna toma, (b) una con una toma buena y ningún tropiezo marcado con ese mismo `numero_toma`
-(puede tener tropiezos de tomas anteriores descartadas), y (c) una con una toma buena que sí tiene
-uno o más tropiezos marcados con ese `numero_toma` — el índice no muestra ningún aviso en (a) ni en
-(b) (en (b), el resumen de tropiezos sigue mostrando su recuento total si lo hay, simplemente sin el
-añadido de aviso) y muestra "⚠ 1 en la toma buena" (o el plural correspondiente) en (c), con el
-estilo de `.indicador-tropiezo` reutilizado. El JSON embebido por `scripts/reproductor.py` no gana
-ningún campo nuevo (mismo contrato que antes de R-43, verificado por diff contra la salida de
-referencia). Verificado también visualmente con Playwright/Chromium real, mismo criterio que
-R-37/R-38/R-39/R-40/R-41/R-42.
+**Criterio de aceptación:** sobre una fixture con al menos cuatro escenas de prueba — (a) sin ninguna
+toma, (b) con una toma buena y ningún tropiezo marcado con ese mismo `numero_toma`, (c) con una toma
+buena y un tropiezo marcado con ese `numero_toma`, y (d) con una toma buena y dos tropiezos marcados
+con ese `numero_toma` — la cabecera del índice no muestra ningún resumen agregado nuevo si ninguna
+escena cumple (c) o (d); con (c) y (d) presentes, muestra "⚠ 2 escenas tienen la toma buena con uno o
+más tropiezos dentro" (recuento de escenas, no de tropiezos — 2, una por (c) y otra por (d), aunque
+(d) tenga dos tropiezos), situado entre `.resumen-progreso-grabacion` y el botón "Grabar siguiente
+pendiente" cuando ambos coexisten. El aviso por fila que ya pinta R-43 en (c) y (d) sigue intacto y
+sin cambios. El JSON embebido por `scripts/reproductor.py` no gana ningún campo nuevo (mismo contrato
+que antes de R-44, verificado por diff contra la salida de referencia). Verificado también
+visualmente con Playwright/Chromium real, mismo criterio que R-39 a R-43.
 
 ---
 

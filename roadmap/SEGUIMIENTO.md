@@ -10,8 +10,59 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-11-02 — **Ciclo de Programador: novena reconfirmación del día tras
-R-43, sin novedad de código**, detalle completo en `HISTORIAL_SESIONES.md`.
+**Última actualización:** 2026-11-02 — **Ciclo de Product Manager: archiva Oleada v31 (R-43) y abre
+R-44 (Oleada v32)**, detalle completo más abajo.
+
+**Ciclo de Product Manager (2026-11-02): archiva Oleada v31 (R-43) y abre R-44 (Oleada v32).**
+Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
+fusionada la novena reconfirmación del día del Programador (commit `014e146`, sin cambio de código),
+árbol de trabajo limpio sin divergencia que resolver. `pip install -r requirements-dev.txt` instalado
+sin incidencia.
+
+**Revisión de hallazgos y feedback.** `auditoriacontinua.md` (registro completo revisado, no solo la
+narrativa más reciente): `#24` (baja) y `#30` (media) siguen `ABIERTO`, de proceso/gobernanza puro,
+ya enrutadas como preguntas `#11`/`#12` de §6, pendientes solo de respuesta del dueño (47 y 23 días
+sin respuesta); `#36` (baja, apertura en inglés de un commit ya publicado) sigue puramente
+observacional, sin remedio retroactivo razonable y sin acción del PM que aplicar. Ninguno convertible
+en R-XX de producto/arquitectura ni en deuda técnica de backlog, ninguno de severidad alta que
+atender como urgente. `roadmap/FEEDBACK.md` sigue con su única fila de plantilla vacía, sin ninguna
+entrada `nuevo` que volcar al roadmap — el bloqueo #7 de §3 (grabar un vídeo de curso completo) sigue
+abierto, más de 60 días desde que T-32 dejó la skill instalada y verificada en la máquina real del
+dueño (2026-09-03).
+
+**Archivado.** R-43 (Oleada v31, aviso en el índice cuando la toma buena de una escena trae un
+tropiezo dentro) llevaba `COMPLETADA` en §1 desde el mismo día (2026-11-02), reconfirmada en verde
+por el Programador en varias pasadas sucesivas sin que ningún ciclo de PM la archivara todavía.
+Movida a `roadmap/ROADMAP_HISTORICO.md` con su spec completa y "Cómo se entregó" (verificado contra
+el código real de `assets/reproductor/guion.js::renderizarIndice` antes de redactar el resumen).
+Nota de cierre de fechas archivadas actualizada al final de ese documento. `ROADMAP_PRODUCTO.md`
+actualizado: cabecera reescrita con fecha, recuento de hallazgos y R-XX completadas (43), sección
+"Oleada v31" sustituida por la nota de archivo de una línea, mismo patrón que las 30 oleadas
+anteriores ya archivadas.
+
+**Abierta R-44 (Oleada v32): resumen agregado, en la cabecera del índice, de cuántas escenas tienen
+la toma buena con un tropiezo dentro.** Verificado contra el código real antes de escribir la ficha:
+R-43 (`assets/reproductor/guion.js::renderizarIndice`) ya calcula y pinta este aviso fila a fila,
+pero solo es visible recorriendo la lista completa de escenas — mismo problema que ya resolvió R-39
+para "cuánto queda por grabar" con una línea agregada en la cabecera del índice
+(`.resumen-progreso-grabacion`), antes de la lista. R-44 aplica el mismo principio al aviso de R-43,
+extrayendo su cálculo (`tropiezosDeEscena.filter` por `numero_toma === tomaBuena.numero`) a una
+función reutilizable para que la fila (R-43) y el nuevo agregado no dupliquen el mismo criterio. Spec
+completa (Migración/Depende de/Origen, Objetivo, Requisitos, Criterio de aceptación) en
+`ROADMAP_PRODUCTO.md`, Oleada v32.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; nada en `scripts/`, `tests/` ni `assets/` se toca en esta sesión.
+La implementación de R-44 queda para el siguiente ciclo de Programador.
+
+Sin cambios en §3 (bloqueos) ni §7 (desviaciones). §5 (P-XX) sin novedad nueva. §6 sigue con
+`#11`/`#12` `(pendiente)` de respuesta del dueño. Una decisión nueva en `DECISIONES_TECNICAS.md`
+(archivo de Oleada v31 y apertura de R-44, con las alternativas consideradas).
+
+**Última actualización anterior (2026-11-02, ciclo de Programador): novena reconfirmación del día
+tras R-43, sin novedad de código**, detalle de la sesión más abajo.
+
+---
 
 **Ciclo de Programador (2026-11-02), novena tras R-43.** Sesión en la nube (clon efímero, sin
 instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
@@ -8329,6 +8380,7 @@ bloqueos ni preguntas abiertas; ninguna desviación respecto a la especificació
 | R-41 | Al volver al índice tras marcar una toma como buena (`G`+`Esc`), el foco de teclado pasa directo al botón "Grabar siguiente pendiente" (R-40) si queda alguna escena `pendiente`, en vez de caer en la fila de la escena que se acaba de abandonar | **COMPLETADA** | 2026-10-29 | `assets/reproductor/guion.js::volverAlIndice` consulta `document.getElementById("btn-siguiente-pendiente")` solo si `tomaBuenaEnCurso` es `true` (cortocircuito, sin consulta al DOM en el caso contrario); con el botón presente, `.focus()` sobre él y `return` inmediato, sin tocar `botonesEscena[indice]`; en cualquier otro caso, comportamiento idéntico al de antes de R-41. Cero heurística nueva de "siguiente escena" (requisito 3): el destino lo sigue decidiendo solo `estadosEscena.indexOf("pendiente")` de R-40. 4 tests nuevos (752→756): orden de las instrucciones dentro de `volverAlIndice`, fallback a la fila sin toma buena, ausencia de una segunda aparición de `indexOf("pendiente")`, ausencia de `tabindex`/`aria-live` nuevos. Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también con Playwright/Chromium real sobre una fixture de 3 escenas (2 `pendiente` + 1 `revisada` de antemano): los cuatro criterios de aceptación de la ficha pasan — foco en el botón tras marcar buena con pendientes restantes, `Intro` inmediato entra en la segunda pendiente sin `Tab`, foco cae en la fila al agotar las pendientes (botón ya no existe, sin excepción), y foco se mantiene en la fila si se sale sin marcar ninguna toma como buena. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-42 | Mostrar en el índice de escenas, de un vistazo y sin entrar en ninguna, cuántas indicaciones `EN PANTALLA`/`NOTA` (R-12) trae cada escena, para que el dueño sepa qué preparar en pantalla antes de grabarla | **COMPLETADA** | 2026-10-30 | `assets/reproductor/guion.js::renderizarIndice` suma `bloque.indicaciones.length` sobre todos los bloques de cada escena (`reduce` inline, sin función agregada aparte, mismo criterio que `segundosPendientes` de R-39) y añade un `<span class="escena-indicaciones">` justo después de `.escena-duracion` y antes del resumen de tomas (R-02), con "N indicación/indicaciones en pantalla" y sin ningún `<span>` si el total es 0. CSS nuevo en `estilo.css` con el mismo peso visual que `.escena-tomas`/`.escena-tropiezos`. Sin cambio en `scripts/reproductor.py` ni en el contrato embebido (campo `indicaciones` ya viajaba desde R-12), sin `localStorage` nuevo, sin migración. 7 tests nuevos (756→763). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también visualmente con Playwright/Chromium real sobre una fixture de 3 escenas (sin indicaciones, con una, con tres repartidas en dos bloques): singular/plural correctos, ausencia de resumen en la escena sin indicaciones, orden de los `<span>` conforme al requisito 2, sin errores de consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle completo en `DECISIONES_TECNICAS.md` |
 | R-43 | Avisar en el índice de escenas, de un vistazo, cuando la toma marcada como buena de una escena tiene uno o más tropiezos marcados dentro de ella — mismo cruce que R-37/R-38 ya resuelven al exportar, ahora visible sin exportar nada | **COMPLETADA** | 2026-11-02 | `assets/reproductor/guion.js::renderizarIndice`: reutiliza tal cual `tomaBuena`/`tropiezosDeEscena` ya calculados en la misma función (sin segunda consulta a `localStorage`) para filtrar los tropiezos cuyo `numero_toma` coincida con `tomaBuena.numero` — mismo criterio que `feedback._es_toma_buena` (R-37) y `comandos_montaje.py` (R-38), ahora del lado del cliente. Con uno o más, añade un `<span class="escena-tropiezos-en-buena">` hermano del resumen total de R-03 ("⚠ N en la toma buena"), sin sustituirlo. CSS nuevo reutiliza el lenguaje visual de `.indicador-tropiezo` (color de acento, negrita) en vez del gris discreto del resto de resúmenes de la fila. Sin elemento interactivo nuevo, sin `localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato embebido (verificado por diff de claves del JSON). 7 tests nuevos (763→770). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio. Verificado también visualmente con Playwright/Chromium real sobre la fixture `guion-ejemplo.md` con tres casos inyectados en `localStorage` (sin toma, toma buena sin tropiezo de esa toma, toma buena con dos tropiezos de esa toma): los tres criterios de aceptación de la ficha pasan, sin errores de consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle completo en `DECISIONES_TECNICAS.md` |
+| R-44 | Mostrar en la cabecera del índice, junto al resto de resúmenes agregados (R-39), cuántas escenas en total tienen la toma buena con uno o más tropiezos marcados dentro — mismo aviso que R-43 ya muestra fila a fila, ahora agregado para no tener que recorrer la lista entera | **PENDIENTE** | — | Spec completa en `ROADMAP_PRODUCTO.md`, Oleada v32. `origen: observación de arquitectura del PM (2026-11-02)` |
 
 **Estados:** PENDIENTE · EN CURSO · COMPLETADA · DESPLEGADA EN PRODUCCIÓN · BLOQUEADA — <motivo> · DESCARTADA — <motivo>
 

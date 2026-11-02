@@ -12,6 +12,73 @@
 
 ---
 
+### Sesión 2026-11-02 (310) — Ciclo de Product Manager: archiva Oleada v31 (R-43) y abre R-44 (Oleada v32)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "Product manager"). `git checkout develop &&
+git pull origin develop` trajo ya fusionada la novena reconfirmación del día del Programador (commit
+`014e146`, sin cambio de código), árbol de trabajo limpio sin divergencia que resolver.
+`pip install -r requirements-dev.txt` instalado sin incidencia (no hace falta para gestionar el
+roadmap, pero se instala según protocolo §0.1).
+
+**Lectura previa (protocolo del rol PM).** `HOJA_DE_RUTA.md` §0 (protocolo, documento inmutable) y
+`SEGUIMIENTO.md` completo (§1 estado, §3 bloqueos, §4 incidentes, §5 P-XX, §6 preguntas, §7
+desviaciones); `ROADMAP_PRODUCTO.md` completo; `FEEDBACK.md`; `auditoriacontinua.md` (registro
+completo de hallazgos, no solo la narrativa más reciente); `PROYECTO.md`/`DEVELOPERS.md`/`SKILL.md`
+para contexto.
+
+**Hallazgos del auditor incorporados (paso 1 del encargo).** Registro completo revisado: `#24` (baja)
+y `#30` (media) siguen `ABIERTO`, ambos de proceso/gobernanza puro, ya enrutados como preguntas
+`#11`/`#12` de §6 desde 2026-09-16 y 2026-10-10 respectivamente (47 y 23 días sin respuesta del
+dueño) — ninguno de los dos es convertible en una R-XX de producto/arquitectura ni en deuda técnica
+de backlog porque ambos dependen de una decisión de protocolo que solo puede tomar el dueño (§0.4 de
+`HOJA_DE_RUTA.md`), no de una mejora de código. `#36` (baja, apertura en inglés de un commit ya
+publicado) sigue puramente observacional, con remedio retroactivo explícitamente descartado por el
+propio auditor. Ninguno de severidad alta. No se abre ninguna R-XX nueva ni entrada de backlog por
+esta vía en este ciclo.
+
+**Feedback incorporado (paso 2 del encargo).** `roadmap/FEEDBACK.md` revisado: sigue con su única
+fila de plantilla vacía, sin ninguna entrada `nuevo` que volcar al roadmap. El bloqueo #7 de §3
+(grabar un vídeo de curso completo con la skill instalada) sigue abierto, ahora más de 60 días desde
+que T-32 lo dejó listo para grabar (2026-09-03) — sigue siendo, con diferencia, el hito de mayor
+valor pendiente del proyecto, y no es una acción que el equipo pueda ejecutar por su cuenta.
+
+**Roadmap evolucionado (paso 3 del encargo).** Archivada la Oleada v31 (R-43, aviso en el índice
+cuando la toma buena de una escena trae un tropiezo marcado dentro) en `ROADMAP_HISTORICO.md`, con su
+spec completa y "Cómo se entregó" verificados contra el código real de
+`assets/reproductor/guion.js::renderizarIndice` antes de redactar el resumen — llevaba `COMPLETADA`
+en §1 desde el mismo día (2026-11-02), reconfirmada en verde por el Programador en varias pasadas
+sucesivas. Abierta R-44 (Oleada v32): resumen agregado, en la cabecera del índice, de cuántas escenas
+en total tienen la toma buena con un tropiezo dentro — mismo principio que R-39 ya aplicó al
+progreso de grabación, ahora aplicado al aviso de R-43 para no obligar a recorrer la lista completa
+de escenas. Spec completa (Migración/Depende de/Origen, Objetivo, Requisitos, Criterio de aceptación)
+en `ROADMAP_PRODUCTO.md`, Oleada v32. Cabecera de `ROADMAP_PRODUCTO.md` reescrita (fecha, recuento de
+hallazgos, 43 R-XX completadas) y `ROADMAP_HISTORICO.md` con su nota de cierre de fechas actualizada.
+
+**Roadmap mantenido vivo (paso 4 del encargo).** Solo queda viva en `ROADMAP_PRODUCTO.md` la Oleada
+v32 (R-44, `PENDIENTE`); las 31 oleadas anteriores ya archivadas en `ROADMAP_HISTORICO.md`.
+
+**Límites de autonomía respetados (§0.3).** R-44 no cambia la convención de marcado ni la identidad
+visual 480, no introduce dependencias/CDN/red, no elimina funcionalidad ni propone nada destructivo;
+no depende de ninguna decisión pendiente del dueño, así que no se deja como pregunta nueva en §6.
+
+**Sin cambio de código.** Ciclo de PM: no se ejecuta `scripts/ci.py` ni
+`verificar_salidas.py --fixture`; `scripts/`, `tests/` y `assets/` intactos (`git status`/`git diff
+--stat` tras las ediciones de `roadmap/`, limpio salvo los documentos de roadmap tocados). La
+implementación de R-44 queda para el siguiente ciclo de Programador.
+
+**Cambios de estado (§1).** R-44 añadida como `PENDIENTE`. R-43 permanece `COMPLETADA` (sin cambio,
+ya lo estaba).
+
+**Decisiones nuevas en `DECISIONES_TECNICAS.md`:** `PM (archivo de Oleada v31)` y `PM (apertura de
+R-44)`, con las alternativas consideradas en cada caso.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX) ni §7 (desviaciones).** §6 sigue con `#11`/`#12`
+`(pendiente)` de respuesta del dueño — no se repiten como preguntas nuevas, ya están registradas.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-11-02 (309) — Ciclo de Programador: novena reconfirmación del día tras R-43, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —

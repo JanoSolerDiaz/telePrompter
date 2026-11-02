@@ -2828,6 +2828,88 @@ consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle completo en `DECISIONE
 
 ---
 
+## Oleada v31 — Avisar en el índice cuando la toma buena de una escena trae un tropiezo marcado dentro
+
+### R-43 — El índice de escenas avisa, de un vistazo, cuando la toma marcada como buena de una escena tiene uno o más tropiezos marcados dentro de ella
+
+**Migración:** No (lectura pura de datos que ya existen en `localStorage`: `tomasEscena[indice]`
+con `buena`/`numero` de R-02, `tropiezosEscena[indice]` con `numero_toma` ya persistido desde R-36;
+ningún campo nuevo, ninguna escritura nueva, sin cambio en `scripts/reproductor.py` ni en el
+contrato embebido) · **Depende de:** T-19 (índice de escenas, `renderizarIndice`), R-02 (registro de
+tomas, campo `buena`), R-03 (marcar tropiezos), R-34 (instante de toma del tropiezo), R-36 (número
+de toma asociado a cada tropiezo, ya persistido en el propio `localStorage` del reproductor, no solo
+en `FEEDBACK.md`), R-37 y R-38 (mismo cruce «¿cayó dentro de la toma buena?» ya resuelto del lado de
+Python, en `scripts/feedback.py` y `scripts/comandos_montaje.py` respectivamente) — todas
+`COMPLETADA` · **Origen:** observación de arquitectura del PM (2026-10-30). R-37 y R-38 resuelven el
+mismo cruce dos veces, en dos documentos de salida distintos, pero los dos se generan al exportar —
+normalmente al final de toda la sesión de rodaje. `guion.js` ya tiene en memoria, en el momento
+exacto en que el dueño marca una toma como buena (o revisa el índice más tarde), los dos datos que
+hacen falta para el mismo cruce, sin tocar ningún archivo ni esperar a exportar nada; hoy esa
+coincidencia queda invisible en el propio índice, el sitio donde el dueño decide, escena a escena, si
+seguir grabando o volver atrás.
+
+**Objetivo:** que el dueño vea, sin salir del índice y sin exportar nada, que la toma que acaba de
+marcar (o ya tenía marcada) como buena de una escena contiene un tropiezo señalado dentro de ella —
+para decidir en el momento, con el resto del material todavía fresco, si volver a grabar esa toma o
+aceptarla sabiendo que el montaje con ffmpeg tendrá que cortar en ese instante exacto (ya calculado
+por R-34 y ya citado en `comandos-montaje.md` por R-38).
+
+**Requisitos:**
+1. En `renderizarIndice` (`assets/reproductor/guion.js`), en el bloque donde ya se calcula
+   `resumenTropiezos`, reutilizar tal cual las variables `tomaBuena` y `tropiezosDeEscena` ya
+   calculadas más arriba en la misma función (sin segunda consulta a `localStorage`) para filtrar los
+   tropiezos cuyo `numero_toma` coincida con `tomaBuena.numero` — solo cuando `tomaBuena` existe; sin
+   toma buena, ningún tropiezo puede estar "dentro" de ella por definición y el requisito no se
+   activa. Mismo criterio de comparación que ya usan `scripts/feedback.py` (R-37) y
+   `scripts/comandos_montaje.py` (R-38), ahora reflejado del lado del cliente.
+2. Si ese filtrado da uno o más tropiezos, añadir al `<span class="escena-tropiezos">` ya existente
+   (o un `<span>` hermano inmediato, `escena-tropiezos-en-buena`) el aviso "⚠ N en la toma buena"
+   (singular "⚠ 1 en la toma buena", mismo criterio singular/plural que el resto de resúmenes de la
+   fila) — nunca sustituyendo el recuento total de tropiezos de la escena que R-03 ya muestra, solo
+   añadiendo el matiz de cuáles caen dentro de la toma que de verdad se usaría en el montaje.
+3. CSS nuevo en `assets/reproductor/estilo.css`, reutilizando el lenguaje visual de aviso que ya usa
+   `.indicador-tropiezo` (R-03: color de acento, negrita) en vez del gris discreto de
+   `.escena-tropiezos`/`.escena-tomas`/`.escena-indicaciones` — es la única de las líneas de resumen
+   de la fila que puede exigir una decisión del dueño, no solo informar, así que merece distinguirse
+   sin llegar a competir con el título de la escena ni con la insignia de estado (principio de
+   producto 5: legibilidad por encima de todo).
+4. Sin elemento interactivo nuevo (`<span>`, nunca un control — `fila` ya es un `<button>`, mismo
+   criterio que R-02/R-03/R-42); sin `localStorage` nuevo; sin cambio en `scripts/reproductor.py`,
+   `scripts/feedback.py`, `scripts/comandos_montaje.py` ni en el contrato embebido — mejora
+   enteramente de lectura y presentación sobre datos que ya existen en el propio `guion.js`.
+5. El aviso se recalcula solo (mismo patrón que R-39/R-40/R-41/R-42, sin heurística de refresco
+   nueva): `finalizarTomaActual`/`alternarTropiezoBloqueActual` ya llaman a `renderizarIndice()`, así
+   que la siguiente vuelta al índice recalcula el filtrado sin cableado adicional.
+
+**Criterio de aceptación:** sobre una fixture con al menos tres escenas de prueba — (a) una sin
+ninguna toma, (b) una con una toma buena y ningún tropiezo marcado con ese mismo `numero_toma`
+(puede tener tropiezos de tomas anteriores descartadas), y (c) una con una toma buena que sí tiene
+uno o más tropiezos marcados con ese `numero_toma` — el índice no muestra ningún aviso en (a) ni en
+(b) (en (b), el resumen de tropiezos sigue mostrando su recuento total si lo hay, simplemente sin el
+añadido de aviso) y muestra "⚠ 1 en la toma buena" (o el plural correspondiente) en (c), con el
+estilo de `.indicador-tropiezo` reutilizado. El JSON embebido por `scripts/reproductor.py` no gana
+ningún campo nuevo (mismo contrato que antes de R-43, verificado por diff contra la salida de
+referencia). Verificado también visualmente con Playwright/Chromium real, mismo criterio que
+R-37/R-38/R-39/R-40/R-41/R-42.
+
+**Cómo se entregó:** `assets/reproductor/guion.js::renderizarIndice` reutiliza tal cual
+`tomaBuena`/`tropiezosDeEscena` ya calculados en la misma función (sin segunda consulta a
+`localStorage`) para filtrar los tropiezos cuyo `numero_toma` coincida con `tomaBuena.numero` —
+mismo criterio que `feedback._es_toma_buena` (R-37) y `comandos_montaje.py` (R-38), ahora del lado
+del cliente. Con uno o más, añade un `<span class="escena-tropiezos-en-buena">` hermano del resumen
+total de R-03 ("⚠ N en la toma buena"), sin sustituirlo. CSS nuevo reutiliza el lenguaje visual de
+`.indicador-tropiezo` (color de acento, negrita) en vez del gris discreto del resto de resúmenes de
+la fila. Sin elemento interactivo nuevo, sin `localStorage` nuevo, sin cambio en
+`scripts/reproductor.py` ni en el contrato embebido (verificado por diff de claves del JSON). 7 tests
+nuevos (763→770). Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin
+cambio. Verificado también visualmente con Playwright/Chromium real sobre la fixture
+`guion-ejemplo.md` con tres casos inyectados en `localStorage` (sin toma, toma buena sin tropiezo de
+esa toma, toma buena con dos tropiezos de esa toma): los tres criterios de aceptación de la ficha
+pasan, sin errores de consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle completo en
+`DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2845,4 +2927,5 @@ el mismo día; la de v26 (R-38), 2026-10-26 (implementación), archivada el mism
 v27 (R-39), 2026-10-27 (implementación), archivada el mismo ciclo de PM; la de v28 (R-40),
 2026-10-28 (implementación), archivada el ciclo de PM del mismo día; la de v29 (R-41), 2026-10-29
 (implementación), archivada en el ciclo de PM del mismo día; la de v30 (R-42), 2026-10-30
-(implementación), archivada en este ciclo de PM (2026-10-30).)*
+(implementación), archivada en el ciclo de PM del mismo día; la de v31 (R-43), 2026-11-02
+(implementación), archivada en este ciclo de PM (2026-11-02).)*
