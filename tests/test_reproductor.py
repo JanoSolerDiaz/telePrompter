@@ -1665,3 +1665,93 @@ def test_guion_js_volver_al_indice_no_usa_tabindex_ni_aria_live_nuevos() -> None
     # sobre un `<button>` ya renderizado), sin `tabindex` ni `aria-live`.
     assert "tabindex" not in pagina.lower()
     assert "aria-live" not in pagina.lower()
+
+
+# --- Aviso de tropiezos en la toma buena en el indice (R-43) ----------------------------
+
+
+def _fragmento_aviso_tropiezos_en_buena(pagina: str) -> str:
+    inicio = pagina.index("// Aviso de tropiezos dentro de la toma buena (R-43)")
+    fin = pagina.index("fila.appendChild(crearBadgeEstado(indice));", inicio)
+    return pagina[inicio:fin]
+
+
+def test_guion_js_aviso_tropiezos_en_buena_reutiliza_tomabuena_y_tropiezos_de_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_aviso_tropiezos_en_buena(pagina)
+    # Requisito 1: sin una segunda consulta a `localStorage` -- reutiliza tal
+    # cual las variables ya calculadas mas arriba en `renderizarIndice`.
+    assert "getItem" not in fragmento
+    assert "if (tomaBuena) {" in fragmento
+    assert "tropiezosDeEscena.filter(function (tropiezo) {" in fragmento
+    assert "return tropiezo.numero_toma === tomaBuena.numero;" in fragmento
+
+
+def test_guion_js_aviso_tropiezos_en_buena_no_se_activa_sin_toma_buena() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_aviso_tropiezos_en_buena(pagina)
+    # Requisito 1: todo el bloque, filtrado incluido, vive dentro del `if
+    # (tomaBuena)` -- sin toma buena, el requisito ni se evalua.
+    assert fragmento.index("if (tomaBuena) {") < fragmento.index(
+        "tropiezosDeEscena.filter(function (tropiezo) {"
+    )
+
+
+def test_guion_js_aviso_tropiezos_en_buena_texto_con_simbolo_de_aviso() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_aviso_tropiezos_en_buena(pagina)
+    # Requisito 2: "⚠ N en la toma buena" -- sin variacion de palabra entre
+    # singular y plural, el unico elemento que cambia es el numero.
+    assert '"⚠ " + tropiezosEnBuena.length + " en la toma buena";' in fragmento
+
+
+def test_guion_js_aviso_tropiezos_en_buena_no_sustituye_el_recuento_total() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: `<span>` hermano del resumen total de tropiezos (R-03), que
+    # sigue intacto justo antes -- nunca se elimina ni se sobrescribe.
+    inicio_total = pagina.index('resumenTropiezos.className = "escena-tropiezos";')
+    inicio_en_buena = pagina.index('avisoTropiezosEnBuena.className = "escena-tropiezos-en-buena";')
+    assert inicio_total < inicio_en_buena
+    assert 'fila.appendChild(resumenTropiezos);' in pagina
+    assert 'fila.appendChild(avisoTropiezosEnBuena);' in pagina
+
+
+def test_guion_js_aviso_tropiezos_en_buena_sin_elemento_interactivo_nuevo() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    fragmento = _fragmento_aviso_tropiezos_en_buena(pagina)
+    # Requisito 4: un `<span>`, nunca un control nuevo.
+    assert 'document.createElement("span")' in fragmento
+    assert 'document.createElement("button")' not in fragmento
+
+
+def test_guion_js_aviso_tropiezos_en_buena_no_cambia_el_contrato_embebido() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: cero cambio en `scripts/reproductor.py` ni en el JSON
+    # embebido -- el aviso es enteramente de `guion.js` sobre datos que ya
+    # vive en `localStorage` (R-02/R-36).
+    datos = _extraer_datos(pagina)
+    for escena in datos["escenas"]:
+        assert set(escena.keys()) == {
+            "numero",
+            "titulo",
+            "duracion_estimada_segundos",
+            "duracion_objetivo_segundos",
+            "bloques",
+        }
+
+
+def test_estilo_aviso_tropiezos_en_buena_reutiliza_el_color_de_acento() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: mismo lenguaje visual que `.indicador-tropiezo` (color de
+    # acento, negrita), no el gris discreto de `.escena-tropiezos`.
+    coincidencia = pagina.index(".escena-tropiezos-en-buena {")
+    fragmento = pagina[coincidencia : coincidencia + 200]
+    assert "color: var(--color-acento);" in fragmento
+    assert "font-weight: 600;" in fragmento

@@ -183,6 +183,19 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+/* Aviso de tropiezos dentro de la toma buena (R-43): unica linea de resumen
+   de la fila que puede exigir una decision del dueno (volver a grabar o
+   aceptar el corte), no solo informar -- reutiliza el lenguaje visual de
+   aviso de `.indicador-tropiezo` (color de acento, negrita) en vez del gris
+   discreto de `.escena-tropiezos`/`.escena-tomas`/`.escena-indicaciones`. */
+.escena-tropiezos-en-buena {
+  color: var(--color-acento);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7em;
+  white-space: nowrap;
+}
+
 /* Editar el archivo de video real de la toma buena (R-19, requisito 1):
    fuera del <button> de la fila -- anidar controles interactivos dentro de
    otro rompe la semantica (mismo motivo por el que el resumen de tomas de

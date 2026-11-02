@@ -646,6 +646,26 @@
         fila.appendChild(resumenTropiezos);
       }
 
+      // Aviso de tropiezos dentro de la toma buena (R-43): mismo cruce
+      // "numero_toma == toma buena" que ya resuelven `feedback._es_toma_buena`
+      // (R-37) y `comandos_montaje.py` (R-38) del lado de Python, ahora visible
+      // sin exportar nada. Reutiliza `tomaBuena`/`tropiezosDeEscena` ya
+      // calculados arriba en esta misma funcion -- sin segunda consulta a
+      // `localStorage`. Sin toma buena, ningun tropiezo puede estar "dentro"
+      // de ella por definicion.
+      if (tomaBuena) {
+        var tropiezosEnBuena = tropiezosDeEscena.filter(function (tropiezo) {
+          return tropiezo.numero_toma === tomaBuena.numero;
+        });
+        if (tropiezosEnBuena.length > 0) {
+          var avisoTropiezosEnBuena = document.createElement("span");
+          avisoTropiezosEnBuena.className = "escena-tropiezos-en-buena";
+          avisoTropiezosEnBuena.textContent =
+            "⚠ " + tropiezosEnBuena.length + " en la toma buena";
+          fila.appendChild(avisoTropiezosEnBuena);
+        }
+      }
+
       fila.appendChild(crearBadgeEstado(indice));
 
       fila.addEventListener("click", function () {

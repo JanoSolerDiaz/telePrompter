@@ -4306,6 +4306,49 @@ R-02 (tomas) y R-03 (tropiezos).
   "3 indicaciones en pantalla", el orden de los `<span>` de la fila coincide con el requisito 2
   y no se registró ningún error de consola.
 
+## Aviso de tropiezos dentro de la toma buena en el índice de escenas (R-43)
+
+R-37 (`scripts/feedback.py`) y R-38 (`scripts/comandos_montaje.py`) ya cruzan, del lado de
+Python, si un tropiezo marcado cayó dentro de la toma que de verdad quedó como buena — pero ese
+cruce solo se ve al exportar `FEEDBACK.md` o `comandos-montaje.md`, normalmente al final de toda
+la sesión de rodaje. `guion.js` ya tiene en memoria, en el momento exacto en que el dueño marca
+una toma como buena (o revisa el índice más tarde), los dos datos que hacen falta para el mismo
+cruce — sin tocar ningún archivo ni esperar a exportar nada. R-43 lo hace visible ahí mismo.
+
+- **Reutiliza `tomaBuena` y `tropiezosDeEscena` ya calculados en `renderizarIndice`** (requisito
+  1): sin una segunda consulta a `localStorage`. Solo cuando `tomaBuena` existe, filtra
+  `tropiezosDeEscena` por `tropiezo.numero_toma === tomaBuena.numero` — mismo criterio de
+  comparación que `feedback._es_toma_buena` (R-37) y `comandos_montaje.py` (R-38), ahora
+  reflejado del lado del cliente. Sin toma buena, el requisito ni se evalúa: ningún tropiezo
+  puede estar "dentro" de ella por definición.
+- **Un `<span class="escena-tropiezos-en-buena">` hermano del resumen total** (requisito 2): se
+  añade justo después de `.escena-tropiezos` (R-03), que sigue mostrando el recuento total de
+  tropiezos de la escena sin ningún cambio — el aviso nuevo solo añade el matiz de cuántos caen
+  dentro de la toma que de verdad usaría el montaje. Texto "⚠ N en la toma buena" (el número es
+  lo único que varía; no hay una palabra que pluralizar).
+- **CSS nuevo en `assets/reproductor/estilo.css`** (requisito 3): `.escena-tropiezos-en-buena`
+  reutiliza el lenguaje visual de aviso de `.indicador-tropiezo` (`color: var(--color-acento)`,
+  `font-weight: 600`) en vez del gris discreto de `.escena-tropiezos`/`.escena-tomas` — es la
+  única línea de resumen de la fila que puede exigir una decisión del dueño (volver a grabar o
+  aceptar el corte), no solo informar.
+- **Sin elemento interactivo nuevo, sin `localStorage` nuevo, sin cambio en
+  `scripts/reproductor.py` ni en el contrato embebido** (requisito 4): mejora enteramente de
+  lectura y presentación sobre datos que ya existen en `guion.js` (R-02/R-36).
+- **El aviso se recalcula solo** (requisito 5): `finalizarTomaActual`/`alternarTropiezoBloqueActual`
+  ya llaman a `renderizarIndice()`, así que la siguiente vuelta al índice recalcula el filtrado
+  sin cableado adicional.
+- **Tests.** 7 nuevos en `tests/test_reproductor.py` (reutilización de `tomaBuena`/
+  `tropiezosDeEscena` sin segunda consulta a `localStorage`, el filtrado vive dentro del `if
+  (tomaBuena)`, texto fijo "⚠ N en la toma buena", el `<span>` nuevo es hermano del resumen total
+  sin sustituirlo, sin control interactivo nuevo, cero cambio en las claves del contrato de
+  datos, mismo tratamiento visual que `.indicador-tropiezo`). Cuatro redes en verde
+  (763→770 tests). Verificado también visualmente con Playwright/Chromium real sobre la fixture
+  `guion-ejemplo.md` con tres casos inyectados en `localStorage`: escena sin ninguna toma (sin
+  aviso), escena con toma buena y un tropiezo de una toma distinta ya descartada (sin aviso, el
+  recuento total de R-03 sigue mostrando "1 tropiezo" intacto), y escena con toma buena y dos
+  tropiezos de esa misma toma ("⚠ 2 en la toma buena", con el color de acento y el peso 600 de
+  `.indicador-tropiezo`) — sin errores de consola en ningún caso.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

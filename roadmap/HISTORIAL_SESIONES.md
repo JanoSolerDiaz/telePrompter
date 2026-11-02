@@ -12,6 +12,80 @@
 
 ---
 
+### Sesión 2026-11-02 (300) — Ciclo de Programador: implementa R-43 (aviso de tropiezos en la toma buena en el índice)
+
+**Arranque.** Sesión en la nube (clon efímero, sin instalación local de la skill ni health check —
+T-32 no aplicable aquí). `git checkout develop && git pull origin develop` trajo ya fusionadas, por
+fast-forward limpio, las cinco últimas auditorías/ciclos de PM (hasta el commit `de24c1e`, auditoría
+de hoy sin hallazgos nuevos), árbol de trabajo limpio sin divergencia que resolver. Dependencias de
+desarrollo instaladas con `python3 -m pip install -r requirements-dev.txt` contra el intérprete real
+(el `pip`/`pip3` desnudos del sistema apuntan a otro intérprete y no ven los paquetes, mismo síntoma
+ya documentado en `#22`/`#28`/P-06).
+
+**Documentos leídos antes de actuar** (§0.4 de `HOJA_DE_RUTA.md`): `SEGUIMIENTO.md` completo (§1
+estado global, §3 bloqueos), registro de hallazgos completo de `auditoriacontinua.md` (narrativa de
+las últimas auditorías hasta la de hoy, 2026-11-02), ficha de R-43 en `ROADMAP_PRODUCTO.md` (Oleada
+v31), y el código real de `assets/reproductor/guion.js`/`estilo.css`, `scripts/feedback.py` y
+`scripts/comandos_montaje.py` (para el criterio exacto de comparación `numero_toma` de R-37/R-38) y
+`tests/test_reproductor.py` antes de escribir una sola línea.
+
+**Revisión de hallazgos del auditor.** Registro completo repasado: solo `#24` (baja) y `#30` (media)
+siguen `ABIERTO`, de proceso/gobernanza puro, ya enrutadas como preguntas `#11`/`#12` de §6,
+pendientes únicamente de respuesta del dueño (47/23 días); `#36` reconfirmado sin novedad,
+observacional. Ninguna de severidad alta que atender como P-XX urgente antes de elegir tarea.
+
+**Tarea elegida: R-43, única fila `PENDIENTE` de §1.** Implementada siguiendo estrictamente los
+cinco requisitos de la ficha: `assets/reproductor/guion.js::renderizarIndice` reutiliza tal cual las
+variables `tomaBuena` y `tropiezosDeEscena` ya calculadas más arriba en la misma función (sin
+segunda consulta a `localStorage`) para filtrar, solo cuando `tomaBuena` existe, los tropiezos cuyo
+`numero_toma` coincide con `tomaBuena.numero` — mismo criterio de comparación que
+`feedback._es_toma_buena` (R-37) y `comandos_montaje.py` (R-38), ahora del lado del cliente. Con uno
+o más, añade un `<span class="escena-tropiezos-en-buena">` hermano inmediato del resumen total de
+tropiezos de R-03 (que sigue intacto), con el texto "⚠ N en la toma buena" — sin variación de palabra
+entre singular y plural, solo cambia el número. CSS nuevo (`.escena-tropiezos-en-buena`) reutiliza el
+lenguaje visual de aviso de `.indicador-tropiezo` (color de acento, negrita), distinto del gris
+discreto de `.escena-tropiezos`/`.escena-tomas`/`.escena-indicaciones`, porque es la única línea de
+resumen de la fila que puede exigir una decisión del dueño. Sin elemento interactivo nuevo, sin
+`localStorage` nuevo, sin cambio en `scripts/reproductor.py` ni en el contrato embebido. El
+recálculo automático ya lo cubren `finalizarTomaActual`/`alternarTropiezoBloqueActual`, que ya
+llaman a `renderizarIndice()`.
+
+**Verificación.** 7 tests nuevos en `tests/test_reproductor.py` (763→770): reutilización de
+`tomaBuena`/`tropiezosDeEscena` sin segunda consulta a `localStorage`, el filtrado vive dentro del
+`if (tomaBuena)`, texto fijo "⚠ N en la toma buena", el `<span>` nuevo es hermano del resumen total
+sin sustituirlo, sin control interactivo nuevo, cero cambio en las claves del contrato de datos
+embebido, mismo tratamiento visual que `.indicador-tropiezo`. Cuatro redes en verde: `python3 -m
+mypy scripts/ tests/` (72 archivos, sin problemas), `python3 -m ruff check scripts/ tests/` (todo
+correcto), `python3 -m pytest` (770 tests, código de salida 0) y `python3 scripts/verificar_salidas.py
+--fixture` (diecinueve etapas `OK`, mismo recuento que antes, incluidas las dos salidas latentes
+esperadas en este contenedor). Verificado también visualmente con Playwright/Chromium real (binario
+preinstalado en el contenedor, `require('playwright')` desde Node.js sin instalación adicional) sobre
+`fixtures/guion-ejemplo.md` con tres casos inyectados en `localStorage` antes de cargar la página:
+escena sin ninguna toma (sin aviso), escena con toma buena y un tropiezo de una toma distinta ya
+descartada (sin aviso, el resumen total de R-03 sigue mostrando "1 tropiezo" intacto) y escena con
+toma buena y dos tropiezos de esa misma toma ("⚠ 2 en la toma buena", con `color: var(--color-acento)`
+y `font-weight: 600` de `.indicador-tropiezo`) — los tres criterios de aceptación de la ficha pasan,
+sin ningún error de consola.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** `R-43` pasa de `PENDIENTE` a `COMPLETADA`
+(2026-11-02).
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`.** Una fila: el aviso usa texto fijo para singular y
+plural ("⚠ 1 en la toma buena" / "⚠ 2 en la toma buena") en vez de una rama con sustantivo propio,
+porque la ficha solo fija el texto exacto para N=1 y no hay una palabra visible en el propio aviso
+que cambie de forma con el número — el matiz ya lo dan el icono y el color de acento.
+
+**Documentación.** `SKILL.md` (párrafo del índice de escenas gana la mención de R-43) y
+`DEVELOPERS.md` (sección nueva "Aviso de tropiezos dentro de la toma buena en el índice de escenas
+(R-43)") actualizados. Sin cambios en §3 (bloqueos) ni §7 (desviaciones) de `SEGUIMIENTO.md`. §5
+(P-XX) sin novedad: ninguna P-XX de iniciativa propia, la tarea de la columna vertebral (R-43) ya
+cubría la sesión. §6 sigue con `#11`/`#12` `(pendiente)` de respuesta del dueño.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`). Archivar la Oleada v31 y abrir la
+siguiente corresponde a un ciclo de Product Manager posterior.
+
+---
+
 ### Sesión 2026-11-01 (299) — Ciclo de Product Manager: reconfirmación de cola, sin R-XX nueva abierta
 
 **Arranque.** Sesión en la nube (clon efímero). `git checkout develop && git pull origin develop`
