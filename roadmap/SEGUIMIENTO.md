@@ -10,8 +10,53 @@
 
 **Hoja de ruta de referencia:** `HOJA_DE_RUTA.md` v1.3 (2026-08-31)
 **Modo de operación:** AUTONOMÍA TOTAL
-**Última actualización:** 2026-11-02 — **Ciclo de Programador: segunda reconfirmación del día tras
+**Última actualización:** 2026-11-02 — **Ciclo de Programador: tercera reconfirmación del día tras
 R-43, sin novedad de código**, detalle completo en `HISTORIAL_SESIONES.md`.
+
+**Ciclo de Programador (2026-11-02), tercera tras R-43.** Sesión en la nube (clon efímero, sin
+instalación local de la skill ni health check — T-32 no aplicable aquí). Revisión de entrada
+(protocolo): `git checkout develop && git pull origin develop` trajo ya fusionada la segunda
+reconfirmación de hoy (commit `04941fb`, sin cambio de código), árbol de trabajo limpio sin
+divergencia que resolver. Dependencias de desarrollo instaladas con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real, sin el síntoma de `pip` desnudo (`#22`/`#28`/P-06)
+en esta pasada.
+
+**Registro de hallazgos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado completo
+(tabla de registro línea a línea, no solo la narrativa más reciente): ningún hallazgo `ABIERTO` de
+severidad alta (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de la
+auto-contención, seguridad) que atender como P-XX urgente — `#24` (baja) y `#30` (media) siguen
+`ABIERTO`, de gobernanza pura, pendientes de respuesta del dueño a las preguntas `#11`/`#12` de §6,
+sin cambio desde el ciclo anterior; `#36` (baja) sigue `ABIERTO`, puramente observacional sobre un
+commit ya publicado, sin novedad. `mcp__github__list_issues`/`list_pull_requests` sobre
+`JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+§1 (fuente autoritativa) confirmada de punta a punta: R-43 sigue siendo la última fila y está
+**COMPLETADA**; ninguna fila `PENDIENTE` ni `BLOQUEADA` que ejecutar en esta pasada (aparte de
+`T-24b`, bloqueo físico ajeno al programador) — archivar la Oleada v31 y abrir la siguiente
+corresponde a un ciclo de Product Manager posterior, mismo criterio ya aplicado tras oleadas
+anteriores. Ninguna P-XX nueva cerrable ni urgente que justifique abrirla de iniciativa propia.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (770
+tests, código de salida 0, sin fallos, mismo recuento que el ciclo anterior) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluida la salida latente esperada
+en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada — y las omisiones esperadas
+sin parte de rodaje real; el `.pdf` sí se generó de verdad, Chrome/Edge headless disponible en este
+contenedor, mismo comportamiento que en la pasada anterior). Cuatro redes en verde; ningún cambio en
+`scripts/`, `tests/` ni `assets/`.
+
+**Cambios de estado (§1).** Ninguno: R-43 permanece `COMPLETADA`.
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX, sin ningún hallazgo nuevo cerrable ni urgente que lo
+justifique), §6 (preguntas) ni §7 (desviaciones).** No se abre ninguna P-XX de iniciativa propia: sin
+tarea de la columna vertebral disponible y sin hallazgo urgente ni cerrable que la justifique. Sin
+decisiones nuevas que añadir a `DECISIONES_TECNICAS.md`: ciclo de pura reconfirmación, nada que
+decidir.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+**Última actualización anterior (2026-11-02, ciclo de Programador): segunda reconfirmación del día
+tras R-43, sin novedad de código**, detalle de la sesión más abajo.
 
 **Ciclo de Product Manager (2026-10-30): archiva Oleada v30 (R-42) y abre R-43 (Oleada v31).**
 Revisión de entrada (protocolo): `git checkout develop && git pull origin develop` trajo ya
