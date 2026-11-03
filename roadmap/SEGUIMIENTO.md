@@ -32,18 +32,16 @@
 
 ---
 
-**Última actualización:** 2026-11-03 — **Ciclo de Programador: P-11** (cierra el hueco real del validador de auto-contención: el atributo `srcset=` de `<img>`/`<source>` 
-no estaba cubierto por ningún patrón de `PATRONES_RECURSO_EXTERNO` — hallazgo `#41` de `auditoriacontinua.md`). Detalle completo de la implementación en 
-`HISTORIAL_SESIONES.md` y en `DECISIONES_TECNICAS.md`.
+**Última actualización:** 2026-11-03 — **Ciclo de Programador: primera reconfirmación del día tras P-11, sin novedad de código**. Detalle completo en `HISTORIAL_SESIONES.md`.
 
 **Estado vigente del proyecto:** Oleada v1 (T-00 a T-33) y R-01 a R-44 en `COMPLETADA` en §1; única excepción, `T-24b` **BLOQUEADA** (clicker Bluetooth real, acción del 
-dueño, §3.5). `auditoriacontinua.md` revisado completo antes de esta tarea: ningún hallazgo `ABIERTO` de severidad alta en las categorías que exigen P-XX urgente (pérdida 
-de texto del guion, corrupción de estado, rotura del reproductor o de su auto-contención, seguridad) — `#30` es alta pero de coste de cómputo de proceso puro, ya enrutado 
-a la pregunta `#12` de §6, no de esas categorías. Siguen `ABIERTO` `#30` y `#24` (baja) — ambos de gobernanza pura, pendientes solo de la respuesta 
-del dueño a las preguntas `#11`/`#12` de §6; `#36` (baja) sigue observacional sin remedio razonable; `#38`/`#39` (terreno del Programador/PM, `#39` ya resuelto en código 
-por P-10 aunque el auditor todavía no lo haya reverificado) y `#40` (rotación de `DECISIONES_TECNICAS.md`, tarea de archivado) quedan para una sesión dedicada. El PM 
-todavía no ha abierto ninguna oleada tras R-44 (Oleada v32): §1 no tiene ninguna R-XX/T-XX `PENDIENTE` de código en este momento, por lo que esta sesión tomó el 
-hallazgo `#41` como P-XX (§0.3), siguiendo el mismo criterio que P-06 a P-10.
+dueño, §3.5). §5 (P-01 a P-11) también completa de punta a punta. `auditoriacontinua.md` revisado completo antes de esta tarea: ningún hallazgo `ABIERTO` de severidad alta en 
+las categorías que exigen P-XX urgente (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de su auto-contención, seguridad) — `#30` es alta pero de coste 
+de cómputo de proceso puro, ya enrutado a la pregunta `#12` de §6, no de esas categorías. Siguen `ABIERTO` `#30` y `#24` (baja) — ambos de gobernanza pura, pendientes solo de la 
+respuesta del dueño a las preguntas `#11`/`#12` de §6; `#36` (baja) sigue observacional sin remedio razonable; `#38`/`#39` (terreno del Programador/PM, `#39` ya resuelto en código 
+por P-10 aunque el auditor todavía no lo haya reverificado) y `#40` (rotación de `DECISIONES_TECNICAS.md`, tarea de archivado) quedan para una sesión dedicada, ninguno cerrable 
+como P-XX rápida esta vez. El PM todavía no ha abierto ninguna oleada tras R-44 (Oleada v32): §1 no tiene ninguna R-XX/T-XX `PENDIENTE` de código, y sin ningún hallazgo nuevo 
+cerrable ni urgente, esta sesión es de pura reconfirmación (cuatro redes en verde, cero cambio en `scripts/`/`tests/`/`assets/`).
 
 ## 1. ESTADO GLOBAL DE TAREAS  *(fuente autoritativa de estado y orden de "siguiente tarea")*
 

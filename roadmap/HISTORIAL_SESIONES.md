@@ -12,6 +12,56 @@
 
 ---
 
+### Sesión 2026-11-03 (314) — Ciclo de Programador: primera reconfirmación del día tras P-11, sin novedad de código
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo ya fusionado el ciclo anterior (commit `0bc95dd`, P-11),
+árbol de trabajo limpio sin divergencia que resolver. El `pip install -r requirements-dev.txt`
+desnudo volvió a mostrar el síntoma `#22`/`#28`/P-06 (`pip -V` resuelve contra Python 3.13,
+`python3 -V` es 3.11.18): `mypy`/`ruff`/`pytest` quedaron ausentes del intérprete real (`python3 -m
+mypy` → `No module named mypy`), corregido reinstalando con `python3 -m pip install -r
+requirements-dev.txt` contra el intérprete real antes de verificar nada.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md`
+revisado completo (tabla de registro, fila a fila): ningún hallazgo `ABIERTO` de severidad alta en
+las categorías que exigen P-XX urgente (pérdida de texto del guion, corrupción de estado, rotura
+del reproductor o de su auto-contención, seguridad). `#30` (alta, proceso/cadencia) y `#24` (baja,
+proceso/coherencia roadmap-código) siguen `ABIERTO` solo a la espera de la respuesta del dueño a
+las preguntas `#11`/`#12` de §6 — ninguno cae en esas cuatro categorías urgentes. `#36` (baja, idioma
+de un commit ya publicado) sigue sin remedio retroactivo razonable. `#38` (mantenibilidad del propio
+registro del auditor) es terreno exclusivo del auditor. `#39` (bitácora de `SEGUIMIENTO.md`) ya está
+resuelto en código por P-10, pendiente solo de que el auditor lo reverifique en su propia pasada.
+`#40` (rotación de `DECISIONES_TECNICAS.md`, 372 filas) es tarea de archivado explícitamente descrita
+por el propio hallazgo como "terreno de auditoría, no de esta pasada" / merece su propia sesión
+dedicada, no un P-XX rápido de una sola sesión — a diferencia de P-06 a P-11, ningún hallazgo
+`ABIERTO` de esta pasada es aprovechable como P-XX sin más alcance que un ciclo. `mcp__github__
+list_issues`/`list_pull_requests` sobre `JanoSolerDiaz/telePrompter`: cero issues y cero PR abiertos.
+
+**Ninguna tarea elegida.** §1 confirmada de punta a punta: las 34 T-XX (T-24b `BLOQUEADA`, ajena al
+programador) y las 44 R-XX están `COMPLETADA`; §5 también completa, P-01 a P-11. Ninguna fila
+`PENDIENTE` ni `BLOQUEADA` ejecutable, ningún hallazgo nuevo cerrable ni urgente que justifique abrir
+una P-XX de iniciativa propia. Archivar la Oleada v32 (R-44) y abrir la siguiente corresponde a un
+ciclo de Product Manager posterior. Ciclo de pura reconfirmación.
+
+**Verificación completa, sin cambios de código.** `python3 -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python3 -m ruff check scripts/ tests/` (todo correcto), `python3 -m pytest` (780
+tests, código de salida 0, sin fallos, mismo recuento que el ciclo anterior tras P-11) y `python3
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluida la salida latente esperada
+en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada — y las omisiones esperadas
+sin parte de rodaje real; el `.pdf` sí se generó de verdad, Chrome/Edge headless disponible en este
+contenedor). Cuatro redes en verde; ningún cambio en `scripts/`, `tests/` ni `assets/` (`git status`
+tras la verificación, limpio).
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-44 permanece `COMPLETADA`. Sin decisiones
+nuevas en `DECISIONES_TECNICAS.md`. Sin novedad en §3 (bloqueos), §6 (preguntas, `#11`/`#12` siguen
+`(pendiente)`) ni §7 (desviaciones). Cabecera de `SEGUIMIENTO.md` actualizada ("Última
+actualización"/"Estado vigente") respetando la norma de P-10: solo el estado vigente, sin acumular
+la narrativa de esta sesión, que vive aquí.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-11-03 (313) — Ciclo de Programador: P-11, cierra el hueco de `srcset=` en el validador de auto-contención (hallazgo `#41`)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
