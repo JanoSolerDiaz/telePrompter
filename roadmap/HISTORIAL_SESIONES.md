@@ -12,6 +12,69 @@
 
 ---
 
+### Sesión 2026-11-03 (311) — Ciclo de Programador: implementa R-44 (Oleada v32)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo ya fusionado el ciclo de PM del día anterior (commit
+`f787b69`, apertura de R-44, sin cambio de código), árbol de trabajo limpio sin divergencia que
+resolver. El `pip install -r requirements-dev.txt` desnudo volvió a mostrar el síntoma `#22`/`#28`/
+P-06 (`pip -V` resuelve contra Python 3.13, `python3 -V` es 3.11): `mypy`/`ruff`/`pytest` quedaron
+ausentes del intérprete real tras la instalación desnuda, corregido reinstalando con `python -m pip
+install -r requirements-dev.txt` contra el intérprete real antes de verificar nada.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md` revisado
+completo (tabla de registro línea a línea, no solo la narrativa más reciente): ningún hallazgo
+`ABIERTO` de severidad alta (pérdida de texto del guion, corrupción de estado, rotura del reproductor
+o de su auto-contención, seguridad) que atender como P-XX urgente — `#24` (baja) y `#30` (media)
+siguen `ABIERTO`, de gobernanza pura, pendientes de respuesta del dueño a `#11`/`#12` de §6; `#36`
+(baja) sigue observacional sin remedio razonable. §1 de `SEGUIMIENTO.md` confirma R-44 como única
+tarea `PENDIENTE` en cola.
+
+**Tarea elegida y spec consultada.** R-44 (Oleada v32), única R-XX pendiente de código. Spec completa
+leída en `ROADMAP_PRODUCTO.md` antes de tocar código: resumen agregado en la cabecera del índice, de
+cuántas escenas en total tienen la toma buena con uno o más tropiezos marcados dentro, mismo
+principio que R-39 ya aplicó al progreso de grabación. `DECISIONES_TECNICAS.md` consultado en el área
+de `assets/reproductor/guion.js::renderizarIndice` antes de decidir la extracción de función
+(requisito 1 de la ficha).
+
+**Implementación.** `assets/reproductor/guion.js` gana `tropiezosEnTomaBuena(indice)`, extraída tal
+cual del filtro `numero_toma === tomaBuena.numero` que R-43 calculaba inline en el bloque por fila
+(array vacío sin toma buena); el propio bloque de R-43 pasa a llamarla, sin segunda implementación
+del mismo criterio. El `forEach` que R-39 ya recorre para pendientes/grabadas/revisadas/
+segundosPendientes suma `escenasConTropiezoEnBuena`, incrementado por cada escena con
+`tropiezosEnTomaBuena(indice).length > 0`, sin segundo recorrido de `datos.escenas`. Con el contador
+mayor que 0, un `<p class="resumen-tropiezos-en-buena">` se inserta entre
+`.resumen-progreso-grabacion` y el botón "Grabar siguiente pendiente" (R-40, cuando coexiste), con el
+texto exacto de la ficha en singular/plural (recuento de escenas, no de tropiezos); en 0, ningún
+elemento nuevo. CSS nuevo en `assets/reproductor/estilo.css` reutiliza el color de acento y la
+negrita de `.escena-tropiezos-en-buena` (R-43). Cero campo nuevo en el JSON embebido, cero
+`localStorage` nuevo, cero cambio en `scripts/reproductor.py`.
+
+**Verificación.** 9 tests nuevos y 2 ajustados por el refactor del requisito 1 en
+`tests/test_reproductor.py` (768→777 tests). Cuatro redes en verde: `mypy` (72 archivos), `ruff
+check`, `pytest` (777 tests), `python scripts/verificar_salidas.py --fixture` (diecinueve etapas, sin
+cambio). Verificado también visualmente con Playwright/Chromium real (Node.js, preinstalado en el
+contenedor): fixture propia de 4 escenas cubriendo los cuatro casos (a)-(d) del criterio de
+aceptación — sin resumen agregado con solo (a)/(b), "⚠ 2 escenas tienen la toma buena con uno o más
+tropiezos dentro" con (c) y (d) presentes (recuento de escenas, no de tropiezos, pese a que (d) trae
+dos), posición exacta entre `.resumen-progreso-grabacion` y "Grabar siguiente pendiente", avisos por
+fila de R-43 intactos.
+
+**Cambios de estado (§1).** R-44 pasa de `PENDIENTE` a `COMPLETADA` (2026-11-03).
+
+**Decisiones nuevas en `DECISIONES_TECNICAS.md`:** dos filas `R-44 (implementación)` (extracción de
+`tropiezosEnTomaBuena` y reutilización del `forEach` de R-39) y una nota informativa aclarando que
+esta sesión de Programador no archiva la oleada en `ROADMAP_PRODUCTO.md` (tarea del siguiente ciclo
+de PM).
+
+**Sin novedad en §3 (bloqueos), §5 (P-XX), §6 (preguntas) ni §7 (desviaciones).** `DEVELOPERS.md` sin
+cambio: R-44 no introduce ningún patrón nuevo que un desarrollador deba conocer, solo extiende el
+patrón de resumen agregado que R-39 ya documenta ahí.
+
+**Cierre.** Commit y push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-11-02 (310) — Ciclo de Product Manager: archiva Oleada v31 (R-43) y abre R-44 (Oleada v32)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "Product manager"). `git checkout develop &&

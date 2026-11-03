@@ -245,6 +245,23 @@
   var estadosEscena = datos.escenas.map(function (escena, indice) {
     return calcularEstadoEscena(indice);
   });
+  // Tropiezos dentro de la toma buena (R-44, requisito 1): misma logica exacta
+  // que R-43 ya calculaba inline en el bloque por fila de `renderizarIndice`,
+  // ahora en un unico sitio para que ese bloque y el resumen agregado de la
+  // cabecera (R-44) la llamen igual, sin segunda implementacion del mismo
+  // criterio. Array vacio sin toma buena -- ningun tropiezo puede estar
+  // "dentro" de una toma que no existe.
+  function tropiezosEnTomaBuena(indice) {
+    var tomaBuena = tomasEscena[indice].filter(function (toma) {
+      return toma.buena;
+    })[0];
+    if (!tomaBuena) {
+      return [];
+    }
+    return tropiezosEscena[indice].filter(function (tropiezo) {
+      return tropiezo.numero_toma === tomaBuena.numero;
+    });
+  }
   // Velocidad recordada por escena (T-20, requisito 5): multiplicador sobre la
   // duracion estimada de cada bloque, 1.0 = sin acelerar ni frenar. Persistida
   // por escena (T-26, requisito 1) con clave derivada del NUMERO de escena
@@ -350,10 +367,16 @@
     // `duracion_estimada_segundos` (T-12) de las escenas `pendiente`: una
     // escena `grabada` o `revisada` ya tiene al menos una toma hecha y no es
     // tiempo pendiente de grabar por primera vez (requisito 2).
+    // Recuento agregado de escenas con tropiezo en la toma buena (R-44,
+    // requisito 2): mismo bucle que ya recorre `datos.escenas` para
+    // pendientes/grabadas/revisadas, sin segundo recorrido. Reutiliza
+    // `tropiezosEnTomaBuena` (R-44, requisito 1), la misma funcion que el
+    // bloque por fila de R-43 llama mas abajo.
     var pendientes = 0;
     var grabadas = 0;
     var revisadas = 0;
     var segundosPendientes = 0;
+    var escenasConTropiezoEnBuena = 0;
     datos.escenas.forEach(function (escena, indice) {
       var estado = estadosEscena[indice];
       if (estado === "pendiente") {
@@ -363,6 +386,9 @@
         grabadas += 1;
       } else {
         revisadas += 1;
+      }
+      if (tropiezosEnTomaBuena(indice).length > 0) {
+        escenasConTropiezoEnBuena += 1;
       }
     });
     var resumenProgreso = document.createElement("p");
@@ -381,6 +407,23 @@
       formatearTiempo(segundosPendientes) +
       " estimados por grabar";
     vistaIndice.appendChild(resumenProgreso);
+
+    // Resumen agregado de tropiezos en toma buena (R-44, requisito 3): mismo
+    // "de un vistazo" que R-39 ya aplica al progreso de grabacion, ahora para
+    // el aviso que R-43 solo muestra fila a fila. Sin ningun elemento si el
+    // contador es 0 (requisito 3), igual que `.escena-tropiezos-en-buena`
+    // (R-43) no aparece en una fila sin tropiezos en su toma buena.
+    if (escenasConTropiezoEnBuena > 0) {
+      var resumenTropiezosEnBuena = document.createElement("p");
+      resumenTropiezosEnBuena.className = "resumen-tropiezos-en-buena";
+      resumenTropiezosEnBuena.textContent =
+        escenasConTropiezoEnBuena === 1
+          ? "⚠ 1 escena tiene la toma buena con un tropiezo dentro"
+          : "⚠ " +
+            escenasConTropiezoEnBuena +
+            " escenas tienen la toma buena con uno o más tropiezos dentro";
+      vistaIndice.appendChild(resumenTropiezosEnBuena);
+    }
 
     // "Grabar siguiente pendiente" (R-40): salto directo a la primera escena
     // `pendiente` en el orden del guion, sin recorrer la lista a ojo.
@@ -649,21 +692,16 @@
       // Aviso de tropiezos dentro de la toma buena (R-43): mismo cruce
       // "numero_toma == toma buena" que ya resuelven `feedback._es_toma_buena`
       // (R-37) y `comandos_montaje.py` (R-38) del lado de Python, ahora visible
-      // sin exportar nada. Reutiliza `tomaBuena`/`tropiezosDeEscena` ya
-      // calculados arriba en esta misma funcion -- sin segunda consulta a
-      // `localStorage`. Sin toma buena, ningun tropiezo puede estar "dentro"
-      // de ella por definicion.
-      if (tomaBuena) {
-        var tropiezosEnBuena = tropiezosDeEscena.filter(function (tropiezo) {
-          return tropiezo.numero_toma === tomaBuena.numero;
-        });
-        if (tropiezosEnBuena.length > 0) {
-          var avisoTropiezosEnBuena = document.createElement("span");
-          avisoTropiezosEnBuena.className = "escena-tropiezos-en-buena";
-          avisoTropiezosEnBuena.textContent =
-            "⚠ " + tropiezosEnBuena.length + " en la toma buena";
-          fila.appendChild(avisoTropiezosEnBuena);
-        }
+      // sin exportar nada. Reutiliza `tropiezosEnTomaBuena` (R-44, requisito 1:
+      // extraida de aqui mismo para que este bloque y el resumen agregado de la
+      // cabecera llamen a la misma funcion, sin segunda implementacion).
+      var tropiezosEnBuena = tropiezosEnTomaBuena(indice);
+      if (tropiezosEnBuena.length > 0) {
+        var avisoTropiezosEnBuena = document.createElement("span");
+        avisoTropiezosEnBuena.className = "escena-tropiezos-en-buena";
+        avisoTropiezosEnBuena.textContent =
+          "⚠ " + tropiezosEnBuena.length + " en la toma buena";
+        fila.appendChild(avisoTropiezosEnBuena);
       }
 
       fila.appendChild(crearBadgeEstado(indice));

@@ -1482,7 +1482,7 @@ def test_guion_js_muestra_progreso_de_grabacion_debajo_del_resumen_del_guion() -
     # Requisito 1: justo despues del `.resumen-guion` ya existente (T-19),
     # misma funcion `renderizarIndice`, sin recargar la pagina.
     coincidencia = pagina.index('resumen.className = "resumen-guion"')
-    fragmento = pagina[coincidencia : coincidencia + 2200]
+    fragmento = pagina[coincidencia : coincidencia + 2800]
     assert 'resumenProgreso.className = "resumen-progreso-grabacion"' in fragmento
     assert "vistaIndice.appendChild(resumenProgreso);" in fragmento
 
@@ -1680,23 +1680,25 @@ def test_guion_js_aviso_tropiezos_en_buena_reutiliza_tomabuena_y_tropiezos_de_es
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     fragmento = _fragmento_aviso_tropiezos_en_buena(pagina)
-    # Requisito 1: sin una segunda consulta a `localStorage` -- reutiliza tal
-    # cual las variables ya calculadas mas arriba en `renderizarIndice`.
+    # Requisito 1 (R-44): sin una segunda consulta a `localStorage` ni una
+    # segunda implementacion del cruce "numero_toma == toma buena" -- llama a
+    # `tropiezosEnTomaBuena(indice)`, la misma funcion que usa el resumen
+    # agregado de la cabecera (R-44).
     assert "getItem" not in fragmento
-    assert "if (tomaBuena) {" in fragmento
-    assert "tropiezosDeEscena.filter(function (tropiezo) {" in fragmento
-    assert "return tropiezo.numero_toma === tomaBuena.numero;" in fragmento
+    assert "var tropiezosEnBuena = tropiezosEnTomaBuena(indice);" in fragmento
 
 
-def test_guion_js_aviso_tropiezos_en_buena_no_se_activa_sin_toma_buena() -> None:
+def test_guion_js_tropiezos_en_toma_buena_devuelve_vacio_sin_toma_buena() -> None:
     resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
-    fragmento = _fragmento_aviso_tropiezos_en_buena(pagina)
-    # Requisito 1: todo el bloque, filtrado incluido, vive dentro del `if
-    # (tomaBuena)` -- sin toma buena, el requisito ni se evalua.
-    assert fragmento.index("if (tomaBuena) {") < fragmento.index(
-        "tropiezosDeEscena.filter(function (tropiezo) {"
-    )
+    # Requisito 1 (R-44): la funcion compartida, no el bloque por fila,
+    # devuelve `[]` sin toma buena -- "ningun tropiezo puede estar dentro de
+    # una toma que no existe".
+    inicio = pagina.index("function tropiezosEnTomaBuena(indice) {")
+    fin = pagina.index("\n  }", inicio)
+    fragmento = pagina[inicio:fin]
+    assert "if (!tomaBuena) {" in fragmento
+    assert "return [];" in fragmento
 
 
 def test_guion_js_aviso_tropiezos_en_buena_texto_con_simbolo_de_aviso() -> None:
@@ -1753,5 +1755,110 @@ def test_estilo_aviso_tropiezos_en_buena_reutiliza_el_color_de_acento() -> None:
     # acento, negrita), no el gris discreto de `.escena-tropiezos`.
     coincidencia = pagina.index(".escena-tropiezos-en-buena {")
     fragmento = pagina[coincidencia : coincidencia + 200]
+    assert "color: var(--color-acento);" in fragmento
+    assert "font-weight: 600;" in fragmento
+
+
+# --- Resumen agregado de tropiezos en toma buena en la cabecera (R-44) ------------------
+
+
+def _fragmento_resumen_tropiezos_en_buena(pagina: str) -> str:
+    inicio = pagina.index("var escenasConTropiezoEnBuena = 0;")
+    fin = pagina.index('vistaIndice.appendChild(resumenProgreso);', inicio)
+    return pagina[inicio:fin]
+
+
+def test_guion_js_agregado_tropiezos_en_buena_reutiliza_el_bucle_de_progreso() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: dentro del bloque que calcula el progreso de grabacion
+    # (R-39), un unico `forEach` sobre `datos.escenas` -- el contador nuevo se
+    # suma en el mismo recorrido, sin un segundo `forEach` propio.
+    inicio = pagina.index("var pendientes = 0;")
+    fin = pagina.index("vistaIndice.appendChild(resumenProgreso);", inicio)
+    fragmento_progreso = pagina[inicio:fin]
+    assert fragmento_progreso.count("datos.escenas.forEach(function (escena, indice) {") == 1
+    fragmento = _fragmento_resumen_tropiezos_en_buena(pagina)
+    assert "if (tropiezosEnTomaBuena(indice).length > 0) {" in fragmento
+    assert "escenasConTropiezoEnBuena += 1;" in fragmento
+
+
+def test_guion_js_resumen_tropiezos_en_buena_no_se_renderiza_en_cero() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: sin ningun `<p>` si el contador esta en 0 -- mismo criterio
+    # que `.escena-tropiezos-en-buena` (R-43) en una fila sin tropiezos.
+    coincidencia = pagina.index("if (escenasConTropiezoEnBuena > 0) {")
+    fin = pagina.index("// \"Grabar siguiente pendiente\"", coincidencia)
+    fragmento = pagina[coincidencia:fin]
+    assert 'document.createElement("p")' in fragmento
+    assert 'resumenTropiezosEnBuena.className = "resumen-tropiezos-en-buena";' in fragmento
+
+
+def test_guion_js_resumen_tropiezos_en_buena_singular_y_plural() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: texto exacto fijado por la ficha, singular con N=1, plural
+    # con N escenas (no tropiezos) en cualquier otro caso.
+    assert (
+        '"⚠ 1 escena tiene la toma buena con un tropiezo dentro"'
+    ) in pagina
+    assert (
+        '"⚠ " +\n'
+        "            escenasConTropiezoEnBuena +\n"
+        '            " escenas tienen la toma buena con uno o más tropiezos dentro"'
+    ) in pagina
+
+
+def test_guion_js_resumen_tropiezos_en_buena_cuenta_escenas_no_tropiezos() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Criterio de aceptación: el contador suma 1 por escena con
+    # `tropiezosEnTomaBuena(indice).length > 0`, nunca el total de tropiezos
+    # de esa escena -- una escena con dos tropiezos en su toma buena cuenta
+    # como una sola.
+    fragmento = _fragmento_resumen_tropiezos_en_buena(pagina)
+    assert "escenasConTropiezoEnBuena += 1;" in fragmento
+    assert "+= tropiezosEnTomaBuena(indice).length" not in fragmento
+
+
+def test_guion_js_resumen_tropiezos_en_buena_va_entre_progreso_y_siguiente_pendiente() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Criterio de aceptación: situado entre `.resumen-progreso-grabacion` y el
+    # boton "Grabar siguiente pendiente" cuando ambos coexisten.
+    indice_progreso = pagina.index("vistaIndice.appendChild(resumenProgreso);")
+    indice_resumen_nuevo = pagina.index(
+        'resumenTropiezosEnBuena.className = "resumen-tropiezos-en-buena";'
+    )
+    indice_siguiente_pendiente = pagina.index(
+        'botonSiguientePendiente.id = "btn-siguiente-pendiente";'
+    )
+    assert indice_progreso < indice_resumen_nuevo < indice_siguiente_pendiente
+
+
+def test_guion_js_resumen_tropiezos_en_buena_no_cambia_el_contrato_embebido() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5: cero campo nuevo en el JSON embebido -- mejora enteramente
+    # de lectura/presentación sobre datos que `guion.js` ya calcula por escena.
+    datos = _extraer_datos(pagina)
+    for escena in datos["escenas"]:
+        assert set(escena.keys()) == {
+            "numero",
+            "titulo",
+            "duracion_estimada_segundos",
+            "duracion_objetivo_segundos",
+            "bloques",
+        }
+
+
+def test_estilo_resumen_tropiezos_en_buena_reutiliza_el_color_de_acento() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena`
+    # (color de acento, negrita), no el tono neutro de `.resumen-progreso-grabacion`.
+    coincidencia = pagina.index(".resumen-tropiezos-en-buena {")
+    fragmento = pagina[coincidencia : coincidencia + 150]
     assert "color: var(--color-acento);" in fragmento
     assert "font-weight: 600;" in fragmento

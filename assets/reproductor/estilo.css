@@ -196,6 +196,18 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+/* Resumen agregado de tropiezos en toma buena (R-44): misma linea de resumen
+   que `.resumen-progreso-grabacion`, pero con el lenguaje visual de aviso de
+   `.escena-tropiezos-en-buena` (color de acento, negrita) en vez del tono
+   neutro -- es un aviso que puede exigir una decision del dueno antes de
+   cerrar la sesion, no solo informar de progreso (principio de producto 5). */
+.resumen-tropiezos-en-buena {
+  color: var(--color-acento);
+  font-weight: 600;
+  font-size: 0.55em;
+  margin-bottom: 2em;
+}
+
 /* Editar el archivo de video real de la toma buena (R-19, requisito 1):
    fuera del <button> de la fila -- anidar controles interactivos dentro de
    otro rompe la semantica (mismo motivo por el que el resumen de tomas de

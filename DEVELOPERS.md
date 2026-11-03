@@ -4315,12 +4315,14 @@ la sesión de rodaje. `guion.js` ya tiene en memoria, en el momento exacto en qu
 una toma como buena (o revisa el índice más tarde), los dos datos que hacen falta para el mismo
 cruce — sin tocar ningún archivo ni esperar a exportar nada. R-43 lo hace visible ahí mismo.
 
-- **Reutiliza `tomaBuena` y `tropiezosDeEscena` ya calculados en `renderizarIndice`** (requisito
-  1): sin una segunda consulta a `localStorage`. Solo cuando `tomaBuena` existe, filtra
-  `tropiezosDeEscena` por `tropiezo.numero_toma === tomaBuena.numero` — mismo criterio de
-  comparación que `feedback._es_toma_buena` (R-37) y `comandos_montaje.py` (R-38), ahora
-  reflejado del lado del cliente. Sin toma buena, el requisito ni se evalúa: ningún tropiezo
-  puede estar "dentro" de ella por definición.
+- **Reutiliza `tomaBuena`/`tropiezosDeEscena` vía `tropiezosEnTomaBuena(indice)`** (requisito 1,
+  extraída a función compartida por R-44 — ver más abajo): sin una segunda consulta a
+  `localStorage`. La función filtra `tropiezosEscena[indice]` por `tropiezo.numero_toma ===
+  tomaBuena.numero` cuando hay toma buena — mismo criterio de comparación que
+  `feedback._es_toma_buena` (R-37) y `comandos_montaje.py` (R-38), ahora reflejado del lado del
+  cliente — y devuelve `[]` sin toma buena: ningún tropiezo puede estar "dentro" de ella por
+  definición. El bloque de la fila solo llama a `tropiezosEnTomaBuena(indice)`, sin reimplicar el
+  filtro.
 - **Un `<span class="escena-tropiezos-en-buena">` hermano del resumen total** (requisito 2): se
   añade justo después de `.escena-tropiezos` (R-03), que sigue mostrando el recuento total de
   tropiezos de la escena sin ningún cambio — el aviso nuevo solo añade el matiz de cuántos caen
@@ -4348,6 +4350,51 @@ cruce — sin tocar ningún archivo ni esperar a exportar nada. R-43 lo hace vis
   recuento total de R-03 sigue mostrando "1 tropiezo" intacto), y escena con toma buena y dos
   tropiezos de esa misma toma ("⚠ 2 en la toma buena", con el color de acento y el peso 600 de
   `.indicador-tropiezo`) — sin errores de consola en ningún caso.
+
+## Resumen agregado de tropiezos en toma buena en la cabecera del índice (R-44)
+
+R-43 ya avisa fila a fila cuando la toma buena de una escena trae un tropiezo marcado dentro, pero
+ese aviso solo se ve recorriendo la lista completa — exactamente el mismo problema que R-39 ya
+resolvió para "cuánto queda por grabar" con una línea agregada en la cabecera, antes de la lista.
+R-44 aplica el mismo principio al aviso de R-43.
+
+- **`tropiezosEnTomaBuena(indice)` extraída del bloque por fila de R-43** (requisito 1): declarada
+  junto a `estadosEscena`, para que el bloque de R-43 y el resumen agregado llamen a la misma
+  función en vez de duplicar el filtro `numero_toma === tomaBuena.numero`. Devuelve `[]` sin toma
+  buena.
+- **El contador vive en el mismo `forEach` que R-39** (requisito 2): dentro del bucle que ya
+  calcula `pendientes`/`grabadas`/`revisadas`/`segundosPendientes` sobre `datos.escenas`, se suma
+  `escenasConTropiezoEnBuena` por cada escena cuyo `tropiezosEnTomaBuena(indice).length` sea mayor
+  que 0 — ningún segundo recorrido del array.
+- **`<p class="resumen-tropiezos-en-buena">` solo con el contador > 0** (requisito 3): insertado
+  entre `.resumen-progreso-grabacion` (R-39) y el botón "Grabar siguiente pendiente" (R-40) cuando
+  coexiste. Texto "⚠ 1 escena tiene la toma buena con un tropiezo dentro" (singular) o "⚠ N
+  escenas tienen la toma buena con uno o más tropiezos dentro" (plural, N = escenas, no
+  tropiezos — una escena con varios tropiezos en su toma buena cuenta una sola vez). Con el
+  contador en 0, no se renderiza ningún elemento, igual que `.escena-tropiezos-en-buena` (R-43) no
+  aparece en una fila sin tropiezos en su toma buena.
+- **CSS nuevo en `assets/reproductor/estilo.css`** (requisito 4): `.resumen-tropiezos-en-buena`
+  reutiliza el color de acento y el `font-weight: 600` de `.escena-tropiezos-en-buena` (R-43), no
+  el tono neutro de `.resumen-progreso-grabacion`/`.resumen-guion` — es un aviso que puede exigir
+  una decisión del dueño, no solo informar de progreso.
+- **Sin elemento interactivo nuevo, sin `localStorage` nuevo, sin cambio en
+  `scripts/reproductor.py` ni en el contrato embebido** (requisito 5): mejora enteramente de
+  lectura y presentación sobre datos que `guion.js` ya calcula por escena desde R-43.
+- **El resumen se recalcula solo** (requisito 6): cualquier llamada ya existente a
+  `renderizarIndice()` (marcar una toma buena, alternar un tropiezo, volver al índice) reconstruye
+  el contador desde cero sin cableado adicional.
+- **Tests.** 9 nuevos y 2 ajustados por el refactor del requisito 1 en
+  `tests/test_reproductor.py` (768→777 tests): la función compartida se llama desde el bloque de
+  fila, devuelve `[]` sin toma buena, el contador vive dentro del único `forEach` de progreso, sin
+  elemento con el contador en 0, texto singular/plural exacto, recuento por escena (no por
+  tropiezo), posición entre `.resumen-progreso-grabacion` y "Grabar siguiente pendiente", sin
+  campo nuevo en el contrato embebido, CSS reutiliza el color de acento. Cuatro redes en verde.
+  Verificado también visualmente con Playwright/Chromium real sobre una fixture propia de 4
+  escenas que cubre los cuatro casos del criterio de aceptación — (a) sin ninguna toma, (b) toma
+  buena sin tropiezos, (c) toma buena con un tropiezo, (d) toma buena con dos tropiezos —: sin
+  resumen agregado con solo (a)/(b), "⚠ 2 escenas tienen la toma buena con uno o más tropiezos
+  dentro" con (c) y (d) presentes, posición exacta entre los dos elementos de referencia, avisos
+  por fila de R-43 intactos.
 
 ## Suite de tests (T-03)
 
