@@ -2910,6 +2910,100 @@ pasan, sin errores de consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle 
 
 ---
 
+---
+
+## Oleada v32 — Resumen agregado, en la cabecera del índice, de cuántas escenas tienen la toma buena con un tropiezo dentro
+
+### R-44 — Mostrar en la cabecera del índice, junto al resto de resúmenes agregados, cuántas escenas en total tienen la toma buena con uno o más tropiezos marcados dentro
+
+**Migración:** No (agregado puro, en memoria, sobre datos que ya calcula `guion.js` por escena desde
+R-43: `tomasEscena[indice]` con `buena`/`numero` de R-02, `tropiezosEscena[indice]` con
+`numero_toma` ya persistido desde R-36; ningún campo nuevo, ninguna escritura nueva, sin cambio en
+`scripts/reproductor.py` ni en el contrato embebido) · **Depende de:** T-19 (índice de escenas,
+`renderizarIndice`), R-39 (`.resumen-progreso-grabacion`, el mismo bloque agregado en la cabecera del
+índice antes de la lista de escenas, mismo patrón a seguir), R-43 (criterio exacto del cruce «¿la
+toma buena tiene un tropiezo con su mismo `numero_toma`?», ya implementado fila a fila) — todas
+`COMPLETADA` · **Origen:** observación de arquitectura del PM (2026-11-02). R-43 ya resuelve el aviso
+por escena, pero solo es visible recorriendo la lista completa; es exactamente el mismo problema que
+motivó R-39 para "cuánto queda por grabar" (antes solo visible recorriendo `estadosEscena` escena a
+escena) y que R-39 resolvió con una línea agregada en la cabecera, antes de la lista. R-44 aplica el
+mismo principio al aviso de R-43.
+
+**Objetivo:** que el dueño, con una sola mirada a la cabecera del índice y sin desplazarse por la
+lista completa de escenas, sepa si existe algún tropiezo marcado dentro de alguna toma buena en todo
+el guión, y cuántas escenas concretas lo tienen, para decidir si merece la pena revisar antes de dar
+la sesión de grabación por cerrada o pasar al montaje con ffmpeg.
+
+**Requisitos:**
+1. Extraer el cálculo que R-43 ya hace inline en el bloque por fila de `renderizarIndice`
+   (`tropiezosDeEscena.filter(function (tropiezo) { return tropiezo.numero_toma === tomaBuena.numero;
+   })`, solo cuando `tomaBuena` existe) a una función pequeña reutilizable, p. ej.
+   `tropiezosEnTomaBuena(indice)`, que reciba el índice de escena y devuelva la lista filtrada (array
+   vacío si no hay toma buena) — misma lógica exacta que hoy vive solo en el bloque de R-43, ahora en
+   un único sitio para que el bloque de R-43 y el nuevo resumen agregado la llamen igual, sin segunda
+   implementación del mismo criterio.
+2. En el mismo `forEach` sobre `datos.escenas` donde R-39 ya calcula `pendientes`/`grabadas`/
+   `revisadas`/`segundosPendientes` (el bloque previo al listado de escenas, no el bloque por fila),
+   sumar un contador nuevo, `escenasConTropiezoEnBuena`, incrementado por cada escena cuyo
+   `tropiezosEnTomaBuena(indice).length` sea mayor que 0 — mismo bucle ya existente, sin segundo
+   recorrido de `datos.escenas`.
+3. Si `escenasConTropiezoEnBuena` es mayor que 0, añadir un `<p>` nuevo (`.resumen-tropiezos-en-buena`)
+   inmediatamente después de `.resumen-progreso-grabacion` y antes del botón "Grabar siguiente
+   pendiente" (R-40) cuando este exista, con el texto "⚠ 1 escena tiene la toma buena con un tropiezo
+   dentro" (singular) o "⚠ N escenas tienen la toma buena con uno o más tropiezos dentro" (plural,
+   N = número de escenas, no de tropiezos) — mismo criterio singular/plural que el resto de resúmenes.
+   Con el contador en 0, no se añade ningún elemento, igual que `.escena-tropiezos-en-buena` (R-43) no
+   aparece en una fila sin tropiezos en su toma buena.
+4. CSS nuevo en `assets/reproductor/estilo.css` para `.resumen-tropiezos-en-buena`, reutilizando el
+   mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena` (R-43: color de acento, negrita) en
+   vez del tono neutro de `.resumen-guion`/`.resumen-progreso-grabacion` — es un aviso que puede exigir
+   una decisión del dueño antes de cerrar la sesión, no solo informar de progreso (principio de
+   producto 5: legibilidad por encima de todo).
+5. Sin elemento interactivo nuevo (`<p>`, igual que `.resumen-guion`/`.resumen-progreso-grabacion`);
+   sin `localStorage` nuevo; sin cambio en `scripts/reproductor.py`, `scripts/feedback.py`,
+   `scripts/comandos_montaje.py` ni en el contrato embebido — mejora enteramente de lectura y
+   presentación agregada sobre datos que ya calcula `guion.js` por escena desde R-43.
+6. El resumen se recalcula solo (mismo patrón que R-39/R-43, sin heurística de refresco nueva):
+   cualquier llamada ya existente a `renderizarIndice()` (al marcar una toma buena, al alternar un
+   tropiezo, al volver al índice) reconstruye el contador desde cero sin cableado adicional.
+
+**Criterio de aceptación:** sobre una fixture con al menos cuatro escenas de prueba — (a) sin ninguna
+toma, (b) con una toma buena y ningún tropiezo marcado con ese mismo `numero_toma`, (c) con una toma
+buena y un tropiezo marcado con ese `numero_toma`, y (d) con una toma buena y dos tropiezos marcados
+con ese `numero_toma` — la cabecera del índice no muestra ningún resumen agregado nuevo si ninguna
+escena cumple (c) o (d); con (c) y (d) presentes, muestra "⚠ 2 escenas tienen la toma buena con uno o
+más tropiezos dentro" (recuento de escenas, no de tropiezos — 2, una por (c) y otra por (d), aunque
+(d) tenga dos tropiezos), situado entre `.resumen-progreso-grabacion` y el botón "Grabar siguiente
+pendiente" cuando ambos coexisten. El aviso por fila que ya pinta R-43 en (c) y (d) sigue intacto y
+sin cambios. El JSON embebido por `scripts/reproductor.py` no gana ningún campo nuevo (mismo contrato
+que antes de R-44, verificado por diff contra la salida de referencia). Verificado también
+visualmente con Playwright/Chromium real, mismo criterio que R-39 a R-43.
+
+**Cómo se entregó:** `assets/reproductor/guion.js::renderizarIndice` gana `escenasConTropiezoEnBuena`,
+sumado dentro del mismo `forEach` que R-39 ya usa para pendientes/grabadas/revisadas/
+segundosPendientes (requisito 2, sin segundo recorrido de `datos.escenas`). Requisito 1: la lógica de
+cruce "numero_toma == toma buena" que R-43 calculaba inline se extrae a `tropiezosEnTomaBuena(
+indice)` (array vacío sin toma buena), llamada tanto por el bloque por fila de R-43 como por el nuevo
+agregado — una sola implementación del criterio. Con el contador > 0, un
+`<p class="resumen-tropiezos-en-buena">` nuevo se inserta entre `.resumen-progreso-grabacion` y el
+botón "Grabar siguiente pendiente" (R-40) cuando coexiste, con el texto exacto de la ficha en
+singular/plural (recuento de escenas, no de tropiezos); con el contador en 0, ningún elemento nuevo
+(requisito 3). CSS `.resumen-tropiezos-en-buena` en `assets/reproductor/estilo.css` reutiliza el color
+de acento y negrita de `.escena-tropiezos-en-buena` (R-43), no el tono neutro de
+`.resumen-progreso-grabacion` (requisito 4). Sin campo nuevo en el JSON embebido, sin `localStorage`
+nuevo, sin cambio en `scripts/reproductor.py` (requisito 5); se recalcula solo en cada
+`renderizarIndice()` ya existente (requisito 6). 9 tests nuevos, 2 ajustados por el refactor de
+requisito 1 (768→777). Cuatro redes en verde (`mypy`, `ruff`, `pytest`, `verificar_salidas.py
+--fixture`, diecinueve etapas sin cambio). Verificado también visualmente con Playwright/Chromium
+real (Node.js, preinstalado en el contenedor) sobre una fixture de 4 escenas que cubre los cuatro
+casos (a)-(d) del criterio de aceptación: sin el resumen agregado con solo (a)/(b) sembradas, "⚠ 2
+escenas tienen la toma buena con uno o más tropiezos dentro" con (c) y (d) presentes (recuento de
+escenas, no de tropiezos: 2, pese a que (d) trae dos), situado exactamente entre
+`.resumen-progreso-grabacion` y el botón "Grabar siguiente pendiente", y los avisos por fila de R-43
+("⚠ 1"/"⚠ 2 en la toma buena") intactos y sin cambio. Detalle completo en `DECISIONES_TECNICAS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -2928,4 +3022,5 @@ v27 (R-39), 2026-10-27 (implementación), archivada el mismo ciclo de PM; la de 
 2026-10-28 (implementación), archivada el ciclo de PM del mismo día; la de v29 (R-41), 2026-10-29
 (implementación), archivada en el ciclo de PM del mismo día; la de v30 (R-42), 2026-10-30
 (implementación), archivada en el ciclo de PM del mismo día; la de v31 (R-43), 2026-11-02
-(implementación), archivada en este ciclo de PM (2026-11-02).)*
+(implementación), archivada en el ciclo de PM del mismo día; la de v32 (R-44), 2026-11-03
+(implementación), archivada en este ciclo de PM (2026-11-03).)*

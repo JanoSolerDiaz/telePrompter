@@ -8,51 +8,65 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-11-02 (ciclo de Product Manager). R-43 (Oleada v31) llevaba
-`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-11-02 (ciclo de Programador), reconfirmada en
+**Última actualización:** 2026-11-03 (ciclo de Product Manager). R-44 (Oleada v32) llevaba
+`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-11-03 (ciclo de Programador), reconfirmada en
 verde en varias pasadas sucesivas del Programador sin que ningún ciclo de PM la archivara todavía.
-Este ciclo archiva la Oleada v31 en `ROADMAP_HISTORICO.md` y abre R-44 (Oleada v32) en §1, sin
+Este ciclo archiva la Oleada v32 en `ROADMAP_HISTORICO.md` y abre R-45 (Oleada v33) en §1, sin
 implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda
 respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
-completo) sigue abierto, ahora más de 60 días desde que T-32 lo dejó listo para grabar (2026-09-03).
-`auditoriacontinua.md` revisado antes de elegir tarea (registro completo, no solo la narrativa más
-reciente): `#24` (baja) y `#30` (media) siguen `ABIERTO` de proceso/gobernanza puro, pendientes solo
-de la respuesta del dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 (47 y 23 días sin respuesta
-desde que se registraron); `#36` (baja, apertura en inglés de un commit ya publicado) sigue
-puramente observacional, sin remedio retroactivo razonable. Ninguno de severidad alta, ninguno
-convertible en R-XX nueva ni en deuda técnica de backlog — el propio registro de hallazgos y el PM
-coinciden en que los tres son de proceso puro.
+completo) sigue abierto, ahora 61 días desde que T-32 lo dejó listo para grabar (2026-09-03).
+`auditoriacontinua.md` revisado entero antes de elegir tarea (no solo la narrativa más reciente):
+`#24` (baja) y `#30` (escalada de media a alta en esta misma pasada del auditor, por el volumen y
+persistencia del coste de cómputo que describe, no por ningún riesgo nuevo de producto) siguen
+`ABIERTO` de proceso/gobernanza puro, pendientes solo de la respuesta del dueño a las preguntas
+#11/#12 de `SEGUIMIENTO.md` §6 (48 y 24 días sin respuesta); `#36` (baja, apertura en inglés de un
+commit ya publicado) sigue puramente observacional, sin remedio retroactivo razonable. Tres hallazgos
+nuevos de esta pasada del auditor, los tres de proceso/documentación pura, sin ninguno convertible en
+R-XX de producto: `#38` (baja, el propio registro de `auditoriacontinua.md` debería condensar sus
+filas más repetidas) es terreno exclusivo del auditor, que ya lo deja como remedio propuesto en su
+propia fila, no de este roadmap; `#39` (media, `SEGUIMIENTO.md` había vuelto a acumular narrativa de
+sesión en su cabecera) ya fue corregido en código por el Programador (P-10, commit `822295d`) antes
+de este ciclo, pendiente solo de que el auditor lo reverifique; `#40` (baja, `DECISIONES_TECNICAS.md`
+supera el umbral de rotación por trimestre que su propia cabecera declara) es una tarea de archivado
+puro, sin ningún hito de producto ni urgencia — candidata a una futura P-XX del Programador cuando su
+cola esté vacía, igual que P-06/P-07/P-08 resolvieron hallazgos de documentación equivalentes; no se
+abre como pregunta nueva en §6 porque no depende de ninguna decisión del dueño, solo de ejecutarla.
+Ninguno de los siete hallazgos abiertos es de severidad alta en las categorías que exigirían una P-XX
+urgente (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de su
+auto-contención, seguridad); `#41` (baja, hueco de `srcset=` en el validador de auto-contención) ya
+fue corregido en código por el Programador (P-11) antes de este ciclo, también pendiente solo de
+reverificación del auditor.
 
 **Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
-propio roadmap, repetida desde el ciclo anterior porque el hecho que la motiva no ha cambiado):** van
-43 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la máquina real del dueño
+propio roadmap, repetida desde ciclos anteriores porque el hecho que la motiva no ha cambiado):** van
+44 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la máquina real del dueño
 (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas tienen `origen: auditoría
 #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena calidad (cuatro redes en
-verde, 770 tests, invariantes reverificados en cada auditoría), pero el propio principio de producto
+verde, 777 tests, invariantes reverificados en cada auditoría), pero el propio principio de producto
 que guía este documento —"utilidad real para un formador que graba vídeos de curso"— solo se
 confirma grabando, no leyendo código. El bloqueo #7 es una acción del dueño, no una tarea que el
 equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como pregunta nueva; se deja
 constancia aquí para que quede explícito que el criterio de salida de la Oleada v1 ("grabar un vídeo
 de curso entero") sigue siendo, con diferencia, el hito de mayor valor pendiente del proyecto, por
-delante de cualquier R-XX nueva. R-44 (más abajo) sigue el mismo criterio que R-39 a R-43: una mejora
+delante de cualquier R-XX nueva. R-45 (más abajo) sigue el mismo criterio que R-39 a R-44: una mejora
 pequeña y de bajo riesgo del propio reproductor, directamente útil para esa primera sesión real
-cuando ocurra — y además agrega, en la cabecera del índice (junto al resto de resúmenes "de un
-vistazo" ya entregados), el mismo aviso que R-43 ya muestra fila a fila, para que un guión de muchas
-escenas no obligue a recorrerlas todas para saber si hay algo que revisar antes de cerrar la sesión.
+cuando ocurra — en vez de agregar otro resumen sobre datos de rodaje (tomas, tropiezos), esta vez trae
+al reproductor un aviso que T-12 ya calcula desde el primer día del proyecto (desviación del ritmo
+estimado frente a la duración objetivo marcada en el guion) y que hoy solo es visible releyendo
+`guion-escenas.md` en el editor, nunca en la propia pantalla que el dueño tiene delante al grabar.
 
-**Oleada v31 (R-43) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v32 (R-44) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v32 (R-44) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-arquitectura del PM (2026-11-02): R-43 ya avisa, fila a fila, cuando la toma buena de una escena
-trae un tropiezo marcado dentro, pero ese aviso solo se ve recorriendo la lista completa de escenas
-— exactamente el mismo problema que R-39 ya resolvió para "cuánto queda por grabar" con una línea
-agregada en la cabecera del índice, antes de la lista. R-44 aplica el mismo principio al aviso de
-R-43: una línea agregada en la cabecera, junto a `.resumen-progreso-grabacion`, que diga cuántas
-escenas en total tienen ese aviso, para que el dueño sepa de un vistazo si merece la pena revisar
-antes de cerrar la sesión de grabación o pasar al montaje con ffmpeg.
+**Oleada v33 (R-45) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+arquitectura del PM (2026-11-03): `scripts/tiempos.py::TiempoEscena.aviso` (T-12) ya compara, escena
+a escena, la duración estimada por ppm contra la duración objetivo marcada en el guion, y ya
+formatea un texto accionable en palabras a ajustar cuando la desviación supera el umbral configurado
+— usado hoy en `guion-escenas.md`, `tarjetas.json`, el `.pdf` y la revalidación, pero nunca en el
+reproductor en vivo. R-45 aplica el mismo principio que R-39/R-44 (reutilizar un dato ya calculado,
+sin segunda implementación) para mostrarlo por fila y agregado en la cabecera del índice.
 
 ---
 
@@ -324,72 +338,90 @@ dentro, R-43) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`,
 negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-11-02). Su spec
 completa y cómo se entregó viven ahí.
 
-### Oleada v32 — Resumen agregado, en la cabecera del índice, de cuántas escenas tienen la toma buena con un tropiezo dentro
+### Oleada v32 — entregada
 
-#### R-44 — Mostrar en la cabecera del índice, junto al resto de resúmenes agregados, cuántas escenas en total tienen la toma buena con uno o más tropiezos marcados dentro
+La oleada v32 (resumen agregado, en la cabecera del índice, de cuántas escenas tienen la toma buena
+con un tropiezo dentro, R-44) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin
+ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM
+(2026-11-03). Su spec completa y cómo se entregó viven ahí.
 
-**Migración:** No (agregado puro, en memoria, sobre datos que ya calcula `guion.js` por escena desde
-R-43: `tomasEscena[indice]` con `buena`/`numero` de R-02, `tropiezosEscena[indice]` con
-`numero_toma` ya persistido desde R-36; ningún campo nuevo, ninguna escritura nueva, sin cambio en
-`scripts/reproductor.py` ni en el contrato embebido) · **Depende de:** T-19 (índice de escenas,
-`renderizarIndice`), R-39 (`.resumen-progreso-grabacion`, el mismo bloque agregado en la cabecera del
-índice antes de la lista de escenas, mismo patrón a seguir), R-43 (criterio exacto del cruce «¿la
-toma buena tiene un tropiezo con su mismo `numero_toma`?», ya implementado fila a fila) — todas
-`COMPLETADA` · **Origen:** observación de arquitectura del PM (2026-11-02). R-43 ya resuelve el aviso
-por escena, pero solo es visible recorriendo la lista completa; es exactamente el mismo problema que
-motivó R-39 para "cuánto queda por grabar" (antes solo visible recorriendo `estadosEscena` escena a
-escena) y que R-39 resolvió con una línea agregada en la cabecera, antes de la lista. R-44 aplica el
-mismo principio al aviso de R-43.
+### Oleada v33 — Avisar cuando el ritmo estimado de una escena se desvía de la duración objetivo marcada en el guion
 
-**Objetivo:** que el dueño, con una sola mirada a la cabecera del índice y sin desplazarse por la
-lista completa de escenas, sepa si existe algún tropiezo marcado dentro de alguna toma buena en todo
-el guión, y cuántas escenas concretas lo tienen, para decidir si merece la pena revisar antes de dar
-la sesión de grabación por cerrada o pasar al montaje con ffmpeg.
+#### R-45 — Mostrar en el índice de escenas, por fila y agregado en la cabecera, el aviso de desviación de ritmo que T-12 ya calcula por escena
+
+**Migración:** No (campo aditivo en el JSON embebido por `scripts/reproductor.py::_construir_datos`,
+que no lleva versión de contrato propia; ningún cambio en `scripts/tiempos.py`, que ya calcula y
+formatea el aviso completo desde T-12) · **Depende de:** T-12 (`tiempos.calcular_tiempos`/
+`calcular_tiempos_desde_marcados`, `TiempoEscena.aviso` vía `_aviso_desviacion`), T-19 (índice de
+escenas, `renderizarIndice`), R-39 (`.resumen-progreso-grabacion`, el bloque agregado de cabecera,
+mismo patrón a seguir) — todas `COMPLETADA` · **Origen:** observación de arquitectura del PM
+(2026-11-03). `TiempoEscena.aviso` (T-12) ya compara, escena a escena, la duración estimada por ppm
+contra la duración objetivo que el propio guion fija en la cabecera de cada escena, y ya formatea un
+texto accionable ("sobran/faltan unas P palabras para encajar en el objetivo") cuando la desviación
+supera el umbral configurado (`Configuracion.umbral_desviacion_tiempos`) — hoy se usa en
+`guion-escenas.md` (`documento_revision.py`), `tarjetas.json` (`pptx.py`), el `.pdf` (`pdf.py`) y en
+la revalidación (`revalidacion.py`), pero nunca llega al JSON embebido del reproductor: la única
+vista que el dueño tiene delante mientras graba es la única que no lo muestra. Mismo principio que
+R-39/R-42/R-43/R-44: reutilizar un dato ya calculado y ya probado, sin segunda implementación del
+criterio.
+
+**Objetivo:** que el dueño vea, en el índice de escenas y sin volver a abrir `guion-escenas.md` en el
+editor, qué escenas concretas se desvían de la duración objetivo marcada en el guion y por cuántas
+palabras, para decidir antes de grabar si recorta, alarga o deja el texto tal cual — y, de un vistazo
+en la cabecera, cuántas escenas en total necesitan esa revisión antes de cerrar la sesión.
 
 **Requisitos:**
-1. Extraer el cálculo que R-43 ya hace inline en el bloque por fila de `renderizarIndice`
-   (`tropiezosDeEscena.filter(function (tropiezo) { return tropiezo.numero_toma === tomaBuena.numero;
-   })`, solo cuando `tomaBuena` existe) a una función pequeña reutilizable, p. ej.
-   `tropiezosEnTomaBuena(indice)`, que reciba el índice de escena y devuelva la lista filtrada (array
-   vacío si no hay toma buena) — misma lógica exacta que hoy vive solo en el bloque de R-43, ahora en
-   un único sitio para que el bloque de R-43 y el nuevo resumen agregado la llamen igual, sin segunda
-   implementación del mismo criterio.
-2. En el mismo `forEach` sobre `datos.escenas` donde R-39 ya calcula `pendientes`/`grabadas`/
-   `revisadas`/`segundosPendientes` (el bloque previo al listado de escenas, no el bloque por fila),
-   sumar un contador nuevo, `escenasConTropiezoEnBuena`, incrementado por cada escena cuyo
-   `tropiezosEnTomaBuena(indice).length` sea mayor que 0 — mismo bucle ya existente, sin segundo
-   recorrido de `datos.escenas`.
-3. Si `escenasConTropiezoEnBuena` es mayor que 0, añadir un `<p>` nuevo (`.resumen-tropiezos-en-buena`)
-   inmediatamente después de `.resumen-progreso-grabacion` y antes del botón "Grabar siguiente
-   pendiente" (R-40) cuando este exista, con el texto "⚠ 1 escena tiene la toma buena con un tropiezo
-   dentro" (singular) o "⚠ N escenas tienen la toma buena con uno o más tropiezos dentro" (plural,
-   N = número de escenas, no de tropiezos) — mismo criterio singular/plural que el resto de resúmenes.
-   Con el contador en 0, no se añade ningún elemento, igual que `.escena-tropiezos-en-buena` (R-43) no
-   aparece en una fila sin tropiezos en su toma buena.
-4. CSS nuevo en `assets/reproductor/estilo.css` para `.resumen-tropiezos-en-buena`, reutilizando el
-   mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena` (R-43: color de acento, negrita) en
-   vez del tono neutro de `.resumen-guion`/`.resumen-progreso-grabacion` — es un aviso que puede exigir
-   una decisión del dueño antes de cerrar la sesión, no solo informar de progreso (principio de
-   producto 5: legibilidad por encima de todo).
-5. Sin elemento interactivo nuevo (`<p>`, igual que `.resumen-guion`/`.resumen-progreso-grabacion`);
-   sin `localStorage` nuevo; sin cambio en `scripts/reproductor.py`, `scripts/feedback.py`,
-   `scripts/comandos_montaje.py` ni en el contrato embebido — mejora enteramente de lectura y
-   presentación agregada sobre datos que ya calcula `guion.js` por escena desde R-43.
-6. El resumen se recalcula solo (mismo patrón que R-39/R-43, sin heurística de refresco nueva):
-   cualquier llamada ya existente a `renderizarIndice()` (al marcar una toma buena, al alternar un
-   tropiezo, al volver al índice) reconstruye el contador desde cero sin cableado adicional.
+1. `scripts/reproductor.py::_construir_datos` añade, de forma aditiva, `"aviso": tiempo_escena.aviso`
+   a cada entrada de `escenas_datos` (junto a `duracion_estimada_segundos`/`duracion_objetivo_segundos`,
+   ya presentes desde T-12/R-16) — reutiliza tal cual el texto ya formateado por
+   `tiempos._aviso_desviacion`, sin tocar `scripts/tiempos.py` ni reformular el mensaje. `None` cuando
+   no hay desviación (sin objetivo marcado, o desviación dentro del umbral), igual que hoy en
+   `TiempoEscena.aviso`.
+2. En `renderizarIndice` (`assets/reproductor/guion.js`), añadir un `<span class="escena-aviso-ritmo">`
+   en la fila de cada escena, inmediatamente después de `.escena-duracion` y antes de
+   `.escena-indicaciones` (R-42), con el texto exacto de `escena.aviso` cuando no es `null` — sin
+   reformatear ni truncar, mismo criterio de reutilización exacta que el resto de la ficha. Sin
+   `<span>` cuando `escena.aviso` es `null`.
+3. En el mismo `forEach` sobre `datos.escenas` donde R-39/R-44 ya calculan sus contadores (pendientes/
+   grabadas/revisadas/segundosPendientes/escenasConTropiezoEnBuena), sumar un contador nuevo,
+   `escenasConAvisoRitmo`, incrementado por cada escena cuyo `aviso` no sea `null` — mismo bucle ya
+   existente, sin segundo recorrido de `datos.escenas`.
+4. Si `escenasConAvisoRitmo` es mayor que 0, añadir un `<p class="resumen-aviso-ritmo">` nuevo
+   inmediatamente después de `.resumen-progreso-grabacion` (R-39) y antes de
+   `.resumen-tropiezos-en-buena` (R-44) cuando este exista — el aviso de ritmo es una revisión previa
+   a grabar, el de tropiezos una revisión posterior a una toma, así que el orden de lectura sigue el
+   orden natural de la sesión de rodaje — con el texto "⚠ 1 escena se desvía del ritmo objetivo
+   marcado" (singular) o "⚠ N escenas se desvían del ritmo objetivo marcado" (plural, N = escenas),
+   mismo criterio singular/plural que el resto de resúmenes. Con el contador en 0, no se añade ningún
+   elemento.
+5. CSS nuevo en `assets/reproductor/estilo.css` para `.escena-aviso-ritmo` y `.resumen-aviso-ritmo`,
+   reutilizando el mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena`/
+   `.resumen-tropiezos-en-buena` (R-43/R-44: color de acento, negrita) en vez del tono neutro de
+   `.resumen-guion`/`.resumen-progreso-grabacion` — es un aviso que puede exigir una decisión del
+   dueño antes de grabar, no solo informar (principio de producto 5: legibilidad por encima de todo).
+6. Sin elemento interactivo nuevo (`<span>`/`<p>`, nunca un control); sin `localStorage` nuevo; sin
+   cambio en `scripts/tiempos.py`, `scripts/feedback.py`, `scripts/comandos_montaje.py` ni en ningún
+   otro consumidor ya existente del aviso (`documento_revision.py`/`pptx.py`/`pdf.py`/
+   `revalidacion.py`) — mejora enteramente de lectura y presentación en el reproductor sobre un dato
+   que T-12 ya calcula y ya usan otras cuatro salidas.
+7. El resumen y el aviso por fila se recalculan solos (mismo patrón que R-39/R-42/R-43/R-44, sin
+   heurística de refresco nueva): cualquier llamada ya existente a `renderizarIndice()` reconstruye
+   ambos desde cero sin cableado adicional — el aviso no cambia durante la sesión de rodaje en sí
+   (depende solo del guion y la configuración, no de tomas ni tropiezos), así que no hace falta
+   ningún disparador nuevo más allá de la propia carga del reproductor.
 
-**Criterio de aceptación:** sobre una fixture con al menos cuatro escenas de prueba — (a) sin ninguna
-toma, (b) con una toma buena y ningún tropiezo marcado con ese mismo `numero_toma`, (c) con una toma
-buena y un tropiezo marcado con ese `numero_toma`, y (d) con una toma buena y dos tropiezos marcados
-con ese `numero_toma` — la cabecera del índice no muestra ningún resumen agregado nuevo si ninguna
-escena cumple (c) o (d); con (c) y (d) presentes, muestra "⚠ 2 escenas tienen la toma buena con uno o
-más tropiezos dentro" (recuento de escenas, no de tropiezos — 2, una por (c) y otra por (d), aunque
-(d) tenga dos tropiezos), situado entre `.resumen-progreso-grabacion` y el botón "Grabar siguiente
-pendiente" cuando ambos coexisten. El aviso por fila que ya pinta R-43 en (c) y (d) sigue intacto y
-sin cambios. El JSON embebido por `scripts/reproductor.py` no gana ningún campo nuevo (mismo contrato
-que antes de R-44, verificado por diff contra la salida de referencia). Verificado también
-visualmente con Playwright/Chromium real, mismo criterio que R-39 a R-43.
+**Criterio de aceptación:** sobre una fixture con al menos tres escenas de prueba — (a) sin duración
+objetivo marcada en la cabecera de la escena, (b) con duración objetivo marcada y una estimación
+dentro del umbral configurado, y (c) con duración objetivo marcada y una estimación que lo supera —
+el índice no muestra ningún `<span class="escena-aviso-ritmo">` en (a) ni en (b), y en (c) muestra el
+texto exacto que ya produce `tiempos._aviso_desviacion` para esa escena (verificado por comparación
+literal, no por un nuevo cálculo en el test). Con una sola escena en el caso (c), la cabecera muestra
+"⚠ 1 escena se desvía del ritmo objetivo marcado"; con dos o más, el plural con el recuento correcto
+de escenas. El JSON embebido por `scripts/reproductor.py` gana únicamente el campo aditivo `aviso`
+por escena (verificado por diff de claves contra la salida de referencia anterior a R-45); ningún
+otro consumidor del aviso (`guion-escenas.md`, `tarjetas.json`, el `.pdf`, la revalidación) cambia de
+comportamiento. Verificado también visualmente con Playwright/Chromium real, mismo criterio que
+R-39 a R-44.
 
 ---
 
