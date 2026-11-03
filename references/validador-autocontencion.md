@@ -22,6 +22,7 @@
 | `src=` en `<script>`/`<img>`/`<iframe>`/`<video>`/`<audio>`/`<source>` | Recurso externo en un atributo `src`, salvo que empiece por `data:` | T-18 |
 | `<object>` | Cualquier uso de la etiqueta, con o sin atributo `data` | R-09 |
 | `src=` en `<embed>` | Igual que el resto de atributos `src`, salvo `data:` | R-09 |
+| `srcset=` en `<img>`/`<source>` | Recurso externo en un atributo `srcset` (imágenes responsive), salvo que empiece por `data:` | P-11 |
 | `<base href="...">` | Cambia la resolución de toda referencia relativa del documento | R-09 |
 | `WebSocket` | Apertura de una conexión WebSocket | R-09 |
 | `EventSource` / `sendBeacon` | Server-sent events o envío de telemetría en segundo plano | R-09 |
@@ -45,3 +46,11 @@ de trozos que ninguno contiene por separado los patrones de esta tabla) no se de
 conoce ningún caso así en el código real del reproductor o del HTML de impresión; si aparece uno,
 la respuesta es ampliar esta tabla y `PATRONES_RECURSO_EXTERNO` a la vez, nunca confiar en que el
 validador lo habría atrapado.
+
+Mismo límite ya aceptado para `src=` (nota del cierre de `#13`): el patrón de `srcset=` solo
+comprueba que el **primer** elemento de la lista separada por comas no empiece por `data:`; un
+valor como `srcset="data:...;base64,AAA 1x, https://ejemplo.com/x.png 2x"` (primer elemento
+incrustado, segundo externo) no se detectaría. No se conoce ningún caso real con más de un
+elemento en `srcset` en el código actual (`#41` de `auditoriacontinua.md` verificó por `grep` que
+ninguna plantilla usa `srcset` hoy); si aparece uno con varios elementos, hay que revisar cada
+elemento por separado, no confiar en que basta con el primero.

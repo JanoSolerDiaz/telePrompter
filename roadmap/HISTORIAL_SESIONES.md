@@ -12,6 +12,55 @@
 
 ---
 
+### Sesión 2026-11-03 (313) — Ciclo de Programador: P-11, cierra el hueco de `srcset=` en el validador de auto-contención (hallazgo `#41`)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo ya fusionado el ciclo anterior (commit `822295d`, P-10).
+`pip install -r requirements-dev.txt` resolvió bien contra el intérprete real.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md`
+revisado completo (tabla de registro, fila a fila): ningún hallazgo `ABIERTO` de severidad alta en
+las categorías que exigen P-XX urgente (pérdida de texto del guion, corrupción de estado, rotura
+del reproductor o de su auto-contención, seguridad). `#30` (proceso/coste de cómputo, alta) y `#24`
+(proceso/coherencia roadmap-código, baja) siguen `ABIERTO` solo a la espera de la respuesta del
+dueño a las preguntas `#11`/`#12` de §6 — ninguno de los dos cae en esas cuatro categorías urgentes.
+`#36` (baja, idioma de un commit ya publicado) sigue sin remedio retroactivo razonable. `#38`
+(mantenibilidad del propio registro del auditor) y `#39` (bitácora de `SEGUIMIENTO.md`, ya resuelta
+en código por P-10 aunque el auditor no la haya reverificado todavía) son terreno de otra sesión.
+`#40` (rotación de `DECISIONES_TECNICAS.md`) es tarea de archivado, no de esta sesión.
+
+**Elección de tarea.** §1 de `SEGUIMIENTO.md` no tiene ninguna R-XX/T-XX `PENDIENTE`: Oleada v1 a
+R-44 completas, única excepción `T-24b` `BLOQUEADA` (acción del dueño). El PM todavía no ha abierto
+ninguna oleada tras R-44. Con la cola vacía, se toma el hallazgo `#41` (baja, robustez del
+validador de auto-contención) como **P-11**, mismo criterio que P-06 a P-10: el atributo `srcset=`
+de `<img>`/`<source>` (imágenes responsive) no estaba cubierto por ningún patrón de
+`PATRONES_RECURSO_EXTERNO` en `scripts/verificar_salidas.py`, a diferencia de `src=` — riesgo hoy
+nulo (reverificado por `grep`: ninguna plantilla real usa `srcset`) pero un hueco real, no solo
+teórico, en la regla dura "cero red en ejecución" (§0.2).
+
+**Implementación.** Registrada en §5 de `SEGUIMIENTO.md` como P-11 antes de darla por completada.
+`scripts/verificar_salidas.py`: patrón nuevo en `PATRONES_RECURSO_EXTERNO`, mirror exacto del ya
+existente para `src=` (`<(?:img|source)[^>]+srcset=["']?(?!data:)[a-zA-Z0-9./]`), con la misma
+excepción `data:` y la misma limitación conocida (solo el primer elemento de la lista separada por
+comas). 3 tests nuevos en `tests/test_esqueleto.py`: dos parametrizados (`srcset` con URL absoluta
+y con ruta protocolo-relativa a un dominio no-CDN) añadidos a `test_html_con_recurso_externo_se_detecta`,
+y uno nuevo que confirma que un `srcset` con `data:` sigue permitido
+(`test_srcset_incrustado_en_data_uri_esta_permitido`). `references/validador-autocontencion.md`
+actualizado: fila nueva en la tabla de patrones y párrafo nuevo en "Huecos conocidos" documentando
+el límite de un único elemento, igual que ya se documenta para `src=`/`<object data="data:...">`.
+Decisión registrada en `DECISIONES_TECNICAS.md` (fila `P-11`, 2026-11-03).
+
+**Verificación.** Cuatro redes en verde: `mypy` (72 archivos, sin errores), `ruff` (sin avisos),
+`pytest` (777→780 tests), `python scripts/verificar_salidas.py --fixture` (diecinueve etapas, todas
+`OK`, incluida la auto-contención del reproductor y del HTML de impresión).
+
+**Cierre de sesión.** §1 de `SEGUIMIENTO.md` sin cambio de estado de tarea (P-11 no tiene fila en
+§1, igual que P-06 a P-10: alcance de robustez interna, no una T-XX/R-XX de producto); cabecera
+("Última actualización"/"Estado vigente") actualizada para reflejar P-11. Commit único con prefijo
+`P-11:` y push a `origin/develop`. Sin pregunta nueva para el dueño ni desviación respecto al plan.
+
+---
+
 ### Sesión 2026-11-03 (312) — Ciclo de Programador: P-10, recorta la cabecera de `SEGUIMIENTO.md` (hallazgo `#39`)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout

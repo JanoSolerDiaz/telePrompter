@@ -155,6 +155,10 @@ PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
         r"""<embed[^>]+src=["']?(?!data:)[a-zA-Z0-9./]""",
         "recurso externo en <embed src>",
     ),
+    (
+        r"""<(?:img|source)[^>]+srcset=["']?(?!data:)[a-zA-Z0-9./]""",
+        "recurso externo en un atributo srcset",
+    ),
     (r"""<base[^>]+href=""", "uso de <base href>"),
     (r"\bWebSocket\b", "uso de WebSocket"),
     (r"\bEventSource\b|\bsendBeacon\b", "uso de EventSource o sendBeacon"),

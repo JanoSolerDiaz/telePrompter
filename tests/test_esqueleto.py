@@ -145,6 +145,8 @@ def test_html_autocontenido_no_dispara_hallazgos() -> None:
         "<script>fetch('/datos')</script>",
         "<script>new XMLHttpRequest()</script>",
         '<img src="logo.png">',
+        '<img srcset="logo-hd.png 2x, logo.png 1x">',
+        '<source srcset="//cdn.ejemplo.com/logo.png 2x">',
         '<object data="informe.pdf"></object>',
         '<embed src="video.swf">',
         '<base href="https://ejemplo.com/">',
@@ -165,6 +167,13 @@ def test_imagen_incrustada_en_data_uri_esta_permitida() -> None:
 
 def test_embed_incrustado_en_data_uri_esta_permitido() -> None:
     assert buscar_recursos_externos('<embed src="data:image/png;base64,iVBORw0KGgo=">') == []
+
+
+def test_srcset_incrustado_en_data_uri_esta_permitido() -> None:
+    # #41 de `auditoriacontinua.md`: el atributo `srcset` de imagenes responsive
+    # (`<img>`/`<source>`) no estaba cubierto por ningun patron; cerrado por P-11.
+    html = '<img srcset="data:image/png;base64,iVBORw0KGgo= 1x">'
+    assert buscar_recursos_externos(html) == []
 
 
 def test_css_url_con_data_uri_esta_permitida() -> None:
