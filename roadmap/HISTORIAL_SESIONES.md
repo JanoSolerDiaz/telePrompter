@@ -12,6 +12,60 @@
 
 ---
 
+### Sesión 2026-11-03 (319) — Ciclo de Programador: sexta reconfirmación del día tras P-11, sin novedad de código
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo ya fusionado el ciclo anterior (commit `7bdf7e3`, quinta
+reconfirmación del día), árbol de trabajo limpio sin divergencia que resolver. El `pip install -r
+requirements-dev.txt` desnudo volvió a mostrar el síntoma `#22`/`#28`/P-06 (`pip -V` resuelve contra
+Python 3.13, `python -V`/`python3 -V` son 3.11.18): `mypy`/`ruff`/`pytest` quedaron ausentes del
+intérprete real, corregido reinstalando con `python -m pip install -r requirements-dev.txt` contra
+el intérprete real antes de verificar nada.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md`
+revisado completo (tabla de registro, fila a fila, y la auditoría del 2026-11-03): ningún hallazgo
+`ABIERTO` de severidad alta en las categorías que exigen P-XX urgente (pérdida de texto del guion,
+corrupción de estado, rotura del reproductor o de su auto-contención, seguridad). `#30` (escalado de
+media a alta por el auditor el 2026-11-03 — proceso/cadencia puro, pregunta `#12` de §6 sigue sin
+respuesta del dueño) y `#24` (baja, proceso/coherencia roadmap-código) siguen `ABIERTO` solo a la
+espera de la respuesta del dueño a las preguntas `#11`/`#12` — ninguno cae en esas cuatro categorías
+urgentes. `#36` (baja, idioma de un commit ya publicado) sigue sin remedio retroactivo razonable.
+`#38` (mantenibilidad del propio registro del auditor) es terreno exclusivo del auditor. `#39`
+(bitácora de `SEGUIMIENTO.md`) y `#41` (hueco de `srcset=` en el validador) ya están resueltos en
+código por P-10 y P-11 respectivamente, pendientes solo de que el auditor los reverifique en su
+propia pasada. `#40` (rotación de `DECISIONES_TECNICAS.md`) es tarea de archivado explícitamente
+descrita por el propio hallazgo como de sesión dedicada, no un P-XX rápido — ningún hallazgo
+`ABIERTO` de esta pasada es aprovechable como P-XX sin más alcance que un ciclo.
+
+**Ninguna tarea elegida.** §1 confirmada de punta a punta: las 34 T-XX (T-24b `BLOQUEADA`, ajena al
+programador) y las 44 R-XX están `COMPLETADA`; §5 también completa, P-01 a P-11. Ninguna fila
+`PENDIENTE` ni `BLOQUEADA` ejecutable, ningún hallazgo nuevo cerrable ni urgente que justifique abrir
+una P-XX de iniciativa propia. El PM todavía no ha abierto ninguna oleada tras R-44 (Oleada v32).
+Ciclo de pura reconfirmación.
+
+**Verificación completa, sin cambios de código.** `python -m mypy scripts/ tests/` (72 archivos,
+sin problemas), `python -m ruff check scripts/ tests/` (todo correcto), `python -m pytest` (780
+tests, código de salida 0, sin fallos, mismo recuento que el ciclo anterior) y `python
+scripts/verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluida la salida latente esperada
+en este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada — y las omisiones esperadas
+sin parte de rodaje real; el `.pdf` sí se generó de verdad, Chrome/Edge headless disponible en este
+contenedor). Cuatro redes en verde; ningún cambio en `scripts/`, `tests/` ni `assets/` (`git status`
+tras la verificación, limpio).
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-44 permanece `COMPLETADA`. Sin decisiones
+nuevas en `DECISIONES_TECNICAS.md`. Sin novedad en §3 (bloqueos), §6 (preguntas, `#11`/`#12` siguen
+`(pendiente)`, ahora sexta reconfirmación del mismo día sin respuesta del dueño) ni §7 (desviaciones).
+Cabecera de `SEGUIMIENTO.md` actualizada ("Última actualización"/"Estado vigente") respetando la
+norma de P-10: solo el estado vigente, sin acumular la narrativa de esta sesión, que vive aquí.
+
+**Nota de cierre.** Sexto disparo hoy de la rutina "programador-teleprompter" sin ningún código que
+tocar: el patrón que motivó la escalada de `#30` a severidad alta en la auditoría de hoy se repite de
+nuevo en esta misma jornada. El dueño ya tiene en el panel de §6 (preguntas `#11`/`#12`) la decisión
+que cerraría este coste; esta sesión se limita a reconfirmarlo, sin autoridad propia para espaciar el
+cron ni para añadir el atajo de "cola vacía" al protocolo (ambos exigen autorización del dueño, §0.1).
+
+---
+
 ### Sesión 2026-11-03 (318) — Ciclo de Programador: quinta reconfirmación del día tras P-11, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
