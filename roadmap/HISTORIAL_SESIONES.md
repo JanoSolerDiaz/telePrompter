@@ -12,6 +12,77 @@
 
 ---
 
+### Sesión 2026-11-03 (312) — Ciclo de Programador: P-10, recorta la cabecera de `SEGUIMIENTO.md` (hallazgo `#39`)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo ya fusionado el ciclo anterior (commit `7e1b1dd`,
+implementación de R-44), árbol de trabajo limpio. `pip install -r requirements-dev.txt` desnudo
+resolvió bien esta vez contra el intérprete real (sin el síntoma `#22`/`#28`/P-06 de otras
+sesiones).
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md`
+revisado completo (tabla de registro línea a línea): ningún hallazgo `ABIERTO` de severidad alta en
+las categorías que exigen P-XX urgente según el protocolo (pérdida de texto del guion, corrupción
+de estado, rotura del reproductor o de su auto-contención, seguridad). `#30` (coste de cómputo de
+la cadencia horaria del Programador) está `ABIERTO` y fue escalado de media a alta en la propia
+auditoría del día, pero es un hallazgo de proceso/gobernanza (cadencia del cron, pregunta `#12` de
+§6 sin respuesta del dueño desde hace 24 días) fuera de las cuatro categorías que el protocolo
+reserva para tratamiento urgente — no se toca el cron sin autorización del dueño. `#24` (baja) sigue
+igual, `#36` (baja) sigue observacional.
+
+**Cola de código revisada.** §1 de `SEGUIMIENTO.md`: las 34 T-XX y las 44 R-XX están todas
+`COMPLETADA`, única excepción `T-24b` `BLOQUEADA` por falta de clicker del dueño (ajena a esta
+sesión). `ROADMAP_PRODUCTO.md` sigue mostrando "Oleada v32 (R-44) abierta, sin implementar" porque
+el PM todavía no ha hecho el ciclo de archivo/apertura que le corresponde (nota ya dejada en
+`DECISIONES_TECNICAS.md` por la sesión de R-44) — no es trabajo de este ciclo. Sin ninguna R-XX/T-XX
+`PENDIENTE` de código, se revisó `auditoriacontinua.md` en busca de un hallazgo aprovechable como
+P-XX, mismo criterio que P-06 a P-09.
+
+**Hallazgo elegido: `#39`.** Media severidad, documentación/gobernanza: `SEGUIMIENTO.md` había
+vuelto a acumular, en su propia cabecera y sin interrupción desde 2026-10-01, la narrativa completa
+de 181 sesiones/auditorías (~8300 de las 8519 líneas del archivo) — regresión exacta del patrón que
+`DECISIONES_TECNICAS.md` ya corrigió el 2026-09-04 ("la cabecera nunca cita sesiones anteriores
+completas, solo el estado vigente"), nunca vuelto a aplicar desde entonces. El propio hallazgo
+señala que el remedio es "terreno del Programador/PM" y "merece su propia sesión dedicada" — cola
+de código vacía, mismo perfil que P-06 a P-09. Registrado como `P-10` en §5 de `SEGUIMIENTO.md`
+antes de implementarlo (§0.3).
+
+**Verificación de no pérdida de datos, antes de recortar nada.** Conteo automatizado (Python,
+`collections.Counter` sobre regex de fecha) de las entradas "Ciclo de Programador"/"Ciclo de
+Product Manager"/"Ciclo de Auditoría" de la cabecera de `SEGUIMIENTO.md`, cruzado fecha a fecha
+contra los encabezados `### Sesión <fecha>` de `HISTORIAL_SESIONES.md`: para toda fecha desde
+2026-09-10, el recuento de `HISTORIAL_SESIONES.md` es mayor o igual al de la cabecera, y las únicas
+diferencias localizadas (muestreadas a mano en varias fechas) son siempre entradas "Ciclo de
+Auditoría" — que el auditor registra en su propia narrativa de `auditoriacontinua.md` (verificado
+con dos ejemplos concretos, 2026-09-16 y 2026-09-27, encontrados ahí con el mismo título), nunca en
+`HISTORIAL_SESIONES.md`. Conclusión: cada párrafo de la cabecera ya vive íntegro en uno de los dos
+documentos; recortarlo no pierde ningún dato.
+
+**Implementación.** `roadmap/SEGUIMIENTO.md`: sustituida la narrativa de las líneas 16 a 8335
+(verificado con un script que localiza el límite exacto por anclas de texto y compara, tras el
+cambio, que el resto del archivo desde §1 en adelante queda carácter a carácter idéntico) por un
+párrafo de "Última actualización"/estado vigente de unas 10 líneas. El recuadro "⚑ PARA EL DUEÑO —
+empieza por aquí" se conserva literal (ni una palabra tocada; sigue §3/§6 como siempre) pero se
+reubica al principio del documento, justo después de la cabecera de módulo, en vez de quedar
+enterrado al final de la narrativa que se acaba de eliminar — así el dueño lo ve de inmediato en vez
+de tener que llegar al final de un archivo de 8500 líneas. Fila `P-10` añadida a §5. No se toca
+`auditoriacontinua.md` (exclusivo del auditor) ni la rotación de `HISTORIAL_SESIONES.md` (311
+sesiones en línea, sin archivar por mes todavía): esa rotación la deja pendiente, explícitamente, la
+propia decisión del 2026-09-04, a la espera de mandato explícito del dueño.
+
+**Verificación.** Cambio puramente de documentación (`roadmap/`), sin tocar `scripts/`, `tests/` ni
+`assets/`. Aun así, las cuatro redes completas en verde: `mypy` (72 archivos), `ruff check`, `pytest`
+(777 tests, sin cambio), `python scripts/verificar_salidas.py --fixture` (diecinueve etapas, sin
+cambio) — confirman que el recorte de `SEGUIMIENTO.md` no afectó a ningún archivo que esas redes
+cubran. `SEGUIMIENTO.md` pasa de 8519 a unas 220 líneas; diff verificado con `git diff --stat` y con
+una comparación línea a línea de §1 en adelante (idéntica antes y después). Decisión nueva en
+`DECISIONES_TECNICAS.md` (P-10). `ROADMAP_PRODUCTO.md` no se toca (archivo de Oleada v32 y apertura
+de la siguiente siguen siendo terreno del PM). `DEVELOPERS.md` no se toca: este cambio no afecta a
+nada que un desarrollador necesite saber sobre el código o su arquitectura. Sin preguntas nuevas en
+§6 ni desviaciones nuevas en §7.
+
+---
+
 ### Sesión 2026-11-03 (311) — Ciclo de Programador: implementa R-44 (Oleada v32)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
