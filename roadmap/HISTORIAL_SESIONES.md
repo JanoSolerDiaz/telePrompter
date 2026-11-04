@@ -12,6 +12,55 @@
 
 ---
 
+### Sesión 2026-11-04 (327) — Ciclo de Programador: P-12, rotación de `DECISIONES_TECNICAS.md`
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` ya estaba al día con la sesión anterior (commit `9a64fd2`),
+árbol de trabajo limpio. `python3 -m pip install -r requirements-dev.txt` (mismo rodeo documentado
+por `#28`/P-06) antes de verificar nada.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md`
+revisado completo: sin ningún hallazgo `ABIERTO` de severidad alta en las categorías que exigen
+P-XX urgente. §1 de `SEGUIMIENTO.md` confirmada de punta a punta: las 34 T-XX (`T-24b`
+`BLOQUEADA`, ajena al programador) y las 45 R-XX (hasta R-45) `COMPLETADA`; §5 también completa,
+P-01 a P-11. Ninguna fila `PENDIENTE` ni `BLOQUEADA` ejecutable, ninguna oleada nueva abierta por
+el PM tras R-45.
+
+**Tarea elegida: P-12.** El hallazgo `#40` (`auditoriacontinua.md`, baja, `ABIERTO` desde
+2026-11-03) señala que `roadmap/DECISIONES_TECNICAS.md` superó hace tiempo el umbral de rotación
+que su propia cabecera fija desde el origen del proyecto ("si crece mucho, archivar por trimestre
+en `roadmap/DECISIONES_TECNICAS/AAAA-Tn.md` con un índice al inicio"), sin que constara ninguna
+rotación — y el propio PM, al abrir R-45 el 2026-11-03, ya lo señaló explícitamente como "candidata
+a una futura P-XX del Programador" (mismo patrón que P-06 a P-11: hallazgo de severidad baja, cola
+de código vacía, cierre trivial y sin riesgo de producto, aprovechado por el Programador en vez de
+esperar a que el PM lo convierta en R-XX).
+
+**Implementación.** Las 252 decisiones fechadas entre 2026-08-31 y 2026-09-30 (tercer trimestre de
+2026, T-00 a R-20 apertura) se archivan literalmente en `roadmap/DECISIONES_TECNICAS/2026-T3.md`
+(cabecera e índice propios: alcance, recuento, fecha y motivo de archivado, puntero de vuelta al
+documento vigente). `roadmap/DECISIONES_TECNICAS.md` conserva desde 2026-10-01 en adelante (107
+decisiones), pasa de 376 a 129 líneas y gana en su cabecera un índice de archivo histórico. Dos
+filas nuevas al final del documento vigente documentan la propia decisión de rotación (criterio de
+corte por trimestre natural, no por oleada; índice propio en el archivo). Verificado antes de cerrar
+con `grep '^| 2026-'`: las 359 filas del documento original y la unión archivo+vigente coinciden
+línea a línea — cero pérdida, cero alteración de contenido, disciplina append-only intacta (ninguna
+fila editada, solo trasladada completa). `auditoriacontinua.md` no se toca (terreno exclusivo del
+auditor): `#40` queda para que la próxima pasada del auditor lo reverifique y cierre.
+
+**Verificación completa.** `python3 -m mypy .` (72 archivos, sin problemas), `python3 -m ruff check
+.` (todo correcto), `python3 -m pytest` (790 tests, exit 0) y `python3 scripts/ci.py` (las cuatro
+redes en verde, incluida `verificar_salidas.py --fixture`, diecinueve etapas `OK`). Cero cambio en
+`scripts/`, `tests/` ni `assets/` — tarea puramente documental, sin afectar a ningún invariante de
+código.
+
+**Cambios de estado (§1/§5 de `SEGUIMIENTO.md`).** §5 gana la fila `P-12 | ... | COMPLETADA
+2026-11-04`. Dos decisiones nuevas en `DECISIONES_TECNICAS.md` (criterio de corte por trimestre
+natural; índice propio del archivo). Cabecera de `SEGUIMIENTO.md` actualizada ("Última
+actualización" y el párrafo de estado vigente) reflejando el cierre de `#40` por P-12. Sin novedad
+en §3 (bloqueos), §6 (preguntas, `#11`/`#12` siguen `(pendiente)`) ni §7 (desviaciones).
+
+---
+
 ### Sesión 2026-11-04 (326) — Ciclo de Programador: cuarta reconfirmación del día tras R-45, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
