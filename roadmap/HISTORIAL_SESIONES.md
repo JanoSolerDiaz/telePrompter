@@ -12,6 +12,85 @@
 
 ---
 
+### Sesión 2026-11-04 (322) — Ciclo de Programador: R-45 completada (aviso de desviación de ritmo)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo ya fusionado el ciclo de PM del 2026-11-03 (archivo de
+Oleada v32/R-44 y apertura de R-45/Oleada v33, `f501cad`), árbol de trabajo limpio. `pip install -r
+requirements-dev.txt` no dejó las herramientas de desarrollo en el intérprete que resuelve `python`
+en este contenedor (`python`/`python3` apuntan a `/usr/bin/python3.11`, pero `pip`/`pip3` instalan
+sobre `python3.13`): reinstalado explícitamente con `python -m pip install -r requirements-dev.txt`
+para que los cuatro comandos literales del protocolo (`python -m mypy`/`python -m ruff`/`python -m
+pytest`/`python scripts/verificar_salidas.py`) encuentren las herramientas. Mismo tipo de desajuste
+de intérprete ya registrado en `DECISIONES_TECNICAS.md` para T-06 (2026-09-01), esta vez resuelto sin
+necesidad de tocar código ni `pyproject.toml`.
+
+**Lectura previa (protocolo del rol Programador).** `HOJA_DE_RUTA.md` §0 (protocolo, solo lectura);
+`roadmap/SEGUIMIENTO.md` completo (§1 estado, §3 bloqueos); `auditoriacontinua.md` completo (no solo
+la narrativa más reciente) buscando cualquier `ABIERTO` de severidad alta — ninguno en las categorías
+que exigirían una P-XX urgente (pérdida de texto del guion, corrupción de estado, rotura del
+reproductor o de su auto-contención, seguridad): los únicos `ABIERTO` (`#24`/`#30`/`#36`) son los
+mismos de gobernanza/proceso puro ya enrutados en ciclos anteriores, sin novedad. Siguiente tarea
+según §1: R-45 (única R-XX `PENDIENTE`), spec completa leída en `roadmap/ROADMAP_PRODUCTO.md`
+(`#R-45`, Oleada v33). `DECISIONES_TECNICAS.md` consultado en el área que toca (reproductor/`guion.js`,
+filas de R-39/R-42/R-43/R-44) antes de implementar, para seguir el mismo patrón exacto.
+
+**R-45 implementada.** `scripts/reproductor.py::_construir_datos` añade el campo aditivo `"aviso":
+tiempo_escena.aviso` a cada escena del JSON embebido, reutilizando tal cual el texto que
+`tiempos._aviso_desviacion` (T-12) ya calcula y formatea — cero cambio en `scripts/tiempos.py`.
+`assets/reproductor/guion.js::renderizarIndice`: `<span class="escena-aviso-ritmo">` por fila justo
+después de `.escena-duracion` y antes de `.escena-indicaciones` (R-42) cuando `escena.aviso` no es
+`null`; contador `escenasConAvisoRitmo` sumado en el mismo `forEach` que ya usan R-39/R-44 para
+pendientes/grabadas/revisadas/tropiezos (sin segundo recorrido); `<p class="resumen-aviso-ritmo">`
+agregado en la cabecera, entre `.resumen-progreso-grabacion` (R-39) y `.resumen-tropiezos-en-buena`
+(R-44) cuando este último coexiste, con singular/plural exacto, solo con el contador > 0. CSS nuevo
+en `assets/reproductor/estilo.css` reutiliza el color de acento y `font-weight: 600` de
+`.escena-tropiezos-en-buena`/`.resumen-tropiezos-en-buena` (R-43/R-44); `.escena-fila` gana
+`flex-wrap: wrap` y `.escena-aviso-ritmo` gana `flex-basis: 100%` para que la frase completa del
+aviso (a diferencia del resto de metadatos cortos de la fila) ocupe su propia línea sin desbordar la
+fila horizontalmente — las dos decisiones de diseño quedan registradas en `DECISIONES_TECNICAS.md`.
+Sin elemento interactivo nuevo, sin `localStorage` nuevo, sin cambio en `scripts/feedback.py` ni
+`scripts/comandos_montaje.py`, sin tocar ningún otro consumidor ya existente del aviso
+(`documento_revision.py`/`pptx.py`/`pdf.py`/`revalidacion.py`). Dos tests ya existentes de R-44 que
+fijaban el contrato embebido por el conjunto exacto de claves se actualizaron para incluir `"aviso"`
+(único campo nuevo del contrato desde R-44). 10 tests nuevos en `tests/test_reproductor.py`
+(780→790): fixture propia (`_GUION_AVISO_RITMO`) con `Configuracion.ppm_manual` fijado a mano para
+que los tres casos del criterio de aceptación sean deterministas — (a) escena sin objetivo de tiempo
+en el encabezado, (b) con objetivo y estimación dentro del umbral por defecto (~10% de desviación),
+(c) con objetivo y estimación fuera del umbral (~100%) —, verificados contrastando el JSON embebido
+contra el propio cálculo de `tiempos.calcular_tiempos` por igualdad literal, nunca un segundo cálculo
+en el test (criterio de aceptación de la ficha, literal). Dos tests preexistentes de R-39
+(`test_guion_js_muestra_progreso_de_grabacion_debajo_del_resumen_del_guion`,
+`test_guion_js_progreso_de_grabacion_solo_suma_el_tiempo_de_escenas_pendientes`) rompieron por una
+ventana de caracteres fija que mi primer borrador de comentario desplazó fuera de rango; resuelto
+fundiendo el comentario nuevo dentro del bloque de comentario ya existente de R-44 en vez de añadir
+uno nuevo, sin tocar las aserciones de esos dos tests. Cuatro redes en verde (`mypy`, `ruff`, 790
+tests, `verificar_salidas.py --fixture` con sus diecinueve etapas, incluida la auto-contención del
+`.html` y el diff de claves del JSON embebido sobre `guion-ejemplo.md`, que no trae ninguna escena con
+desviación de ritmo y por tanto no cambia de comportamiento visible).
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`.** Dos filas 2026-11-04/R-45: (1) reutilizar tal
+cual el texto de `tiempos._aviso_desviacion` en vez de reformularlo o recalcular la desviación en
+`guion.js`; (2) `flex-wrap`/`flex-basis` en vez de `white-space: nowrap` para el aviso por fila, dado
+que es una frase completa y no una etiqueta corta como el resto de metadatos de la fila.
+
+**Cambios de estado en `SEGUIMIENTO.md` §1.** R-45: `PENDIENTE` → `COMPLETADA` (2026-11-04), fila con
+el detalle completo de la entrega. Cabecera recortada al estado vigente de hoy (norma de
+cabecera vigente desde P-10, 2026-11-03): ya no queda ninguna R-XX de código `PENDIENTE` en §1; la
+siguiente oleada la abre el próximo ciclo de Product Manager. Sin cambios en §3 (bloqueos) ni en §5
+(P-XX): esta sesión no abrió ninguna P-XX nueva, la cola de la columna vertebral no estaba vacía ni
+bloqueada.
+
+**`DEVELOPERS.md` actualizado** con una sección nueva "Aviso de desviación de ritmo en el índice de
+escenas (R-45)", mismo formato que las secciones de R-39/R-43/R-44 que la preceden.
+
+**Cierre.** `git add` de los cuatro archivos de código/test tocados (`scripts/reproductor.py`,
+`assets/reproductor/guion.js`, `assets/reproductor/estilo.css`, `tests/test_reproductor.py`) más los
+documentos de registro (`SEGUIMIENTO.md`, `DECISIONES_TECNICAS.md`, `HISTORIAL_SESIONES.md`,
+`DEVELOPERS.md`); commit único con prefijo `R-45:`; push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-11-03 (321) — Ciclo de Product Manager: archiva Oleada v32 (R-44) y abre R-45 (Oleada v33)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "product-manager-teleprompter"). `git checkout

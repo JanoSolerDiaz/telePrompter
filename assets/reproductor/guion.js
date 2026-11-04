@@ -371,12 +371,16 @@
     // requisito 2): mismo bucle que ya recorre `datos.escenas` para
     // pendientes/grabadas/revisadas, sin segundo recorrido. Reutiliza
     // `tropiezosEnTomaBuena` (R-44, requisito 1), la misma funcion que el
-    // bloque por fila de R-43 llama mas abajo.
+    // bloque por fila de R-43 llama mas abajo. Mismo bucle tambien para el
+    // recuento de avisos de ritmo (R-45, requisito 3): `escena.aviso` ya
+    // trae el texto formateado por `tiempos._aviso_desviacion` (T-12), o
+    // `null` sin desviacion.
     var pendientes = 0;
     var grabadas = 0;
     var revisadas = 0;
     var segundosPendientes = 0;
     var escenasConTropiezoEnBuena = 0;
+    var escenasConAvisoRitmo = 0;
     datos.escenas.forEach(function (escena, indice) {
       var estado = estadosEscena[indice];
       if (estado === "pendiente") {
@@ -389,6 +393,9 @@
       }
       if (tropiezosEnTomaBuena(indice).length > 0) {
         escenasConTropiezoEnBuena += 1;
+      }
+      if (escena.aviso) {
+        escenasConAvisoRitmo += 1;
       }
     });
     var resumenProgreso = document.createElement("p");
@@ -407,6 +414,23 @@
       formatearTiempo(segundosPendientes) +
       " estimados por grabar";
     vistaIndice.appendChild(resumenProgreso);
+
+    // Resumen agregado de aviso de ritmo (R-45, requisito 4): misma revision
+    // previa a grabar que motiva R-39, ahora para la desviacion de ritmo que
+    // T-12 ya calcula por escena. Antes del resumen de tropiezos en toma
+    // buena (R-44): el aviso de ritmo es una revision previa a grabar, el de
+    // tropiezos una revision posterior a una toma, asi que el orden sigue el
+    // orden natural de la sesion de rodaje. Sin ningun elemento con el
+    // contador en 0.
+    if (escenasConAvisoRitmo > 0) {
+      var resumenAvisoRitmo = document.createElement("p");
+      resumenAvisoRitmo.className = "resumen-aviso-ritmo";
+      resumenAvisoRitmo.textContent =
+        escenasConAvisoRitmo === 1
+          ? "⚠ 1 escena se desvía del ritmo objetivo marcado"
+          : "⚠ " + escenasConAvisoRitmo + " escenas se desvían del ritmo objetivo marcado";
+      vistaIndice.appendChild(resumenAvisoRitmo);
+    }
 
     // Resumen agregado de tropiezos en toma buena (R-44, requisito 3): mismo
     // "de un vistazo" que R-39 ya aplica al progreso de grabacion, ahora para
@@ -640,6 +664,16 @@
       duracion.className = "escena-duracion";
       duracion.textContent = formatearTiempo(escena.duracion_estimada_segundos);
       fila.appendChild(duracion);
+
+      // Aviso de desviacion de ritmo (R-45): texto exacto que `tiempos.py`
+      // (T-12) ya calcula y formatea para esta escena, sin reformular ni
+      // truncar aqui. Sin `<span>` cuando `escena.aviso` es `null`.
+      if (escena.aviso) {
+        var avisoRitmo = document.createElement("span");
+        avisoRitmo.className = "escena-aviso-ritmo";
+        avisoRitmo.textContent = escena.aviso;
+        fila.appendChild(avisoRitmo);
+      }
 
       // Resumen de indicaciones EN PANTALLA/NOTA (R-42): mismo "de un vistazo"
       // que los resumenes de tomas/tropiezos de mas abajo, para saber que

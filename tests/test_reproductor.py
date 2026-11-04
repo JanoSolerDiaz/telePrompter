@@ -1736,7 +1736,8 @@ def test_guion_js_aviso_tropiezos_en_buena_no_cambia_el_contrato_embebido() -> N
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     # Requisito 4: cero cambio en `scripts/reproductor.py` ni en el JSON
     # embebido -- el aviso es enteramente de `guion.js` sobre datos que ya
-    # vive en `localStorage` (R-02/R-36).
+    # vive en `localStorage` (R-02/R-36). `aviso` se suma mas tarde, en R-45
+    # (unico campo nuevo del contrato desde esta tarea).
     datos = _extraer_datos(pagina)
     for escena in datos["escenas"]:
         assert set(escena.keys()) == {
@@ -1744,6 +1745,7 @@ def test_guion_js_aviso_tropiezos_en_buena_no_cambia_el_contrato_embebido() -> N
             "titulo",
             "duracion_estimada_segundos",
             "duracion_objetivo_segundos",
+            "aviso",
             "bloques",
         }
 
@@ -1842,6 +1844,8 @@ def test_guion_js_resumen_tropiezos_en_buena_no_cambia_el_contrato_embebido() ->
     pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
     # Requisito 5: cero campo nuevo en el JSON embebido -- mejora enteramente
     # de lectura/presentación sobre datos que `guion.js` ya calcula por escena.
+    # `aviso` se suma mas tarde, en R-45 (unico campo nuevo del contrato desde
+    # esta tarea).
     datos = _extraer_datos(pagina)
     for escena in datos["escenas"]:
         assert set(escena.keys()) == {
@@ -1849,6 +1853,7 @@ def test_guion_js_resumen_tropiezos_en_buena_no_cambia_el_contrato_embebido() ->
             "titulo",
             "duracion_estimada_segundos",
             "duracion_objetivo_segundos",
+            "aviso",
             "bloques",
         }
 
@@ -1859,6 +1864,164 @@ def test_estilo_resumen_tropiezos_en_buena_reutiliza_el_color_de_acento() -> Non
     # Requisito 4: mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena`
     # (color de acento, negrita), no el tono neutro de `.resumen-progreso-grabacion`.
     coincidencia = pagina.index(".resumen-tropiezos-en-buena {")
+    fragmento = pagina[coincidencia : coincidencia + 150]
+    assert "color: var(--color-acento);" in fragmento
+    assert "font-weight: 600;" in fragmento
+
+
+# --- Aviso de desviacion de ritmo en el indice de escenas (R-45) ------------------------
+#
+# `_GUION_AVISO_RITMO` fija un ppm a mano (`Configuracion.ppm_manual`, T-12
+# requisito 8) para que la desviacion de cada escena sea determinista, en vez
+# de depender del ppm deducido: a 150 ppm (2.5 palabras/segundo) la escena 1
+# (25 palabras "de relleno", objetivo 10s) queda dentro del umbral por
+# defecto (~10% de desviacion) y la escena 2 (48 palabras, mismo objetivo) lo
+# supera con holgura (~100%) -- los tres casos del criterio de aceptacion:
+# (a) sin objetivo (escena 0), (b) dentro del umbral (escena 1), (c) fuera
+# del umbral (escena 2).
+
+_TEXTO_DENTRO_DEL_UMBRAL = " ".join(["palabra"] * 25) + "."
+_TEXTO_FUERA_DEL_UMBRAL = " ".join(["palabra"] * 48) + "."
+
+_GUION_AVISO_RITMO = f"""# Guion de prueba aviso de ritmo
+
+## BLOQUE 0 — Introducción
+
+**LOCUCIÓN**
+
+> Frase breve sin ningún objetivo de tiempo marcado en el encabezado de esta escena.
+
+## BLOQUE 1 — Centro (0:00 – 0:10)
+
+**LOCUCIÓN**
+
+> {_TEXTO_DENTRO_DEL_UMBRAL}
+
+## BLOQUE 2 — Cierre (0:00 – 0:10)
+
+**LOCUCIÓN**
+
+> {_TEXTO_FUERA_DEL_UMBRAL}
+"""
+
+_CONFIGURACION_AVISO_RITMO = Configuracion(ppm_manual=150)
+
+
+def test_tiempos_py_aviso_ritmo_cubre_los_tres_casos_de_la_fixture() -> None:
+    # Fija el comportamiento de la fixture en si (contrato con `tiempos.py`,
+    # T-12) antes de comprobar que el reproductor lo refleja sin recalcularlo.
+    _resultado, tiempos = _pipeline(_GUION_AVISO_RITMO, _CONFIGURACION_AVISO_RITMO)
+    assert tiempos.escenas[0].aviso is None
+    assert tiempos.escenas[1].aviso is None
+    assert tiempos.escenas[2].aviso is not None
+
+
+def test_reproductor_py_aviso_reutiliza_tal_cual_el_de_tiempos() -> None:
+    resultado, tiempos = _pipeline(_GUION_AVISO_RITMO, _CONFIGURACION_AVISO_RITMO)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    # Requisito 1: mismo texto exacto que `TiempoEscena.aviso`, comparado
+    # literalmente contra el propio calculo de `tiempos.py` (T-12), sin
+    # recalcularlo ni reformularlo en el test.
+    for escena_datos, tiempo_escena in zip(datos["escenas"], tiempos.escenas, strict=True):
+        assert escena_datos["aviso"] == tiempo_escena.aviso
+
+
+def test_guion_js_fila_muestra_el_aviso_solo_cuando_no_es_null() -> None:
+    resultado, tiempos = _pipeline(_GUION_AVISO_RITMO, _CONFIGURACION_AVISO_RITMO)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: `<span class="escena-aviso-ritmo">` justo despues de
+    # `.escena-duracion` y antes de `.escena-indicaciones` en el codigo de
+    # `renderizarIndice`.
+    inicio_duracion = pagina.index('duracion.className = "escena-duracion";')
+    inicio_aviso = pagina.index('avisoRitmo.className = "escena-aviso-ritmo";')
+    inicio_indicaciones = pagina.index('resumenIndicaciones.className = "escena-indicaciones";')
+    assert inicio_duracion < inicio_aviso < inicio_indicaciones
+    assert "if (escena.aviso) {" in pagina
+    assert "avisoRitmo.textContent = escena.aviso;" in pagina
+
+
+def test_guion_js_agregado_aviso_ritmo_reutiliza_el_bucle_de_progreso() -> None:
+    resultado, tiempos = _pipeline(_GUION_AVISO_RITMO, _CONFIGURACION_AVISO_RITMO)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: el contador nuevo vive en el mismo `forEach` que ya suman
+    # R-39/R-44 sobre `datos.escenas`, sin un segundo recorrido.
+    inicio = pagina.index("var pendientes = 0;")
+    fin = pagina.index("vistaIndice.appendChild(resumenProgreso);", inicio)
+    fragmento = pagina[inicio:fin]
+    assert fragmento.count("datos.escenas.forEach(function (escena, indice) {") == 1
+    assert "escenasConAvisoRitmo += 1;" in fragmento
+
+
+def test_guion_js_resumen_aviso_ritmo_no_se_renderiza_en_cero() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: sin ningun `<p>` si el contador esta en 0 -- mismo criterio
+    # estructural que `test_guion_js_resumen_tropiezos_en_buena_no_se_renderiza_en_cero`
+    # (R-44): el `<p>` solo se crea dentro del `if (escenasConAvisoRitmo > 0)`.
+    coincidencia = pagina.index("if (escenasConAvisoRitmo > 0) {")
+    fin = pagina.index(
+        "// Resumen agregado de tropiezos en toma buena (R-44", coincidencia
+    )
+    fragmento = pagina[coincidencia:fin]
+    assert 'document.createElement("p")' in fragmento
+    assert 'resumenAvisoRitmo.className = "resumen-aviso-ritmo";' in fragmento
+
+
+def test_guion_js_resumen_aviso_ritmo_singular_y_plural() -> None:
+    resultado, tiempos = _pipeline(_GUION_AVISO_RITMO, _CONFIGURACION_AVISO_RITMO)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: texto exacto fijado por la ficha, singular con N=1, plural
+    # con N escenas en cualquier otro caso.
+    assert '"⚠ 1 escena se desvía del ritmo objetivo marcado"' in pagina
+    assert (
+        '"⚠ " + escenasConAvisoRitmo + " escenas se desvían del ritmo objetivo marcado"'
+    ) in pagina
+
+
+def test_guion_js_resumen_aviso_ritmo_va_entre_progreso_y_tropiezos_en_buena() -> None:
+    resultado, tiempos = _pipeline(_GUION_AVISO_RITMO, _CONFIGURACION_AVISO_RITMO)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 4: situado entre `.resumen-progreso-grabacion` (R-39) y
+    # `.resumen-tropiezos-en-buena` (R-44) cuando ambos coexisten.
+    indice_progreso = pagina.index("vistaIndice.appendChild(resumenProgreso);")
+    indice_aviso = pagina.index('resumenAvisoRitmo.className = "resumen-aviso-ritmo";')
+    indice_tropiezos_en_buena = pagina.index(
+        'resumenTropiezosEnBuena.className = "resumen-tropiezos-en-buena";'
+    )
+    assert indice_progreso < indice_aviso < indice_tropiezos_en_buena
+
+
+def test_guion_js_aviso_ritmo_sin_elemento_interactivo_ni_localstorage_nuevo() -> None:
+    resultado, tiempos = _pipeline(_GUION_AVISO_RITMO, _CONFIGURACION_AVISO_RITMO)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 6: sin control nuevo (solo `<span>`/`<p>`) ni `localStorage`
+    # nuevo en el area que R-45 toca.
+    inicio = pagina.index('avisoRitmo.className = "escena-aviso-ritmo";')
+    fin = pagina.index("// Resumen de indicaciones EN PANTALLA/NOTA", inicio)
+    fragmento = pagina[inicio:fin]
+    assert "<button" not in fragmento
+    assert "addEventListener" not in fragmento
+    assert "localStorage" not in fragmento
+
+
+def test_estilo_aviso_ritmo_reutiliza_el_color_de_acento() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5: mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena`
+    # (color de acento, negrita), no el gris discreto del resto de resumenes.
+    coincidencia = pagina.index(".escena-aviso-ritmo {")
+    fragmento = pagina[coincidencia : coincidencia + 150]
+    assert "color: var(--color-acento);" in fragmento
+    assert "font-weight: 600;" in fragmento
+
+
+def test_estilo_resumen_aviso_ritmo_reutiliza_el_color_de_acento() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5: mismo lenguaje visual de aviso que `.resumen-tropiezos-en-buena`,
+    # no el tono neutro de `.resumen-progreso-grabacion`/`.resumen-guion`.
+    coincidencia = pagina.index(".resumen-aviso-ritmo {")
     fragmento = pagina[coincidencia : coincidencia + 150]
     assert "color: var(--color-acento);" in fragmento
     assert "font-weight: 600;" in fragmento

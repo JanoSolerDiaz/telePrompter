@@ -235,6 +235,10 @@ def _construir_datos(
                 "titulo": escena.titulo,
                 "duracion_estimada_segundos": tiempo_escena.duracion_estimada_segundos,
                 "duracion_objetivo_segundos": tiempo_escena.duracion_objetivo_segundos,
+                # Aviso de desviacion de ritmo (R-45): texto ya formateado por
+                # `tiempos._aviso_desviacion` (T-12), reutilizado tal cual, sin
+                # reformular el mensaje aqui. `None` sin desviacion que avisar.
+                "aviso": tiempo_escena.aviso,
                 "bloques": [
                     {
                         "texto": bloque_con_tiempo.bloque.texto,

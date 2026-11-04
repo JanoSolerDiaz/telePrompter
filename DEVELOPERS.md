@@ -4396,6 +4396,57 @@ R-44 aplica el mismo principio al aviso de R-43.
   dentro" con (c) y (d) presentes, posición exacta entre los dos elementos de referencia, avisos
   por fila de R-43 intactos.
 
+## Aviso de desviación de ritmo en el índice de escenas (R-45)
+
+`scripts/tiempos.py::TiempoEscena.aviso` (T-12) ya compara, escena a escena, la duración estimada
+por ppm contra la duración objetivo marcada en el guion y ya formatea un texto accionable cuando la
+desviación supera el umbral configurado — usado desde siempre en `guion-escenas.md`, `tarjetas.json`,
+el `.pdf` y la revalidación, pero nunca en el reproductor en vivo. R-45 lo añade ahí, con el mismo
+principio que R-39/R-42/R-43/R-44: reutilizar un dato ya calculado, sin segunda implementación.
+
+- **`scripts/reproductor.py::_construir_datos` gana el campo aditivo `"aviso"`** por escena en el
+  JSON embebido, igual a `tiempo_escena.aviso` tal cual — sin tocar `scripts/tiempos.py` ni
+  reformular el texto. `None` cuando no hay desviación, exactamente igual que `TiempoEscena.aviso`.
+- **`<span class="escena-aviso-ritmo">` por fila** (`renderizarIndice`, `assets/reproductor/guion.js`):
+  insertado justo después de `.escena-duracion` y antes de `.escena-indicaciones` (R-42), con el
+  texto exacto de `escena.aviso` cuando no es `null`. Sin `<span>` en caso contrario.
+- **`escenasConAvisoRitmo` vive en el mismo `forEach`** que ya suman R-39/R-44 sobre `datos.escenas`
+  para pendientes/grabadas/revisadas/segundosPendientes/escenasConTropiezoEnBuena — ningún segundo
+  recorrido del array.
+- **`<p class="resumen-aviso-ritmo">` solo con el contador > 0**, insertado entre
+  `.resumen-progreso-grabacion` (R-39) y `.resumen-tropiezos-en-buena` (R-44) cuando este último
+  coexiste: el aviso de ritmo es una revisión previa a grabar, el de tropiezos una revisión posterior
+  a una toma, así que el orden de lectura sigue el orden natural de la sesión de rodaje. Texto "⚠ 1
+  escena se desvía del ritmo objetivo marcado" (singular) o "⚠ N escenas se desvían del ritmo
+  objetivo marcado" (plural, N = escenas). Con el contador en 0, no se renderiza ningún elemento.
+- **CSS nuevo** en `assets/reproductor/estilo.css`: `.escena-aviso-ritmo`/`.resumen-aviso-ritmo`
+  reutilizan el color de acento y `font-weight: 600` de `.escena-tropiezos-en-buena`/
+  `.resumen-tropiezos-en-buena` (R-43/R-44), no el tono neutro de `.resumen-guion`/
+  `.resumen-progreso-grabacion`. A diferencia del resto de metadatos cortos de la fila (duración,
+  tomas, tropiezos, indicaciones, todos con `white-space: nowrap`), el texto del aviso es una frase
+  completa que puede ser larga: `.escena-fila` gana `flex-wrap: wrap` y `.escena-aviso-ritmo` gana
+  `flex-basis: 100%` para que ocupe su propia línea sin desbordar la fila horizontalmente, sin
+  cambiar el comportamiento de una fila sin aviso (el ajuste solo entra en juego cuando el aviso no
+  cabe en la línea de los demás metadatos).
+- **Sin elemento interactivo nuevo, sin `localStorage` nuevo, sin cambio en `scripts/tiempos.py`,
+  `scripts/feedback.py`, `scripts/comandos_montaje.py` ni en ningún otro consumidor ya existente del
+  aviso** (`documento_revision.py`/`pptx.py`/`pdf.py`/`revalidacion.py`): mejora enteramente de
+  lectura y presentación en el reproductor sobre un dato que T-12 ya calcula y ya usan otras cuatro
+  salidas.
+- **El resumen y el aviso por fila se recalculan solos**: cualquier llamada ya existente a
+  `renderizarIndice()` reconstruye ambos desde cero; el aviso no cambia durante la sesión de rodaje
+  en sí (depende solo del guion y la configuración, no de tomas ni tropiezos), así que no hace falta
+  ningún disparador nuevo.
+- **Tests.** 10 nuevos y 2 ajustados por el campo nuevo del contrato embebido en
+  `tests/test_reproductor.py` (780→790 tests): fixture propia (`_GUION_AVISO_RITMO`) con
+  `Configuracion.ppm_manual` fijado a mano para que los tres casos del criterio de aceptación sean
+  deterministas — escena sin objetivo marcado, escena con objetivo y estimación dentro del umbral,
+  escena con objetivo y estimación fuera del umbral —, verificados por comparación literal del aviso
+  embebido contra el propio cálculo de `tiempos.calcular_tiempos`, nunca un segundo cálculo en el
+  test. Cuatro redes en verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio
+  (ninguna escena real/de ejemplo trae hoy una desviación de ritmo, así que su comportamiento visible
+  no cambia). Detalle completo en `DECISIONES_TECNICAS.md`.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

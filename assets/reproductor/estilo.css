@@ -57,6 +57,18 @@ h1 {
   margin-bottom: 2em;
 }
 
+/* Resumen agregado de aviso de ritmo (R-45): misma linea de resumen que
+   `.resumen-progreso-grabacion`, pero con el lenguaje visual de aviso de
+   `.escena-tropiezos-en-buena`/`.resumen-tropiezos-en-buena` (color de
+   acento, negrita) en vez del tono neutro -- puede exigir una decision del
+   dueno antes de grabar, no solo informar (principio de producto 5). */
+.resumen-aviso-ritmo {
+  color: var(--color-acento);
+  font-weight: 600;
+  font-size: 0.55em;
+  margin-bottom: 2em;
+}
+
 .escena {
   margin-bottom: 3em;
 }
@@ -100,6 +112,7 @@ button:focus-visible {
 .escena-fila {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75em;
   width: 100%;
   margin-bottom: 0.6em;
@@ -152,6 +165,18 @@ button:focus-visible {
 
 .escena-estado--revisada {
   color: var(--color-estado-revisada);
+}
+
+/* Aviso de desviacion de ritmo (R-45): misma linea de resumen de la fila que
+   puede exigir una decision del dueno antes de grabar (recortar, alargar o
+   dejar el texto tal cual) -- reutiliza el lenguaje visual de aviso de
+   `.escena-tropiezos-en-buena` (color de acento, negrita) en vez del gris
+   discreto de `.escena-indicaciones`/`.escena-tomas`/`.escena-tropiezos`. */
+.escena-aviso-ritmo {
+  color: var(--color-acento);
+  font-weight: 600;
+  font-size: 0.7em;
+  flex-basis: 100%;
 }
 
 /* Resumen de indicaciones EN PANTALLA/NOTA (R-42): mismo tratamiento discreto
