@@ -12,6 +12,54 @@
 
 ---
 
+### Sesión 2026-11-04 (328) — Ciclo de Programador: primera reconfirmación del día tras P-12, sin novedad de código
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` ya estaba al día con la sesión anterior (commit `ae521d0`,
+P-12), árbol de trabajo limpio sin divergencia que resolver. Mismo rodeo ya documentado por
+`#22`/`#28`/P-06: `pip install -r requirements-dev.txt` desnudo resuelve contra `python3.13`
+mientras `python`/`python3` apuntan a `/usr/bin/python3.11`; reinstalado con `python3 -m pip
+install -r requirements-dev.txt` antes de verificar nada.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md`
+revisado completo: sin ninguna pasada nueva del auditor desde la sesión anterior (la más reciente
+sigue siendo la del 2026-11-04 que cerró `#39`/`#41` y condensó `#24`/`#30`, cerrando `#38`).
+Ningún hallazgo `ABIERTO` de severidad alta en las categorías que exigen P-XX urgente (pérdida de
+texto del guion, corrupción de estado, rotura del reproductor o de su auto-contención, seguridad).
+`#24`/`#30` (gobernanza pura, preguntas `#11`/`#12` de §6 sin respuesta del dueño) siguen `ABIERTO`;
+`#40` (rotación de `DECISIONES_TECNICAS.md`) queda resuelto en código por P-12 de la sesión
+anterior, pendiente solo de que el auditor lo reverifique y lo cierre (terreno exclusivo suyo);
+`#36` sigue `ASUMIDO`.
+
+**Ninguna tarea elegida.** §1 confirmada de punta a punta: las 34 T-XX (`T-24b` `BLOQUEADA`, ajena
+al programador) y las 45 R-XX (hasta R-45) están `COMPLETADA`; §5 también completa, P-01 a P-12.
+Ninguna fila `PENDIENTE` ni `BLOQUEADA` ejecutable. El PM todavía no ha abierto ninguna oleada tras
+R-45 (`ROADMAP_PRODUCTO.md` sigue fechado 2026-11-03). Primer ciclo de pura reconfirmación del día
+tras el cierre de P-12.
+
+**Verificación completa, sin cambios de código.** `python3 scripts/ci.py`: `mypy` (72 archivos,
+sin problemas), `ruff check` (todo correcto), `pytest` (790/790 tests) y
+`verificar_salidas.py --fixture` (diecinueve etapas `OK`, incluida la salida latente esperada en
+este contenedor — `.pptx` sin la skill `480-branded-pptx` instalada — y las omisiones esperadas sin
+parte de rodaje real; el `.pdf` sí se generó de verdad, Chrome/Edge headless disponible en este
+contenedor). Cuatro redes en verde; `git status` tras la verificación, limpio salvo los dos
+documentos de registro que esta propia sesión actualiza.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-45 y P-12 permanecen `COMPLETADA`. Sin
+decisiones nuevas en `DECISIONES_TECNICAS.md`. Sin novedad en §3 (bloqueos), §6 (preguntas,
+`#11`/`#12` siguen `(pendiente)`) ni §7 (desviaciones). Cabecera de `SEGUIMIENTO.md` actualizada
+("Última actualización") respetando la norma de P-10: solo el estado vigente, sin acumular la
+narrativa de esta sesión, que vive aquí.
+
+**Nota de cierre.** Sexto disparo de hoy de la rutina "programador-teleprompter" (cuatro
+reconfirmaciones + P-12 + esta), sin ningún código que tocar tras R-45/P-12: el patrón que motivó
+la escalada de `#30` a severidad alta (cron horario repitiendo las cuatro redes con la cola vacía)
+sigue vigente mientras el dueño no responda `#11`/`#12` de §6. Ninguna acción unilateral tomada
+sobre la cadencia de la rutina ni sobre el protocolo: ambas son decisiones del dueño, no del
+Programador.
+
+---
+
 ### Sesión 2026-11-04 (327) — Ciclo de Programador: P-12, rotación de `DECISIONES_TECNICAS.md`
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
