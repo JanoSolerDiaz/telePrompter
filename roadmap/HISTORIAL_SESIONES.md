@@ -12,6 +12,58 @@
 
 ---
 
+### Sesión 2026-11-04 (331) — Ciclo de Programador: cuarta reconfirmación del día tras P-12, sin novedad de código
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` encontró la rama desconectada de cualquier commit local
+(mismo artefacto de arranque de contenedor ya documentado en sesiones anteriores, no divergencia
+real): resuelto con el propio `checkout develop`, que hizo fast-forward limpio hasta el commit
+`1a258fa` (sesión 330), árbol de trabajo limpio. `pip install -r requirements-dev.txt` (bare `pip`)
+no dejó `mypy`/`ruff`/`pytest` importables por el `python` real (`/usr/local/bin/python` →
+`python3.11`): el `pip` del `PATH` resuelve contra `python3.13`, un intérprete distinto, mismo
+rodeo ya documentado por `#22`/`#28`/P-06 aunque con el emparejamiento de binarios invertido al de
+sesiones previas. Corregido invocando `python -m pip install -r requirements-dev.txt` (instala
+contra el mismo intérprete que luego ejecuta `scripts/ci.py`), verificado con `python -m mypy
+--version`/`python -m ruff --version`/`python -m pytest --version` antes de continuar.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md`
+revisado completo (`git log --oneline -- auditoriacontinua.md`): sin ninguna pasada nueva del
+auditor desde la sesión anterior (la más reciente sigue siendo `f501cad`, que cerró `#39`/`#41`,
+condensó `#24`/`#30` vía `#38` y pasó `#36` a `ASUMIDO`). Ningún hallazgo `ABIERTO` de severidad
+alta en las categorías que exigen P-XX urgente (pérdida de texto del guion, corrupción de estado,
+rotura del reproductor o de su auto-contención, seguridad). `#24`/`#30` (gobernanza pura, preguntas
+`#11`/`#12` de §6 sin respuesta del dueño) siguen `ABIERTO`; `#40` (rotación de
+`DECISIONES_TECNICAS.md`) resuelto en código por P-12, pendiente solo de que el auditor lo
+reverifique y lo cierre (terreno exclusivo suyo); `#36` sigue `ASUMIDO`.
+
+**Ninguna tarea elegida.** §1 confirmada de punta a punta: las 34 T-XX (`T-24b` `BLOQUEADA`, ajena
+al programador) y las 45 R-XX (hasta R-45) están `COMPLETADA`; §5 también completa, P-01 a P-12.
+Ninguna fila `PENDIENTE` ni `BLOQUEADA` ejecutable. El PM todavía no ha abierto ninguna oleada tras
+R-45. `roadmap/ROADMAP_PRODUCTO.md` confirmado sin ningún hito pendiente fuera de lo ya reflejado
+en §1.
+
+**Verificación completa, sin cambios de código.** `python scripts/ci.py` tras instalar las
+dependencias de desarrollo: `mypy` (72 archivos, sin problemas), `ruff check` (todo correcto),
+`pytest` (790/790 tests, código de salida 0) y `verificar_salidas.py --fixture` (diecinueve etapas
+`OK`, incluida la salida latente esperada en este contenedor — `.pptx` sin la skill
+`480-branded-pptx` instalada — y las omisiones esperadas sin parte de rodaje real; el `.pdf` sí se
+generó de verdad con Chrome/Edge headless). Cuatro redes en verde; `git status` tras la
+verificación, limpio salvo los dos documentos de registro que esta propia sesión actualiza.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-45 y P-12 permanecen `COMPLETADA`. Sin
+decisiones nuevas en `DECISIONES_TECNICAS.md`. Sin novedad en §3 (bloqueos), §6 (preguntas,
+`#11`/`#12` siguen `(pendiente)`) ni §7 (desviaciones). Cabecera de `SEGUIMIENTO.md` actualizada
+("Última actualización") respetando la norma de P-10: solo el estado vigente, sin acumular la
+narrativa de esta sesión, que vive aquí.
+
+**Nota de cierre.** Cuarta reconfirmación de hoy de la rutina "programador-teleprompter" tras
+R-45/P-12, sin ningún código que tocar: el patrón que motivó la escalada de `#30` a severidad alta
+(cron horario repitiendo las cuatro redes con la cola vacía) sigue vigente mientras el dueño no
+responda `#11`/`#12` de §6. Ninguna acción unilateral tomada sobre la cadencia de la rutina ni sobre
+el protocolo: ambas son decisiones del dueño, no del Programador.
+
+---
+
 ### Sesión 2026-11-04 (330) — Ciclo de Programador: tercera reconfirmación del día tras P-12, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
