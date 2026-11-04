@@ -2910,8 +2910,6 @@ pasan, sin errores de consola. `SKILL.md`/`DEVELOPERS.md` actualizados. Detalle 
 
 ---
 
----
-
 ## Oleada v32 — Resumen agregado, en la cabecera del índice, de cuántas escenas tienen la toma buena con un tropiezo dentro
 
 ### R-44 — Mostrar en la cabecera del índice, junto al resto de resúmenes agregados, cuántas escenas en total tienen la toma buena con uno o más tropiezos marcados dentro
@@ -2979,6 +2977,7 @@ sin cambios. El JSON embebido por `scripts/reproductor.py` no gana ningún campo
 que antes de R-44, verificado por diff contra la salida de referencia). Verificado también
 visualmente con Playwright/Chromium real, mismo criterio que R-39 a R-43.
 
+
 **Cómo se entregó:** `assets/reproductor/guion.js::renderizarIndice` gana `escenasConTropiezoEnBuena`,
 sumado dentro del mismo `forEach` que R-39 ya usa para pendientes/grabadas/revisadas/
 segundosPendientes (requisito 2, sin segundo recorrido de `datos.escenas`). Requisito 1: la lógica de
@@ -3004,6 +3003,108 @@ escenas, no de tropiezos: 2, pese a que (d) trae dos), situado exactamente entre
 
 ---
 
+## Oleada v33 — Avisar cuando el ritmo estimado de una escena se desvía de la duración objetivo marcada en el guion
+
+### R-45 — Mostrar en el índice de escenas, por fila y agregado en la cabecera, el aviso de desviación de ritmo que T-12 ya calcula por escena
+
+**Migración:** No (campo aditivo en el JSON embebido por `scripts/reproductor.py::_construir_datos`,
+que no lleva versión de contrato propia; ningún cambio en `scripts/tiempos.py`, que ya calcula y
+formatea el aviso completo desde T-12) · **Depende de:** T-12 (`tiempos.calcular_tiempos`/
+`calcular_tiempos_desde_marcados`, `TiempoEscena.aviso` vía `_aviso_desviacion`), T-19 (índice de
+escenas, `renderizarIndice`), R-39 (`.resumen-progreso-grabacion`, el bloque agregado de cabecera,
+mismo patrón a seguir) — todas `COMPLETADA` · **Origen:** observación de arquitectura del PM
+(2026-11-03). `TiempoEscena.aviso` (T-12) ya compara, escena a escena, la duración estimada por ppm
+contra la duración objetivo que el propio guion fija en la cabecera de cada escena, y ya formatea un
+texto accionable ("sobran/faltan unas P palabras para encajar en el objetivo") cuando la desviación
+supera el umbral configurado (`Configuracion.umbral_desviacion_tiempos`) — hoy se usa en
+`guion-escenas.md` (`documento_revision.py`), `tarjetas.json` (`pptx.py`), el `.pdf` (`pdf.py`) y en
+la revalidación (`revalidacion.py`), pero nunca llega al JSON embebido del reproductor: la única
+vista que el dueño tiene delante mientras graba es la única que no lo muestra. Mismo principio que
+R-39/R-42/R-43/R-44: reutilizar un dato ya calculado y ya probado, sin segunda implementación del
+criterio.
+
+**Objetivo:** que el dueño vea, en el índice de escenas y sin volver a abrir `guion-escenas.md` en el
+editor, qué escenas concretas se desvían de la duración objetivo marcada en el guion y por cuántas
+palabras, para decidir antes de grabar si recorta, alarga o deja el texto tal cual — y, de un vistazo
+en la cabecera, cuántas escenas en total necesitan esa revisión antes de cerrar la sesión.
+
+**Requisitos:**
+1. `scripts/reproductor.py::_construir_datos` añade, de forma aditiva, `"aviso": tiempo_escena.aviso`
+   a cada entrada de `escenas_datos` (junto a `duracion_estimada_segundos`/`duracion_objetivo_segundos`,
+   ya presentes desde T-12/R-16) — reutiliza tal cual el texto ya formateado por
+   `tiempos._aviso_desviacion`, sin tocar `scripts/tiempos.py` ni reformular el mensaje. `None` cuando
+   no hay desviación (sin objetivo marcado, o desviación dentro del umbral), igual que hoy en
+   `TiempoEscena.aviso`.
+2. En `renderizarIndice` (`assets/reproductor/guion.js`), añadir un `<span class="escena-aviso-ritmo">`
+   en la fila de cada escena, inmediatamente después de `.escena-duracion` y antes de
+   `.escena-indicaciones` (R-42), con el texto exacto de `escena.aviso` cuando no es `null` — sin
+   reformatear ni truncar, mismo criterio de reutilización exacta que el resto de la ficha. Sin
+   `<span>` cuando `escena.aviso` es `null`.
+3. En el mismo `forEach` sobre `datos.escenas` donde R-39/R-44 ya calculan sus contadores (pendientes/
+   grabadas/revisadas/segundosPendientes/escenasConTropiezoEnBuena), sumar un contador nuevo,
+   `escenasConAvisoRitmo`, incrementado por cada escena cuyo `aviso` no sea `null` — mismo bucle ya
+   existente, sin segundo recorrido de `datos.escenas`.
+4. Si `escenasConAvisoRitmo` es mayor que 0, añadir un `<p class="resumen-aviso-ritmo">` nuevo
+   inmediatamente después de `.resumen-progreso-grabacion` (R-39) y antes de
+   `.resumen-tropiezos-en-buena` (R-44) cuando este exista — el aviso de ritmo es una revisión previa
+   a grabar, el de tropiezos una revisión posterior a una toma, así que el orden de lectura sigue el
+   orden natural de la sesión de rodaje — con el texto "⚠ 1 escena se desvía del ritmo objetivo
+   marcado" (singular) o "⚠ N escenas se desvían del ritmo objetivo marcado" (plural, N = escenas),
+   mismo criterio singular/plural que el resto de resúmenes. Con el contador en 0, no se añade ningún
+   elemento.
+5. CSS nuevo en `assets/reproductor/estilo.css` para `.escena-aviso-ritmo` y `.resumen-aviso-ritmo`,
+   reutilizando el mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena`/
+   `.resumen-tropiezos-en-buena` (R-43/R-44: color de acento, negrita) en vez del tono neutro de
+   `.resumen-guion`/`.resumen-progreso-grabacion` — es un aviso que puede exigir una decisión del
+   dueño antes de grabar, no solo informar (principio de producto 5: legibilidad por encima de todo).
+6. Sin elemento interactivo nuevo (`<span>`/`<p>`, nunca un control); sin `localStorage` nuevo; sin
+   cambio en `scripts/tiempos.py`, `scripts/feedback.py`, `scripts/comandos_montaje.py` ni en ningún
+   otro consumidor ya existente del aviso (`documento_revision.py`/`pptx.py`/`pdf.py`/
+   `revalidacion.py`) — mejora enteramente de lectura y presentación en el reproductor sobre un dato
+   que T-12 ya calcula y ya usan otras cuatro salidas.
+7. El resumen y el aviso por fila se recalculan solos (mismo patrón que R-39/R-42/R-43/R-44, sin
+   heurística de refresco nueva): cualquier llamada ya existente a `renderizarIndice()` reconstruye
+   ambos desde cero sin cableado adicional — el aviso no cambia durante la sesión de rodaje en sí
+   (depende solo del guion y la configuración, no de tomas ni tropiezos), así que no hace falta
+   ningún disparador nuevo más allá de la propia carga del reproductor.
+
+**Criterio de aceptación:** sobre una fixture con al menos tres escenas de prueba — (a) sin duración
+objetivo marcada en la cabecera de la escena, (b) con duración objetivo marcada y una estimación
+dentro del umbral configurado, y (c) con duración objetivo marcada y una estimación que lo supera —
+el índice no muestra ningún `<span class="escena-aviso-ritmo">` en (a) ni en (b), y en (c) muestra el
+texto exacto que ya produce `tiempos._aviso_desviacion` para esa escena (verificado por comparación
+literal, no por un nuevo cálculo en el test). Con una sola escena en el caso (c), la cabecera muestra
+"⚠ 1 escena se desvía del ritmo objetivo marcado"; con dos o más, el plural con el recuento correcto
+de escenas. El JSON embebido por `scripts/reproductor.py` gana únicamente el campo aditivo `aviso`
+por escena (verificado por diff de claves contra la salida de referencia anterior a R-45); ningún
+otro consumidor del aviso (`guion-escenas.md`, `tarjetas.json`, el `.pdf`, la revalidación) cambia de
+comportamiento. Verificado también visualmente con Playwright/Chromium real, mismo criterio que
+R-39 a R-44.
+
+**Cómo se entregó:** `scripts/reproductor.py::_construir_datos` añade el campo aditivo
+`"aviso": tiempo_escena.aviso` a cada escena del JSON embebido (reutiliza tal cual
+`TiempoEscena.aviso`/`tiempos._aviso_desviacion` de T-12, sin tocar `scripts/tiempos.py`).
+`assets/reproductor/guion.js::renderizarIndice`: `<span class="escena-aviso-ritmo">` por fila justo
+después de `.escena-duracion` y antes de `.escena-indicaciones` (R-42) cuando `escena.aviso` no es
+`null`; contador `escenasConAvisoRitmo` sumado en el mismo `forEach` que ya usan R-39/R-44 (sin
+segundo recorrido); `<p class="resumen-aviso-ritmo">` agregado en la cabecera, entre
+`.resumen-progreso-grabacion` (R-39) y `.resumen-tropiezos-en-buena` (R-44) cuando este último existe,
+con singular/plural exacto, solo con el contador > 0. CSS nuevo reutiliza el color de acento y
+`font-weight: 600` de `.escena-tropiezos-en-buena`/`.resumen-tropiezos-en-buena` (R-43/R-44);
+`.escena-fila` gana `flex-wrap: wrap` y `.escena-aviso-ritmo` gana `flex-basis: 100%` para que el
+aviso (una frase larga, a diferencia del resto de metadatos cortos de la fila) ocupe su propia línea
+sin forzar desbordamiento horizontal. Sin elemento interactivo nuevo, sin `localStorage` nuevo, sin
+cambio en `scripts/tiempos.py`/`feedback.py`/`comandos_montaje.py` ni en ningún otro consumidor ya
+existente del aviso (`documento_revision.py`/`pptx.py`/`pdf.py`/`revalidacion.py`). 10 tests nuevos y
+2 ajustados por el campo nuevo del contrato embebido (780→790); fixture propia con ppm fijado a mano
+(`Configuracion.ppm_manual`) para los tres casos deterministas del criterio de aceptación — (a) sin
+objetivo, (b) dentro del umbral, (c) fuera del umbral —, comparando el aviso embebido contra el propio
+cálculo de `tiempos.py` por igualdad literal, nunca un segundo cálculo en el test. Cuatro redes en
+verde, diecinueve etapas de `verificar_salidas.py --fixture` sin cambio (ninguna desviación en los
+tres guiones reales/el guion de ejemplo). Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -3023,4 +3124,5 @@ v27 (R-39), 2026-10-27 (implementación), archivada el mismo ciclo de PM; la de 
 (implementación), archivada en el ciclo de PM del mismo día; la de v30 (R-42), 2026-10-30
 (implementación), archivada en el ciclo de PM del mismo día; la de v31 (R-43), 2026-11-02
 (implementación), archivada en el ciclo de PM del mismo día; la de v32 (R-44), 2026-11-03
-(implementación), archivada en este ciclo de PM (2026-11-03).)*
+(implementación), archivada en el ciclo de PM del día siguiente (2026-11-04); la de v33 (R-45),
+2026-11-04 (implementación), archivada en este mismo ciclo de PM (2026-11-04).)*

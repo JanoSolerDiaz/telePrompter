@@ -8,65 +8,56 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-11-03 (ciclo de Product Manager). R-44 (Oleada v32) llevaba
-`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-11-03 (ciclo de Programador), reconfirmada en
-verde en varias pasadas sucesivas del Programador sin que ningún ciclo de PM la archivara todavía.
-Este ciclo archiva la Oleada v32 en `ROADMAP_HISTORICO.md` y abre R-45 (Oleada v33) en §1, sin
-implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda
-respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
+**Última actualización:** 2026-11-04 (ciclo de Product Manager). R-45 (Oleada v33) llevaba
+`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-11-04 (ciclo de Programador posterior a P-12),
+reconfirmada en verde en varias pasadas sucesivas del Programador sin que ningún ciclo de PM la
+archivara todavía. Este ciclo archiva la Oleada v33 en `ROADMAP_HISTORICO.md` y abre R-46 (Oleada
+v34) en §1, sin implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente
+desde R-19) queda respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
-completo) sigue abierto, ahora 61 días desde que T-32 lo dejó listo para grabar (2026-09-03).
-`auditoriacontinua.md` revisado entero antes de elegir tarea (no solo la narrativa más reciente):
-`#24` (baja) y `#30` (escalada de media a alta en esta misma pasada del auditor, por el volumen y
-persistencia del coste de cómputo que describe, no por ningún riesgo nuevo de producto) siguen
-`ABIERTO` de proceso/gobernanza puro, pendientes solo de la respuesta del dueño a las preguntas
-#11/#12 de `SEGUIMIENTO.md` §6 (48 y 24 días sin respuesta); `#36` (baja, apertura en inglés de un
-commit ya publicado) sigue puramente observacional, sin remedio retroactivo razonable. Tres hallazgos
-nuevos de esta pasada del auditor, los tres de proceso/documentación pura, sin ninguno convertible en
-R-XX de producto: `#38` (baja, el propio registro de `auditoriacontinua.md` debería condensar sus
-filas más repetidas) es terreno exclusivo del auditor, que ya lo deja como remedio propuesto en su
-propia fila, no de este roadmap; `#39` (media, `SEGUIMIENTO.md` había vuelto a acumular narrativa de
-sesión en su cabecera) ya fue corregido en código por el Programador (P-10, commit `822295d`) antes
-de este ciclo, pendiente solo de que el auditor lo reverifique; `#40` (baja, `DECISIONES_TECNICAS.md`
-supera el umbral de rotación por trimestre que su propia cabecera declara) es una tarea de archivado
-puro, sin ningún hito de producto ni urgencia — candidata a una futura P-XX del Programador cuando su
-cola esté vacía, igual que P-06/P-07/P-08 resolvieron hallazgos de documentación equivalentes; no se
-abre como pregunta nueva en §6 porque no depende de ninguna decisión del dueño, solo de ejecutarla.
-Ninguno de los siete hallazgos abiertos es de severidad alta en las categorías que exigirían una P-XX
-urgente (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de su
-auto-contención, seguridad); `#41` (baja, hueco de `srcset=` en el validador de auto-contención) ya
-fue corregido en código por el Programador (P-11) antes de este ciclo, también pendiente solo de
-reverificación del auditor.
+completo) sigue abierto, ahora 62 días desde que T-32 lo dejó listo para grabar (2026-09-03).
+`auditoriacontinua.md` revisado entero antes de elegir tarea, hasta su pasada del 2026-11-04: cero
+hallazgos nuevos desde el ciclo de PM anterior. Esa misma pasada cierra `#39` y `#41` (P-10 y P-11,
+ambos reverificados en código/documentación), aplica el remedio que el propio `#38` proponía
+(condensar `#24`/`#30` en la narrativa, ya cerrado) y pasa `#36` a `ASUMIDO` (riesgo aceptado por el
+auditor, sin acción pendiente). Solo quedan `ABIERTO`: `#24`/`#30`, de proceso/gobernanza pura,
+pendientes solo de la respuesta del dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 (49/25 días
+sin respuesta); y `#40` (baja, rotación por trimestre de `DECISIONES_TECNICAS.md`), ya resuelto en
+código por **P-12** en esta misma jornada, pendiente solo de que la próxima pasada del auditor lo
+reverifique y lo cierre. Ninguno de los tres es de severidad alta en las categorías que exigirían una
+P-XX urgente (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de su
+auto-contención, seguridad), y ninguno es convertible en una R-XX de producto.
 
 **Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
 propio roadmap, repetida desde ciclos anteriores porque el hecho que la motiva no ha cambiado):** van
-44 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la máquina real del dueño
+45 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la máquina real del dueño
 (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas tienen `origen: auditoría
 #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena calidad (cuatro redes en
-verde, 777 tests, invariantes reverificados en cada auditoría), pero el propio principio de producto
+verde, 790 tests, invariantes reverificados en cada auditoría), pero el propio principio de producto
 que guía este documento —"utilidad real para un formador que graba vídeos de curso"— solo se
 confirma grabando, no leyendo código. El bloqueo #7 es una acción del dueño, no una tarea que el
 equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como pregunta nueva; se deja
 constancia aquí para que quede explícito que el criterio de salida de la Oleada v1 ("grabar un vídeo
 de curso entero") sigue siendo, con diferencia, el hito de mayor valor pendiente del proyecto, por
-delante de cualquier R-XX nueva. R-45 (más abajo) sigue el mismo criterio que R-39 a R-44: una mejora
+delante de cualquier R-XX nueva. R-46 (más abajo) sigue el mismo criterio que R-39 a R-45: una mejora
 pequeña y de bajo riesgo del propio reproductor, directamente útil para esa primera sesión real
-cuando ocurra — en vez de agregar otro resumen sobre datos de rodaje (tomas, tropiezos), esta vez trae
-al reproductor un aviso que T-12 ya calcula desde el primer día del proyecto (desviación del ritmo
-estimado frente a la duración objetivo marcada en el guion) y que hoy solo es visible releyendo
-`guion-escenas.md` en el editor, nunca en la propia pantalla que el dueño tiene delante al grabar.
+cuando ocurra — en vez de otro resumen de lectura en el índice (ya hay varios: progreso, indicaciones,
+tropiezos, ritmo), esta vez da margen de reacción ante una indicación `EN PANTALLA`/`NOTA` (R-12),
+anticipándola en el bloque anterior para que cambiar de ventana o preparar una diapositiva no exija
+cortar la locución en seco.
 
-**Oleada v32 (R-44) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v33 (R-45) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v33 (R-45) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-arquitectura del PM (2026-11-03): `scripts/tiempos.py::TiempoEscena.aviso` (T-12) ya compara, escena
-a escena, la duración estimada por ppm contra la duración objetivo marcada en el guion, y ya
-formatea un texto accionable en palabras a ajustar cuando la desviación supera el umbral configurado
-— usado hoy en `guion-escenas.md`, `tarjetas.json`, el `.pdf` y la revalidación, pero nunca en el
-reproductor en vivo. R-45 aplica el mismo principio que R-39/R-44 (reutilizar un dato ya calculado,
-sin segunda implementación) para mostrarlo por fila y agregado en la cabecera del índice.
+**Oleada v34 (R-46) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+arquitectura del PM (2026-11-04): `anclar_indicaciones_a_bloques`/`_indicaciones_ancladas_por_indice`
+(R-12/R-20) ya ancla cada indicación `EN PANTALLA`/`NOTA` al bloque de locución que la precede y la
+muestra en cuanto ese bloque se vuelve activo — pero para un formador en solitario, ejecutar esa
+indicación (cambiar de ventana, mostrar una diapositiva, abrir una demo) rara vez es instantáneo, y
+hoy el aviso llega justo cuando toca actuar, sin ningún margen para prepararlo sin cortar el ritmo de
+la locución. R-46 reutiliza el mismo array ya anclado, un bloque antes, mismo principio que R-39 a
+R-45: reutilizar un dato ya calculado, sin segunda implementación.
 
 ---
 
@@ -345,83 +336,76 @@ con un tropiezo dentro, R-44) tiene su única R-XX en **COMPLETADA** en §1 de `
 ningún hito de negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM
 (2026-11-03). Su spec completa y cómo se entregó viven ahí.
 
-### Oleada v33 — Avisar cuando el ritmo estimado de una escena se desvía de la duración objetivo marcada en el guion
+### Oleada v33 — entregada
 
-#### R-45 — Mostrar en el índice de escenas, por fila y agregado en la cabecera, el aviso de desviación de ritmo que T-12 ya calcula por escena
+La oleada v33 (aviso de desviación de ritmo de T-12, visible por fila y agregado en la cabecera del
+índice, R-45) tiene su única R-XX en **COMPLETADA** en §1 de `SEGUIMIENTO.md`, sin ningún hito de
+negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-11-04). Su spec
+completa y cómo se entregó viven ahí.
 
-**Migración:** No (campo aditivo en el JSON embebido por `scripts/reproductor.py::_construir_datos`,
-que no lleva versión de contrato propia; ningún cambio en `scripts/tiempos.py`, que ya calcula y
-formatea el aviso completo desde T-12) · **Depende de:** T-12 (`tiempos.calcular_tiempos`/
-`calcular_tiempos_desde_marcados`, `TiempoEscena.aviso` vía `_aviso_desviacion`), T-19 (índice de
-escenas, `renderizarIndice`), R-39 (`.resumen-progreso-grabacion`, el bloque agregado de cabecera,
-mismo patrón a seguir) — todas `COMPLETADA` · **Origen:** observación de arquitectura del PM
-(2026-11-03). `TiempoEscena.aviso` (T-12) ya compara, escena a escena, la duración estimada por ppm
-contra la duración objetivo que el propio guion fija en la cabecera de cada escena, y ya formatea un
-texto accionable ("sobran/faltan unas P palabras para encajar en el objetivo") cuando la desviación
-supera el umbral configurado (`Configuracion.umbral_desviacion_tiempos`) — hoy se usa en
-`guion-escenas.md` (`documento_revision.py`), `tarjetas.json` (`pptx.py`), el `.pdf` (`pdf.py`) y en
-la revalidación (`revalidacion.py`), pero nunca llega al JSON embebido del reproductor: la única
-vista que el dueño tiene delante mientras graba es la única que no lo muestra. Mismo principio que
-R-39/R-42/R-43/R-44: reutilizar un dato ya calculado y ya probado, sin segunda implementación del
-criterio.
+### Oleada v34 — Anticipar, en el bloque anterior, una indicación EN PANTALLA/NOTA próxima
 
-**Objetivo:** que el dueño vea, en el índice de escenas y sin volver a abrir `guion-escenas.md` en el
-editor, qué escenas concretas se desvían de la duración objetivo marcada en el guion y por cuántas
-palabras, para decidir antes de grabar si recorta, alarga o deja el texto tal cual — y, de un vistazo
-en la cabecera, cuántas escenas en total necesitan esa revisión antes de cerrar la sesión.
+#### R-46 — Mostrar en el bloque inmediatamente anterior un anticipo de la indicación anclada al bloque siguiente, para dar tiempo a prepararla sin cortar la locución
+
+**Migración:** No (sin campo nuevo en el JSON embebido ni cambio de contrato; se calcula enteramente
+en `assets/reproductor/guion.js` a partir del array `bloque.indicaciones` que R-12/R-20 ya incrustan
+por bloque) · **Depende de:** R-12 (`anclar_indicaciones_a_bloques`/`_indicaciones_ancladas_por_indice`,
+cue `.cue-indicacion` por bloque en `renderizarReproductor`), R-20 (extensión del mismo anclaje a
+`tarjetas.json`, sin tocar esta ficha), T-19/T-20 (índice y motor de bloques), T-23 (patrón de
+indicadores ocultables, `indicadores-ocultos`) — todas `COMPLETADA` · **Origen:** observación de
+arquitectura del PM (2026-11-04). R-12 ancla cada indicación `EN PANTALLA`/`NOTA` al bloque de
+locución que la precede y la muestra en cuanto ese bloque se vuelve activo — pero para un formador en
+solitario, ejecutar esa indicación (cambiar de ventana, mostrar una diapositiva, abrir una demo) rara
+vez es instantáneo: exige dejar de mirar la cámara, actuar sobre el ordenador y volver. Hoy el aviso
+llega en el mismo instante en que toca actuar, sin ningún margen para prepararlo sin cortar el ritmo
+de la locución. Mismo principio que R-39/R-42/R-44/R-45: reutilizar un dato ya calculado y ya
+probado, sin segunda implementación del anclaje.
+
+**Objetivo:** que el formador, mientras recita el bloque inmediatamente anterior a una indicación de
+pantalla, sepa que se aproxima y qué dice exactamente, para poder prepararla (cambiar de ventana,
+tener la diapositiva a mano) sin interrumpir la locución ni descubrir la indicación tarde.
 
 **Requisitos:**
-1. `scripts/reproductor.py::_construir_datos` añade, de forma aditiva, `"aviso": tiempo_escena.aviso`
-   a cada entrada de `escenas_datos` (junto a `duracion_estimada_segundos`/`duracion_objetivo_segundos`,
-   ya presentes desde T-12/R-16) — reutiliza tal cual el texto ya formateado por
-   `tiempos._aviso_desviacion`, sin tocar `scripts/tiempos.py` ni reformular el mensaje. `None` cuando
-   no hay desviación (sin objetivo marcado, o desviación dentro del umbral), igual que hoy en
-   `TiempoEscena.aviso`.
-2. En `renderizarIndice` (`assets/reproductor/guion.js`), añadir un `<span class="escena-aviso-ritmo">`
-   en la fila de cada escena, inmediatamente después de `.escena-duracion` y antes de
-   `.escena-indicaciones` (R-42), con el texto exacto de `escena.aviso` cuando no es `null` — sin
-   reformatear ni truncar, mismo criterio de reutilización exacta que el resto de la ficha. Sin
-   `<span>` cuando `escena.aviso` es `null`.
-3. En el mismo `forEach` sobre `datos.escenas` donde R-39/R-44 ya calculan sus contadores (pendientes/
-   grabadas/revisadas/segundosPendientes/escenasConTropiezoEnBuena), sumar un contador nuevo,
-   `escenasConAvisoRitmo`, incrementado por cada escena cuyo `aviso` no sea `null` — mismo bucle ya
-   existente, sin segundo recorrido de `datos.escenas`.
-4. Si `escenasConAvisoRitmo` es mayor que 0, añadir un `<p class="resumen-aviso-ritmo">` nuevo
-   inmediatamente después de `.resumen-progreso-grabacion` (R-39) y antes de
-   `.resumen-tropiezos-en-buena` (R-44) cuando este exista — el aviso de ritmo es una revisión previa
-   a grabar, el de tropiezos una revisión posterior a una toma, así que el orden de lectura sigue el
-   orden natural de la sesión de rodaje — con el texto "⚠ 1 escena se desvía del ritmo objetivo
-   marcado" (singular) o "⚠ N escenas se desvían del ritmo objetivo marcado" (plural, N = escenas),
-   mismo criterio singular/plural que el resto de resúmenes. Con el contador en 0, no se añade ningún
-   elemento.
-5. CSS nuevo en `assets/reproductor/estilo.css` para `.escena-aviso-ritmo` y `.resumen-aviso-ritmo`,
-   reutilizando el mismo lenguaje visual de aviso que `.escena-tropiezos-en-buena`/
-   `.resumen-tropiezos-en-buena` (R-43/R-44: color de acento, negrita) en vez del tono neutro de
-   `.resumen-guion`/`.resumen-progreso-grabacion` — es un aviso que puede exigir una decisión del
-   dueño antes de grabar, no solo informar (principio de producto 5: legibilidad por encima de todo).
-6. Sin elemento interactivo nuevo (`<span>`/`<p>`, nunca un control); sin `localStorage` nuevo; sin
-   cambio en `scripts/tiempos.py`, `scripts/feedback.py`, `scripts/comandos_montaje.py` ni en ningún
-   otro consumidor ya existente del aviso (`documento_revision.py`/`pptx.py`/`pdf.py`/
-   `revalidacion.py`) — mejora enteramente de lectura y presentación en el reproductor sobre un dato
-   que T-12 ya calcula y ya usan otras cuatro salidas.
-7. El resumen y el aviso por fila se recalculan solos (mismo patrón que R-39/R-42/R-43/R-44, sin
-   heurística de refresco nueva): cualquier llamada ya existente a `renderizarIndice()` reconstruye
-   ambos desde cero sin cableado adicional — el aviso no cambia durante la sesión de rodaje en sí
-   (depende solo del guion y la configuración, no de tomas ni tropiezos), así que no hace falta
-   ningún disparador nuevo más allá de la propia carga del reproductor.
+1. En `renderizarReproductor` (`assets/reproductor/guion.js`), en el mismo `escena.bloques.forEach`
+   donde ya se añade un `<p class="cue-indicacion">` por cada elemento de `bloque.indicaciones` al
+   propio bloque que la ancla (R-12), añadir también, al bloque INMEDIATAMENTE ANTERIOR dentro de la
+   misma escena (si existe), un `<p class="cue-proxima-indicacion">` por cada indicación del bloque
+   siguiente, con el texto `"Después: "` seguido del texto ya formateado que trae
+   `bloque.indicaciones` (reutilizado tal cual, sin releer el JSON de otra forma ni tocar
+   `scripts/reproductor.py`, `scripts/pdf.py` ni `scripts/pptx.py`).
+2. El primer bloque de una escena nunca recibe un anticipo "hacia atrás" desde la escena anterior
+   (ámbito limitado a la escena actual, igual que el motor de avance no cruza de una escena a otra sin
+   paso manual por el índice); el ÚLTIMO bloque de una escena nunca anticipa una indicación anclada al
+   primer bloque de la escena siguiente, por el mismo motivo.
+3. CSS nuevo en `assets/reproductor/estilo.css`: `.cue-proxima-indicacion` reutiliza la misma regla de
+   visibilidad que `.cue-indicacion` (oculta por defecto, visible solo mientras el bloque que la
+   contiene tiene la clase `.bloque--activo`, y plegada junto con el resto de indicadores bajo
+   `#vista-reproductor.indicadores-ocultos`), pero con un peso visual todavía más subordinado
+   (opacidad o tamaño de fuente menor que `.cue-indicacion`) para que nunca se confunda con la cue del
+   bloque activo, que es la que exige una acción inmediata — principio de producto 5.
+4. Cuando el bloque siguiente tiene varias indicaciones ancladas, el anticipo las lista todas en el
+   mismo orden en que `.cue-indicacion` las mostrará cuando ese bloque pase a ser el activo, sin
+   fusionar ni resumir su texto.
+5. Sin campo nuevo en el JSON embebido (verificado por diff de claves contra la salida de referencia
+   anterior a R-46), sin cambio en `scripts/reproductor.py`, `scripts/pdf.py`, `scripts/pptx.py`,
+   `scripts/documento_revision.py` ni en `anclar_indicaciones_a_bloques`/
+   `_indicaciones_ancladas_por_indice` — mejora enteramente del lado cliente sobre un array ya
+   embebido por R-12/R-20.
+6. Sin elemento interactivo nuevo, sin tecla nueva, sin `localStorage` nuevo, sin migración. El
+   anticipo se recalcula solo al reconstruir la vista de la escena (misma `renderizarReproductor` ya
+   existente), sin ningún disparador adicional.
 
-**Criterio de aceptación:** sobre una fixture con al menos tres escenas de prueba — (a) sin duración
-objetivo marcada en la cabecera de la escena, (b) con duración objetivo marcada y una estimación
-dentro del umbral configurado, y (c) con duración objetivo marcada y una estimación que lo supera —
-el índice no muestra ningún `<span class="escena-aviso-ritmo">` en (a) ni en (b), y en (c) muestra el
-texto exacto que ya produce `tiempos._aviso_desviacion` para esa escena (verificado por comparación
-literal, no por un nuevo cálculo en el test). Con una sola escena en el caso (c), la cabecera muestra
-"⚠ 1 escena se desvía del ritmo objetivo marcado"; con dos o más, el plural con el recuento correcto
-de escenas. El JSON embebido por `scripts/reproductor.py` gana únicamente el campo aditivo `aviso`
-por escena (verificado por diff de claves contra la salida de referencia anterior a R-45); ningún
-otro consumidor del aviso (`guion-escenas.md`, `tarjetas.json`, el `.pdf`, la revalidación) cambia de
-comportamiento. Verificado también visualmente con Playwright/Chromium real, mismo criterio que
-R-39 a R-44.
+**Criterio de aceptación:** sobre una fixture con al menos tres bloques consecutivos de una misma
+escena donde el bloque del medio ancla una indicación `Pantalla:` y ningún otro bloque ancla ninguna
+— mientras el bloque ANTERIOR al del medio está activo, su `<li>` contiene un
+`<p class="cue-proxima-indicacion">` visible con el texto `"Después: "` + el texto exacto que trae
+`bloque.indicaciones` del bloque del medio; al avanzar al bloque del medio, ese anticipo deja de estar
+visible (ya no es el bloque activo) y la cue real (`.cue-indicacion`) de ese mismo bloque, sin el
+prefijo `"Después:"`, aparece en su lugar. En el primer bloque de cualquier escena no aparece nunca un
+anticipo de la escena anterior, y en el último bloque de una escena no aparece nunca un anticipo de
+la primera de la siguiente, aunque ambas existan y tengan indicaciones ancladas. El JSON embebido por
+`scripts/reproductor.py` no gana ningún campo nuevo. Verificado también visualmente con
+Playwright/Chromium real, mismo criterio que R-39 a R-45.
 
 ---
 

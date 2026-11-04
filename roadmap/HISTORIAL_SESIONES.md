@@ -12,6 +12,67 @@
 
 ---
 
+### Sesión 2026-11-04 (332) — Ciclo de Product Manager: archiva la Oleada v33 (R-45) y abre R-46 (Oleada v34)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "product-manager-teleprompter"). `git checkout
+develop && git pull origin develop` hizo fast-forward limpio hasta `4e3238d` (sesión 331), árbol de
+trabajo limpio. `pip install -r requirements-dev.txt` (bare `pip`) instaló sin incidencia esta vez.
+
+**Lectura previa.** `roadmap/SEGUIMIENTO.md` (§1, §3, §5, §6, §7), `roadmap/ROADMAP_PRODUCTO.md`,
+`roadmap/FEEDBACK.md` y `auditoriacontinua.md` (registro de hallazgos completo vía `grep` de
+`ABIERTO`/`ASUMIDO` y las narrativas de las auditorías más recientes, 2026-10-31 a 2026-11-04, dado
+que el archivo supera el límite de lectura directa) revisados antes de actuar.
+
+**Hallazgos de auditoría.** La pasada del auditor del 2026-11-04 (posterior a la última lectura de
+`ROADMAP_PRODUCTO.md`, que seguía fechada 2026-11-03) cierra `#39` y `#41` (P-10 y P-11, reverificados
+en código/documentación), aplica el remedio propuesto por el propio `#38` (condensar la narrativa
+crónica de `#24`/`#30`, terreno exclusivo del auditor, ya cerrado) y pasa `#36` a `ASUMIDO` (riesgo
+aceptado, sin acción pendiente). Solo quedan `ABIERTO`: `#24`/`#30` (gobernanza pura, pendientes de
+la respuesta del dueño a `#11`/`#12` de §6) y `#40` (rotación de `DECISIONES_TECNICAS.md`), esta
+última ya resuelta en código por **P-12** en la jornada del Programador de hoy, pendiente solo de que
+la próxima pasada del auditor la reverifique y la cierre. Ninguno de los tres es de severidad alta en
+las categorías que exigirían una P-XX urgente, y ninguno es convertible en una R-XX de producto.
+
+**Feedback de rodaje.** `roadmap/FEEDBACK.md` sigue con su única fila, plantilla vacía, sin ninguna
+entrada `nuevo`: no hay historia de rodaje real que incorporar. El bloqueo #7 de `SEGUIMIENTO.md` §3
+(grabar un curso completo) sigue abierto, 62 días desde que T-32 lo dejó listo para grabar
+(2026-09-03) — se deja constancia en la cabecera de `ROADMAP_PRODUCTO.md`, sin repetirlo como
+pregunta nueva en §6 (es una acción del dueño, no una decisión).
+
+**Archivado.** R-45 (Oleada v33) llevaba `COMPLETADA` en §1 desde el ciclo de Programador posterior a
+P-12 de esta misma jornada (2026-11-04), reconfirmada en verde en varias pasadas sucesivas sin que
+ningún ciclo de PM la archivara todavía. Movida íntegra (ficha + "Cómo se entregó", este último
+construido a partir de la descripción ya verificada en §1) a `roadmap/ROADMAP_HISTORICO.md`, con su
+propia sección "### Oleada v33 — entregada" en `ROADMAP_PRODUCTO.md` y el índice de fechas de archivo
+al pie de `ROADMAP_HISTORICO.md` actualizado.
+
+**Apertura de R-46 (Oleada v34).** Observación de arquitectura propia: `anclar_indicaciones_a_bloques`
+(R-12/R-20) ancla cada indicación `EN PANTALLA`/`NOTA` al bloque de locución que la precede y la
+muestra en cuanto ese bloque se vuelve activo, pero un formador en solitario rara vez puede ejecutar
+esa indicación (cambiar de ventana, mostrar una diapositiva) de forma instantánea — hoy el aviso llega
+justo cuando toca actuar, sin margen para prepararlo sin cortar la locución. R-46 reutiliza el mismo
+array ya anclado para anticiparlo, de forma subordinada, en el bloque inmediatamente anterior, mismo
+principio de "reutilizar un dato ya calculado" que R-39/R-42/R-44/R-45. Ficha completa (Migración/
+Depende de/Origen/Objetivo/Requisitos/Criterio de aceptación) en `ROADMAP_PRODUCTO.md`, registrada
+`PENDIENTE` en §1 de `SEGUIMIENTO.md`. Criterio de una sola R-XX de código pendiente a la vez
+respetado: ninguna otra R-XX estaba `PENDIENTE` antes de abrir esta.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** R-46 añadida como `PENDIENTE`. Sin cambios en §3
+(bloqueos), §6 (preguntas, `#11`/`#12` siguen `(pendiente)`) ni §7 (desviaciones). Cabecera de
+`SEGUIMIENTO.md` actualizada respetando la norma de P-10 (solo estado vigente, narrativa de esta
+sesión aquí). Ningún cambio de código: esta sesión es puramente de gestión de roadmap.
+
+**Verificación.** Sin cambios en `scripts/`, `tests/` ni `assets/`: no se ejecutó `scripts/ci.py`
+(nada que verificar en código). `git status` tras los cambios, limpio salvo los cuatro documentos de
+roadmap que esta sesión actualiza (`SEGUIMIENTO.md`, `ROADMAP_PRODUCTO.md`, `ROADMAP_HISTORICO.md`,
+`HISTORIAL_SESIONES.md`).
+
+**Nota de cierre.** Primera sesión de PM desde la del 2026-11-03 (R-45/Oleada v33). Push a
+`origin/develop` pendiente, único paso que falta para que la propuesta esté disponible para la
+siguiente sesión de Programador.
+
+---
+
 ### Sesión 2026-11-04 (331) — Ciclo de Programador: cuarta reconfirmación del día tras P-12, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
