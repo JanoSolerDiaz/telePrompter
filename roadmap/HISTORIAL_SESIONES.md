@@ -12,6 +12,59 @@
 
 ---
 
+### Sesión 2026-11-05 (333) — Ciclo de Programador: P-13 urgente, cierra el hueco de `entrada.py` sin invocar en `SKILL.md` (hallazgo `#42`)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo ya fusionado el ciclo de Auditoría del 2026-11-05
+(`be05fc4`: tres hallazgos nuevos `#42`/`#43`/`#44`, cierra `#40`) sobre el ciclo de PM del
+2026-11-04 (archivo de Oleada v33/R-45 y apertura de R-46/Oleada v34, `eca9a21`), árbol de trabajo
+limpio. `pip install -r requirements-dev.txt` dejó las herramientas en un intérprete distinto al que
+resuelve `python`/`python3` en este contenedor (`No module named mypy` al invocar
+`python -m mypy`); reinstalado con `python3 -m pip install -r requirements-dev.txt`, mismo tipo de
+desajuste ya registrado para sesiones anteriores (`DECISIONES_TECNICAS.md`, T-06/R-45).
+
+**Lectura previa (protocolo del rol Programador).** `HOJA_DE_RUTA.md` §0 (protocolo, solo lectura);
+`roadmap/SEGUIMIENTO.md` completo (§1 estado, §3 bloqueos); `auditoriacontinua.md` — registro de
+hallazgos completo y la narrativa más reciente — buscando cualquier `ABIERTO` de severidad alta:
+**`#42` (2026-11-05, alta)** señala que `scripts/entrada.py` (T-06, `COMPLETADA`, 20+ tests) nunca se
+invoca desde `SKILL.md` (`grep -c` confirmado en 0), así que una sesión que siga `SKILL.md` al pie de
+la letra nunca pasa el guion de origen por la validación de tamaño/codificación/estructura ni por la
+comprobación de contención de ruta de la carpeta de salida. `#43`/`#44` (mismo día, baja) no exigen
+P-XX urgente. Atendido `#42` de inmediato como **P-13**, antes de la cola normal (§0.1/§0.3,
+"pérdida de texto del guion, corrupción de estado, rotura del reproductor o de su auto-contención,
+seguridad... procedentes de un hallazgo ABIERTO de severidad alta del auditor").
+
+**P-13 implementada (urgente, `origen: auditoría #42`).** Nueva sección en `SKILL.md`, "Punto de
+entrada: validar y leer el guion, siempre antes de nada (T-06)", insertada justo antes de "Reglas
+que esta skill no rompe nunca" (el principio literal del documento): fragmento obligatorio
+`entrada.leer_guion(ruta_guion)` / `entrada.carpeta_salida_para(ruta_guion)` como primer paso de
+cualquier sesión, con el mismo patrón de "paso obligatorio" que ya usan R-26 (diccionario del dueño)
+y R-27 (aviso de guion modificado). Deliberadamente fuera de alcance:
+`entrada.ejecutar_con_limite_de_tiempo`, ya evaluado y descartado el 2026-10-09 (apertura de R-27)
+por menor severidad y cero incidente real — no se reabre sin evidencia nueva (`DECISIONES_TECNICAS.md`
+consultado antes de implementar, tal como exige el protocolo). Alcance puramente documental: cero
+cambio en `scripts/`, `tests/` ni `assets/`. Cuatro redes en verde (`mypy`, `ruff`, 790 tests sin
+cambio, `verificar_salidas.py --fixture` con sus diecinueve etapas intactas).
+
+**Decisión añadida a `DECISIONES_TECNICAS.md`.** Una fila 2026-11-05/P-13: el remedio exacto que
+propone la propia auditoría `#42` (añadir solo el fragmento de `validar_ruta_guion`/`leer_guion`/
+`carpeta_salida_para`), frente a no tocar nada (descartado: es precisamente el defecto señalado) o
+envolver además `ejecutar_con_limite_de_tiempo` (descartado por decisión previa de R-27, 2026-10-09,
+sin evidencia nueva que la contradiga).
+
+**Cambios de estado en `SEGUIMIENTO.md` §5.** Nueva fila **P-13** (urgente, `origen: auditoría #42`,
+`COMPLETADA` 2026-11-05). Cabecera actualizada para reflejar el hallazgo `#42` atendido antes de la
+cola normal, pendiente solo de reverificación del auditor. Sin cambios en §1 (ninguna T-XX/R-XX
+afectada directamente), §3 (bloqueos) ni §6 (preguntas abiertas). Sigue R-46 `PENDIENTE` en §1 — se
+retoma a continuación en la misma sesión (entrada siguiente).
+
+**Cierre.** `git add` de `SKILL.md` más los documentos de registro (`SEGUIMIENTO.md`,
+`DECISIONES_TECNICAS.md`, `HISTORIAL_SESIONES.md`); commit único con prefijo `P-13:`; push a
+`origin/develop` (nunca a `master`). La sesión continúa a continuación con R-46 (única R-XX
+`PENDIENTE` restante), ver entrada siguiente.
+
+---
+
 ### Sesión 2026-11-04 (332) — Ciclo de Product Manager: archiva la Oleada v33 (R-45) y abre R-46 (Oleada v34)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "product-manager-teleprompter"). `git checkout

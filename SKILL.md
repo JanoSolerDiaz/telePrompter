@@ -11,6 +11,17 @@ Tres pasos: **guion → validacion → salidas**.
 2. **Validacion.** Genera `guion-escenas.md` con todo anotado. Lo revisas **de una sola pasada en tu editor**, editas lo que quieras y dices «validado».
 3. **Salidas.** Te pregunta cada vez cuales generar: el reproductor `.html` (principal), `.pptx` con marca 480, `.pdf` y `.srt` borrador.
 
+## Punto de entrada: validar y leer el guion, siempre antes de nada (T-06)
+
+**Paso obligatorio (origen: auditoría #42):** antes de parsear, trocear o calcular la carpeta de salida "a ojo", lo primero que se ejecuta en cualquier sesión, con el `.md` que dio el dueño, es:
+
+```python
+texto_guion = entrada.leer_guion(ruta_guion)              # valida ruta/tamaño/codificación/estructura mínima
+carpeta_salida = entrada.carpeta_salida_para(ruta_guion)  # único cálculo seguro de la carpeta de salida
+```
+
+`entrada.leer_guion` ya valida la ruta (`entrada.validar_ruta_guion`: existe, es un fichero, tamaño dentro de `TAMANO_GUION_MAX_BYTES`), decodifica en UTF-8 con o sin BOM, normaliza `\r\n`/`\r` a `\n` y comprueba que haya al menos un encabezado Markdown y no más del límite configurado (`ESCENAS_MAX`, vía `verificar_estructura_minima`). `entrada.carpeta_salida_para` deriva `<carpeta-del-guion>/<nombre-guion>-teleprompter/` de forma seguro — nunca fuera de la carpeta del guion — y migra sola una carpeta heredada con sufijo `-tarjetas` si la encuentra (R-06); es la única función que debe calcular esta ruta, nunca a mano. Cualquier fallo levanta `entrada.EntradaError`, cuyo mensaje ya es el texto accionable en español que hay que mostrar al dueño tal cual, nunca una traza cruda. Ningún otro paso del flujo (parser de T-08 en adelante) repite esta validación: asume un `texto_guion` y una `carpeta_salida` ya pasados por aquí.
+
 ## Reglas que esta skill no rompe nunca
 
 - **Nada se descarta en silencio:** todo bloque del guion queda clasificado con su motivo a la vista.
