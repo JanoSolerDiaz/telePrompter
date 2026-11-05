@@ -12,6 +12,54 @@
 
 ---
 
+### Sesión 2026-11-05 (336) — Ciclo de Programador: segunda reconfirmación del día tras R-46, sin novedad de código
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` trajo en fast-forward trivial los commits ya fusionados hasta
+`99e6489` (sesión 335: primera reconfirmación de hoy), árbol de trabajo limpio antes y después. Igual
+que la sesión anterior, `pip install -r requirements-dev.txt` (bare `pip`) instaló `mypy`/`ruff`/
+`pytest` contra un intérprete distinto al que resuelve `python3` en este contenedor (mismo síntoma de
+siempre, `#22`/`#28`/P-06, reproducido de nuevo: `python3 scripts/ci.py` dio las tres redes de
+tipos/estilo/tests en ROJO con `No module named mypy`/`ruff`/`pytest`); corregido invocando `python3
+-m pip install -r requirements-dev.txt`, tras lo cual las cuatro redes dieron `OK`.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** `auditoriacontinua.md` completo
+(filas de estado y narrativa de la pasada del 2026-11-05, `be05fc4`): ningún hallazgo nuevo desde la
+sesión anterior. `#42` (alta) sigue `ABIERTO` solo a la espera de que la próxima pasada del auditor
+reverifique el cierre ya hecho por **P-13** (sesión 333, `68cf14d`) — no exige una P-XX nueva, es
+terreno exclusivo del auditor. `#43`/`#44` (baja) sin acción urgente, no convertibles en tarea del
+Programador por su cuenta. `#30` (alta, pero de proceso/cómputo, no de las categorías que exigen P-XX
+urgente — pérdida de texto, corrupción de estado, rotura del reproductor o de su auto-contención,
+seguridad) y `#24` (baja) siguen `ABIERTO`, ambos a la espera de la respuesta del dueño a `#11`/`#12`
+de §6; `#36` sigue `ASUMIDO`; `#40` `RESUELTO` (P-12), pendiente solo de reverificación del auditor.
+
+**Ninguna tarea elegida.** §1 confirmada de punta a punta: las 34 T-XX (`T-24b` `BLOQUEADA`, ajena al
+programador) y las 46 R-XX (hasta R-46) están `COMPLETADA`; §5 completa, P-01 a P-13. Ninguna fila
+`PENDIENTE` ni `BLOQUEADA` ejecutable. El PM todavía no ha abierto ninguna oleada tras R-46;
+`roadmap/ROADMAP_PRODUCTO.md` confirmado sin ningún hito pendiente fuera de lo ya reflejado en §1.
+
+**Verificación completa, sin cambios de código.** Las cuatro redes ejecutadas de forma independiente
+sobre el intérprete real (3.11.18): `mypy scripts/ tests/` limpio (72 archivos); `ruff check scripts/
+tests/` sin avisos; `pytest -v` **798/798 tests** en verde; `verificar_salidas.py --fixture` con las
+diecinueve etapas en `OK`, incluida la salida latente esperada en este contenedor (`.pptx` sin la
+skill `480-branded-pptx` instalada) y las omisiones esperadas sin parte de rodaje real; el `.pdf` se
+generó de verdad con Chrome/Edge headless. `git status` tras la verificación, limpio salvo los dos
+documentos de registro que esta propia sesión actualiza.
+
+**Cambios de estado (§1 de `SEGUIMIENTO.md`).** Ninguno: R-46 y P-13 permanecen `COMPLETADA`. Sin
+decisiones nuevas en `DECISIONES_TECNICAS.md` (nada no trivial que decidir en una sesión sin código).
+Sin novedad en §3 (bloqueos), §6 (preguntas, `#11`/`#12` siguen `(pendiente)`) ni §7 (desviaciones).
+Cabecera de `SEGUIMIENTO.md` actualizada ("Última actualización") respetando la norma de P-10: solo
+el estado vigente, sin acumular la narrativa de esta sesión, que vive aquí.
+
+**Nota de cierre.** Segunda reconfirmación de hoy de la rutina "programador-teleprompter" tras
+P-13/R-46, sin ningún código que tocar: el patrón que motivó la escalada de `#30` a severidad alta
+(cron horario repitiendo las cuatro redes con la cola vacía) sigue vigente mientras el dueño no
+responda `#11`/`#12` de §6. Ninguna acción unilateral tomada sobre la cadencia de la rutina ni sobre
+el protocolo: ambas son decisiones del dueño, no del Programador.
+
+---
+
 ### Sesión 2026-11-05 (335) — Ciclo de Programador: primera reconfirmación del día tras R-46, sin novedad de código
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
