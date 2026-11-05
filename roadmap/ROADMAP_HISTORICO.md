@@ -3105,6 +3105,90 @@ tres guiones reales/el guion de ejemplo). Detalle completo en `DECISIONES_TECNIC
 
 ---
 
+## Oleada v34 — Anticipar, en el bloque anterior, una indicación EN PANTALLA/NOTA próxima
+
+### R-46 — Mostrar en el bloque inmediatamente anterior un anticipo de la indicación anclada al bloque siguiente, para dar tiempo a prepararla sin cortar la locución
+
+**Migración:** No (sin campo nuevo en el JSON embebido ni cambio de contrato; se calcula enteramente
+en `assets/reproductor/guion.js` a partir del array `bloque.indicaciones` que R-12/R-20 ya incrustan
+por bloque) · **Depende de:** R-12 (`anclar_indicaciones_a_bloques`/`_indicaciones_ancladas_por_indice`,
+cue `.cue-indicacion` por bloque en `renderizarReproductor`), R-20 (extensión del mismo anclaje a
+`tarjetas.json`, sin tocar esta ficha), T-19/T-20 (índice y motor de bloques), T-23 (patrón de
+indicadores ocultables, `indicadores-ocultos`) — todas `COMPLETADA` · **Origen:** observación de
+arquitectura del PM (2026-11-04). R-12 ancla cada indicación `EN PANTALLA`/`NOTA` al bloque de
+locución que la precede y la muestra en cuanto ese bloque se vuelve activo — pero para un formador en
+solitario, ejecutar esa indicación (cambiar de ventana, mostrar una diapositiva, abrir una demo) rara
+vez es instantáneo: exige dejar de mirar la cámara, actuar sobre el ordenador y volver. Hoy el aviso
+llega en el mismo instante en que toca actuar, sin ningún margen para prepararlo sin cortar el ritmo
+de la locución. Mismo principio que R-39/R-42/R-44/R-45: reutilizar un dato ya calculado y ya
+probado, sin segunda implementación del anclaje.
+
+**Objetivo:** que el formador, mientras recita el bloque inmediatamente anterior a una indicación de
+pantalla, sepa que se aproxima y qué dice exactamente, para poder prepararla (cambiar de ventana,
+tener la diapositiva a mano) sin interrumpir la locución ni descubrir la indicación tarde.
+
+**Requisitos:**
+1. En `renderizarReproductor` (`assets/reproductor/guion.js`), en el mismo `escena.bloques.forEach`
+   donde ya se añade un `<p class="cue-indicacion">` por cada elemento de `bloque.indicaciones` al
+   propio bloque que la ancla (R-12), añadir también, al bloque INMEDIATAMENTE ANTERIOR dentro de la
+   misma escena (si existe), un `<p class="cue-proxima-indicacion">` por cada indicación del bloque
+   siguiente, con el texto `"Después: "` seguido del texto ya formateado que trae
+   `bloque.indicaciones` (reutilizado tal cual, sin releer el JSON de otra forma ni tocar
+   `scripts/reproductor.py`, `scripts/pdf.py` ni `scripts/pptx.py`).
+2. El primer bloque de una escena nunca recibe un anticipo "hacia atrás" desde la escena anterior
+   (ámbito limitado a la escena actual, igual que el motor de avance no cruza de una escena a otra sin
+   paso manual por el índice); el ÚLTIMO bloque de una escena nunca anticipa una indicación anclada al
+   primer bloque de la escena siguiente, por el mismo motivo.
+3. CSS nuevo en `assets/reproductor/estilo.css`: `.cue-proxima-indicacion` reutiliza la misma regla de
+   visibilidad que `.cue-indicacion` (oculta por defecto, visible solo mientras el bloque que la
+   contiene tiene la clase `.bloque--activo`, y plegada junto con el resto de indicadores bajo
+   `#vista-reproductor.indicadores-ocultos`), pero con un peso visual todavía más subordinado
+   (opacidad o tamaño de fuente menor que `.cue-indicacion`) para que nunca se confunda con la cue del
+   bloque activo, que es la que exige una acción inmediata — principio de producto 5.
+4. Cuando el bloque siguiente tiene varias indicaciones ancladas, el anticipo las lista todas en el
+   mismo orden en que `.cue-indicacion` las mostrará cuando ese bloque pase a ser el activo, sin
+   fusionar ni resumir su texto.
+5. Sin campo nuevo en el JSON embebido (verificado por diff de claves contra la salida de referencia
+   anterior a R-46), sin cambio en `scripts/reproductor.py`, `scripts/pdf.py`, `scripts/pptx.py`,
+   `scripts/documento_revision.py` ni en `anclar_indicaciones_a_bloques`/
+   `_indicaciones_ancladas_por_indice` — mejora enteramente del lado cliente sobre un array ya
+   embebido por R-12/R-20.
+6. Sin elemento interactivo nuevo, sin tecla nueva, sin `localStorage` nuevo, sin migración. El
+   anticipo se recalcula solo al reconstruir la vista de la escena (misma `renderizarReproductor` ya
+   existente), sin ningún disparador adicional.
+
+**Criterio de aceptación:** sobre una fixture con al menos tres bloques consecutivos de una misma
+escena donde el bloque del medio ancla una indicación `Pantalla:` y ningún otro bloque ancla ninguna
+— mientras el bloque ANTERIOR al del medio está activo, su `<li>` contiene un
+`<p class="cue-proxima-indicacion">` visible con el texto `"Después: "` + el texto exacto que trae
+`bloque.indicaciones` del bloque del medio; al avanzar al bloque del medio, ese anticipo deja de estar
+visible (ya no es el bloque activo) y la cue real (`.cue-indicacion`) de ese mismo bloque, sin el
+prefijo `"Después:"`, aparece en su lugar. En el primer bloque de cualquier escena no aparece nunca un
+anticipo de la escena anterior, y en el último bloque de una escena no aparece nunca un anticipo de
+la primera de la siguiente, aunque ambas existan y tengan indicaciones ancladas. El JSON embebido por
+`scripts/reproductor.py` no gana ningún campo nuevo. Verificado también visualmente con
+Playwright/Chromium real, mismo criterio que R-39 a R-45.
+
+**Cómo se entregó:** `assets/reproductor/guion.js::renderizarReproductor`, en el mismo
+`escena.bloques.forEach` que ya añade `.cue-indicacion` (R-12), añade al bloque anterior un
+`<p class="cue-proxima-indicacion">` por cada indicación de `escena.bloques[indiceBloque + 1]`, con el
+texto `"Después: "` + el texto ya formateado, en el mismo orden. Ámbito limitado a la escena (`+ 1` es
+`undefined` en el último bloque, requisito 2 sin guarda extra). CSS nuevo reutiliza la visibilidad de
+`.cue-indicacion` (oculta salvo bloque activo, plegable con `H`) con un peso visual más subordinado
+(`font-size: 0.42em`, `opacity: 0.7`, frente a `0.5em` sin opacidad reducida de la cue real). Sin
+campo nuevo en el JSON embebido, sin cambio en
+`scripts/reproductor.py`/`pdf.py`/`pptx.py`/`documento_revision.py`, sin elemento interactivo ni
+`localStorage` nuevo (requisitos 5 y 6). 8 tests nuevos en `tests/test_reproductor.py` (790→798):
+fixture propia de tres bloques consecutivos con la indicación anclada solo al del medio, más
+reutilización de la fixture de R-12 con `Pantalla:`+`Nota:` para el orden con varias indicaciones.
+Cuatro redes en verde. Verificado también visualmente con Playwright/Chromium real: anticipo visible
+en el bloque anterior mientras es el activo, cue real oculta; al avanzar al bloque anclado, el
+anticipo desaparece y la cue real (sin `"Después:"`) ocupa su lugar; el bloque final sin indicación no
+muestra ninguno de los dos. Detalle completo en `DECISIONES_TECNICAS.md`/`DEVELOPERS.md`. `origen:
+observación de arquitectura del PM (2026-11-04)`.
+
+---
+
 *(El detalle de verificación de cada entrega —commits, tests, decisiones— está en
 `roadmap/HISTORIAL_SESIONES.md` y `roadmap/DECISIONES_TECNICAS.md`. La de v2/v3/F-D tiene fecha
 2026-09-03; la de F-E, 2026-09-04; la de F-F, segundo ciclo del 2026-09-04; la de v4 (R-12),
@@ -3125,4 +3209,5 @@ v27 (R-39), 2026-10-27 (implementación), archivada el mismo ciclo de PM; la de 
 (implementación), archivada en el ciclo de PM del mismo día; la de v31 (R-43), 2026-11-02
 (implementación), archivada en el ciclo de PM del mismo día; la de v32 (R-44), 2026-11-03
 (implementación), archivada en el ciclo de PM del día siguiente (2026-11-04); la de v33 (R-45),
-2026-11-04 (implementación), archivada en este mismo ciclo de PM (2026-11-04).)*
+2026-11-04 (implementación), archivada en el mismo ciclo de PM; la de v34 (R-46), 2026-11-05
+(implementación), archivada en el ciclo de PM del mismo día.)*

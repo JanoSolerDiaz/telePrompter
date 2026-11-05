@@ -35,6 +35,38 @@
 
 ---
 
+### Sesión 2026-11-05 (344) — Ciclo de Product Manager: archiva Oleada v34 (R-46) y abre R-47 (Oleada v35)
+
+**Tarea(s):** PM — gestión de roadmap (ninguna T-XX/R-XX implementada, no toca `scripts/`/`tests/`/`assets/`)
+**Estado resultante:** COMPLETADA (gestión de roadmap)
+**Commits a develop:** (pendiente de commitear al cierre de esta sesión)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `roadmap/ROADMAP_PRODUCTO.md`, `roadmap/ROADMAP_HISTORICO.md`,
+`roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md`, `roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos — (sin cambio de código) · lint — (sin cambio de código) · tests —
+(sin cambio de código, 798/798 ya en verde desde la sesión anterior) · build — (sin cambio de código)
+**Health check post-deploy:** no aplica (sesión de nube, sin instalación local; ninguna salida tocada)
+**Decisiones tomadas:** `DECISIONES_TECNICAS.md`, fila "PM (archiva Oleada v34, abre R-47 como Oleada
+v35)", 2026-11-05.
+**Hallazgos del auditor atendidos:** ninguno nuevo cerrado por el PM; `#42` y `#44` ya resueltos en
+código por P-13/P-14 (Programador, misma jornada), pendientes solo de reverificación del auditor;
+`#43` (baja, deuda técnica del validador de auto-contención) dejado explícitamente como candidato a
+una futura P-XX del Programador, no convertido en R-XX (no es producto/arquitectura); `#24`/`#30`
+siguen `ABIERTO`, de gobernanza pura, a la espera de la respuesta del dueño a `#11`/`#12` de §6.
+**Hallazgos:** ninguno nuevo. `roadmap/FEEDBACK.md` revisado completo: sigue con su única fila de
+plantilla vacía, sin ninguna entrada `nuevo` que incorporar al roadmap — el bloqueo #7 de §3 (grabar
+un curso completo) sigue abierto, ahora 63 días desde que T-32 lo dejó listo para grabar.
+**Tareas autopropuestas (P-XX):** ninguna registrada por el PM en esta sesión (el PM no implementa).
+**Próximo paso:** la siguiente sesión de Programador debe implementar R-47 (Oleada v35, ficha completa
+en `ROADMAP_PRODUCTO.md`): avisar en el índice del reproductor, cuando todas las escenas tengan ya una
+toma marcada como buena, de que el guion está listo para generar las salidas de montaje (T-30). Sin
+migración, sin campo nuevo en el JSON embebido, cambio enteramente en
+`assets/reproductor/guion.js`/`estilo.css`. Tras implementarla, el siguiente ciclo de PM debe archivar
+la Oleada v35 en `ROADMAP_HISTORICO.md` y abrir la siguiente. Releer `auditoriacontinua.md` completo
+(hasta su pasada vigente) y `roadmap/FEEDBACK.md` antes de decidir cualquier R-XX nueva.
+
+---
+
 ### Sesión 2026-11-05 (343) — Ciclo de Programador: P-14, rotación mensual de `HISTORIAL_SESIONES.md`
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). Mismo patrón que

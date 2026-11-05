@@ -8,56 +8,56 @@
 > `SEGUIMIENTO.md` (no duplicar). Las oleadas 100 % entregadas se mueven a
 > `ROADMAP_HISTORICO.md` para mantener vivo solo lo pendiente o en curso.
 
-**Última actualización:** 2026-11-04 (ciclo de Product Manager). R-45 (Oleada v33) llevaba
-`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-11-04 (ciclo de Programador posterior a P-12),
-reconfirmada en verde en varias pasadas sucesivas del Programador sin que ningún ciclo de PM la
-archivara todavía. Este ciclo archiva la Oleada v33 en `ROADMAP_HISTORICO.md` y abre R-46 (Oleada
-v34) en §1, sin implementarla: el criterio de una sola R-XX pendiente de código a la vez (vigente
-desde R-19) queda respetado porque no había ninguna otra R-XX pendiente antes de abrir esta.
+**Última actualización:** 2026-11-05 (ciclo de Product Manager). R-46 (Oleada v34) llevaba
+`COMPLETADA` en §1 de `SEGUIMIENTO.md` desde el 2026-11-05 (ciclo de Programador), reconfirmada en
+verde por varias pasadas sucesivas sin que ningún ciclo de PM la archivara todavía. Este ciclo
+archiva la Oleada v34 en `ROADMAP_HISTORICO.md` y abre R-47 (Oleada v35) en §1, sin implementarla: el
+criterio de una sola R-XX pendiente de código a la vez (vigente desde R-19) queda respetado porque no
+había ninguna otra R-XX pendiente antes de abrir esta.
 
 `roadmap/FEEDBACK.md` sigue sin ninguna entrada `nuevo` (única fila, plantilla vacía): no hay
 historia de rodaje real que incorporar — el bloqueo #7 de `SEGUIMIENTO.md` §3 (grabar un curso
-completo) sigue abierto, ahora 62 días desde que T-32 lo dejó listo para grabar (2026-09-03).
-`auditoriacontinua.md` revisado entero antes de elegir tarea, hasta su pasada del 2026-11-04: cero
-hallazgos nuevos desde el ciclo de PM anterior. Esa misma pasada cierra `#39` y `#41` (P-10 y P-11,
-ambos reverificados en código/documentación), aplica el remedio que el propio `#38` proponía
-(condensar `#24`/`#30` en la narrativa, ya cerrado) y pasa `#36` a `ASUMIDO` (riesgo aceptado por el
-auditor, sin acción pendiente). Solo quedan `ABIERTO`: `#24`/`#30`, de proceso/gobernanza pura,
-pendientes solo de la respuesta del dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 (49/25 días
-sin respuesta); y `#40` (baja, rotación por trimestre de `DECISIONES_TECNICAS.md`), ya resuelto en
-código por **P-12** en esta misma jornada, pendiente solo de que la próxima pasada del auditor lo
-reverifique y lo cierre. Ninguno de los tres es de severidad alta en las categorías que exigirían una
-P-XX urgente (pérdida de texto del guion, corrupción de estado, rotura del reproductor o de su
-auto-contención, seguridad), y ninguno es convertible en una R-XX de producto.
+completo) sigue abierto, ahora 63 días desde que T-32 lo dejó listo para grabar (2026-09-03).
+`auditoriacontinua.md` revisado entero antes de elegir tarea, hasta su pasada del 2026-11-05: tres
+hallazgos nuevos esa pasada — `#42` (alta: `SKILL.md` no invocaba `scripts/entrada.py`/T-06), ya
+cerrado en código por **P-13** (urgente, la misma jornada), pendiente solo de que la próxima pasada
+del auditor lo reverifique; `#43` (baja: hueco de regex en el validador de auto-contención para
+protocolo relativo fuera de `cdn.`), deuda técnica pura sin ningún hito de producto, dejada como
+candidata a una futura P-XX del Programador, mismo patrón que `#28`/`#33`/`#34`/`#35`/`#39`/`#40`/
+`#41`/`#44` — no se abre ninguna R-XX para ella, porque no lo es; y `#44` (baja: rotación pendiente de
+`HISTORIAL_SESIONES.md`), ya resuelto en código por **P-14** la misma jornada, pendiente también solo
+de reverificación. Siguen `ABIERTO` únicamente `#24`/`#30`, de proceso/gobernanza pura, a la espera de
+la respuesta del dueño a las preguntas #11/#12 de `SEGUIMIENTO.md` §6 (50/26 días sin respuesta).
+Ninguno de los cinco hallazgos abiertos o recién cerrados es convertible en una R-XX de producto.
 
 **Nota de producto de este ciclo (no es una R-XX, es una llamada de atención sobre el ritmo del
 propio roadmap, repetida desde ciclos anteriores porque el hecho que la motiva no ha cambiado):** van
-45 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la máquina real del dueño
+46 R-XX completadas desde que T-32 dejó la skill instalada y verificada en la máquina real del dueño
 (2026-09-03), y ninguna de ellas viene todavía de un rodaje real — todas tienen `origen: auditoría
 #N` o `observación de arquitectura/producto del PM`. Es trabajo de buena calidad (cuatro redes en
-verde, 790 tests, invariantes reverificados en cada auditoría), pero el propio principio de producto
+verde, 798 tests, invariantes reverificados en cada auditoría), pero el propio principio de producto
 que guía este documento —"utilidad real para un formador que graba vídeos de curso"— solo se
 confirma grabando, no leyendo código. El bloqueo #7 es una acción del dueño, no una tarea que el
 equipo pueda ejecutar por su cuenta, así que este ciclo no lo repite como pregunta nueva; se deja
 constancia aquí para que quede explícito que el criterio de salida de la Oleada v1 ("grabar un vídeo
 de curso entero") sigue siendo, con diferencia, el hito de mayor valor pendiente del proyecto, por
-delante de cualquier R-XX nueva. R-46 (más abajo) sigue el mismo criterio que R-39 a R-45: una mejora
-pequeña y de bajo riesgo del propio reproductor, directamente útil para esa primera sesión real
-cuando ocurra — en vez de otro resumen de lectura en el índice (ya hay varios: progreso, indicaciones,
-tropiezos, ritmo), esta vez da margen de reacción ante una indicación `EN PANTALLA`/`NOTA` (R-12),
-anticipándola en el bloque anterior para que cambiar de ventana o preparar una diapositiva no exija
-cortar la locución en seco.
+delante de cualquier R-XX nueva. R-47 (más abajo) cambia ligeramente de ángulo respecto a R-39 a R-46
+(todas ellas "qué falta antes/durante de grabar"): en vez de otro dato más a la vista mientras se
+graba, cierra el otro extremo de la sesión — el momento en que ya no falta nada — señalando
+explícitamente el siguiente paso real (salir del reproductor y generar las salidas de montaje), para
+que esa primera sesión real, cuando ocurra, termine con una acción clara en vez de con una ausencia
+(el botón de R-40 que simplemente deja de aparecer).
 
-**Oleada v33 (R-45) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
+**Oleada v34 (R-46) archivada.** Spec completa y "Cómo se entregó" en `ROADMAP_HISTORICO.md`.
 
-**Oleada v34 (R-46) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
-arquitectura del PM (2026-11-04): `anclar_indicaciones_a_bloques`/`_indicaciones_ancladas_por_indice`
-(R-12/R-20) ya ancla cada indicación `EN PANTALLA`/`NOTA` al bloque de locución que la precede y la
-muestra en cuanto ese bloque se vuelve activo — pero para un formador en solitario, ejecutar esa
-indicación (cambiar de ventana, mostrar una diapositiva, abrir una demo) rara vez es instantáneo, y
-hoy el aviso llega justo cuando toca actuar, sin ningún margen para prepararlo sin cortar el ritmo de
-la locución. R-46 reutiliza el mismo array ya anclado, un bloque antes, mismo principio que R-39 a
-R-45: reutilizar un dato ya calculado, sin segunda implementación.
+**Oleada v35 (R-47) abierta, sin implementar.** Ficha completa más abajo. Origen: observación de
+producto del PM (2026-11-05): R-39 a R-46 han ido añadiendo al índice, una tras otra, formas de saber
+"qué falta antes de grabar" (progreso, indicaciones, ritmo, tropiezos), pero ninguna responde la
+pregunta inversa que de verdad cierra la sesión de rodaje: "¿ya terminé?". Hoy, cuando la última
+escena queda con una toma buena marcada, el único cambio visible en el índice es que el botón
+"Grabar siguiente pendiente" (R-40) deja de aparecer — un vacío, no una confirmación — y el paso
+siguiente real (generar `comandos-montaje.md`/`concat-ffmpeg.txt`, T-33) vive fuera del reproductor,
+en el selector de salidas (T-30) de la propia skill, sin ningún puente entre las dos pantallas.
 
 ---
 
@@ -343,69 +343,70 @@ La oleada v33 (aviso de desviación de ritmo de T-12, visible por fila y agregad
 negocio propio pendiente. Se movió a `ROADMAP_HISTORICO.md` en este ciclo de PM (2026-11-04). Su spec
 completa y cómo se entregó viven ahí.
 
-### Oleada v34 — Anticipar, en el bloque anterior, una indicación EN PANTALLA/NOTA próxima
+### Oleada v35 — Cerrar la sesión de grabación: avisar cuando el guion ya no tiene ninguna escena pendiente
 
-#### R-46 — Mostrar en el bloque inmediatamente anterior un anticipo de la indicación anclada al bloque siguiente, para dar tiempo a prepararla sin cortar la locución
+#### R-47 — Avisar en el índice, cuando todas las escenas ya tienen una toma marcada como buena, de que el guion está listo para generar las salidas de montaje
 
 **Migración:** No (sin campo nuevo en el JSON embebido ni cambio de contrato; se calcula enteramente
-en `assets/reproductor/guion.js` a partir del array `bloque.indicaciones` que R-12/R-20 ya incrustan
-por bloque) · **Depende de:** R-12 (`anclar_indicaciones_a_bloques`/`_indicaciones_ancladas_por_indice`,
-cue `.cue-indicacion` por bloque en `renderizarReproductor`), R-20 (extensión del mismo anclaje a
-`tarjetas.json`, sin tocar esta ficha), T-19/T-20 (índice y motor de bloques), T-23 (patrón de
-indicadores ocultables, `indicadores-ocultos`) — todas `COMPLETADA` · **Origen:** observación de
-arquitectura del PM (2026-11-04). R-12 ancla cada indicación `EN PANTALLA`/`NOTA` al bloque de
-locución que la precede y la muestra en cuanto ese bloque se vuelve activo — pero para un formador en
-solitario, ejecutar esa indicación (cambiar de ventana, mostrar una diapositiva, abrir una demo) rara
-vez es instantáneo: exige dejar de mirar la cámara, actuar sobre el ordenador y volver. Hoy el aviso
-llega en el mismo instante en que toca actuar, sin ningún margen para prepararlo sin cortar el ritmo
-de la locución. Mismo principio que R-39/R-42/R-44/R-45: reutilizar un dato ya calculado y ya
-probado, sin segunda implementación del anclaje.
+en `assets/reproductor/guion.js` a partir de `pendientes`/`grabadas`, ya agregados por R-39 en el
+mismo `forEach` que recorre `datos.escenas`) · **Depende de:** T-19 (índice de escenas,
+`renderizarIndice`), R-02 (`tomasEscena`/`calcularEstadoEscena`), R-39 (`pendientes`/`grabadas` ya
+agregados en el `forEach` de cabecera), R-40 (mismo hueco del índice donde hoy se renderiza "Grabar
+siguiente pendiente", lugar natural del aviso simétrico) — todas `COMPLETADA` · **Origen:**
+observación de producto del PM (2026-11-05). R-39 a R-46 han ido añadiendo al índice, una tras otra,
+formas de saber "qué falta antes de grabar" (progreso, indicaciones, ritmo, tropiezos) — pero ninguna
+responde la pregunta inversa, la que de verdad cierra la sesión de rodaje: "¿ya terminé?". Hoy, cuando
+la última escena pasa a tener una toma `buena` marcada, el único cambio visible en el índice es que el
+botón "Grabar siguiente pendiente" (R-40) deja de renderizarse — un vacío, no una confirmación. El
+dueño graba en solitario, sin nadie que le diga "ya está"; el siguiente paso real (generar
+`comandos-montaje.md`/`concat-ffmpeg.txt` y pasar a ffmpeg, T-33) vive fuera del reproductor, en el
+selector de salidas (T-30) de la propia skill, y hoy no hay ningún puente entre las dos pantallas.
 
-**Objetivo:** que el formador, mientras recita el bloque inmediatamente anterior a una indicación de
-pantalla, sepa que se aproxima y qué dice exactamente, para poder prepararla (cambiar de ventana,
-tener la diapositiva a mano) sin interrumpir la locución ni descubrir la indicación tarde.
+**Objetivo:** que el dueño sepa, sin ambigüedad y sin tener que fijarse en la ausencia de un botón, el
+momento exacto en que el guion entero tiene ya una toma buena por escena, y que el índice se lo diga
+señalando el siguiente paso real (volver a ejecutar la skill y elegir las salidas de montaje), para
+cerrar la sesión de grabación con una acción clara en vez de con una duda.
 
 **Requisitos:**
-1. En `renderizarReproductor` (`assets/reproductor/guion.js`), en el mismo `escena.bloques.forEach`
-   donde ya se añade un `<p class="cue-indicacion">` por cada elemento de `bloque.indicaciones` al
-   propio bloque que la ancla (R-12), añadir también, al bloque INMEDIATAMENTE ANTERIOR dentro de la
-   misma escena (si existe), un `<p class="cue-proxima-indicacion">` por cada indicación del bloque
-   siguiente, con el texto `"Después: "` seguido del texto ya formateado que trae
-   `bloque.indicaciones` (reutilizado tal cual, sin releer el JSON de otra forma ni tocar
-   `scripts/reproductor.py`, `scripts/pdf.py` ni `scripts/pptx.py`).
-2. El primer bloque de una escena nunca recibe un anticipo "hacia atrás" desde la escena anterior
-   (ámbito limitado a la escena actual, igual que el motor de avance no cruza de una escena a otra sin
-   paso manual por el índice); el ÚLTIMO bloque de una escena nunca anticipa una indicación anclada al
-   primer bloque de la escena siguiente, por el mismo motivo.
-3. CSS nuevo en `assets/reproductor/estilo.css`: `.cue-proxima-indicacion` reutiliza la misma regla de
-   visibilidad que `.cue-indicacion` (oculta por defecto, visible solo mientras el bloque que la
-   contiene tiene la clase `.bloque--activo`, y plegada junto con el resto de indicadores bajo
-   `#vista-reproductor.indicadores-ocultos`), pero con un peso visual todavía más subordinado
-   (opacidad o tamaño de fuente menor que `.cue-indicacion`) para que nunca se confunda con la cue del
-   bloque activo, que es la que exige una acción inmediata — principio de producto 5.
-4. Cuando el bloque siguiente tiene varias indicaciones ancladas, el anticipo las lista todas en el
-   mismo orden en que `.cue-indicacion` las mostrará cuando ese bloque pase a ser el activo, sin
-   fusionar ni resumir su texto.
-5. Sin campo nuevo en el JSON embebido (verificado por diff de claves contra la salida de referencia
-   anterior a R-46), sin cambio en `scripts/reproductor.py`, `scripts/pdf.py`, `scripts/pptx.py`,
-   `scripts/documento_revision.py` ni en `anclar_indicaciones_a_bloques`/
-   `_indicaciones_ancladas_por_indice` — mejora enteramente del lado cliente sobre un array ya
-   embebido por R-12/R-20.
-6. Sin elemento interactivo nuevo, sin tecla nueva, sin `localStorage` nuevo, sin migración. El
-   anticipo se recalcula solo al reconstruir la vista de la escena (misma `renderizarReproductor` ya
-   existente), sin ningún disparador adicional.
+1. En `renderizarIndice` (`assets/reproductor/guion.js`), en el mismo punto donde hoy se decide si se
+   renderiza el botón "Grabar siguiente pendiente" (R-40, `indiceSiguientePendiente ===
+   estadosEscena.indexOf("pendiente")`), añadir la rama simétrica: cuando no queda ninguna escena
+   `pendiente` **y tampoco ninguna `grabada`** (es decir, `pendientes === 0 && grabadas === 0`,
+   reutilizando tal cual los dos contadores que R-39 ya agrega en el mismo `forEach`, sin una segunda
+   noción de "terminado"), insertar un `<p id="aviso-guion-completo" class="aviso-guion-completo">`
+   en el mismo lugar donde habría ido el botón. El requisito exige toma **buena** en cada escena
+   (`revisada`), no solo alguna toma (`grabada`): es la condición real para que `concat-ffmpeg.txt`
+   (R-19) no deje ninguna escena con el comentario `# ESCENA N: sin toma buena` en vez de un archivo
+   real.
+2. Texto fijo, sin interpolar ningún dato nuevo del JSON: "✓ Guion completo: todas las escenas tienen
+   ya una toma buena. Vuelve a ejecutar la skill y elige «Comandos de montaje» en el selector de
+   salidas (T-30) para continuar con ffmpeg." — sin enlace ni ruta de archivo (el reproductor es un
+   `.html` offline, sin forma de invocar la skill ni de saber dónde vive la carpeta de salida en la
+   máquina de quien lo abre).
+3. El aviso no sustituye nunca al resumen de progreso (R-39, `.resumen-progreso-grabacion`, que sigue
+   mostrando "0 pendientes · 0 grabadas · N revisadas · 0 min estimados por grabar" tal cual) ni a los
+   resúmenes agregados de ritmo (R-45) o tropiezos en toma buena (R-44): es un elemento adicional,
+   nunca un reemplazo de ninguno existente.
+4. Con alguna escena todavía `pendiente` o `grabada` sin toma buena, el aviso no aparece nunca
+   (comportamiento idéntico al de antes de esta tarea).
+5. CSS nuevo en `assets/reproductor/estilo.css`: `.aviso-guion-completo` con el mismo tratamiento
+   visual de énfasis positivo que ya tienen los botones de acción del índice (`.btn-continuar`), pero
+   sin ser un botón — no dispara ninguna acción ni tiene manejador de evento, es puramente
+   informativo.
+6. Sin campo nuevo en el JSON embebido (verificado por diff de claves contra la salida de referencia
+   anterior a R-47), sin cambio en `scripts/reproductor.py`, `scripts/pdf.py`, `scripts/pptx.py` ni
+   `scripts/documento_revision.py`, sin tecla nueva, sin `localStorage` nuevo, sin migración.
 
-**Criterio de aceptación:** sobre una fixture con al menos tres bloques consecutivos de una misma
-escena donde el bloque del medio ancla una indicación `Pantalla:` y ningún otro bloque ancla ninguna
-— mientras el bloque ANTERIOR al del medio está activo, su `<li>` contiene un
-`<p class="cue-proxima-indicacion">` visible con el texto `"Después: "` + el texto exacto que trae
-`bloque.indicaciones` del bloque del medio; al avanzar al bloque del medio, ese anticipo deja de estar
-visible (ya no es el bloque activo) y la cue real (`.cue-indicacion`) de ese mismo bloque, sin el
-prefijo `"Después:"`, aparece en su lugar. En el primer bloque de cualquier escena no aparece nunca un
-anticipo de la escena anterior, y en el último bloque de una escena no aparece nunca un anticipo de
-la primera de la siguiente, aunque ambas existan y tengan indicaciones ancladas. El JSON embebido por
-`scripts/reproductor.py` no gana ningún campo nuevo. Verificado también visualmente con
-Playwright/Chromium real, mismo criterio que R-39 a R-45.
+**Criterio de aceptación:** sobre una fixture con al menos dos escenas — con una de ellas todavía
+`pendiente` (sin ninguna toma), el índice muestra el botón "Grabar siguiente pendiente" (R-40) y nunca
+el aviso `#aviso-guion-completo`; con esa misma escena ya `grabada` (toma registrada pero ninguna
+`buena`) tampoco aparece el aviso, aunque el botón de R-40 ya no se renderice (ninguna `pendiente`);
+solo cuando TODAS las escenas quedan `revisada` (toma `buena` marcada en cada una) aparece
+`#aviso-guion-completo` con el texto exacto fijado en el requisito 2, en el mismo lugar donde antes
+iba el botón de R-40. El resumen de progreso (R-39) sigue mostrando "0 pendientes · 0 grabadas · N
+revisadas" sin ningún cambio de comportamiento. El JSON embebido por `scripts/reproductor.py` no gana
+ningún campo nuevo. Verificado también visualmente con Playwright/Chromium real, mismo criterio que
+R-39 a R-46.
 
 ---
 
