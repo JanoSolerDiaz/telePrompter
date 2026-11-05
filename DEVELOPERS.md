@@ -4447,6 +4447,49 @@ principio que R-39/R-42/R-43/R-44: reutilizar un dato ya calculado, sin segunda 
   (ninguna escena real/de ejemplo trae hoy una desviación de ritmo, así que su comportamiento visible
   no cambia). Detalle completo en `DECISIONES_TECNICAS.md`.
 
+## Anticipo de la indicación del bloque siguiente (R-46)
+
+R-12 ancla cada indicación `EN PANTALLA`/`NOTA` al bloque de locución que la precede y la muestra
+en cuanto ese bloque se vuelve activo, pero para un formador en solitario ejecutar esa indicación
+(cambiar de ventana, mostrar una diapositiva, abrir una demo) rara vez es instantáneo. R-46 añade un
+anticipo discreto en el bloque INMEDIATAMENTE ANTERIOR, reutilizando tal cual el mismo array
+`bloque.indicaciones` que R-12/R-20 ya incrustan — mismo principio que R-39 a R-45: reutilizar un
+dato ya calculado, sin segunda implementación.
+
+- **`renderizarReproductor` (`assets/reproductor/guion.js`), en el mismo `escena.bloques.forEach`**
+  donde ya se añade un `<p class="cue-indicacion">` por cada indicación del propio bloque (R-12),
+  añade ahora también, al bloque anterior, un `<p class="cue-proxima-indicacion">` por cada
+  indicación de `escena.bloques[indiceBloque + 1]` (si existe), con el texto `"Después: "` + el
+  texto ya formateado de `bloque.indicaciones`, en el mismo orden.
+- **Ámbito limitado a la escena actual (requisito 2)**: `escena.bloques[indiceBloque + 1]` es
+  `undefined` en el último bloque de la escena, así que el requisito ("ni el último bloque anticipa
+  la indicación de la primera de la escena siguiente") se cumple sin ninguna guarda extra — el array
+  `escena.bloques` nunca contiene bloques de otra escena.
+- **CSS nuevo** en `assets/reproductor/estilo.css`: `.cue-proxima-indicacion` reutiliza la misma
+  regla de visibilidad que `.cue-indicacion` (oculta salvo que el bloque que la contiene sea el
+  activo, plegable con `H` vía `#vista-reproductor.indicadores-ocultos`), con `font-size: 0.42em` y
+  `opacity: 0.7` (frente a `font-size: 0.5em` sin opacidad reducida de `.cue-indicacion`) para que
+  nunca compita visualmente con la cue real — principio de producto #5.
+- **Sin campo nuevo en el JSON embebido, sin cambio en `scripts/reproductor.py`, `scripts/pdf.py`,
+  `scripts/pptx.py` ni `scripts/documento_revision.py`** (requisito 5): mejora enteramente de
+  `guion.js` sobre un array ya embebido. Sin elemento interactivo nuevo, sin tecla nueva, sin
+  `localStorage` nuevo (requisito 6): el anticipo se recalcula solo al reconstruir la vista de la
+  escena, dentro de la propia `renderizarReproductor` ya existente.
+- **Tests.** 8 tests nuevos en `tests/test_reproductor.py` (790→798): fixture propia
+  (`_GUION_ANTICIPO_INDICACION`) con tres bloques consecutivos de una misma escena donde solo el del
+  medio ancla una indicación `Pantalla:`, verificada primero en sí misma y después contra el
+  contenido generado de `guion.js` (clase, prefijo, índice `+ 1`, orden de iteración, plegado con
+  `H`, contrato embebido sin campo nuevo, sin elemento interactivo ni `localStorage` nuevo). Un test
+  adicional reutiliza la fixture de R-12 con `Pantalla:`+`Nota:` en el mismo bloque para comprobar
+  que el anticipo conserva el orden exacto cuando el bloque siguiente ancla más de una indicación.
+  Cuatro redes en verde (798 tests; `verificar_salidas.py --fixture` sin cambio de comportamiento
+  visible, ningún guion real/de ejemplo trae hoy tres bloques consecutivos con ese patrón exacto).
+  Verificado también visualmente con Playwright/Chromium real sobre la fixture de tres bloques:
+  con el primero activo, su anticipo (`"Después: Pantalla: Diapositiva de apoyo."`) visible y la cue
+  real oculta; al avanzar al segundo (el que ancla la indicación), el anticipo del primero desaparece
+  y la cue real del segundo aparece en su lugar, sin el prefijo `"Después:"`; en el tercero, ni cue ni
+  anticipo, como exige el criterio de aceptación.
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

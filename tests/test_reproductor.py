@@ -1365,6 +1365,133 @@ def test_prefijos_de_indicacion_son_configurables() -> None:
     assert indicaciones == ["PANTALLA > Título del vídeo en pantalla."]
 
 
+# --- Anticipo de la indicacion del bloque siguiente (R-46) ------------------------
+
+_GUION_ANTICIPO_INDICACION = """# Guion de prueba anticipo
+
+## BLOQUE 0 — Prueba (0:00 – 0:30)
+
+**LOCUCIÓN**
+
+> Primera frase de la escena de prueba. Segunda frase justo antes de mostrar la diapositiva.
+
+**EN PANTALLA**
+
+Diapositiva de apoyo.
+
+**LOCUCIÓN**
+
+> Tercera frase después de la diapositiva mostrada completa.
+"""
+
+
+def test_fixture_r46_tiene_tres_bloques_con_indicacion_solo_en_el_del_medio() -> None:
+    # Fija el comportamiento de la fixture en si (contrato con el anclaje de
+    # R-12) antes de comprobar que `guion.js` muestra el anticipo sobre ella:
+    # tres bloques consecutivos de la misma escena, indicacion anclada solo al
+    # del medio -- el mismo escenario que describe el criterio de aceptacion.
+    resultado, tiempos = _pipeline(_GUION_ANTICIPO_INDICACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    bloques = _extraer_datos(pagina)["escenas"][0]["bloques"]
+    assert len(bloques) == 3
+    assert bloques[0]["indicaciones"] == []
+    assert bloques[1]["indicaciones"] == ["Pantalla: Diapositiva de apoyo."]
+    assert bloques[2]["indicaciones"] == []
+
+
+def test_guion_js_anade_el_anticipo_al_bloque_anterior_al_que_ancla_la_indicacion() -> None:
+    resultado, tiempos = _pipeline(_GUION_ANTICIPO_INDICACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: un <p class="cue-proxima-indicacion"> por cada indicacion
+    # del bloque SIGUIENTE, con el prefijo "Después: " y el texto ya
+    # formateado de `bloque.indicaciones`, sin releer el JSON de otra forma.
+    assert "cue-proxima-indicacion" in pagina
+    assert 'anticipo.className = "cue-proxima-indicacion";' in pagina
+    assert '"Después: " + textoIndicacion' in pagina
+
+
+def test_guion_js_anticipo_usa_el_bloque_siguiente_dentro_de_la_misma_escena() -> None:
+    resultado, tiempos = _pipeline(_GUION_ANTICIPO_INDICACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: el anticipo se calcula mirando `escena.bloques[indiceBloque
+    # + 1]` dentro del `forEach` de la propia escena -- nunca cruza a otra
+    # escena, porque ese array nunca contiene bloques de una escena distinta.
+    assert "var bloqueSiguiente = escena.bloques[indiceBloque + 1];" in pagina
+
+
+def test_guion_js_anticipo_visible_solo_mientras_el_bloque_anterior_esta_activo() -> None:
+    resultado, tiempos = _pipeline(_GUION_ANTICIPO_INDICACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: misma regla de visibilidad que `.cue-indicacion` (oculta
+    # salvo que el bloque que la contiene sea el activo).
+    assert ".bloque--activo .cue-proxima-indicacion {" in pagina
+
+
+def test_guion_js_anticipo_se_pliega_con_el_resto_de_indicadores() -> None:
+    resultado, tiempos = _pipeline(_GUION_ANTICIPO_INDICACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: plegado junto al resto de indicadores con `H` (T-23), mismo
+    # interruptor que ya usa `.cue-indicacion`.
+    assert "#vista-reproductor.indicadores-ocultos .cue-proxima-indicacion" in pagina
+
+
+def test_guion_js_anticipo_mantiene_el_orden_de_varias_indicaciones() -> None:
+    # Requisito 4: el anticipo lista las indicaciones del bloque siguiente en
+    # el mismo orden en que `.cue-indicacion` las mostrara cuando ese bloque
+    # sea el activo, sin fusionar ni resumir el texto.
+    guion = _GUION_DOS_ESCENAS.replace(
+        "Título del vídeo en pantalla.",
+        "Título del vídeo en pantalla.\n\n**NOTA**\n\nRecordatorio interno para el montaje.",
+    )
+    resultado, tiempos = _pipeline(guion)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    indicaciones_bloque_siguiente = _extraer_datos(pagina)["escenas"][0]["bloques"][-1][
+        "indicaciones"
+    ]
+    assert indicaciones_bloque_siguiente == [
+        "Pantalla: Título del vídeo en pantalla.",
+        "Nota: Recordatorio interno para el montaje.",
+    ]
+    # El bucle del anticipo recorre `bloqueSiguiente.indicaciones` con el
+    # mismo `forEach`, en el mismo orden, sin segunda lista ni ordenacion
+    # propia -- confirmado leyendo el propio codigo generado.
+    inicio = pagina.index("var bloqueSiguiente = escena.bloques[indiceBloque + 1];")
+    fin = pagina.index("elementosBloque[indiceBloque] = item;", inicio)
+    fragmento = pagina[inicio:fin]
+    assert fragmento.count(".forEach(function (") == 1
+
+
+def test_guion_js_anticipo_no_cambia_el_contrato_embebido() -> None:
+    # Requisito 5: sin campo nuevo en el JSON embebido ni cambio en
+    # `scripts/reproductor.py` -- el anticipo es enteramente de `guion.js`
+    # sobre el array `bloque.indicaciones` que R-12/R-20 ya incrustan.
+    resultado, tiempos = _pipeline(_GUION_ANTICIPO_INDICACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    datos = _extraer_datos(pagina)
+    for escena in datos["escenas"]:
+        for bloque in escena["bloques"]:
+            assert set(bloque.keys()) == {
+                "texto",
+                "num_palabras",
+                "inicio_segundos",
+                "fin_segundos",
+                "indicaciones",
+            }
+
+
+def test_guion_js_anticipo_sin_elemento_interactivo_ni_localstorage_nuevo() -> None:
+    resultado, tiempos = _pipeline(_GUION_ANTICIPO_INDICACION)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 6: sin tecla nueva, sin `localStorage` nuevo -- se recalcula
+    # solo al reconstruir la vista de la escena (`renderizarReproductor`, ya
+    # existente), sin ningun disparador adicional.
+    inicio = pagina.index("var bloqueSiguiente = escena.bloques[indiceBloque + 1];")
+    fin = pagina.index("elementosBloque[indiceBloque] = item;", inicio)
+    fragmento = pagina[inicio:fin]
+    assert "localStorage" not in fragmento
+    assert "addEventListener" not in fragmento
+
+
 # --- Archivo de video real de la toma buena (R-19) --------------------------------
 
 

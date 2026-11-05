@@ -12,6 +12,58 @@
 
 ---
 
+### Sesión 2026-11-05 (334) — Ciclo de Programador: R-46 completada (anticipo de la indicación del bloque siguiente)
+
+**Contexto.** Continuación de la misma sesión en la nube que acaba de cerrar **P-13** (hallazgo
+urgente `#42`, ver entrada anterior). Con la urgencia resuelta, única R-XX `PENDIENTE` en §1 de
+`SEGUIMIENTO.md`: R-46, spec completa leída en `roadmap/ROADMAP_PRODUCTO.md` (Oleada v34).
+`DECISIONES_TECNICAS.md` consultado en el área que toca (reproductor/`guion.js`, filas de
+R-39/R-42/R-43/R-44/R-45) antes de implementar, mismo patrón exacto.
+
+**R-46 implementada.** `assets/reproductor/guion.js::renderizarReproductor`, en el mismo
+`escena.bloques.forEach` donde ya se añade `.cue-indicacion` por indicación propia (R-12), añade
+ahora al bloque anterior un `<p class="cue-proxima-indicacion">` por cada indicación de
+`escena.bloques[indiceBloque + 1]` (si existe), con el texto `"Después: "` + el texto ya formateado,
+en el mismo orden que la cue real los mostrará. Ámbito limitado a la escena actual sin ninguna guarda
+extra: el índice `+ 1` es `undefined` justo en el último bloque. CSS nuevo en
+`assets/reproductor/estilo.css`: `.cue-proxima-indicacion` reutiliza la visibilidad de
+`.cue-indicacion` (oculta salvo bloque activo, plegable con `H`) con un peso visual más subordinado
+(`font-size: 0.42em` + `opacity: 0.7`, frente al `0.5em` sin opacidad reducida de la cue real) —
+decisión razonada en `DECISIONES_TECNICAS.md`. Sin campo nuevo en el JSON embebido, sin cambio en
+`scripts/reproductor.py`/`pdf.py`/`pptx.py`/`documento_revision.py`, sin elemento interactivo ni
+`localStorage` nuevo. 8 tests nuevos en `tests/test_reproductor.py` (790→798): fixture propia
+(`_GUION_ANTICIPO_INDICACION`, tres bloques consecutivos con la indicación anclada solo al del medio)
+verificada primero en sí misma y después contra `guion.js` generado (clase, prefijo, índice `+ 1`,
+plegado con `H`, contrato embebido sin campo nuevo, sin control ni `localStorage` nuevo); un test más
+reutiliza la fixture de R-12 (`Pantalla:`+`Nota:` en el mismo bloque) para el orden con varias
+indicaciones. Cuatro redes en verde (`mypy`, `ruff`, 798 tests, `verificar_salidas.py --fixture` con
+sus diecinueve etapas sin cambio de comportamiento visible). Verificado también visualmente con
+Playwright/Chromium real (Node.js, preinstalado) sobre la fixture de tres bloques: con el primero
+activo, su anticipo (`"Después: Pantalla: Diapositiva de apoyo."`) visible y la cue real oculta; al
+avanzar al segundo (el que ancla la indicación), el anticipo del primero desaparece y la cue real
+(sin el prefijo `"Después:"`) ocupa su lugar; en el tercero, ni cue ni anticipo — exactamente el
+criterio de aceptación de la ficha.
+
+**Decisiones añadidas a `DECISIONES_TECNICAS.md`.** Dos filas 2026-11-05/R-46: (1) mirar hacia
+adelante dentro del mismo `forEach` ya existente (`escena.bloques[indiceBloque + 1]`) en vez de un
+campo nuevo en el contrato embebido o un segundo recorrido; (2) diferenciar `.cue-proxima-indicacion`
+de `.cue-indicacion` combinando tamaño de fuente y opacidad reducidos, en vez de solo uno de los dos.
+
+**Cambios de estado en `SEGUIMIENTO.md` §1.** R-46: `PENDIENTE` → `COMPLETADA` (2026-11-05), fila con
+el detalle completo de la entrega. Cabecera actualizada al estado vigente de hoy: ninguna R-XX/T-XX
+de código `PENDIENTE` en §1; la siguiente oleada la abre el próximo ciclo de Product Manager. Sin
+cambios en §3 (bloqueos), §5 (P-XX, ya cerrada en la entrada anterior) ni §6 (preguntas abiertas).
+
+**`SKILL.md`/`DEVELOPERS.md` actualizados** con la sección "Anticipo de la indicación del bloque
+siguiente (R-46)", mismo formato que las secciones de R-39/R-43/R-44/R-45 que la preceden.
+
+**Cierre.** `git add` de los cuatro archivos de código/test tocados (`assets/reproductor/guion.js`,
+`assets/reproductor/estilo.css`, `tests/test_reproductor.py`, `SKILL.md`) más `DEVELOPERS.md` y los
+documentos de registro (`SEGUIMIENTO.md`, `DECISIONES_TECNICAS.md`, `HISTORIAL_SESIONES.md`); commit
+único con prefijo `R-46:`; push a `origin/develop` (nunca a `master`).
+
+---
+
 ### Sesión 2026-11-05 (333) — Ciclo de Programador: P-13 urgente, cierra el hueco de `entrada.py` sin invocar en `SKILL.md` (hallazgo `#42`)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout

@@ -981,6 +981,20 @@
         cue.textContent = textoIndicacion;
         item.appendChild(cue);
       });
+      // Anticipo de la indicacion del bloque siguiente (R-46, requisito 1):
+      // mismo ambito que el motor de avance, nunca cruza de una escena a otra
+      // -- `escena.bloques[indiceBloque + 1]` es `undefined` justo en el
+      // ultimo bloque, asi que el requisito 2 (sin anticipo hacia la escena
+      // siguiente) se cumple sin ninguna guarda extra.
+      var bloqueSiguiente = escena.bloques[indiceBloque + 1];
+      (bloqueSiguiente ? bloqueSiguiente.indicaciones || [] : []).forEach(function (
+        textoIndicacion
+      ) {
+        var anticipo = document.createElement("p");
+        anticipo.className = "cue-proxima-indicacion";
+        anticipo.textContent = "Después: " + textoIndicacion;
+        item.appendChild(anticipo);
+      });
       elementosBloque[indiceBloque] = item;
       listaBloques.appendChild(item);
     });

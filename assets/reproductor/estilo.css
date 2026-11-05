@@ -502,7 +502,8 @@ button:focus-visible {
    sobre la cabecera y la barra de progreso, sin tocar el guion en si. */
 #vista-reproductor.indicadores-ocultos .reproductor-cabecera,
 #vista-reproductor.indicadores-ocultos .barra-progreso-contenedor,
-#vista-reproductor.indicadores-ocultos .cue-indicacion {
+#vista-reproductor.indicadores-ocultos .cue-indicacion,
+#vista-reproductor.indicadores-ocultos .cue-proxima-indicacion {
   display: none;
 }
 
@@ -540,6 +541,26 @@ button:focus-visible {
 }
 
 .bloque--activo .cue-indicacion {
+  display: block;
+}
+
+/* Anticipo de la indicacion del bloque siguiente (R-46): mismo criterio de
+   visibilidad que `.cue-indicacion` (oculta salvo bloque activo, plegable con
+   `H`), pero con un peso visual todavia mas subordinado -- avisa de que algo
+   se aproxima, nunca debe confundirse con la cue real que exige accion
+   inmediata en cuanto el bloque anclado pase a ser el activo (principio de
+   producto #5). */
+.cue-proxima-indicacion {
+  display: none;
+  margin: 0.5em 0 0;
+  font-size: 0.42em;
+  font-weight: 400;
+  font-style: italic;
+  opacity: 0.7;
+  color: var(--color-texto-secundario);
+}
+
+.bloque--activo .cue-proxima-indicacion {
   display: block;
 }
 

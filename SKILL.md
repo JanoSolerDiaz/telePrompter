@@ -412,6 +412,12 @@ La cue es siempre subordinada al bloque activo (principio de producto #5: nunca 
 | Prefijo de indicación de pantalla | `Pantalla:` | `prefijo_indicacion_pantalla_reproductor` |
 | Prefijo de nota interna | `Nota:` | `prefijo_indicacion_nota_reproductor`; mismo criterio "es NOTA" que `pdf.es_nota_interna` (T-28) |
 
+## Anticipo de la indicación del bloque siguiente (R-46)
+
+La cue de R-12 avisa en el mismo instante en que toca actuar, sin ningún margen para prepararla (cambiar de ventana, tener la diapositiva a mano) sin cortar la locución. Ahora, mientras se recita el bloque INMEDIATAMENTE ANTERIOR a uno que ancla una indicación `EN PANTALLA`/`NOTA`, ese bloque anterior muestra también un anticipo discreto — `"Después: "` seguido del mismo texto que traerá la cue real — para que dé tiempo a prepararla sin sorpresas. Ámbito limitado a la propia escena (igual que el motor de avance): el primer bloque de una escena nunca anticipa nada de la escena anterior, ni el último bloque anticipa nada de la escena siguiente. Sin campo nuevo en el JSON embebido ni cambio en `scripts/reproductor.py`: es una lectura hacia adelante, enteramente de `guion.js`, sobre el mismo array `bloque.indicaciones` que R-12/R-20 ya incrustan.
+
+El anticipo es siempre más subordinado que la cue real de R-12 (principio de producto #5: nunca puede confundirse con la indicación que exige acción inmediata), se pliega con la misma tecla `H` y desaparece en cuanto el bloque que la ancla pasa a ser el activo, momento en el que la cue real toma su lugar.
+
 ## Checklist de preparación antes de grabar (R-33)
 
 Un guion que trae una sección `## Preparación antes de grabar` (T-08) ya conservaba su contenido íntegro en el `.md` de origen, pero no llegaba a ningún sitio donde quien graba estuviera mirando de verdad: ni al `guion-escenas.md` de revisión, ni al reproductor. Ahora el contenido literal de esa sección (sin reescritura ninguna) viaja también al reproductor y se muestra como un panel de comprobación — mismo patrón visual que la ayuda de teclado (`?`, T-24): overlay centrado, con scroll interno si el contenido es largo, nunca bloqueante.
