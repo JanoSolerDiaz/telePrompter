@@ -32,7 +32,7 @@
 
 ---
 
-**Última actualización:** 2026-11-05 — **Ciclo de Programador: quinta reconfirmación del día tras
+**Última actualización:** 2026-11-05 — **Ciclo de Programador: sexta reconfirmación del día tras
 R-46, sin novedad de código**. Detalle completo en `HISTORIAL_SESIONES.md`.
 
 **Estado vigente del proyecto:** Oleada v1 (T-00 a T-33) y R-01 a R-46 en `COMPLETADA` en §1; ninguna
