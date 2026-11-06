@@ -155,6 +155,7 @@ def test_html_autocontenido_no_dispara_hallazgos() -> None:
         "<script>navigator.sendBeacon('/analitica')</script>",
         "<style>body{background:url(fondo.png)}</style>",
         "<style>body{background:url(//cdn.ejemplo.com/fondo.png)}</style>",
+        '<link rel="preload" href="//fonts.gstatic.com/s/x.woff2">',
     ],
 )
 def test_html_con_recurso_externo_se_detecta(html: str) -> None:
@@ -178,6 +179,15 @@ def test_srcset_incrustado_en_data_uri_esta_permitido() -> None:
 
 def test_css_url_con_data_uri_esta_permitida() -> None:
     html = "<style>@font-face{src:url(data:font/woff2;base64,AAAA)}</style>"
+    assert buscar_recursos_externos(html) == []
+
+
+def test_href_de_protocolo_relativo_incrustado_en_data_uri_esta_permitido() -> None:
+    # #43 de `auditoriacontinua.md`: `//cdn\.` solo detectaba el protocolo relativo
+    # cuando el dominio contenia literalmente "cdn."; un `href=` de protocolo
+    # relativo a cualquier otro dominio (p. ej. un <link> de precarga de fuente)
+    # pasaba desapercibido. Cerrado por P-15.
+    html = '<link rel="preload" href="data:font/woff2;base64,AAAA">'
     assert buscar_recursos_externos(html) == []
 
 

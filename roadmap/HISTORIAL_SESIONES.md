@@ -35,6 +35,66 @@
 
 ---
 
+### Sesión 2026-11-06 (346) — Ciclo de Programador: P-15 cierra el hueco de `href=` de protocolo relativo en el validador de auto-contención
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` reportó de nuevo "leaving 50 commits behind" y "divergent
+branches" por el límite de profundidad superficial ya documentado (`#21` de `auditoriacontinua.md`,
+`RESUELTO`), sin ninguna reescritura real de `develop`. Árbol de trabajo confirmado limpio (`git
+status`) antes de actuar; resuelto con `git reset --hard origin/develop`. `pip install -r
+requirements-dev.txt` (bare `pip`) instaló de nuevo contra Python 3.13 en vez del 3.11.18 real (mismo
+síntoma de `#22`/`#28`/P-06); corregido con `python3 -m pip install -r requirements-dev.txt`.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** §1 de `SEGUIMIENTO.md`: las 34
+T-XX (`T-24b` `BLOQUEADA`, ajena al programador) y R-01 a R-47 `COMPLETADA`; cola de código vacía, a
+la espera de que el próximo ciclo de Product Manager archive la Oleada v35 (R-47) y abra la
+siguiente. `auditoriacontinua.md` revisado completo: ningún hallazgo `ABIERTO` de severidad alta
+(`#42`/`#44` `RESUELTO`); solo `#43` (baja, hueco real del validador de auto-contención) y `#45`
+(baja, prosa obsoleta de `HOJA_DE_RUTA.md` §0.2) quedan `ABIERTO`, ambos deuda técnica/documental sin
+ningún hito de producto. `#24`/`#30` siguen `ABIERTO` a la espera del dueño; `#36` `ASUMIDO`. Sin
+ninguna urgencia y con la cola vacía: `#45` queda descartado como P-XX de esta sesión porque exige
+tocar `HOJA_DE_RUTA.md`, documento que el protocolo (§0, paso 7) prohíbe modificar sin autorización
+del dueño; `#43` sí es un hueco de código/documentación de referencia dentro del alcance del
+Programador, mismo criterio que ya llevó a P-06 a P-14 a aprovechar huecos de cola para deuda
+técnica de severidad baja.
+
+**P-15 implementada.** Registrada en §5 de `SEGUIMIENTO.md` antes de implementar. Nuevo patrón en
+`PATRONES_RECURSO_EXTERNO` (`scripts/verificar_salidas.py`): `\bhref=["']?(?!data:)//[a-zA-Z0-9]`,
+mirror del patrón ya existente para `src=`/`srcset=` (misma excepción `data:`). Cierra el hueco real
+señalado por la auditoría: `//cdn\.` solo detectaba el protocolo relativo cuando el dominio contenía
+literalmente "cdn.", dejando pasar un `href=` de protocolo relativo a cualquier otro dominio (p. ej.
+`<link rel="preload" href="//fonts.gstatic.com/...">`), vector no cubierto por ningún patrón
+específico de `src=`/`srcset=`/`<base href>`/`url(...)`. Riesgo hoy nulo, reverificado por `grep`
+antes de implementar: ninguna plantilla de `assets/reproductor/` ni `assets/pdf/` usa ninguna
+etiqueta `<link>`. 2 tests nuevos en `tests/test_esqueleto.py` (805→807): uno detecta el `href`
+externo de protocolo relativo, otro confirma que un `href` con `data:` sigue permitido.
+`references/validador-autocontencion.md` actualizado con la fila nueva. Detalle completo de la
+decisión de diseño (patrón específico de `href=` en vez de generalizar `//cdn\.`) y del descarte de
+`#45` en `DECISIONES_TECNICAS.md`.
+
+**Tarea(s):** P-15
+**Estado resultante:** COMPLETADA
+**Commits a develop:** (pendiente de commitear al cierre de esta sesión)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `scripts/verificar_salidas.py`, `tests/test_esqueleto.py`,
+`references/validador-autocontencion.md`, `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md`,
+`roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (mypy, 72 archivos) · lint ✅ (ruff check) · tests ✅ (807/807,
+805 previos + 2 nuevos) · build ✅ (`verificar_salidas.py --fixture`, diecinueve etapas en `OK`),
+todo ejecutado sobre el intérprete real (3.11.18)
+**Health check post-deploy:** no aplica (sesión de nube, sin instalación local de la skill)
+**Decisiones tomadas:** `DECISIONES_TECNICAS.md`, dos filas "P-15", 2026-11-06.
+**Hallazgos del auditor atendidos:** ninguno cerrado directamente por el Programador (`auditoriacontinua.md`
+es terreno exclusivo del auditor); el cierre de `#43` queda a la espera de que el auditor lo
+reverifique y marque `RESUELTO` en su próxima pasada, como ya hizo con `#41`/P-11.
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** P-15 registrada y ejecutada en esta sesión (§5 de `SEGUIMIENTO.md`).
+**Próximo paso:** el siguiente ciclo de Product Manager debe archivar la Oleada v35 (R-47) en
+`ROADMAP_HISTORICO.md` y abrir la siguiente, releyendo `auditoriacontinua.md` completo (incluido el
+cierre pendiente de `#43`) y `roadmap/FEEDBACK.md` antes de decidir.
+
+---
+
 ### Sesión 2026-11-06 (345) — Ciclo de Programador: implementa R-47 (aviso de guion completo en el índice)
 
 **Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout

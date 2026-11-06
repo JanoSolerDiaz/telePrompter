@@ -24,6 +24,7 @@
 | `src=` en `<embed>` | Igual que el resto de atributos `src`, salvo `data:` | R-09 |
 | `srcset=` en `<img>`/`<source>` | Recurso externo en un atributo `srcset` (imágenes responsive), salvo que empiece por `data:` | P-11 |
 | `<base href="...">` | Cambia la resolución de toda referencia relativa del documento | R-09 |
+| `href=` de protocolo relativo (`//dominio/...`) en cualquier etiqueta | Referencia externa en un atributo `href` que no empieza por `http(s)://` ni es `<base href>`, salvo que empiece por `data:` (p. ej. `<link rel="preload" href="//fonts.gstatic.com/...">`) | P-15 |
 | `WebSocket` | Apertura de una conexión WebSocket | R-09 |
 | `EventSource` / `sendBeacon` | Server-sent events o envío de telemetría en segundo plano | R-09 |
 | `url(...)` de CSS fuera de `@import` | Cualquier `url()` de CSS (`background`, `@font-face`, etc.), salvo que apunte a `data:` | R-09 |

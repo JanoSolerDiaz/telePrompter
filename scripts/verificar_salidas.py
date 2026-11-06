@@ -160,6 +160,10 @@ PATRONES_RECURSO_EXTERNO: tuple[tuple[str, str], ...] = (
         "recurso externo en un atributo srcset",
     ),
     (r"""<base[^>]+href=""", "uso de <base href>"),
+    (
+        r"""\bhref=["']?(?!data:)//[a-zA-Z0-9]""",
+        "referencia de protocolo relativo en un atributo href",
+    ),
     (r"\bWebSocket\b", "uso de WebSocket"),
     (r"\bEventSource\b|\bsendBeacon\b", "uso de EventSource o sendBeacon"),
     (r"""\burl\(\s*(?!["']?data:)""", "url(...) de CSS con referencia externa"),
