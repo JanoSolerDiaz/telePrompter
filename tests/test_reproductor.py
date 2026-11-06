@@ -2152,3 +2152,100 @@ def test_estilo_resumen_aviso_ritmo_reutiliza_el_color_de_acento() -> None:
     fragmento = pagina[coincidencia : coincidencia + 150]
     assert "color: var(--color-acento);" in fragmento
     assert "font-weight: 600;" in fragmento
+
+
+# --- Aviso de guion completo en el indice (R-47) -----------------------------------------
+
+
+def test_guion_js_aviso_guion_completo_va_en_el_hueco_del_boton_siguiente_pendiente() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: rama `else if` del mismo `if` que decide el boton de R-40,
+    # nunca una segunda comprobacion independiente que pudiera divergir sobre
+    # cuando mostrar cada uno de los dos.
+    coincidencia = pagina.index("vistaIndice.appendChild(botonSiguientePendiente);")
+    fragmento = pagina[coincidencia : coincidencia + 200]
+    assert "} else if (pendientes === 0 && grabadas === 0) {" in fragmento
+
+
+def test_guion_js_aviso_guion_completo_reutiliza_pendientes_y_grabadas_sin_heuristica_nueva() -> (
+    None
+):
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 1: reutiliza tal cual `pendientes`/`grabadas`, los mismos dos
+    # contadores que R-39 ya agrega en el `forEach` de cabecera -- exige toma
+    # `buena` en CADA escena (ninguna `pendiente` y ninguna `grabada` sin
+    # toma buena), no solo alguna toma registrada.
+    assert pagina.count("var pendientes = 0;") == 1
+    assert pagina.count("var grabadas = 0;") == 1
+    assert "pendientes === 0 && grabadas === 0" in pagina
+
+
+def test_guion_js_aviso_guion_completo_texto_exacto() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 2: texto fijo exacto, sin interpolar ningun dato del JSON.
+    assert (
+        'avisoGuionCompleto.textContent =\n'
+        '        "✓ Guion completo: todas las escenas tienen ya una toma buena. '
+        "Vuelve a ejecutar la skill y elige «Comandos de montaje» en el selector "
+        'de salidas (T-30) para continuar con ffmpeg.";'
+    ) in pagina
+
+
+def test_guion_js_aviso_guion_completo_no_sustituye_ningun_resumen_existente() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 3: el resumen de progreso (R-39) y su linea de appendChild
+    # siguen intactos, antes de la rama nueva -- el aviso es un elemento
+    # adicional, nunca un reemplazo.
+    assert "vistaIndice.appendChild(resumenProgreso);" in pagina
+    assert (
+        pagina.index("vistaIndice.appendChild(resumenProgreso);")
+        < pagina.index('avisoGuionCompleto.id = "aviso-guion-completo";')
+    )
+
+
+def test_guion_js_aviso_guion_completo_no_tiene_boton_ni_evento() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5: puramente informativo -- un `<p>`, sin `<button>` ni
+    # `addEventListener` en toda la rama nueva.
+    inicio = pagina.index("} else if (pendientes === 0 && grabadas === 0) {")
+    fin = pagina.index("// \"Continuar\" (T-26, requisitos 1 y 5)", inicio)
+    fragmento = pagina[inicio:fin]
+    assert 'document.createElement("p")' in fragmento
+    assert "<button" not in fragmento
+    assert "addEventListener" not in fragmento
+    assert 'avisoGuionCompleto.id = "aviso-guion-completo";' in fragmento
+    assert 'avisoGuionCompleto.className = "aviso-guion-completo";' in fragmento
+
+
+def test_guion_js_aviso_guion_completo_no_cambia_el_contrato_embebido() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 6: sin campo nuevo en el JSON embebido -- mismo conjunto de
+    # claves que fijo R-45, cero cambio en `scripts/reproductor.py`.
+    datos = _extraer_datos(pagina)
+    for escena in datos["escenas"]:
+        assert set(escena.keys()) == {
+            "numero",
+            "titulo",
+            "duracion_estimada_segundos",
+            "duracion_objetivo_segundos",
+            "aviso",
+            "bloques",
+        }
+
+
+def test_estilo_aviso_guion_completo_reutiliza_tratamiento_de_btn_continuar() -> None:
+    resultado, tiempos = _pipeline(_GUION_DOS_ESCENAS)
+    pagina = generar_reproductor_html(resultado, tiempos, nombre_guion="guion")
+    # Requisito 5: mismo tratamiento visual de enfasis positivo que
+    # `.btn-continuar` (borde y color de acento), pero sin ser un boton.
+    coincidencia = pagina.index(".aviso-guion-completo {")
+    fragmento = pagina[coincidencia : coincidencia + 220]
+    assert "border: 1px solid var(--color-acento);" in fragmento
+    assert "color: var(--color-acento);" in fragmento
+    assert "font-weight: 600;" in fragmento

@@ -35,6 +35,62 @@
 
 ---
 
+### Sesión 2026-11-06 (345) — Ciclo de Programador: implementa R-47 (aviso de guion completo en el índice)
+
+**Arranque.** Sesión en la nube (clon efímero, rutina "programador-teleprompter"). `git checkout
+develop && git pull origin develop` reportó de nuevo "leaving 50 commits behind" y "divergent
+branches" por el límite de profundidad superficial ya documentado (`#21` de `auditoriacontinua.md`,
+`RESUELTO`), sin ninguna reescritura real de `develop`. Árbol de trabajo confirmado limpio (`git
+status`) antes de actuar; resuelto con `git reset --hard origin/develop`. `pip install -r
+requirements-dev.txt` (bare `pip`) instaló de nuevo contra Python 3.13 en vez del 3.11.18 real (mismo
+síntoma de `#22`/`#28`/P-06); corregido con `python3 -m pip install -r requirements-dev.txt`.
+
+**Registro de hallazgos y bloqueos revisado antes de elegir tarea.** §1 de `SEGUIMIENTO.md`: las 34
+T-XX (`T-24b` `BLOQUEADA`, ajena al programador) y R-01 a R-46 `COMPLETADA`; R-47 (Oleada v35) única
+fila `PENDIENTE`, abierta por el PM en la sesión anterior (344), ficha completa en
+`ROADMAP_PRODUCTO.md`. `auditoriacontinua.md` revisado completo: ningún hallazgo `ABIERTO` de
+severidad alta (`#42`/`#44` ya `RESUELTO`, reverificados de forma independiente por el propio auditor
+en su pasada del 2026-11-06); `#45` (baja, nuevo: prosa obsoleta del sufijo de carpeta en
+`HOJA_DE_RUTA.md` §0.2) y `#43` (baja) son deuda documental/técnica pura, candidatas a una futura P-XX,
+no urgentes. `#24`/`#30` siguen `ABIERTO` a la espera del dueño; `#36` `ASUMIDO`. Ninguna urgencia:
+se implementa R-47 siguiendo la cola normal.
+
+**R-47 implementada.** `assets/reproductor/guion.js::renderizarIndice` gana la rama `else if
+(pendientes === 0 && grabadas === 0)` del mismo `if` que ya decide el botón "Grabar siguiente
+pendiente" (R-40), insertando `<p id="aviso-guion-completo">` con el texto fijo exacto de la ficha
+cuando todas las escenas tienen ya una toma buena. CSS nuevo en `estilo.css`
+(`.aviso-guion-completo`) reutiliza el borde y color de acento de `.btn-continuar` sin ser
+interactivo. Sin campo nuevo en el JSON embebido, sin cambio en `scripts/reproductor.py` ni en
+ningún otro módulo de `scripts/`. 7 tests nuevos en `tests/test_reproductor.py` (798→805).
+Verificado también visualmente con Playwright/Chromium real sobre una fixture de dos escenas,
+cubriendo el criterio de aceptación completo: pendiente → botón de R-40 sin aviso; grabada sin
+buena (con o sin otra escena pendiente) → sin aviso, sin botón si ya no queda ninguna pendiente;
+las dos con toma buena → aparece el aviso con el texto exacto, botón ausente, resumen de progreso
+(R-39) y aviso de ritmo (R-45) intactos. Detalle completo de las decisiones de implementación en
+`DECISIONES_TECNICAS.md`.
+
+**Tarea(s):** R-47 (Oleada v35)
+**Estado resultante:** COMPLETADA
+**Commits a develop:** (pendiente de commitear al cierre de esta sesión)
+**Migraciones ejecutadas:** ninguna
+**Archivos creados/modificados:** `assets/reproductor/guion.js`, `assets/reproductor/estilo.css`,
+`tests/test_reproductor.py`, `roadmap/SEGUIMIENTO.md`, `roadmap/DECISIONES_TECNICAS.md`,
+`roadmap/HISTORIAL_SESIONES.md`
+**Verificaciones pre-push:** tipos ✅ (mypy, 72 archivos) · lint ✅ (ruff check) · tests ✅ (805/805,
+798 previos + 7 nuevos) · build ✅ (`verificar_salidas.py --fixture`, diecinueve etapas en `OK`),
+todo ejecutado sobre el intérprete real (3.11.18)
+**Health check post-deploy:** no aplica (sesión de nube, sin instalación local de la skill)
+**Decisiones tomadas:** `DECISIONES_TECNICAS.md`, tres filas "R-47 (implementación)", 2026-11-06.
+**Hallazgos del auditor atendidos:** ninguno nuevo cerrado en esta sesión (sin hallazgo urgente que
+atender); `#42`/`#44` ya `RESUELTO` por P-13/P-14 en sesiones anteriores.
+**Hallazgos:** ninguno nuevo.
+**Tareas autopropuestas (P-XX):** ninguna (cola normal, sin urgencia).
+**Próximo paso:** el siguiente ciclo de Product Manager debe archivar la Oleada v35 (R-47) en
+`ROADMAP_HISTORICO.md` y abrir la siguiente, releyendo `auditoriacontinua.md` completo y
+`roadmap/FEEDBACK.md` antes de decidir.
+
+---
+
 ### Sesión 2026-11-05 (344) — Ciclo de Product Manager: archiva Oleada v34 (R-46) y abre R-47 (Oleada v35)
 
 **Tarea(s):** PM — gestión de roadmap (ninguna T-XX/R-XX implementada, no toca `scripts/`/`tests/`/`assets/`)

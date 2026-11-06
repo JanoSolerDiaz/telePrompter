@@ -4490,6 +4490,50 @@ dato ya calculado, sin segunda implementación.
   y la cue real del segundo aparece en su lugar, sin el prefijo `"Después:"`; en el tercero, ni cue ni
   anticipo, como exige el criterio de aceptación.
 
+## Aviso de guion completo en el índice (R-47)
+
+R-39 a R-46 fueron añadiendo al índice formas de saber "qué falta antes de grabar" (progreso,
+indicaciones, ritmo, tropiezos), pero ninguna respondía la pregunta inversa que de verdad cierra la
+sesión de rodaje: "¿ya terminé?". Hasta R-47, el único cambio visible al marcar la última toma buena
+era que el botón "Grabar siguiente pendiente" (R-40) dejaba de renderizarse — un vacío, no una
+confirmación.
+
+- **`renderizarIndice` (`assets/reproductor/guion.js`) gana una rama `else if` del mismo `if`**
+  que ya decide el botón de R-40 (`if (indiceSiguientePendiente !== -1) { ... } else if (pendientes
+  === 0 && grabadas === 0) { ... }`): los dos elementos son mutuamente excluyentes por diseño, así
+  que viven en el mismo condicional en vez de en dos comprobaciones independientes que pudieran
+  divergir.
+- **Condición exacta**: `pendientes === 0 && grabadas === 0`, reutilizando tal cual los dos
+  contadores que R-39 ya agrega en el `forEach` de cabecera — exige toma **buena** en CADA escena
+  (ninguna `pendiente` y ninguna `grabada` sin toma buena), no solo alguna toma registrada: es la
+  condición real para que `concat-ffmpeg.txt` (R-19) no deje ninguna escena con el comentario
+  `# ESCENA N: sin toma buena` en vez de una ruta real.
+  `<p id="aviso-guion-completo" class="aviso-guion-completo">` con el texto fijo exacto: "✓ Guion
+  completo: todas las escenas tienen ya una toma buena. Vuelve a ejecutar la skill y elige «Comandos
+  de montaje» en el selector de salidas (T-30) para continuar con ffmpeg." — sin interpolar ningún
+  dato del JSON, sin enlace ni ruta de archivo (el reproductor es un `.html` offline).
+- **Nunca sustituye** al resumen de progreso (`.resumen-progreso-grabacion`, R-39) ni a los
+  agregados de ritmo (`.resumen-aviso-ritmo`, R-45) o tropiezos en toma buena
+  (`.resumen-tropiezos-en-buena`, R-44): es un elemento adicional en el mismo hueco donde habría ido
+  el botón de R-40, nunca un reemplazo de ninguno existente.
+- **CSS nuevo** en `assets/reproductor/estilo.css`: `.aviso-guion-completo` reutiliza el borde y el
+  color de acento de `.btn-continuar` (mismo `border`/`color`/`padding`/`border-radius`), pero sin
+  `cursor: pointer` ni `:hover` — es un `<p>` puramente informativo, sin manejador de evento.
+- **Sin campo nuevo en el JSON embebido, sin cambio en `scripts/reproductor.py`, `scripts/pdf.py`,
+  `scripts/pptx.py` ni `scripts/documento_revision.py`**, sin tecla nueva, sin `localStorage` nuevo:
+  mejora enteramente de `guion.js`/`estilo.css` sobre datos ya calculados por R-39.
+- **Tests.** 7 tests nuevos en `tests/test_reproductor.py` (798→805): posición de la rama nueva
+  respecto al botón de R-40, reutilización exacta de `pendientes`/`grabadas` sin heurística nueva,
+  texto fijo exacto, convivencia con el resumen de progreso existente, ausencia de `<button>`/
+  `addEventListener`, conjunto de claves del JSON embebido sin cambio y tratamiento visual de
+  `.aviso-guion-completo`. Cuatro redes en verde (805 tests). Verificado también visualmente con
+  Playwright/Chromium real sobre una fixture de dos escenas, simulando los tres estados del criterio
+  de aceptación vía `localStorage` (`tomas_escena_N`): con alguna escena `pendiente` aparece el botón
+  de R-40 y nunca el aviso; con todas `grabada` pero ninguna `buena` no aparece ninguno de los dos;
+  con las dos escenas `revisada` (toma buena) aparece `#aviso-guion-completo` con el texto exacto, el
+  botón de R-40 ausente y el resumen de progreso (R-39) intacto ("0 pendientes · 0 grabadas ·
+  2 revisadas").
+
 ## Suite de tests (T-03)
 
 `tests/conftest.py` expone `guiones_reales` y `texto_guiones_reales`: acceso de una sola

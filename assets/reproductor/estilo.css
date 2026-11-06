@@ -452,6 +452,22 @@ button:focus-visible {
   background: rgba(255, 255, 255, 0.07);
 }
 
+/* Aviso de guion completo (R-47, requisito 5): mismo tratamiento visual de
+   enfasis positivo que ".btn-continuar" (borde y color de acento, mismo
+   padding), pero sin ser un boton -- un <p> puramente informativo, sin
+   cursor de puntero ni estado ":hover", en el mismo hueco donde iria
+   "Grabar siguiente pendiente" (R-40) cuando ya no queda ninguna escena
+   pendiente ni grabada sin toma buena. */
+.aviso-guion-completo {
+  display: block;
+  margin: 0.5em 0 1.5em;
+  padding: 0.6em 1.2em;
+  border: 1px solid var(--color-acento);
+  border-radius: 0.4em;
+  color: var(--color-acento);
+  font-weight: 600;
+}
+
 /* Aviso honesto de persistencia (R-01, requisito 3): reemplaza el silencio
    anterior de `try/catch` cuando `localStorage` no funciona en este
    navegador. Mismo tono de acento que ya usa `.bloque--activo`, sin

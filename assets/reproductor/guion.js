@@ -473,6 +473,24 @@
         reproducirEscena(indiceSiguientePendiente);
       });
       vistaIndice.appendChild(botonSiguientePendiente);
+    } else if (pendientes === 0 && grabadas === 0) {
+      // Aviso de guion completo (R-47): rama simetrica a la de arriba, en el
+      // mismo hueco donde habria ido el boton de R-40. Reutiliza tal cual
+      // `pendientes`/`grabadas` (R-39, mismo forEach de cabecera), sin una
+      // segunda nocion de "terminado" (requisito 1). Exige toma `buena` en
+      // CADA escena (`pendientes === 0 && grabadas === 0`, es decir, ninguna
+      // escena se queda en `grabada` sin toma buena), no solo alguna toma:
+      // es la condicion real para que `concat-ffmpeg.txt` (R-19) no deje
+      // ninguna escena con el comentario "sin toma buena" en vez de un
+      // archivo real. Texto fijo, sin interpolar ningun dato del JSON
+      // (requisito 2); puramente informativo, sin manejador de evento
+      // (requisito 5).
+      var avisoGuionCompleto = document.createElement("p");
+      avisoGuionCompleto.id = "aviso-guion-completo";
+      avisoGuionCompleto.className = "aviso-guion-completo";
+      avisoGuionCompleto.textContent =
+        "✓ Guion completo: todas las escenas tienen ya una toma buena. Vuelve a ejecutar la skill y elige «Comandos de montaje» en el selector de salidas (T-30) para continuar con ffmpeg.";
+      vistaIndice.appendChild(avisoGuionCompleto);
     }
 
     // "Continuar" (T-26, requisitos 1 y 5): un boton explicito, no un salto
